@@ -1,31 +1,49 @@
 import re
-def generate_sql_from_prompt(prompt: str) -> str:
-    prompt = prompt.lower()
 
-    columns = []
+def parse_schema(schema_text: str):
+    tables = {}
 
-    if "student id" in prompt or "id" in prompt:
-        columns.append("student_id")
+    pattern = r"(\w+)\s*\((.*?)\)"
+    matches = re.findall(pattern, schema_text)
 
-    if "name" in prompt:
-        columns.append("name")
+    for table_name, columns_text in matches:
+        columns = [col.strip() for col in columns_text.split(",")]
+        tables[table_name.lower()] = columns
 
-    if "gpa" in prompt:
-        columns.append("gpa")
+    return tables
 
-    if not columns:
-        columns = ["*"]
 
-    selected_columns = ", ".join(columns)
+def generate_sql(user_input: str, schema: str):
+    user_input = user_input.lower()
+    tables = parse_schema(schema)
 
-    where_clause = ""
+    if not tables:
+        return "ERROR: No valid schema found"
 
-    gpa_match = re.search(r"gpa above (\d+(\.\d+)?)", prompt)
+    # Use first table for now
+    table_name = list(tables.keys())[0]
+    columns = tables[table_name]
 
-    if gpa_match:
-        gpa_value = gpa_match.group(1)
-        where_clause = f" WHERE gpa > {gpa_value}"
+    base_query = f"SELECT * FROM {table_name}"
 
-    sql = f"SELECT {selected_columns} FROM students{where_clause};"
+    words = user_input.split()
 
-    return sql
+    # GPA / numeric comparison support
+    for column in columns:
+        clean_column = column.lower()
+
+        if clean_column in user_input:
+            for word in words:
+                try:
+                    number = float(word)
+
+                    if "above" in user_input or "greater" in user_input or "over" in user_input:
+                        return f"{base_query} WHERE {clean_column} > {number};"
+
+                    if "below" in user_input or "less" in user_input or "under" in user_input:
+                        return f"{base_query} WHERE {clean_column} < {number};"
+
+                except ValueError:
+                    pass
+
+    return base_query + ";"
