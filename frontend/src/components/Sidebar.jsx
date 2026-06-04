@@ -5,23 +5,23 @@ function Sidebar({
   newConversion,
 }) {
   return (
-    <aside className="w-72 bg-white border-r border-gray-200 flex flex-col">
+    <aside className="w-[13%] bg-white border-r border-gray-200 flex flex-col">
       <div className="p-6">
-        <h1 className="text-2xl font-bold text-purple-700">NL Translator</h1>
+        <h1 className="text-2xl font-bold text-blue-600">NL Translator</h1>
         <p className="text-sm text-gray-500 mt-1">NL to {target}</p>
       </div>
 
       <nav className="p-4 space-y-2">
         <button
           onClick={() => setActivePage("dashboard")}
-          className="w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50"
+          className="w-full text-left px-4 py-3 rounded-lg hover:bg-blue-50"
         >
           Dashboard
         </button>
 
         <button
           onClick={newConversion}
-          className="w-full text-left px-4 py-3 rounded-lg bg-purple-600 text-white hover:bg-purple-700"
+          className="w-full text-left px-4 py-3 rounded-lg bg-blue-500 text-white hover:bg-blue-600"
         >
           + New Conversion
         </button>
@@ -54,7 +54,7 @@ function Sidebar({
       <div className="p-4">
         <button
           onClick={() => setActivePage("account")}
-          className="w-full text-left px-4 py-3 rounded-lg hover:bg-purple-50"
+          className="w-full text-left px-4 py-3 rounded-lg hover:bg-blue-50"
         >
           Account Settings
         </button>

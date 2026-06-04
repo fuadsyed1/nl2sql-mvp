@@ -78,11 +78,35 @@ def parse_relational_query(text, semantic):
 
     requested_fields = []
 
-    for field in possible_fields:
-        if field in output_part:
-            requested_fields.append(field)
+    selection_words = [
+        "show",
+        "list",
+        "get",
+        "display"
+    ]
+
+    explicit_column_request = False
+
+    requested_fields = []
+
+    is_sort_query = (
+        "sorted by" in text
+        or "order by" in text
+        or "highest" in text
+        or "lowest" in text
+        or "top" in text
+    )
+
+    if not is_sort_query:
+        for field in possible_fields:
+            if field in output_part:
+                requested_fields.append(field)
 
     semantic["relational"]["select"] = requested_fields if requested_fields else ["*"]
+
+    semantic["relational"]["select"] = (
+    requested_fields if requested_fields else ["*"]
+)
 
     operator = detect_operator(filter_part)
     value = extract_number(filter_part)

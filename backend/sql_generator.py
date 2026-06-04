@@ -1,5 +1,6 @@
 import re
 
+
 def parse_schema(schema_text: str):
     tables = {}
 
@@ -7,43 +8,92 @@ def parse_schema(schema_text: str):
     matches = re.findall(pattern, schema_text)
 
     for table_name, columns_text in matches:
-        columns = [col.strip() for col in columns_text.split(",")]
+        columns = [col.strip().lower() for col in columns_text.split(",")]
         tables[table_name.lower()] = columns
 
     return tables
 
 
-def generate_sql(user_input: str, schema: str):
-    user_input = user_input.lower()
+def generate_sql_from_semantic(semantic: dict, schema: str):
     tables = parse_schema(schema)
 
     if not tables:
         return "ERROR: No valid schema found"
 
-    # Use first table for now
-    table_name = list(tables.keys())[0]
-    columns = tables[table_name]
+    relational = semantic.get("relational", {})
 
-    base_query = f"SELECT * FROM {table_name}"
+    table_name = relational.get("entity")
 
-    words = user_input.split()
+    if not table_name:
+        table_name = list(tables.keys())[0]
 
-    # GPA / numeric comparison support
-    for column in columns:
-        clean_column = column.lower()
+    table_name = table_name.lower()
 
-        if clean_column in user_input:
-            for word in words:
-                try:
-                    number = float(word)
+    if table_name not in tables:
+        return f"ERROR: Table '{table_name}' not found in schema"
 
-                    if "above" in user_input or "greater" in user_input or "over" in user_input:
-                        return f"{base_query} WHERE {clean_column} > {number};"
+    schema_columns = tables[table_name]
 
-                    if "below" in user_input or "less" in user_input or "under" in user_input:
-                        return f"{base_query} WHERE {clean_column} < {number};"
+    selected_columns = relational.get("select", ["*"])
 
-                except ValueError:
-                    pass
+    if selected_columns == ["*"] or not selected_columns:
+        select_part = "*"
+    else:
+        valid_columns = [
+            col for col in selected_columns
+            if col.lower() in schema_columns
+        ]
 
-    return base_query + ";"
+        if not valid_columns:
+            select_part = "*"
+        else:
+            select_part = ", ".join(valid_columns)
+
+    aggregation = relational.get("aggregation")
+
+    if aggregation:
+        function = aggregation.get("function")
+        field = aggregation.get("field", "*")
+
+        if field != "*" and field.lower() not in schema_columns:
+            return f"ERROR: Column '{field}' not found in schema"
+
+        select_part = f"{function}({field})"
+
+    query = f"SELECT {select_part} FROM {table_name}"
+
+    filters = relational.get("filters", [])
+
+    if filters:
+        where_parts = []
+
+        for condition in filters:
+            field = condition.get("field")
+            operator = condition.get("operator")
+            value = condition.get("value")
+
+            if field not in schema_columns:
+                return f"ERROR: Column '{field}' not found in schema"
+
+            if isinstance(value, str):
+                value = f"'{value}'"
+
+            where_parts.append(f"{field} {operator} {value}")
+
+        query += " WHERE " + " AND ".join(where_parts)
+
+    sort = relational.get("sort")
+
+    if sort:
+        field = sort.get("field")
+        direction = sort.get("direction", "ASC")
+
+        if field in schema_columns:
+            query += f" ORDER BY {field} {direction}"
+
+    limit = relational.get("limit")
+
+    if limit:
+        query += f" LIMIT {limit}"
+
+    return query + ";"
