@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sql_generator import generate_sql
 from query_executor import execute_query
 from validator import validate_query
+from llm_clarifier import clarify_query
 
 app = FastAPI()
 
@@ -24,7 +25,23 @@ def home():
 
 @app.post("/query")
 def query_database(request: QueryRequest):
-    sql = generate_sql(request.question, request.schema)
+    
+    clarifier_result = clarify_query(request.question)
+
+    if clarifier_result.get("status") != "ready":
+        return {
+            "type": "clarification",
+            "question": clarifier_result.get(
+                "question",
+                "Please Clarify your request."
+            ),
+            "debug": clarifier_result
+        }
+
+    clean_query = clarifier_result.get("clean_query", request.question)
+
+    sql = generate_sql(clean_query, request.schema)
+
     if not validate_query(sql):
         return {
             "question": request.question,
@@ -36,6 +53,7 @@ def query_database(request: QueryRequest):
 
     return{
         "question": request.question,
+        "clean_query": clean_query,
         "sql": sql,
         "results": results
     }
