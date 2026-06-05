@@ -139,7 +139,7 @@ def parse_relational_query(
         or "top" in text
     )
 
-    if not is_sort_query:
+    if not is_sort_query and not filter_part:
         for field in possible_fields:
             if field in output_part:
                 requested_fields.append(field)
