@@ -6,7 +6,7 @@ from semantic_parser import parse_natural_language
 from query_executor import execute_query
 from validator import validate_query
 from llm_clarifier import clarify_query
-from schema_inferencer import infer_schema_from_prompt
+from schema_inferencer import infer_schema
 
 app = FastAPI()
 
@@ -71,14 +71,14 @@ def query_database(request: QueryRequest):
 
         clean_query = clarifier_result.get("clean_query", request.question)
 
-    schema_info = infer_schema_from_prompt(request.question)
+    schema_info = infer_schema(request.question)
     inferred_schema = schema_info["schema"]
 
     print("SCHEMA INFO:", schema_info)
 
     print("INFERRED SCHEMA:", inferred_schema)
 
-    semantic = parse_natural_language(request.question, inferred_schema)
+    semantic = parse_natural_language(request.question, schema_info)
 
     print("\nSEMANTIC OBJECT:")
     print(semantic)

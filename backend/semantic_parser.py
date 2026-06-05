@@ -70,20 +70,52 @@ def extract_number(text):
     return int(value) if value.is_integer() else value
 
 
-def parse_relational_query(text, semantic, tables):
+def parse_relational_query(
+    text,
+    semantic,
+    tables,
+    schema_info
+):
     semantic["query_type"] = "relational_query"
     semantic["domain"] = "database"
     semantic["intent"] = "retrieve"
 
-    for table_name in tables.keys():
-        if table_name in text or table_name.rstrip("s") in text:
-            semantic["relational"]["entity"] = table_name
-            break
+    table_name = list(tables.keys())[0]
+
+    semantic["relational"]["entity"] = table_name
+
+    semantic["relational"]["group_by"] = schema_info["group_by"]
+
+    semantic["relational"]["sort"] = schema_info["sort"]
+
+    semantic["relational"]["limit"] = schema_info["limit"]
 
     possible_fields = []
 
     for table_columns in tables.values():
         possible_fields.extend(table_columns)
+
+    if schema_info["aggregation"] == "COUNT":
+        semantic["relational"]["aggregation"] = {
+            "function": "COUNT",
+            "field": "*"
+        }
+
+    elif schema_info["aggregation"] == "AVG":
+        avg_field = None
+
+        for field in possible_fields:
+            if field in text:
+                avg_field = field
+                break
+
+        semantic["relational"]["aggregation"] = {
+            "function": "AVG",
+            "field": avg_field
+        }
+
+    else:
+        semantic["relational"]["aggregation"] = None
 
     filter_words = [" with ", " where ", " whose ", " that have ", " having "]
 
@@ -96,17 +128,6 @@ def parse_relational_query(text, semantic, tables):
             output_part = parts[0]
             filter_part = parts[1]
             break
-
-    requested_fields = []
-
-    selection_words = [
-        "show",
-        "list",
-        "get",
-        "display"
-    ]
-
-    explicit_column_request = False
 
     requested_fields = []
 
@@ -141,54 +162,8 @@ def parse_relational_query(text, semantic, tables):
             }
 
             semantic["relational"]["filters"].append(condition)
-
-    if "count" in text or "how many" in text:
-        semantic["relational"]["aggregation"] = {
-            "function": "COUNT",
-            "field": "*"
-        }
-
-    if "average" in text or "avg" in text:
-        for field in possible_fields:
-            if field in text:
-                semantic["relational"]["aggregation"] = {
-                    "function": "AVG",
-                    "field": field
-                }
-
-    if "highest" in text or "top" in text or "descending" in text:
-        for field in possible_fields:
-            if field in text:
-                semantic["relational"]["sort"] = {
-                    "field": field,
-                    "direction": "DESC"
-                }
-
-    if "lowest" in text or "ascending" in text:
-        for field in possible_fields:
-            if field in text:
-                semantic["relational"]["sort"] = {
-                    "field": field,
-                    "direction": "ASC"
-                }
-
-    top_match = re.search(r"top\s+(\d+)", text)
-    limit_match = re.search(r"limit\s+(\d+)", text)
-
-    if top_match:
-        semantic["relational"]["limit"] = int(top_match.group(1))
-    elif limit_match:
-        semantic["relational"]["limit"] = int(limit_match.group(1))
-
-    if " by " in text:
-        parts = text.split(" by ", 1)
-        group_candidate = parts[1].strip().split()[0]
-
-        if group_candidate in possible_fields:
-            semantic["relational"]["group_by"] = group_candidate    
     
     return semantic
-
 
 def parse_design_query(text, semantic):
     semantic["query_type"] = "inverse_design"
@@ -271,11 +246,14 @@ def parse_design_query(text, semantic):
     return semantic
 
 
-def parse_natural_language(prompt, schema):
+def parse_natural_language(prompt, schema_info):
     text = prompt.lower()
     semantic = create_semantic_object()
     
-    tables = parse_schema(schema)
+    tables = {
+        schema_info["table"]:
+        schema_info["columns"]
+    }
 
     print("TABLES:", tables)
 
@@ -286,7 +264,7 @@ def parse_natural_language(prompt, schema):
         return parse_design_query(text, semantic)
 
     if any(word in text for word in relational_keywords):
-        return parse_relational_query(text, semantic, tables)
+        return parse_relational_query(text, semantic, tables, schema_info)
 
     semantic["query_type"] = "unknown"
     semantic["intent"] = "unknown"
