@@ -12,7 +12,8 @@ def create_semantic_object():
             "filters": [],
             "sort": None,
             "limit": None,
-            "aggregation": None
+            "aggregation": None,
+            "group_by": None
         },
         "design": {
             "target": None,
@@ -29,6 +30,21 @@ def create_semantic_object():
         }
     }
 
+def parse_schema(schema_text):
+    tables = {}
+
+    pattern = r"(\w+)\s*\((.*?)\)"
+    matches = re.findall(pattern, schema_text)
+
+    for table_name, columns_text in matches:
+        columns = [
+            col.strip().lower()
+            for col in columns_text.split(",")
+        ]
+
+        tables[table_name.lower()] = columns
+    
+    return tables
 
 def detect_operator(text):
     if "greater than or equal" in text or "at least" in text:
@@ -54,15 +70,20 @@ def extract_number(text):
     return int(value) if value.is_integer() else value
 
 
-def parse_relational_query(text, semantic):
+def parse_relational_query(text, semantic, tables):
     semantic["query_type"] = "relational_query"
     semantic["domain"] = "database"
     semantic["intent"] = "retrieve"
 
-    if "student" in text or "students" in text:
-        semantic["relational"]["entity"] = "students"
+    for table_name in tables.keys():
+        if table_name in text or table_name.rstrip("s") in text:
+            semantic["relational"]["entity"] = table_name
+            break
 
-    possible_fields = ["id", "name", "age", "major", "gpa"]
+    possible_fields = []
+
+    for table_columns in tables.values():
+        possible_fields.extend(table_columns)
 
     filter_words = [" with ", " where ", " whose ", " that have ", " having "]
 
@@ -159,6 +180,13 @@ def parse_relational_query(text, semantic):
     elif limit_match:
         semantic["relational"]["limit"] = int(limit_match.group(1))
 
+    if " by " in text:
+        parts = text.split(" by ", 1)
+        group_candidate = parts[1].strip().split()[0]
+
+        if group_candidate in possible_fields:
+            semantic["relational"]["group_by"] = group_candidate    
+    
     return semantic
 
 
@@ -243,9 +271,13 @@ def parse_design_query(text, semantic):
     return semantic
 
 
-def parse_natural_language(prompt):
+def parse_natural_language(prompt, schema):
     text = prompt.lower()
     semantic = create_semantic_object()
+    
+    tables = parse_schema(schema)
+
+    print("TABLES:", tables)
 
     design_keywords = ["design", "dye", "molecule", "rdkit", "askcos", "dft", "matflow"]
     relational_keywords = ["show", "find", "list", "get", "student", "students", "gpa", "count", "average"]
@@ -254,7 +286,7 @@ def parse_natural_language(prompt):
         return parse_design_query(text, semantic)
 
     if any(word in text for word in relational_keywords):
-        return parse_relational_query(text, semantic)
+        return parse_relational_query(text, semantic, tables)
 
     semantic["query_type"] = "unknown"
     semantic["intent"] = "unknown"

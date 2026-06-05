@@ -6,6 +6,7 @@ from semantic_parser import parse_natural_language
 from query_executor import execute_query
 from validator import validate_query
 from llm_clarifier import clarify_query
+from schema_inferencer import infer_schema_from_prompt
 
 app = FastAPI()
 
@@ -70,7 +71,14 @@ def query_database(request: QueryRequest):
 
         clean_query = clarifier_result.get("clean_query", request.question)
 
-    semantic = parse_natural_language(clean_query)
+    schema_info = infer_schema_from_prompt(request.question)
+    inferred_schema = schema_info["schema"]
+
+    print("SCHEMA INFO:", schema_info)
+
+    print("INFERRED SCHEMA:", inferred_schema)
+
+    semantic = parse_natural_language(request.question, inferred_schema)
 
     print("\nSEMANTIC OBJECT:")
     print(semantic)
@@ -85,7 +93,7 @@ def query_database(request: QueryRequest):
 
     sql = generate_sql_from_semantic(
         semantic,
-        request.schema
+        inferred_schema
     )
 
     if not validate_query(sql):
@@ -95,11 +103,12 @@ def query_database(request: QueryRequest):
             "error": "Unsafe SQL query blocked"
         }
 
-    results = execute_query(sql)
+    # results = execute_query(sql)
 
     return {
         "question": request.question,
         "clean_query": clean_query,
+        "semantic": semantic,
         "sql": sql,
-        "results": results
+        "results": "Database execution skipped. SQL preview only." 
     }

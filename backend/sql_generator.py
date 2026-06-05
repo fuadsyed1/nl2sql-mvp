@@ -51,6 +51,8 @@ def generate_sql_from_semantic(semantic: dict, schema: str):
 
     aggregation = relational.get("aggregation")
 
+    group_by = relational.get("group_by")
+
     if aggregation:
         function = aggregation.get("function")
         field = aggregation.get("field", "*")
@@ -81,6 +83,17 @@ def generate_sql_from_semantic(semantic: dict, schema: str):
             where_parts.append(f"{field} {operator} {value}")
 
         query += " WHERE " + " AND ".join(where_parts)
+
+    group_by = relational.get("group_by")
+
+    if group_by:
+        if group_by not in schema_columns:
+            return f"ERROR: Column '{group_by}' not found in schema"
+
+        if aggregation:
+            query = f"SELECT {group_by}, {select_part} FROM {table_name}"
+
+        query += f" GROUP BY {group_by}"
 
     sort = relational.get("sort")
 
