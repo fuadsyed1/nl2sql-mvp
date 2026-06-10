@@ -121,8 +121,41 @@ def normalize_columns(columns: list[str]) -> list[str]:
 
 
 def find_mentioned_columns(text: str, columns: list[str]) -> list[str]:
-    """Return columns that appear as substrings in *text* (preserves order)."""
-    return [col for col in columns if col in text]
+    """
+    Return columns whose names appear as whole words in *text*.
+
+    Uses word-boundary matching so 'id' won't match inside 'idaho',
+    and 'name' won't match inside 'surname'.
+
+    For multi-part column names (e.g. 'city_name') also matches when
+    the user writes the parts separately ('city name') or mentions
+    all parts anywhere in the text ('show city and name').
+    """
+    matched = []
+    for col in columns:
+        parts = col.split("_")
+
+        # Try 1: exact whole-word match (handles both 'id' and 'city_name')
+        exact_pattern = r"\b" + re.escape(col) + r"\b"
+        if re.search(exact_pattern, text):
+            matched.append(col)
+            continue
+
+        # Try 2: parts written with a space ('city name')
+        if len(parts) > 1:
+            spaced_pattern = r"\b" + r"\s+".join(re.escape(p) for p in parts) + r"\b"
+            if re.search(spaced_pattern, text):
+                matched.append(col)
+                continue
+
+        # Try 3: all parts appear somewhere in the text as whole words
+        # (e.g. 'city_name' when user says 'show city and name')
+        if len(parts) > 1 and all(
+            re.search(r"\b" + re.escape(p) + r"\b", text) for p in parts
+        ):
+            matched.append(col)
+
+    return matched
 
 
 # ---------------------------------------------------------------------------

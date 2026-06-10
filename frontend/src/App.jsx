@@ -60,30 +60,34 @@ function App() {
 
       let outputText = "";
 
+
       if (data.type === "clarification") {
-        outputText = `Clarification Needed:\n${data.question}`;
+        outputText = `❓ Clarification Needed\n\n${data.question}`;
+      } else if (data.type === "schema_mismatch") {
+        outputText = `⚠️ Schema Mismatch\n\n${data.question}`;
       } else if (data.type === "missing_dataset") {
-        outputText = `Dataset Needed:\n${data.question}`;
+        outputText = `📂 No Dataset Found\n\n${data.question}`;
       } else if (data.type === "generated_schema") {
-        outputText =
-          `Generated Schema:\n${data.schema}\n\n` +
-          `${data.message}`;
+        outputText = `✅ Schema Generated\n\n${data.schema}\n\n${data.message}`;
       } else if (data.type === "schema_saved") {
-        outputText =
-          `Schema Saved:\n${data.schema}\n\n` +
-          `${data.message}`;
+        outputText = `✅ Schema Saved\n\n${data.schema}\n\n${data.message}`;
       } else if (data.type === "dataset_required") {
-        outputText = `Dataset Required:\n${data.message}`;
+        outputText = `📂 Dataset Required\n\n${data.message}`;
+      } else if (data.type === "schema_error") {
+        outputText = `❌ Schema Error\n\n${data.message}`;
+      } else if (data.type === "blocked") {
+        outputText = `🚫 Blocked\n\n${data.error}\n\nSQL attempted:\n${data.sql}`;
+      } else if (data.type === "design_query") {
+        outputText = `🔬 Design Query\n\n${data.message}`;
+      } else if (data.type === "success") {
+        outputText =
+          `SQL\n${"─".repeat(40)}\n${data.sql}\n\n` +
+          `Clean Query\n${"─".repeat(40)}\n${data.clean_query}\n\n` +
+          `Results\n${"─".repeat(40)}\n${JSON.stringify(data.results || [], null, 2)}`;
       } else if (data.error) {
-        outputText =
-          `Error:\n${data.error}\n\n` +
-          `SQL:\n${data.sql || "No SQL generated"}`;
+        outputText = `❌ Error\n\n${data.error}\n\nSQL:\n${data.sql || "No SQL generated"}`;
       } else {
-        outputText =
-          `Original Question:\n${data.question || userInput}\n\n` +
-          `Clean Query:\n${data.clean_query || "Not returned"}\n\n` +
-          `SQL:\n${data.sql || "Not returned"}\n\n` +
-          `Results:\n${JSON.stringify(data.results || [], null, 2)}`;
+        outputText = JSON.stringify(data, null, 2);
       }
 
       const systemMessage = {

@@ -2,161 +2,195 @@ import json
 import re
 import requests
 
-
-OLLAMA_URL = "http://localhost:11434/api/generate"
-MODEL_NAME = "qwen3:1.7b"
+from config import OLLAMA_URL, MODEL_NAME, DEFAULT_OPTIONS
 
 
-def extract_json(text: str, original_query: str) -> dict:
-    match = re.search(r"\{.*\}", text, re.DOTALL)
+# ---------------------------------------------------------------------------
+# Schema mismatch detection (pure Python, no LLM)
+# ---------------------------------------------------------------------------
+
+# Common English stop-words to ignore when comparing query tokens to schema
+_STOP_WORDS = frozenset({
+    "a", "an", "the", "in", "on", "at", "of", "to", "for", "and", "or",
+    "is", "are", "was", "were", "be", "been", "with", "from", "that",
+    "this", "all", "show", "get", "list", "find", "give", "me", "i",
+    "what", "which", "where", "how", "who", "do", "does", "can", "by",
+    "have", "has", "their", "my", "your", "its", "it", "not", "no",
+    # generic schema-agnostic query words — should never trigger a mismatch alone
+    "count", "rows", "records", "entries", "data", "total", "number",
+    "many", "much", "any", "some", "every", "each", "first", "last",
+    "top", "bottom", "highest", "lowest", "most", "least", "average",
+    "avg", "sum", "min", "max", "select", "distinct", "unique",
+})
+
+def _query_tokens(text: str) -> set[str]:
+    """Return meaningful lowercase words from the query."""
+    return {
+        w for w in re.findall(r"[a-z]+", text.lower())
+        if w not in _STOP_WORDS and len(w) > 2
+    }
+
+def _schema_tokens(schema_text: str) -> set[str]:
+    """Return all lowercase identifier tokens from the schema string."""
+    return set(re.findall(r"[a-z][a-z0-9_]*", schema_text.lower()))
+
+def _is_schema_mismatch(query: str, schema_text: str) -> bool:
+    """
+    Return True when the query appears completely unrelated to the schema.
+
+    Strategy: split both into meaningful tokens and check overlap.
+    If the query has zero tokens in common with the schema, it almost
+    certainly belongs to a different domain.
+    """
+    q_tokens = _query_tokens(query)
+    s_tokens = _schema_tokens(schema_text)
+
+    # Need at least 2 meaningful tokens to make a confident domain judgement;
+    # a 0- or 1-token query (e.g. "show everything") is too generic to flag.
+    if len(q_tokens) < 2 or not s_tokens:
+        return False
+
+    overlap = q_tokens & s_tokens
+    return len(overlap) == 0
+
+
+# ---------------------------------------------------------------------------
+# JSON extraction
+# ---------------------------------------------------------------------------
+
+def _extract_json(text: str, fallback_query: str) -> dict:
+    """
+    Pull the first JSON object from *text*.
+    Returns a safe 'ready' dict on any parse failure so the pipeline
+    always gets a usable result.
+    """
+    match = re.search(r"\{.*?\}", text, re.DOTALL)
+    if not match:
+        # Try again with a greedier match in case the model wrapped things oddly
+        match = re.search(r"\{.*\}", text, re.DOTALL)
 
     if not match:
-        return {
-            "status": "ready",
-            "clean_query": original_query,
-            "question": None,
-            "error": "No complete JSON found in clarifier response."
-        }
+        print("CLARIFIER: no JSON block found, passing query through.", flush=True)
+        return {"status": "ready", "clean_query": fallback_query}
 
     try:
         parsed = json.loads(match.group(0))
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as exc:
+        print(f"CLARIFIER: JSON parse error ({exc}), passing query through.", flush=True)
+        return {"status": "ready", "clean_query": fallback_query}
+
+    status = parsed.get("status")
+
+    if status == "ready":
         return {
-            "status": "ready",
-            "clean_query": original_query,
-            "question": None,
-            "error": "Invalid JSON from clarifier."
+            "status":      "ready",
+            "clean_query": parsed.get("clean_query") or fallback_query,
         }
 
-    if parsed.get("status") == "ready":
+    if status == "need_clarification":
+        question = parsed.get("question", "").strip()
         return {
-            "status": "ready",
-            "clean_query": parsed.get("clean_query") or original_query,
+            "status":   "need_clarification",
+            "question": question or "Could you clarify what you mean?",
         }
 
-    if parsed.get("status") == "need_clarification":
-        return {
-            "status": "need_clarification",
-            "question": parsed.get("question") or "What information should I use to answer this query?"
-        }
+    print(f"CLARIFIER: unknown status {status!r}, passing query through.", flush=True)
+    return {"status": "ready", "clean_query": fallback_query}
 
-    return {
-        "status": "ready",
-        "clean_query": original_query,
-        "question": None,
-        "error": "Unknown clarifier status."
-    }
 
+# ---------------------------------------------------------------------------
+# Public API
+# ---------------------------------------------------------------------------
 
 def clarify_query(
     user_query: str,
     schema_text: str | None = None,
-    output_template: str | None = None
 ) -> dict:
-    schema_context = schema_text if schema_text else "No schema was provided."
+    """
+    Check whether the user's query is clear and compatible with the active schema.
 
-    template_context = output_template if output_template else """
-{
-  "status": "ready" or "need_clarification",
-  "clean_query": "clear version of the user's query",
-  "question": "only if clarification is needed"
-}
-"""
+    Returns one of:
+      {"status": "ready",            "clean_query": "..."}
+      {"status": "need_clarification","question":   "..."}
+      {"status": "schema_mismatch",  "question":   "..."}   ← new
 
-    prompt = f"""
+    Never raises.
+    """
+    # ------------------------------------------------------------------
+    # Fast-path: detect schema mismatch without calling the LLM
+    # ------------------------------------------------------------------
+    if schema_text and _is_schema_mismatch(user_query, schema_text):
+        print(
+            f"CLARIFIER: schema mismatch detected.\n"
+            f"  Query  tokens: {_query_tokens(user_query)}\n"
+            f"  Schema tokens: {_schema_tokens(schema_text)}",
+            flush=True,
+        )
+        return {
+            "status": "schema_mismatch",
+            "question": (
+                f"Your active schema is '{schema_text.strip()}', which doesn't seem "
+                f"related to your question. Would you like me to generate a new schema "
+                f"for this query instead?"
+            ),
+        }
+
+    schema_context = schema_text.strip() if schema_text else "No schema provided."
+
+    prompt = f"""\
 /no_think
 
-You are a clarification decision system.
+You are a query clarification assistant for a Natural Language to SQL system.
 
-Your job is NOT to write SQL.
-Your job is NOT to invent database results.
-Your job is NOT to use hardcoded domain rules.
+Given a user query and an optional database schema, decide if the query is \
+clear enough to generate SQL, then return ONE JSON object.
 
-You will receive:
-1. A user query
-2. An available dataset schema, if provided
-3. An expected output template
-
-Your task:
-Decide whether the user query has enough information to fill the expected output template.
+RETURN FORMAT
 
 If the query is clear enough:
-Return JSON with:
-{{
-  "status": "ready",
-  "clean_query": "minimal cleaned version of the user query"
-}}
+{{"status": "ready", "clean_query": "<minimal unambiguous rewrite of the query>"}}
 
-If the query is not clear enough:
-Return JSON with:
-{{
-  "status": "need_clarification",
-  "question": "short follow-up question asking only for the missing information"
-}}
+If a critical piece of information is genuinely missing:
+{{"status": "need_clarification", "question": "<one short specific question>"}}
 
-Decision principles:
-- Use the provided schema if available.
-- Do not ask for clarification if there is one clearly dominant interpretation.
-- Ask for clarification when a term could reasonably mean multiple things.
-- When clarification is needed, ask one short question that identifies the ambiguity.
-- If no schema is provided, judge clarity from the natural language only.
-- Do not ask for clarification only because a schema is missing.
-- If the query clearly states a direction like lowest, highest, cheapest, most expensive, newest, oldest, treat it as clear.
-- If status is "need_clarification", the JSON must include a specific "question" field.
-- Ask clarification only when required information is missing.
-- Ask the smallest possible follow-up question.
-- Do not force the user to rewrite the whole query unless necessary.
-- Do not add examples unless they are necessary.
-- Do not rename tables, fields, entities, or attributes.
-- Keep the user's original meaning.
-- Return ONLY valid JSON.
+RULES
+- Default to "ready". Only ask when you cannot make a reasonable assumption.
+- NEVER ask about sort direction when the query says highest/lowest/most/least/newest/oldest.
+- NEVER ask which table to use when the schema has exactly one table.
+- NEVER ask about columns that exist in the schema and match the query naturally.
+- Keep clean_query short — just the core intent, no rephrasing needed.
+- Return ONLY the JSON object. No markdown, no extra text.
 
-Dataset schema:
+SCHEMA
 {schema_context}
 
-Expected output template:
-{template_context}
-
-User query:
+USER QUERY
 {user_query}
 """
-
-    payload = {
-        "model": MODEL_NAME,
-        "prompt": prompt,
-        "stream": False,
-        "options": {
-            "temperature": 0,
-            "num_predict": 200
-        }
-    }
 
     try:
         response = requests.post(
             OLLAMA_URL,
-            json=payload,
-            timeout=60
+            json={
+                "model":   MODEL_NAME,
+                "prompt":  prompt,
+                "stream":  False,
+                "options": {**DEFAULT_OPTIONS, "num_predict": 150},
+            },
+            timeout=60,
         )
         response.raise_for_status()
 
-        data = response.json()
-        text = data.get("response", "").strip()
+        raw_text = response.json().get("response", "").strip()
+        print("RAW CLARIFIER TEXT:", raw_text, flush=True)
 
-        print("RAW CLARIFIER TEXT:", text, flush=True)
-        return extract_json(text, user_query)
+        if not raw_text:
+            # Model returned nothing — safe pass-through
+            print("CLARIFIER: empty response from model, passing query through.", flush=True)
+            return {"status": "ready", "clean_query": user_query}
 
-    except requests.exceptions.RequestException:
-        return {
-            "status": "ready",
-            "clean_query": user_query,
-            "question": None,
-            "error": "Clarifier unavailable, using original query."
-        }
+        return _extract_json(raw_text, user_query)
 
-    except json.JSONDecodeError:
-        return {
-            "status": "ready",
-            "clean_query": user_query,
-            "question": None,
-            "error": "Clarifier returned invalid JSON, using original query."
-        }
+    except requests.exceptions.RequestException as exc:
+        print(f"CLARIFIER UNAVAILABLE: {exc} — passing query through.", flush=True)
+        return {"status": "ready", "clean_query": user_query}

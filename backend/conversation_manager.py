@@ -1,161 +1,149 @@
-import requests
 import json
+import re
+import requests
 
-OLLAMA_URL = "http://localhost:11434/api/generate"
-MODEL_NAME = "qwen3:1.7b"
+from config import OLLAMA_URL, MODEL_NAME, DEFAULT_OPTIONS
 
 
-def understand_followup(user_reply: str, pending_action: str, last_question: str) -> dict:
-    
-    
-    reply = user_reply.strip()
-    reply_lower = reply.lower()
-    yes_words = [
-        "yes",
-        "yeah",
-        "yep",
-        "sure",
-        "ok",
-        "okay",
-        "go ahead",
-        "create it",
-        "generate it",
-        "yes please"
-    ]
+# ---------------------------------------------------------------------------
+# Fast keyword classifiers (no LLM needed for obvious replies)
+# ---------------------------------------------------------------------------
 
-    for word in yes_words:
-        if word in reply_lower:
-            return {
-                "intent": "confirm_generate_schema"
-            }
+_YES_PHRASES = frozenset({
+    "yes", "yeah", "yep", "yup", "sure", "ok", "okay",
+    "go ahead", "create it", "generate it", "yes please",
+    "do it", "sounds good", "alright", "fine",
+})
 
-    no_words = [
-        "no",
-        "don't",
-        "do not",
-        "i will upload",
-        "my own dataset"
-    ]
+_NO_PHRASES = frozenset({
+    "no", "nope", "nah", "don't", "do not", "dont",
+    "i will upload", "my own dataset", "i'll upload",
+    "i have my own", "never mind", "cancel",
+})
 
+# A schema-like string: word( ... , ... )
+_SCHEMA_RE = re.compile(r"^\s*\w+\s*\([^)]+,[^)]+\)\s*$")
+
+
+def _keyword_classify(reply: str, pending_action: str) -> dict | None:
+    """
+    Try to classify the reply using simple rules before calling the LLM.
+    Returns a result dict, or None if the reply is too ambiguous for keywords.
+    """
+    lowered = reply.strip().lower()
+
+    # Clarification answers are always passed straight through
     if pending_action == "clarification_needed":
-        return {
-            "intent": "answer_clarification",
-            "clarification": user_reply
-        }
+        return {"intent": "answer_clarification", "clarification": reply}
 
-    for word in no_words:
-        if word in reply_lower:
-            return {
-                "intent": "deny_generate_schema"
-            }
+    # Schema in standard format: table(col1, col2, ...)
+    if _SCHEMA_RE.match(reply):
+        return {"intent": "provide_schema", "schema_text": reply.strip()}
 
-    # existing schema detection continues below
+    # Explicit yes / no words
+    words = set(re.split(r"\W+", lowered))
+    if words & _YES_PHRASES:
+        return {"intent": "confirm_generate_schema"}
+    if words & _NO_PHRASES:
+        return {"intent": "deny_generate_schema"}
 
-    if (
-        "(" in reply
-        and ")" in reply
-        and "," in reply
-    ):
-        return {
-            "intent": "provide_schema",
-            "schema_text": reply
-        }
-    if (
-        "(" in reply
-        and ")" in reply
-        and "," in reply
-    ):
-        return {
-            "intent": "provide_schema",
-            "schema_text": reply
-        }
+    return None  # ambiguous — let the LLM decide
 
-    if (
-        "=" in reply
-        and "{" in reply
-        and "}" in reply
-    ):
-        table_name = reply.split("=", 1)[0].strip()
-        columns = (
-            reply.split("{", 1)[1]
-            .split("}", 1)[0]
-            .strip()
-        )
 
-        return {
-            "intent": "provide_schema",
-            "schema_text": f"{table_name}({columns})"
-        }
-    prompt = f"""
-You are a conversation manager for a Natural Language to SQL system.
+# ---------------------------------------------------------------------------
+# LLM fallback
+# ---------------------------------------------------------------------------
 
-Your job is NOT to generate SQL.
+def _llm_classify(user_reply: str, pending_action: str, last_question: str) -> dict:
+    """Call the LLM when keyword classification could not produce a confident result."""
+    prompt = f"""\
+/no_think
 
-The system has a pending conversation state.
+You are a conversation state classifier for a Natural Language to SQL system.
 
-Pending action:
-{pending_action}
+The system is waiting for a follow-up reply from the user.
 
-Original user query:
-{last_question}
+Pending action: {pending_action}
+Original user query: {last_question}
+User's reply: {user_reply}
 
-User's latest reply:
-{user_reply}
+Classify the reply and return ONLY a single valid JSON object.
 
-Return ONLY valid JSON.
+Possible outputs:
 
-Possible JSON outputs:
+1. User agrees to generate a schema automatically:
+{{"intent": "confirm_generate_schema"}}
 
-1. If user agrees to generate a schema:
-{{
-  "intent": "confirm_generate_schema"
-}}
+2. User refuses and wants to provide their own data:
+{{"intent": "deny_generate_schema"}}
 
-2. If user refuses schema generation:
-{{
-  "intent": "deny_generate_schema"
-}}
+3. User provides a schema string directly:
+{{"intent": "provide_schema", "schema_text": "table_name(col1, col2, col3)"}}
 
-3. If user provides schema manually:
-{{
-  "intent": "provide_schema",
-  "schema_text": "customers(id, name, income)"
-}}
+4. User is answering a clarification question:
+{{"intent": "answer_clarification", "clarification": "<their answer>"}}
 
-4. If user is asking a completely new query:
-{{
-  "intent": "new_query"
-}}
+5. User is asking a completely new, unrelated question:
+{{"intent": "new_query"}}
 
 Rules:
-- Return only JSON.
-- Do not explain.
-- Do not generate SQL.
-- Do not use markdown.
-- If the user says yes, yeah, sure, go ahead, create it, generate it, or similar, return confirm_generate_schema.
-- If the user says no, don't, I will upload, or I will provide my own dataset, return deny_generate_schema.
-- If the user gives a table structure, return provide_schema.
-- If the message is unrelated to the pending question, return new_query.
+- Return only JSON. No explanation, no markdown.
+- "yes", "sure", "go ahead", "create it" → confirm_generate_schema
+- "no", "cancel", "I'll upload", "my own dataset" → deny_generate_schema
+- A string like "orders(id, user_id, total)" → provide_schema
+- An answer that directly addresses the pending clarification → answer_clarification
+- Anything unrelated to the pending action → new_query
 """
 
-    response = requests.post(
-        OLLAMA_URL,
-        json={
-            "model": MODEL_NAME,
-            "prompt": prompt,
-            "stream": False
-        },
-        timeout=60
-    )
-
-    response.raise_for_status()
-
-    text = response.json().get("response", "").strip()
-
     try:
-        return json.loads(text)
-    except json.JSONDecodeError:
-        return {
-            "intent": "unknown",
-            "raw_response": text
-        }
+        response = requests.post(
+            OLLAMA_URL,
+            json={
+                "model":   MODEL_NAME,
+                "prompt":  prompt,
+                "stream":  False,
+                "options": DEFAULT_OPTIONS,
+            },
+            timeout=60,
+        )
+        response.raise_for_status()
+        raw = response.json().get("response", "").strip()
+        print("RAW CONVERSATION MANAGER TEXT:", raw, flush=True)
+
+        # try to find JSON anywhere in the response
+        match = re.search(r"\{.*\}", raw, re.DOTALL)
+        if match:
+            return json.loads(match.group(0))
+
+    except (requests.exceptions.RequestException, json.JSONDecodeError) as exc:
+        print(f"CONVERSATION MANAGER LLM ERROR: {exc}", flush=True)
+
+    # safe fallback: treat as a new query so the user isn't stuck
+    return {"intent": "new_query"}
+
+
+# ---------------------------------------------------------------------------
+# Public API
+# ---------------------------------------------------------------------------
+
+def understand_followup(user_reply: str, pending_action: str, last_question: str) -> dict:
+    """
+    Classify a follow-up reply in the context of a pending conversation state.
+
+    Returns one of:
+      {"intent": "confirm_generate_schema"}
+      {"intent": "deny_generate_schema"}
+      {"intent": "provide_schema",       "schema_text": "..."}
+      {"intent": "answer_clarification", "clarification": "..."}
+      {"intent": "new_query"}
+    """
+    # Fast path: keyword / pattern matching
+    result = _keyword_classify(user_reply, pending_action)
+    if result is not None:
+        print(f"CONVERSATION MANAGER (keyword): {result}", flush=True)
+        return result
+
+    # Slow path: LLM classification
+    result = _llm_classify(user_reply, pending_action, last_question)
+    print(f"CONVERSATION MANAGER (LLM): {result}", flush=True)
+    return result

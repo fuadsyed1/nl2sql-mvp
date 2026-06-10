@@ -1,4 +1,5 @@
-from fastapi import FastAPI
+import re
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -21,6 +22,10 @@ from dataset_service import (
 from conversation_manager import understand_followup
 
 
+# ---------------------------------------------------------------------------
+# App setup
+# ---------------------------------------------------------------------------
+
 app = FastAPI()
 init_auth_db()
 
@@ -32,6 +37,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+# ---------------------------------------------------------------------------
+# Request models
+# ---------------------------------------------------------------------------
 
 class QueryRequest(BaseModel):
     user_id: int | None = None
@@ -50,31 +59,55 @@ class SchemaDatasetRequest(BaseModel):
     schema_text: str
 
 
-def schema_text_to_schema_info(schema_text: str):
-    table = schema_text.split("(", 1)[0].strip()
+# ---------------------------------------------------------------------------
+# Schema parsing helper
+# ---------------------------------------------------------------------------
 
-    columns_text = (
-        schema_text
-        .split("(", 1)[1]
-        .split(")", 1)[0]
-    )
+# Matches:  table_name (col1 TYPE, col2, ...)
+# Handles optional whitespace and SQL type annotations after column names.
+_SCHEMA_RE = re.compile(r"^(\w[\w\s]*?)\s*\((.+)\)\s*$", re.DOTALL)
 
-    columns = [
-        col.strip().lower()
-        for col in columns_text.split(",")
-        if col.strip()
-    ]
+
+def schema_text_to_schema_info(schema_text: str) -> dict | None:
+    """
+    Parse a schema string of the form  table(col1, col2, ...)  into a
+    schema_info dict.  Column type annotations (e.g. 'id INTEGER') are
+    stripped so only the bare column name is kept.
+
+    Returns None if the schema string cannot be parsed.
+    """
+    m = _SCHEMA_RE.match(schema_text.strip())
+    if not m:
+        print(f"SCHEMA PARSE FAILED: {schema_text!r}", flush=True)
+        return None
+
+    table   = m.group(1).strip().lower()
+    col_raw = m.group(2)
+
+    columns = []
+    for part in col_raw.split(","):
+        # take the first token only — drops SQL type keywords like INTEGER, TEXT
+        name = part.strip().split()[0].lower()
+        if name:
+            columns.append(name)
+
+    if not columns:
+        return None
 
     return {
-        "table": table,
-        "columns": columns,
-        "schema": schema_text,
+        "table":       table,
+        "columns":     columns,
+        "schema":      schema_text.strip(),
         "aggregation": None,
-        "group_by": None,
-        "sort": None,
-        "limit": None,
+        "group_by":    None,
+        "sort":        None,
+        "limit":       None,
     }
 
+
+# ---------------------------------------------------------------------------
+# Routes
+# ---------------------------------------------------------------------------
 
 @app.get("/")
 def home():
@@ -93,52 +126,42 @@ def login(request: AuthRequest):
 
 @app.post("/dataset/schema")
 def add_schema_dataset(request: SchemaDatasetRequest):
-    return save_schema_dataset(
-        request.user_id,
-        request.name,
-        request.schema_text,
-    )
+    return save_schema_dataset(request.user_id, request.name, request.schema_text)
 
 
 @app.get("/dataset/latest/{user_id}")
 def latest_dataset(user_id: int):
     dataset = get_latest_dataset(user_id)
-
     if not dataset:
-        return {
-            "success": False,
-            "message": "No dataset found",
-        }
-
-    return {
-        "success": True,
-        "dataset": dataset,
-    }
+        return {"success": False, "message": "No dataset found"}
+    return {"success": True, "dataset": dataset}
 
 
 @app.get("/queries/{user_id}")
 def user_queries(user_id: int):
-    return {
-        "success": True,
-        "queries": get_user_queries(user_id),
-    }
+    return {"success": True, "queries": get_user_queries(user_id)}
 
+
+# ---------------------------------------------------------------------------
+# Core query endpoint
+# ---------------------------------------------------------------------------
 
 @app.post("/query")
 def query_database(request: QueryRequest):
-    print("USER ID:", request.user_id, flush=True)
-    print("QUESTION:", request.question, flush=True)
+    print(f"USER ID: {request.user_id}  QUESTION: {request.question!r}", flush=True)
 
-    clean_query = request.question
-    skip_clarifier = False
+    working_question = request.question   # may be rewritten during clarification
+    skip_clarifier   = False
+    dataset          = None
+    inferred_schema  = None
+    schema_info      = None
 
-    dataset = None
-    inferred_schema = None
-    schema_info = None
-
+    # ------------------------------------------------------------------
+    # 1. Handle any pending conversation state
+    # ------------------------------------------------------------------
     if request.user_id:
         state = get_chat_state(request.user_id)
-        print("CHAT STATE:", state, flush=True)
+        print(f"CHAT STATE: {state}", flush=True)
 
         if state:
             followup = understand_followup(
@@ -146,172 +169,176 @@ def query_database(request: QueryRequest):
                 state["pending_action"],
                 state["last_question"],
             )
+            print(f"FOLLOWUP: {followup}", flush=True)
+            intent = followup.get("intent")
 
-            print("FOLLOWUP:", followup, flush=True)
-
-            if followup["intent"] == "confirm_generate_schema":
-                schema_info = infer_schema_with_ai(state["last_question"])
+            # --- User confirmed: generate schema from their original question ---
+            if intent == "confirm_generate_schema":
+                schema_info      = infer_schema_with_ai(state["last_question"])
                 generated_schema = schema_info["schema"]
-
-                dataset_result = save_schema_dataset(
-                    request.user_id,
-                    "AI Generated Schema",
-                    generated_schema,
+                dataset_result   = save_schema_dataset(
+                    request.user_id, "AI Generated Schema", generated_schema
                 )
-
                 clear_chat_state(request.user_id)
-
                 return {
-                    "type": "generated_schema",
-                    "message": "I generated a schema based on your previous query.",
-                    "schema": generated_schema,
-                    "dataset": dataset_result,
-                    "note": "No data rows are available because this is schema-only.",
-                }
-
-            if followup["intent"] == "provide_schema":
-                dataset_result = save_schema_dataset(
-                    request.user_id,
-                    "User Provided Schema",
-                    followup["schema_text"],
-                )
-
-                clear_chat_state(request.user_id)
-
-                return {
-                    "type": "schema_saved",
-                    "message": "I saved your schema. Please ask your query again.",
-                    "schema": followup["schema_text"],
+                    "type":    "generated_schema",
+                    "message": "Schema generated from your question. You can now ask your query.",
+                    "schema":  generated_schema,
                     "dataset": dataset_result,
                 }
 
-            if followup["intent"] == "deny_generate_schema":
+            # --- User provided a schema string manually ---
+            if intent == "provide_schema":
+                provided = followup.get("schema_text", "").strip()
+                if not provided:
+                    return {
+                        "type":    "clarification",
+                        "question": "I couldn't read the schema you provided. Please use the format: table(col1, col2, ...)",
+                    }
+                dataset_result = save_schema_dataset(
+                    request.user_id, "User Provided Schema", provided
+                )
                 clear_chat_state(request.user_id)
-
                 return {
-                    "type": "dataset_required",
-                    "message": "Please upload a dataset or provide a schema before asking the query.",
+                    "type":    "schema_saved",
+                    "message": "Schema saved. Please ask your query again.",
+                    "schema":  provided,
+                    "dataset": dataset_result,
                 }
 
-            if followup["intent"] == "answer_clarification":
+            # --- User declined schema generation ---
+            if intent == "deny_generate_schema":
+                clear_chat_state(request.user_id)
+                return {
+                    "type":    "dataset_required",
+                    "message": "No problem. Please upload a dataset or paste a schema string, then ask your query.",
+                }
 
-                if (
-                    request.question.strip().lower()
-                    == state["last_question"].strip().lower()
-                ):
+            # --- User answered a clarification question ---
+            if intent == "answer_clarification":
+                clarification = followup.get("clarification", "").strip()
+                # If they just repeated the same question, clear state and continue
+                if not clarification or clarification.lower() == state["last_question"].strip().lower():
                     clear_chat_state(request.user_id)
-
                 else:
-                    combined_question = (
-                        state["last_question"]
-                        + " "
-                        + followup["clarification"]
-                    )
-
+                    # Merge the clarification into the original question
+                    working_question = f"{state['last_question']} {clarification}"
                     clear_chat_state(request.user_id)
-
-                    request.question = combined_question
-                    clean_query = combined_question
                     skip_clarifier = True
 
+            # --- Unrelated / new query: fall through to normal processing ---
+            # (intent == "new_query" or anything unexpected)
+
+    # ------------------------------------------------------------------
+    # 2. Resolve schema
+    # ------------------------------------------------------------------
     if request.user_id:
         dataset = get_latest_dataset(request.user_id)
-        print("DATASET:", dataset, flush=True)
+        print(f"DATASET: {dataset}", flush=True)
 
     if dataset:
         inferred_schema = dataset["schema_text"]
-        schema_info = schema_text_to_schema_info(inferred_schema)
+        schema_info     = schema_text_to_schema_info(inferred_schema)
+        if schema_info is None:
+            # dataset schema is malformed — try AI inference as recovery
+            print("SCHEMA PARSE FAILED for saved dataset, falling back to AI inference.", flush=True)
+            schema_info     = infer_schema_with_ai(working_question)
+            inferred_schema = schema_info["schema"]
 
     elif request.schema_text:
         inferred_schema = request.schema_text
-        schema_info = schema_text_to_schema_info(inferred_schema)
-
-    if not skip_clarifier:
-        clarifier_result = clarify_query(
-            request.question,
-            inferred_schema,
-        )
-
-        print("CLARIFIER:", clarifier_result, flush=True)
-
-        if clarifier_result.get("status") == "ready":
-            clean_query = clarifier_result.get("clean_query", request.question)
-        else:
-            if request.user_id:
-                save_chat_state(
-                    request.user_id,
-                    "clarification_needed",
-                    request.question,
-                )
-
+        schema_info     = schema_text_to_schema_info(inferred_schema)
+        if schema_info is None:
             return {
-                "type": "clarification",
-                "question": clarifier_result.get("question")
-                or "What information should I use to answer this query?",
-                "debug": clarifier_result,
+                "type":    "schema_error",
+                "message": "Could not parse the schema you provided. Use the format: table(col1, col2, ...)",
             }
 
+    # ------------------------------------------------------------------
+    # 3. Run clarifier (unless we already merged a clarification)
+    # ------------------------------------------------------------------
+    if not skip_clarifier:
+        clarifier_result = clarify_query(working_question, inferred_schema)
+        print(f"CLARIFIER: {clarifier_result}", flush=True)
+
+        clarifier_status = clarifier_result.get("status")
+
+        if clarifier_status == "ready":
+            working_question = clarifier_result.get("clean_query") or working_question
+
+        elif clarifier_status == "schema_mismatch":
+            # The saved schema belongs to a different domain than this query.
+            # Offer to generate a fresh schema rather than running against the wrong table.
+            if request.user_id:
+                save_chat_state(request.user_id, "confirm_generate_schema", working_question)
+            return {
+                "type":          "schema_mismatch",
+                "question":      clarifier_result.get("question"),
+                "last_question": working_question,
+            }
+
+        else:
+            # need_clarification
+            if request.user_id:
+                save_chat_state(request.user_id, "clarification_needed", working_question)
+            return {
+                "type":     "clarification",
+                "question": clarifier_result.get("question") or "Could you clarify your query?",
+            }
+
+    # ------------------------------------------------------------------
+    # 4. If still no schema, ask user or auto-infer
+    # ------------------------------------------------------------------
     if not inferred_schema:
         if request.user_id:
-            save_chat_state(
-                request.user_id,
-                "confirm_generate_schema",
-                request.question,
-            )
-
+            save_chat_state(request.user_id, "confirm_generate_schema", working_question)
             return {
-                "type": "missing_dataset",
-                "question": "You did not submit any dataset. Do you want me to generate a schema for this query?",
-                "last_question": request.question,
+                "type":          "missing_dataset",
+                "question":      "You haven't provided a dataset or schema. Would you like me to generate one for your query?",
+                "last_question": working_question,
             }
 
-        schema_info = infer_schema_with_ai(request.question)
-        print("SCHEMA INFO:", schema_info, flush=True)
-
+        # No user_id — auto-infer without asking
+        schema_info     = infer_schema_with_ai(working_question)
         inferred_schema = schema_info["schema"]
+        print(f"AUTO SCHEMA INFO: {schema_info}", flush=True)
 
     if not schema_info:
         schema_info = schema_text_to_schema_info(inferred_schema)
 
-    semantic = parse_natural_language(clean_query, schema_info)
-    print("SEMANTIC:", semantic, flush=True)
+    # ------------------------------------------------------------------
+    # 5. Parse → generate → validate → return
+    # ------------------------------------------------------------------
+    semantic = parse_natural_language(working_question, schema_info)
+    print(f"SEMANTIC: {semantic}", flush=True)
 
     if semantic.get("query_type") == "inverse_design":
         return {
-            "question": request.question,
-            "clean_query": clean_query,
-            "semantic": semantic,
-            "message": "Design/Hylos query parsed successfully. Hylos generation will be added next.",
+            "type":        "design_query",
+            "question":    request.question,
+            "clean_query": working_question,
+            "semantic":    semantic,
+            "message":     "Design query parsed. Hylos generation coming soon.",
         }
 
-    sql = generate_sql_from_semantic(
-        semantic,
-        inferred_schema,
-    )
+    sql = generate_sql_from_semantic(semantic, inferred_schema)
 
     if not validate_query(sql):
         return {
-            "question": request.question,
-            "clean_query": clean_query,
-            "sql": sql,
-            "error": "Unsafe SQL query blocked.",
+            "type":  "blocked",
+            "sql":   sql,
+            "error": "The generated SQL was blocked by the safety validator.",
         }
 
-    dataset_id = dataset["dataset_id"] if dataset else None
-
     if request.user_id:
-        save_query(
-            request.user_id,
-            dataset_id,
-            request.question,
-            clean_query,
-            sql,
-        )
+        dataset_id = dataset["dataset_id"] if dataset else None
+        save_query(request.user_id, dataset_id, request.question, working_question, sql)
 
     return {
-        "question": request.question,
-        "clean_query": clean_query,
-        "semantic": semantic,
-        "sql": sql,
-        "results": "Database execution skipped. SQL preview only.",
+        "type":        "success",
+        "question":    request.question,
+        "clean_query": working_question,
+        "semantic":    semantic,
+        "sql":         sql,
+        "results":     "Database execution not yet enabled. SQL preview only.",
     }
