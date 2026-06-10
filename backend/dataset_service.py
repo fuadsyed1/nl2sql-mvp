@@ -101,3 +101,59 @@ def get_user_queries(user_id):
         }
         for row in rows
     ]
+
+def save_chat_state(user_id, pending_action, last_question):
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        INSERT OR REPLACE INTO chat_state(user_id, pending_action, last_question)
+        VALUES (?, ?, ?)
+        """,
+        (user_id, pending_action, last_question)
+    )
+
+    conn.commit()
+    conn.close()
+
+
+def get_chat_state(user_id):
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        SELECT pending_action, last_question
+        FROM chat_state
+        WHERE user_id = ?
+        """,
+        (user_id,)
+    )
+
+    row = cursor.fetchone()
+    conn.close()
+
+    if not row:
+        return None
+
+    return {
+        "pending_action": row[0],
+        "last_question": row[1]
+    }
+
+
+def clear_chat_state(user_id):
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        DELETE FROM chat_state
+        WHERE user_id = ?
+        """,
+        (user_id,)
+    )
+
+    conn.commit()
+    conn.close()

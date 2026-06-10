@@ -46,8 +46,8 @@ function App() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          user_id: 1,
           question: userInput,
-          schema: "students(id, name, gpa)",
         }),
       });
 
@@ -62,6 +62,18 @@ function App() {
 
       if (data.type === "clarification") {
         outputText = `Clarification Needed:\n${data.question}`;
+      } else if (data.type === "missing_dataset") {
+        outputText = `Dataset Needed:\n${data.question}`;
+      } else if (data.type === "generated_schema") {
+        outputText =
+          `Generated Schema:\n${data.schema}\n\n` +
+          `${data.message}`;
+      } else if (data.type === "schema_saved") {
+        outputText =
+          `Schema Saved:\n${data.schema}\n\n` +
+          `${data.message}`;
+      } else if (data.type === "dataset_required") {
+        outputText = `Dataset Required:\n${data.message}`;
       } else if (data.error) {
         outputText =
           `Error:\n${data.error}\n\n` +

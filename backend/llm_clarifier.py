@@ -1,81 +1,162 @@
-import requests
 import json
+import re
+import requests
+
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
-MODEL_NAME = "qwen3:4b"
+MODEL_NAME = "qwen3:1.7b"
 
-def clarify_query(user_query: str) -> dict:
-    prompt = f"""
-    You are a query claridier for a Natural Language to SQL research project.
 
-    Yout job is NOT to write SQL.
+def extract_json(text: str, original_query: str) -> dict:
+    match = re.search(r"\{.*\}", text, re.DOTALL)
 
-    You only check if the user's request is clear enough for a semantic parser.
+    if not match:
+        return {
+            "status": "ready",
+            "clean_query": original_query,
+            "question": None,
+            "error": "No complete JSON found in clarifier response."
+        }
 
-    Return ONLY valid JSON.
+    try:
+        parsed = json.loads(match.group(0))
+    except json.JSONDecodeError:
+        return {
+            "status": "ready",
+            "clean_query": original_query,
+            "question": None,
+            "error": "Invalid JSON from clarifier."
+        }
 
-    Allowed formats:
+    if parsed.get("status") == "ready":
+        return {
+            "status": "ready",
+            "clean_query": parsed.get("clean_query") or original_query,
+        }
 
-    If clear, you MUST use this exact status:
-    {{
+    if parsed.get("status") == "need_clarification":
+        return {
+            "status": "need_clarification",
+            "question": parsed.get("question") or "What information should I use to answer this query?"
+        }
+
+    return {
         "status": "ready",
-        "clean_query": "user query with only minimal clarification if needed"
-    }}
+        "clean_query": original_query,
+        "question": None,
+        "error": "Unknown clarifier status."
+    }
 
-    If unclear:
-    {{
-        "status": "need_clarification",
-        "question": "short question asking what is missing"
-    }}
 
-    Rules:
-    - Do not generate SQL.
-    - Do not invent database results.
-    - Do not explain anything.
-    - Only return JSON
-    - If the query says "best", "top", or "highest" and includes "by GPA", "by grade", "by score" or another clear field, than it is clear.
-    - If the query says "best", "top", or "highest" but does NOT includes a clear field, ask for clarification.
-    - If the query is clear, preserve the original meaning exactly.
-    - Do not rename tables, entities, fields, or attributes.
-    - Keep database words exactly as written by the user whenever possible.
-    - Do not replace field names with synonyms.
-    - Do not beautify or expand the query.
-    - Only make minimal changes needed to remove ambiguity.
-    - "customers" must stay "customers".
-    - "income" must stay "income".
-    - "employees" must stay "employees".
-    - "salary" must stay "salary".
-    - If the query is already clear, return it unchanged.
-    - If clarification is required, ask a specific question about the missing field or condition.
-    -  Do not ask generic questions like "What is missing?"
-    - Always ask the user to rewrite the full query.
-    - End every clarification question with: "Please write the full query again."
-    - Example:
-        "show best students"
-        ->
-        "What does best mean? GPA, grade, or score? Please write the full query again, for example: show top students by gpa."
+def clarify_query(
+    user_query: str,
+    schema_text: str | None = None,
+    output_template: str | None = None
+) -> dict:
+    schema_context = schema_text if schema_text else "No schema was provided."
 
-    User query:
-    {user_query}
-    """
+    template_context = output_template if output_template else """
+{
+  "status": "ready" or "need_clarification",
+  "clean_query": "clear version of the user's query",
+  "question": "only if clarification is needed"
+}
+"""
+
+    prompt = f"""
+/no_think
+
+You are a clarification decision system.
+
+Your job is NOT to write SQL.
+Your job is NOT to invent database results.
+Your job is NOT to use hardcoded domain rules.
+
+You will receive:
+1. A user query
+2. An available dataset schema, if provided
+3. An expected output template
+
+Your task:
+Decide whether the user query has enough information to fill the expected output template.
+
+If the query is clear enough:
+Return JSON with:
+{{
+  "status": "ready",
+  "clean_query": "minimal cleaned version of the user query"
+}}
+
+If the query is not clear enough:
+Return JSON with:
+{{
+  "status": "need_clarification",
+  "question": "short follow-up question asking only for the missing information"
+}}
+
+Decision principles:
+- Use the provided schema if available.
+- Do not ask for clarification if there is one clearly dominant interpretation.
+- Ask for clarification when a term could reasonably mean multiple things.
+- When clarification is needed, ask one short question that identifies the ambiguity.
+- If no schema is provided, judge clarity from the natural language only.
+- Do not ask for clarification only because a schema is missing.
+- If the query clearly states a direction like lowest, highest, cheapest, most expensive, newest, oldest, treat it as clear.
+- If status is "need_clarification", the JSON must include a specific "question" field.
+- Ask clarification only when required information is missing.
+- Ask the smallest possible follow-up question.
+- Do not force the user to rewrite the whole query unless necessary.
+- Do not add examples unless they are necessary.
+- Do not rename tables, fields, entities, or attributes.
+- Keep the user's original meaning.
+- Return ONLY valid JSON.
+
+Dataset schema:
+{schema_context}
+
+Expected output template:
+{template_context}
+
+User query:
+{user_query}
+"""
 
     payload = {
         "model": MODEL_NAME,
         "prompt": prompt,
-        "stream": False
+        "stream": False,
+        "options": {
+            "temperature": 0,
+            "num_predict": 200
+        }
     }
 
-    response = requests.post(OLLAMA_URL, json=payload, timeout=30)
-    response.raise_for_status()
-
-    data = response.json()
-    text = data.get("response", "").strip()
-
     try:
-        return json.loads(text)
+        response = requests.post(
+            OLLAMA_URL,
+            json=payload,
+            timeout=60
+        )
+        response.raise_for_status()
+
+        data = response.json()
+        text = data.get("response", "").strip()
+
+        print("RAW CLARIFIER TEXT:", text, flush=True)
+        return extract_json(text, user_query)
+
+    except requests.exceptions.RequestException:
+        return {
+            "status": "ready",
+            "clean_query": user_query,
+            "question": None,
+            "error": "Clarifier unavailable, using original query."
+        }
+
     except json.JSONDecodeError:
         return {
-            "status": "error",
-            "message": "LLM did not return valid JSON",
-            "raw_response": text
+            "status": "ready",
+            "clean_query": user_query,
+            "question": None,
+            "error": "Clarifier returned invalid JSON, using original query."
         }

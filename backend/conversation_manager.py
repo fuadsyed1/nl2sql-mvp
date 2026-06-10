@@ -2,13 +2,64 @@ import requests
 import json
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
-MODEL_NAME = "qwen3:4b"
+MODEL_NAME = "qwen3:1.7b"
 
 
 def understand_followup(user_reply: str, pending_action: str, last_question: str) -> dict:
+    
+    
     reply = user_reply.strip()
     reply_lower = reply.lower()
+    yes_words = [
+        "yes",
+        "yeah",
+        "yep",
+        "sure",
+        "ok",
+        "okay",
+        "go ahead",
+        "create it",
+        "generate it",
+        "yes please"
+    ]
 
+    for word in yes_words:
+        if word in reply_lower:
+            return {
+                "intent": "confirm_generate_schema"
+            }
+
+    no_words = [
+        "no",
+        "don't",
+        "do not",
+        "i will upload",
+        "my own dataset"
+    ]
+
+    if pending_action == "clarification_needed":
+        return {
+            "intent": "answer_clarification",
+            "clarification": user_reply
+        }
+
+    for word in no_words:
+        if word in reply_lower:
+            return {
+                "intent": "deny_generate_schema"
+            }
+
+    # existing schema detection continues below
+
+    if (
+        "(" in reply
+        and ")" in reply
+        and "," in reply
+    ):
+        return {
+            "intent": "provide_schema",
+            "schema_text": reply
+        }
     if (
         "(" in reply
         and ")" in reply
@@ -94,7 +145,7 @@ Rules:
             "prompt": prompt,
             "stream": False
         },
-        timeout=30
+        timeout=60
     )
 
     response.raise_for_status()
