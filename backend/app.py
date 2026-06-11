@@ -8,7 +8,7 @@ from semantic_parser import parse_natural_language
 from validator import validate_query
 from llm_clarifier import clarify_query
 from ai_schema_inferencer import infer_schema_with_ai
-from auth_db import init_auth_db
+from auth_db import init_auth_db, get_connection
 from auth_service import create_user, login_user
 from dataset_service import (
     save_schema_dataset,
@@ -20,7 +20,11 @@ from dataset_service import (
     clear_chat_state,
 )
 from conversation_manager import understand_followup
-
+from fastapi import UploadFile, File, Form
+import os
+import shutil
+from csv_schema_detector import detect_csv_schema
+from csv_to_sqlite_loader import load_csv_to_sqlite
 
 # ---------------------------------------------------------------------------
 # App setup
@@ -43,9 +47,10 @@ app.add_middleware(
 # ---------------------------------------------------------------------------
 
 class QueryRequest(BaseModel):
+    question: str
     user_id: int | None = None
     schema_text: str | None = None
-    question: str
+    
 
 
 class AuthRequest(BaseModel):
@@ -58,6 +63,16 @@ class SchemaDatasetRequest(BaseModel):
     name: str
     schema_text: str
 
+
+class SignupRequest(BaseModel):
+    name: str
+    email: str
+    password: str
+
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
 
 # ---------------------------------------------------------------------------
 # Schema parsing helper
@@ -105,6 +120,34 @@ def schema_text_to_schema_info(schema_text: str) -> dict | None:
     }
 
 
+def get_latest_dataset_for_user(user_id: int):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        SELECT id, name, file_path, schema_text
+        FROM datasets
+        WHERE user_id = ?
+        ORDER BY created_at DESC
+        LIMIT 1
+        """,
+        (user_id,)
+    )
+
+    row = cursor.fetchone()
+    conn.close()
+
+    if not row:
+        return None
+
+    return {
+        "id": row[0],
+        "name": row[1],
+        "file_path": row[2],
+        "schema_text": row[3],
+    }
+
 # ---------------------------------------------------------------------------
 # Routes
 # ---------------------------------------------------------------------------
@@ -123,6 +166,85 @@ def signup(request: AuthRequest):
 def login(request: AuthRequest):
     return login_user(request.username, request.password)
 
+
+@app.post("/upload-csv")
+async def upload_csv(
+    user_id: int = Form(...),
+    file: UploadFile = File(...)
+):
+    if not file.filename.endswith(".csv"):
+        return {"success": False, "message": "Only CSV files are allowed"}
+
+    user_folder = f"uploads/user_{user_id}/datasets"
+    os.makedirs(user_folder, exist_ok=True)
+
+    file_path = os.path.join(user_folder, file.filename)
+
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    schema_text = detect_csv_schema(file_path)
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        INSERT INTO datasets (user_id, name, file_path, file_type, schema_text)
+        VALUES (?, ?, ?, ?, ?)
+        """,
+        (
+            user_id,
+            file.filename,
+            file_path,
+            "csv",
+            schema_text
+        )
+    )
+
+    conn.commit()
+    conn.close()   
+
+    return {
+        "success": True,
+        "message": "CSV uploaded successfully",
+        "filename": file.filename,
+        "path": file_path
+    }
+
+@app.get("/datasets/{user_id}")
+def get_user_datasets(user_id: int):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        SELECT id, name, file_path,schema_text, created_at
+        FROM datasets
+        WHERE user_id = ?
+        ORDER BY created_at DESC
+        """,
+        (user_id,)
+    )
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    datasets = [
+        {
+            "id": row[0],
+            "name": row[1],
+            "file_path": row[2],
+            "schema_text": row[3],
+            "created_at": row[4],
+        }
+        for row in rows
+    ]
+
+    return {
+        "success": True,
+        "datasets": datasets
+    }
 
 @app.post("/dataset/schema")
 def add_schema_dataset(request: SchemaDatasetRequest):
@@ -334,11 +456,38 @@ def query_database(request: QueryRequest):
         dataset_id = dataset["dataset_id"] if dataset else None
         save_query(request.user_id, dataset_id, request.question, working_question, sql)
 
+    results = "No dataset execution available."
+
+    if dataset and dataset.get("file_path"):
+        load_result = load_csv_to_sqlite(dataset["file_path"])
+
+        if not load_result.get("success"):
+            return {
+                "type": "execution_error",
+                "sql": sql,
+                "error": load_result.get("message"),
+            }
+
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute(sql)
+        rows = cursor.fetchall()
+
+        column_names = [description[0] for description in cursor.description]
+
+        conn.close()
+
+        results = [
+            dict(zip(column_names, row))
+            for row in rows
+        ]
+
     return {
         "type":        "success",
         "question":    request.question,
         "clean_query": working_question,
         "semantic":    semantic,
         "sql":         sql,
-        "results":     "Database execution not yet enabled. SQL preview only.",
+        "results":     results,
     }

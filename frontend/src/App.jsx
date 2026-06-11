@@ -3,6 +3,7 @@ import Sidebar from "./components/Sidebar";
 import Dashboard from "./components/Dashboard";
 import AccountSettings from "./components/AccountSettings";
 import ConversionPage from "./components/ConversionPage";
+import AuthPage from "./components/AuthPage";
 
 function App() {
   const [activePage, setActivePage] = useState("dashboard");
@@ -11,6 +12,16 @@ function App() {
   const [messages, setMessages] = useState([]);
   const [conversions, setConversions] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [user, setUser] = useState(() => {
+    const user_id = localStorage.getItem("user_id");
+    const username = localStorage.getItem("username");
+
+    if (user_id && username) {
+      return { user_id, username };
+    }
+
+    return null;
+  })
 
   const newConversion = () => {
     setMessages([]);
@@ -46,7 +57,7 @@ function App() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          user_id: 1,
+          user_id: Number(localStorage.getItem("user_id")),
           question: userInput,
         }),
       });
@@ -108,6 +119,10 @@ function App() {
     }
   };
 
+  if (!user) {
+    return <AuthPage setUser={setUser} />
+  }
+
   return (
     <div className="min-h-screen bg-gray-100 flex">
       <Sidebar
@@ -115,6 +130,8 @@ function App() {
         conversions={conversions}
         setActivePage={setActivePage}
         newConversion={newConversion}
+        user={user}
+        setUser={setUser}
       />
 
       <main className="flex-1 flex flex-col">

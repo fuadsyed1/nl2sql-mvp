@@ -3,12 +3,26 @@ function Sidebar({
   conversions,
   setActivePage,
   newConversion,
+  user,
+  setUser,
 }) {
+  const handleLogout = () => {
+    localStorage.removeItem("user_id");
+    localStorage.removeItem("username");
+    setUser(null);
+  };
+
   return (
     <aside className="w-[13%] bg-white border-r border-gray-200 flex flex-col">
       <div className="p-6">
         <h1 className="text-2xl font-bold text-blue-600">NL Translator</h1>
         <p className="text-sm text-gray-500 mt-1">NL to {target}</p>
+
+        {user && (
+          <p className="text-xs text-gray-400 mt-2">
+            Signed in as {user.username}
+          </p>
+        )}
       </div>
 
       <nav className="p-4 space-y-2">
@@ -51,12 +65,19 @@ function Sidebar({
         )}
       </div>
 
-      <div className="p-4">
+      <div className="p-4 space-y-2">
         <button
           onClick={() => setActivePage("account")}
           className="w-full text-left px-4 py-3 rounded-lg hover:bg-blue-50"
         >
           Account Settings
+        </button>
+
+        <button
+          onClick={handleLogout}
+          className="w-full text-left px-4 py-3 rounded-lg bg-red-500 text-white hover:bg-red-600"
+        >
+          Sign Out
         </button>
       </div>
     </aside>
