@@ -58,23 +58,24 @@ def _is_schema_mismatch(query: str, schema_text: str) -> bool:
 # JSON extraction
 # ---------------------------------------------------------------------------
 
+_THINK_RE = re.compile(r"<think>.*?</think>", re.DOTALL)
+
+
 def _extract_json(text: str, fallback_query: str) -> dict:
     """
-    Pull the first JSON object from *text*.
-    Returns a safe 'ready' dict on any parse failure so the pipeline
-    always gets a usable result.
+    Pull a JSON object from *text* after stripping qwen3 <think> blocks.
+    Uses the LAST {...} candidate so preamble text before the JSON is ignored.
+    Returns a safe 'ready' dict on any parse failure.
     """
-    match = re.search(r"\{.*?\}", text, re.DOTALL)
-    if not match:
-        # Try again with a greedier match in case the model wrapped things oddly
-        match = re.search(r"\{.*\}", text, re.DOTALL)
+    clean      = _THINK_RE.sub("", text).strip()
+    candidates = re.findall(r"\{.*\}", clean, re.DOTALL)
 
-    if not match:
+    if not candidates:
         print("CLARIFIER: no JSON block found, passing query through.", flush=True)
         return {"status": "ready", "clean_query": fallback_query}
 
     try:
-        parsed = json.loads(match.group(0))
+        parsed = json.loads(candidates[-1])
     except json.JSONDecodeError as exc:
         print(f"CLARIFIER: JSON parse error ({exc}), passing query through.", flush=True)
         return {"status": "ready", "clean_query": fallback_query}
