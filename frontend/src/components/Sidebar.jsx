@@ -3,6 +3,7 @@ function Sidebar({
   conversions,
   setActivePage,
   newConversion,
+  loadConversationMessages,
   user,
   setUser,
 }) {
@@ -37,28 +38,28 @@ function Sidebar({
           onClick={newConversion}
           className="w-full text-left px-4 py-3 rounded-lg bg-blue-500 text-white hover:bg-blue-600"
         >
-          + New Conversion
+          + New Chat
         </button>
       </nav>
 
       <div className="px-4 mt-4 flex-1 overflow-y-auto">
         <h2 className="text-sm font-semibold text-gray-500 mb-3">
-          Recent Sessions
+          Recent Chats
         </h2>
 
         {conversions.length === 0 ? (
-          <p className="text-sm text-gray-400 px-4">
-            No previous conversions
-          </p>
+          <p className="text-sm text-gray-400 px-4">No previous chats</p>
         ) : (
           <div className="space-y-2">
             {conversions.map((item) => (
               <button
-                key={item.id}
-                onClick={() => setActivePage("conversion")}
+                key={item.conversation_id}
+                onClick={() =>
+                  loadConversationMessages(item.conversation_id)
+                }
                 className="w-full text-left px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100"
               >
-                {item.title}
+                {item.title || "New Chat"}
               </button>
             ))}
           </div>

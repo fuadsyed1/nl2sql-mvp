@@ -265,9 +265,20 @@ def find_mentioned_columns(text: str, columns: list[str]) -> list[str]:
     for col in columns:
         parts = col.split("_")
 
+        singular_col = col.rstrip("s")
+        plural_col = col + "s"
+
         # Try 1: exact whole-word match (handles both 'id' and 'city_name')
         exact_pattern = r"\b" + re.escape(col) + r"\b"
         if re.search(exact_pattern, text):
+            matched.append(col)
+            continue
+
+        if re.search(r"\b" + re.escape(singular_col) + r"\b", text):
+            matched.append(col)
+            continue
+
+        if re.search(r"\b" + re.escape(plural_col) + r"\b", text):
             matched.append(col)
             continue
 
@@ -314,10 +325,27 @@ def detect_aggregation(
 
     for keyword, (func, default_field) in _AGGREGATION_MAP.items():
         if keyword in text:
+            mentioned = find_mentioned_columns(text, columns)
+
+            # If user says "count files" and files is a numeric measure column,
+            # use SUM(files), not COUNT(*).
+            if func == "COUNT" and mentioned:
+                before_by = text.split(" by ", 1)[0] if " by " in text else text
+                measure_columns = find_mentioned_columns(before_by, columns)
+
+                if measure_columns:
+                    return {
+                        "function": "SUM",
+                        "field": measure_columns[0],
+                    }
+
             field = default_field
+
             if field is None:
-                mentioned = find_mentioned_columns(text, columns)
-                field = mentioned[0] if mentioned else "*"
+                before_by = text.split(" by ", 1)[0] if " by " in text else text
+                measure_columns = find_mentioned_columns(before_by, columns)
+                field = measure_columns[0] if measure_columns else (mentioned[0] if mentioned else "*")
+
             return {"function": func, "field": field}
 
     return None
@@ -366,15 +394,6 @@ def detect_sort(
     columns: list[str],
     group_by: str | None = None,
 ) -> dict[str, str] | None:
-    """
-    Detect sort direction and the column to sort by.
-
-    Priority:
-    1. group_by column (already resolved upstream).
-    2. Column that appears AFTER the sort keyword ("ordered by lowest price"
-       -> price, not any earlier-mentioned column like product_id).
-    3. First mentioned column anywhere in the text as a last resort.
-    """
     words = set(text.split())
 
     if words & _SORT_DESC_WORDS:
@@ -387,9 +406,24 @@ def detect_sort(
     if group_by:
         return {"field": group_by, "direction": direction}
 
+    # For phrases like:
+    # "top 10 extensions by size"
+    # "largest files by allocated"
+    # the column after "by" is the sort column.
+    if " by " in text:
+        after_by = text.split(" by ", 1)[1]
+        cols_after_by = find_mentioned_columns(after_by, columns)
+
+        if cols_after_by:
+            return {
+                "field": cols_after_by[0],
+                "direction": direction,
+            }
+
     sort_keyword_re = re.compile(
         r"\b(highest|largest|top|lowest|smallest|order(?:ed)?\s+by)\b"
     )
+
     m = sort_keyword_re.search(text)
     if m:
         after_keyword = text[m.end():]
@@ -399,14 +433,61 @@ def detect_sort(
 
     field = next(iter(find_mentioned_columns(text, columns)), None)
 
-    # Semantic fallback: "longest rivers" -> length column
     if not field:
         words = re.findall(r"[a-z]+", text.lower())
         field = _resolve_semantic_column(words, columns)
 
     if not field:
         return None
+
     return {"field": field, "direction": direction}
+
+
+def extract_text_filter(clause: str, columns: list[str]) -> dict[str, Any] | None:
+    """
+    Detect text equality filters such as:
+    extension is .dll
+    extension equals .dll
+    extension = .dll
+    file type is image
+
+    This is schema-driven, not domain-hardcoded.
+    It works for any column name in any uploaded dataset.
+    """
+    clause = clause.strip().lower()
+
+    equality_patterns = [
+        r"\bis\b",
+        r"\bequals\b",
+        r"\bequal to\b",
+        r"=",
+    ]
+
+    mentioned_columns = find_mentioned_columns(clause, columns)
+
+    if not mentioned_columns:
+        return None
+
+    for col in mentioned_columns:
+        column_text = col.replace("_", " ")
+
+        for pattern in equality_patterns:
+            regex = rf"\b{re.escape(column_text)}\b\s*{pattern}\s*(.+)$"
+            match = re.search(regex, clause)
+
+            if match:
+                value = match.group(1).strip()
+
+                if not value:
+                    return None
+
+                return {
+                    "field": col,
+                    "operator": "=",
+                    "value": value,
+                }
+
+    return None
 
 
 def detect_filters(text: str, columns: list[str]) -> list[dict[str, Any]]:
@@ -430,7 +511,22 @@ def detect_filters(text: str, columns: list[str]) -> list[dict[str, Any]]:
         operator = detect_operator(clause)
         value    = extract_number(clause)
 
-        if operator is None or value is None:
+        if operator is not None and value is not None:
+            pass
+        else:
+            text_filter = extract_text_filter(clause, columns)
+
+            if text_filter:
+                key = (
+                    text_filter["field"],
+                    text_filter["operator"],
+                    text_filter["value"],
+                )
+
+                if key not in seen:
+                    seen.add(key)
+                    filters.append(text_filter)
+
             continue
 
         clause_columns = find_mentioned_columns(clause, columns)
@@ -502,6 +598,7 @@ def detect_selected_columns(
         return [group_by] if group_by else ["*"]
 
     mentioned = find_mentioned_columns(text, columns)
+       
     if not mentioned:
         return ["*"]
 

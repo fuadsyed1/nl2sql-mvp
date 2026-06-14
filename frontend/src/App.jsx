@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "./components/Sidebar";
 import Dashboard from "./components/Dashboard";
 import AccountSettings from "./components/AccountSettings";
@@ -11,7 +11,9 @@ function App() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
   const [conversions, setConversions] = useState([]);
+  const [currentConversationId, setCurrentConversationId] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
+
   const [user, setUser] = useState(() => {
     const user_id = localStorage.getItem("user_id");
     const username = localStorage.getItem("username");
@@ -21,16 +23,183 @@ function App() {
     }
 
     return null;
-  })
+  });
 
-  const newConversion = () => {
-    setMessages([]);
-    setInput("");
-    setActivePage("conversion");
+  const formatBackendOutput = (data) => {
+    if (data.type === "clarification") {
+      return `❓ Clarification Needed\n\n${data.question}`;
+    }
+
+    if (data.type === "schema_mismatch") {
+      return `⚠️ Schema Mismatch\n\n${data.question}`;
+    }
+
+    if (data.type === "missing_dataset") {
+      return `📂 No Dataset Found\n\n${data.question}`;
+    }
+
+    if (data.type === "generated_schema") {
+      return `✅ Schema Generated\n\n${data.schema}\n\n${data.message}`;
+    }
+
+    if (data.type === "schema_saved") {
+      return `✅ Schema Saved\n\n${data.schema}\n\n${data.message}`;
+    }
+
+    if (data.type === "dataset_required") {
+      return `📂 Dataset Required\n\n${data.message}`;
+    }
+
+    if (data.type === "schema_error") {
+      return `❌ Schema Error\n\n${data.message}`;
+    }
+
+    if (data.type === "blocked") {
+      return `🚫 Blocked\n\n${data.error}\n\nSQL attempted:\n${data.sql}`;
+    }
+
+    if (data.type === "design_query") {
+      return `🔬 Design Query\n\n${data.message}`;
+    }
+
+    if (data.type === "success") {
+      return (
+        `SQL\n${"─".repeat(40)}\n${data.sql}\n\n` +
+        `Clean Query\n${"─".repeat(40)}\n${data.clean_query}\n\n` +
+        `Results\n${"─".repeat(40)}\n${JSON.stringify(
+          data.results || [],
+          null,
+          2
+        )}`
+      );
+    }
+
+    if (data.error) {
+      return `❌ Error\n\n${data.error}\n\nSQL:\n${
+        data.sql || "No SQL generated"
+      }`;
+    }
+
+    return JSON.stringify(data, null, 2);
+  };
+
+  const loadConversations = async () => {
+    if (!user) return;
+
+    try {
+      const response = await fetch(
+        `http://localhost:8000/conversations/${user.user_id}`
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        setConversions(data.conversations);
+      }
+    } catch (err) {
+      console.error("Failed to load conversations:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      loadConversations();
+    }
+  }, [user]);
+
+  const newConversion = async () => {
+    if (!user) return;
+
+    try {
+      const response = await fetch(
+        `http://localhost:8000/conversation/create?user_id=${user.user_id}`,
+        {
+          method: "POST",
+        }
+      );
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error("Could not create conversation");
+      }
+
+      setCurrentConversationId(data.conversation_id);
+      setMessages([]);
+      setInput("");
+      setActivePage("conversion");
+
+      await loadConversations();
+    } catch (err) {
+      console.error("Failed to create conversation:", err);
+    }
+  };
+
+  const loadConversationMessages = async (conversationId) => {
+    try {
+      const response = await fetch(
+        `http://localhost:8000/conversation/${conversationId}/messages`
+      );
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error("Could not load conversation messages");
+      }
+
+      const restoredMessages = [];
+
+      data.messages.forEach((msg) => {
+        restoredMessages.push({
+          type: "user",
+          text: msg.question,
+        });
+
+        restoredMessages.push({
+          type: "system",
+          output:
+            `SQL\n${"─".repeat(40)}\n${msg.sql || ""}\n\n` +
+            `Clean Query\n${"─".repeat(40)}\n${msg.clean_query || ""}`,
+        });
+      });
+
+      setCurrentConversationId(conversationId);
+      setMessages(restoredMessages);
+      setInput("");
+      setActivePage("conversion");
+    } catch (err) {
+      console.error("Failed to load conversation:", err);
+    }
   };
 
   const handleSubmit = async () => {
     if (!input.trim()) return;
+
+    let conversationId = currentConversationId;
+
+    if (!conversationId) {
+      try {
+        const response = await fetch(
+          `http://localhost:8000/conversation/create?user_id=${user.user_id}`,
+          {
+            method: "POST",
+          }
+        );
+
+        const data = await response.json();
+
+        if (!data.success) {
+          throw new Error("Could not create conversation");
+        }
+
+        conversationId = data.conversation_id;
+        setCurrentConversationId(conversationId);
+        await loadConversations();
+      } catch (err) {
+        console.error("Failed to auto-create conversation:", err);
+        return;
+      }
+    }
 
     const userInput = input.trim();
 
@@ -43,13 +212,6 @@ function App() {
     setInput("");
     setIsProcessing(true);
 
-    if (messages.length === 0) {
-      setConversions((prev) => [
-        { id: Date.now(), title: userInput.slice(0, 35) },
-        ...prev,
-      ]);
-    }
-
     try {
       const response = await fetch("http://localhost:8000/query", {
         method: "POST",
@@ -57,7 +219,8 @@ function App() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          user_id: Number(localStorage.getItem("user_id")),
+          user_id: Number(user.user_id),
+          conversation_id: conversationId,
           question: userInput,
         }),
       });
@@ -69,44 +232,14 @@ function App() {
       const data = await response.json();
       console.log("BACKEND RESPONSE:", data);
 
-      let outputText = "";
-
-
-      if (data.type === "clarification") {
-        outputText = `❓ Clarification Needed\n\n${data.question}`;
-      } else if (data.type === "schema_mismatch") {
-        outputText = `⚠️ Schema Mismatch\n\n${data.question}`;
-      } else if (data.type === "missing_dataset") {
-        outputText = `📂 No Dataset Found\n\n${data.question}`;
-      } else if (data.type === "generated_schema") {
-        outputText = `✅ Schema Generated\n\n${data.schema}\n\n${data.message}`;
-      } else if (data.type === "schema_saved") {
-        outputText = `✅ Schema Saved\n\n${data.schema}\n\n${data.message}`;
-      } else if (data.type === "dataset_required") {
-        outputText = `📂 Dataset Required\n\n${data.message}`;
-      } else if (data.type === "schema_error") {
-        outputText = `❌ Schema Error\n\n${data.message}`;
-      } else if (data.type === "blocked") {
-        outputText = `🚫 Blocked\n\n${data.error}\n\nSQL attempted:\n${data.sql}`;
-      } else if (data.type === "design_query") {
-        outputText = `🔬 Design Query\n\n${data.message}`;
-      } else if (data.type === "success") {
-        outputText =
-          `SQL\n${"─".repeat(40)}\n${data.sql}\n\n` +
-          `Clean Query\n${"─".repeat(40)}\n${data.clean_query}\n\n` +
-          `Results\n${"─".repeat(40)}\n${JSON.stringify(data.results || [], null, 2)}`;
-      } else if (data.error) {
-        outputText = `❌ Error\n\n${data.error}\n\nSQL:\n${data.sql || "No SQL generated"}`;
-      } else {
-        outputText = JSON.stringify(data, null, 2);
-      }
-
       const systemMessage = {
         type: "system",
-        output: outputText,
+        output: formatBackendOutput(data),
       };
 
       setMessages((prev) => [...prev, systemMessage]);
+
+      await loadConversations();
     } catch (error) {
       const systemMessage = {
         type: "system",
@@ -120,7 +253,7 @@ function App() {
   };
 
   if (!user) {
-    return <AuthPage setUser={setUser} />
+    return <AuthPage setUser={setUser} />;
   }
 
   return (
@@ -130,6 +263,7 @@ function App() {
         conversions={conversions}
         setActivePage={setActivePage}
         newConversion={newConversion}
+        loadConversationMessages={loadConversationMessages}
         user={user}
         setUser={setUser}
       />

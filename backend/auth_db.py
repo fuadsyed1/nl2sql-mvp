@@ -11,6 +11,9 @@ def init_auth_db():
     conn = get_connection()
     cursor = conn.cursor()
 
+    # ------------------------------------------------------------------
+    # Users
+    # ------------------------------------------------------------------
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -19,33 +22,59 @@ def init_auth_db():
         )
     """)
 
+    # ------------------------------------------------------------------
+    # Conversations
+    # ------------------------------------------------------------------
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS datasets (
+        CREATE TABLE IF NOT EXISTS conversations (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
-            name TEXT NOT NULL,
-            schema_text TEXT,
-            file_type TEXT,
-            file_path TEXT,
+            title TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY(user_id) REFERENCES users(id)
         )
     """)
 
+    # ------------------------------------------------------------------
+    # Datasets
+    # ------------------------------------------------------------------
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS datasets (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            conversation_id INTEGER,
+            name TEXT NOT NULL,
+            schema_text TEXT,
+            file_type TEXT,
+            file_path TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(user_id) REFERENCES users(id),
+            FOREIGN KEY(conversation_id) REFERENCES conversations(id)
+        )
+    """)
+
+    # ------------------------------------------------------------------
+    # Queries
+    # ------------------------------------------------------------------
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS queries (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
+            conversation_id INTEGER,
             dataset_id INTEGER,
             question TEXT NOT NULL,
             clean_query TEXT,
             sql TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY(user_id) REFERENCES users(id),
+            FOREIGN KEY(conversation_id) REFERENCES conversations(id),
             FOREIGN KEY(dataset_id) REFERENCES datasets(id)
         )
     """)
 
+    # ------------------------------------------------------------------
+    # Chat State
+    # ------------------------------------------------------------------
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS chat_state (
             user_id INTEGER PRIMARY KEY,
@@ -54,16 +83,6 @@ def init_auth_db():
             FOREIGN KEY(user_id) REFERENCES users(id)
         )
     """)
-
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS datasets (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
-            filename TEXT NOT NULL,
-            filepath TEXT NOT NULL,
-            uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-        """)
 
     conn.commit()
     conn.close()

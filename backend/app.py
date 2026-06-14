@@ -13,6 +13,8 @@ from auth_service import create_user, login_user
 from dataset_service import (
     save_schema_dataset,
     get_latest_dataset,
+    get_latest_dataset_for_conversation,
+    get_queries_for_conversation,
     save_query,
     get_user_queries,
     save_chat_state,
@@ -25,6 +27,11 @@ import os
 import shutil
 from csv_schema_detector import detect_csv_schema
 from csv_to_sqlite_loader import load_csv_to_sqlite
+from conversation_service import (
+    create_conversation,
+    get_user_conversations,
+    delete_conversation,
+)
 
 # ---------------------------------------------------------------------------
 # App setup
@@ -49,6 +56,7 @@ app.add_middleware(
 class QueryRequest(BaseModel):
     question: str
     user_id: int | None = None
+    conversation_id: int | None = None
     schema_text: str | None = None
     
 
@@ -170,6 +178,7 @@ def login(request: AuthRequest):
 @app.post("/upload-csv")
 async def upload_csv(
     user_id: int = Form(...),
+    conversation_id: int = Form(...),
     file: UploadFile = File(...)
 ):
     if not file.filename.endswith(".csv"):
@@ -190,11 +199,13 @@ async def upload_csv(
 
     cursor.execute(
         """
-        INSERT INTO datasets (user_id, name, file_path, file_type, schema_text)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO datasets
+        (user_id, conversation_id, name, file_path, file_type, schema_text)
+        VALUES (?, ?, ?, ?, ?, ?)
         """,
         (
             user_id,
+            conversation_id,
             file.filename,
             file_path,
             "csv",
@@ -354,8 +365,10 @@ def query_database(request: QueryRequest):
     # ------------------------------------------------------------------
     # 2. Resolve schema
     # ------------------------------------------------------------------
-    if request.user_id:
-        dataset = get_latest_dataset(request.user_id)
+    if request.conversation_id:
+        dataset = get_latest_dataset_for_conversation(
+            request.conversation_id
+        )
         print(f"DATASET: {dataset}", flush=True)
 
     if dataset:
@@ -454,7 +467,7 @@ def query_database(request: QueryRequest):
 
     if request.user_id:
         dataset_id = dataset["dataset_id"] if dataset else None
-        save_query(request.user_id, dataset_id, request.question, working_question, sql)
+        save_query(request.user_id, request.conversation_id, dataset_id, request.question, working_question, sql)
 
     results = "No dataset execution available."
 
@@ -490,4 +503,36 @@ def query_database(request: QueryRequest):
         "semantic":    semantic,
         "sql":         sql,
         "results":     results,
+    }
+
+@app.post("/conversation/create")
+def create_new_conversation(user_id: int):
+    conversation_id = create_conversation(user_id)
+    return {
+        "success": True,
+        "conversation_id": conversation_id
+    }
+
+
+@app.get("/conversations/{user_id}")
+def get_conversations(user_id: int):
+    return {
+        "success": True,
+        "conversations": get_user_conversations(user_id)
+    }
+
+
+@app.delete("/conversation/{conversation_id}")
+def remove_conversation(conversation_id: int):
+    delete_conversation(conversation_id)
+
+    return {
+        "success": True
+    }
+
+@app.get("/conversation/{conversation_id}/messages")
+def get_conversation_messages(conversation_id: int):
+    return {
+        "success": True,
+        "messages": get_queries_for_conversation(conversation_id)
     }

@@ -95,6 +95,9 @@ def generate_sql_from_semantic(semantic: dict, schema: str):
 
         query += f" GROUP BY {group_by}"
 
+        if aggregation and aggregation.get("function") in ["SUM", "COUNT"]:
+            query += f" ORDER BY {select_part} DESC"
+
     sort = relational.get("sort")
 
     if sort:
@@ -108,5 +111,7 @@ def generate_sql_from_semantic(semantic: dict, schema: str):
 
     if limit:
         query += f" LIMIT {limit}"
+    else:
+        query += " LIMIT 50"
 
     return query + ";"

@@ -55,16 +55,68 @@ def get_latest_dataset(user_id):
         "file_path": row[4]
     }
 
-def save_query(user_id, dataset_id, question, clean_query, sql):
+
+def get_latest_dataset_for_conversation(conversation_id):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
 
     cursor.execute(
         """
-        INSERT INTO queries(user_id, dataset_id, question, clean_query, sql)
-        VALUES (?, ?, ?, ?, ?)
+        SELECT id, name, schema_text, file_type, file_path
+        FROM datasets
+        WHERE conversation_id = ?
+        ORDER BY created_at DESC
+        LIMIT 1
         """,
-        (user_id, dataset_id, question, clean_query, sql)
+        (conversation_id,)
+    )
+
+    row = cursor.fetchone()
+    conn.close()
+
+    if not row:
+        return None
+
+    return {
+        "dataset_id": row[0],
+        "name": row[1],
+        "schema_text": row[2],
+        "file_type": row[3],
+        "file_path": row[4]
+    }
+
+
+def save_query(
+    user_id,
+    conversation_id,
+    dataset_id,
+    question,
+    clean_query,
+    sql
+):
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        INSERT INTO queries(
+            user_id,
+            conversation_id,
+            dataset_id,
+            question,
+            clean_query,
+            sql
+        )
+        VALUES (?, ?, ?, ?, ?, ?)
+        """,
+        (
+            user_id,
+            conversation_id,
+            dataset_id,
+            question,
+            clean_query,
+            sql
+        )
     )
 
     conn.commit()
@@ -72,6 +124,7 @@ def save_query(user_id, dataset_id, question, clean_query, sql):
     conn.close()
 
     return query_id
+
 
 def get_user_queries(user_id):
     conn = sqlite3.connect(DB_NAME)
@@ -101,6 +154,37 @@ def get_user_queries(user_id):
         }
         for row in rows
     ]
+
+
+def get_queries_for_conversation(conversation_id):
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        SELECT id, dataset_id, question, clean_query, sql, created_at
+        FROM queries
+        WHERE conversation_id = ?
+        ORDER BY created_at ASC
+        """,
+        (conversation_id,)
+    )
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    return [
+        {
+            "query_id": row[0],
+            "dataset_id": row[1],
+            "question": row[2],
+            "clean_query": row[3],
+            "sql": row[4],
+            "created_at": row[5]
+        }
+        for row in rows
+    ]
+
 
 def save_chat_state(user_id, pending_action, last_question):
     conn = sqlite3.connect(DB_NAME)

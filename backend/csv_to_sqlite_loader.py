@@ -3,6 +3,44 @@ import sqlite3
 import re
 
 
+def infer_sqlite_type(values):
+    non_empty_values = []
+
+    for value in values:
+        value = str(value).strip()
+
+        if value == "":
+            continue
+
+        non_empty_values.append(value)
+
+    if not non_empty_values:
+        return "TEXT"
+
+    has_decimal = False
+
+    for value in non_empty_values:
+        cleaned_value = value.replace(",", "")
+
+        if cleaned_value.endswith("%"):
+            cleaned_value = cleaned_value[:-1]
+            has_decimal = True
+
+        try:
+            number = float(cleaned_value)
+
+            if not number.is_integer():
+                has_decimal = True
+
+        except ValueError:
+            return "TEXT"
+
+    if has_decimal:
+        return "REAL"
+
+    return "INTEGER"
+
+
 def clean_column_name(name: str) -> str:
     name = name.strip().lower()
     name = name.replace("%", "percent")
@@ -45,7 +83,23 @@ def load_csv_to_sqlite(csv_path: str, db_path: str = "app_data.db", table_name: 
 
     cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
 
-    column_defs = ", ".join([f'"{col}" TEXT' for col in columns])
+    column_type = {}
+
+    for index, col in enumerate(columns):
+        values = []
+
+        for row in rows[header_index + 1:]:
+            if index < len(row):
+                values.append(row[index])
+
+        column_type[col] = infer_sqlite_type(values)
+    
+    print("COLUMN TYPES:", column_type, flush=True)
+
+    column_defs = ", ".join([
+        f'"{col}" {column_type[col]}'
+        for col in columns
+    ])
 
     cursor.execute(f"""
         CREATE TABLE {table_name} (
@@ -57,7 +111,24 @@ def load_csv_to_sqlite(csv_path: str, db_path: str = "app_data.db", table_name: 
     quoted_columns = ", ".join([f'"{col}"' for col in columns])
 
     for row in rows[header_index + 1:]:
-        values = row[:len(columns)]
+        values = []
+
+        for index, col in enumerate(columns):
+            raw_value = row[index] if index < len(row) else ""
+            raw_value = str(raw_value).strip().replace(",", "")
+
+            if raw_value.endswith("%"):
+                raw_value = raw_value[:-1]
+
+            if raw_value == "":
+                values.append(None)
+            elif column_type[col] == "INTEGER":
+                values.append(int(float(raw_value)))
+            elif column_type[col] == "REAL":
+                values.append(float(raw_value))
+            else:
+                values.append(raw_value)
+
 
         if len(values) < len(columns):
             values += [""] * (len(columns) - len(values))
