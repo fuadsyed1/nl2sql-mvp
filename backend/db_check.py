@@ -3,10 +3,16 @@ import sqlite3
 conn = sqlite3.connect("app_data.db")
 cursor = conn.cursor()
 
-cursor.execute("SELECT sql FROM sqlite_master WHERE type='table'")
+print("CONVERSATIONS:")
+cursor.execute("SELECT id, user_id, title, created_at FROM conversations ORDER BY id DESC")
+print(cursor.fetchall())
 
-for row in cursor.fetchall():
-    print(row[0])
-    print("-" * 50)
+print("\nQUERIES:")
+cursor.execute("SELECT id, user_id, conversation_id, dataset_id, question, sql FROM queries ORDER BY id DESC")
+print(cursor.fetchall())
+
+print("\nDATASETS:")
+cursor.execute("SELECT id, user_id, conversation_id, name, schema_text, file_type, file_path FROM datasets ORDER BY id DESC")
+print(cursor.fetchall())
 
 conn.close()

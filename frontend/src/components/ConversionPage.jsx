@@ -8,6 +8,7 @@ function ConversionPage({
   input,
   setInput,
   handleSubmit,
+  currentConversationId,
 }) {
   return (
     <div className="flex flex-col h-screen bg-gray-100">
@@ -60,6 +61,7 @@ function ConversionPage({
         input={input}
         setInput={setInput}
         handleSubmit={handleSubmit}
+        currentConversationId={currentConversationId}
       />
     </div>
   );

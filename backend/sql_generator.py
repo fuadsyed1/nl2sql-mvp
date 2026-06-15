@@ -61,6 +61,7 @@ def generate_sql_from_semantic(semantic: dict, schema: str):
             return f"ERROR: Column '{field}' not found in schema"
 
         select_part = f"{function}({field})"
+        aggregation_select_part = select_part
 
     query = f"SELECT {select_part} FROM {table_name}"
 
@@ -95,9 +96,6 @@ def generate_sql_from_semantic(semantic: dict, schema: str):
 
         query += f" GROUP BY {group_by}"
 
-        if aggregation and aggregation.get("function") in ["SUM", "COUNT"]:
-            query += f" ORDER BY {select_part} DESC"
-
     sort = relational.get("sort")
 
     if sort:
@@ -105,7 +103,10 @@ def generate_sql_from_semantic(semantic: dict, schema: str):
         direction = sort.get("direction", "ASC")
 
         if field in schema_columns:
-            query += f" ORDER BY {field} {direction}"
+            if aggregation:
+                query += f" ORDER BY {aggregation['function']}({field}) {direction}"
+            else:
+                query += f" ORDER BY {field} {direction}"
 
     limit = relational.get("limit")
 

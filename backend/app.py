@@ -1,10 +1,11 @@
 import re
+import json
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
-
+from ai_semantic_extractor import extract_semantics
 from sql_generator import generate_sql_from_semantic
-from semantic_parser import parse_natural_language
+from semantic_parser import parse_natural_language, create_semantic_object
 from validator import validate_query
 from llm_clarifier import clarify_query
 from ai_schema_inferencer import infer_schema_with_ai
@@ -31,6 +32,8 @@ from conversation_service import (
     create_conversation,
     get_user_conversations,
     delete_conversation,
+    update_conversation_title,
+    factory_reset_user,
 )
 
 # ---------------------------------------------------------------------------
@@ -307,16 +310,43 @@ def query_database(request: QueryRequest):
 
             # --- User confirmed: generate schema from their original question ---
             if intent == "confirm_generate_schema":
-                schema_info      = infer_schema_with_ai(state["last_question"])
+                schema_info = infer_schema_with_ai(state["last_question"])
                 generated_schema = schema_info["schema"]
-                dataset_result   = save_schema_dataset(
-                    request.user_id, "AI Generated Schema", generated_schema
+
+                dataset_result = save_schema_dataset(
+                    request.user_id,
+                    "AI Generated Schema",
+                    generated_schema,
+                    request.conversation_id
                 )
+
                 clear_chat_state(request.user_id)
+
+                message = "Schema generated from your question. You can now ask your query."
+
+                if request.conversation_id:
+                    save_query(
+                        request.user_id,
+                        request.conversation_id,
+                        dataset_result.get("dataset_id"),
+                        request.question,
+                        state["last_question"],
+                        "SCHEMA_GENERATED",
+                        json.dumps({
+                            "message": message,
+                            "schema": generated_schema
+                        })
+                    )
+
+                    update_conversation_title(
+                        request.conversation_id,
+                        state["last_question"]
+                    )
+
                 return {
-                    "type":    "generated_schema",
-                    "message": "Schema generated from your question. You can now ask your query.",
-                    "schema":  generated_schema,
+                    "type": "generated_schema",
+                    "message": message,
+                    "schema": generated_schema,
                     "dataset": dataset_result,
                 }
 
@@ -427,9 +457,30 @@ def query_database(request: QueryRequest):
     if not inferred_schema:
         if request.user_id:
             save_chat_state(request.user_id, "confirm_generate_schema", working_question)
+
+            message = "You haven't provided a dataset or schema. Would you like me to generate one for your query?"
+
+            if request.conversation_id:
+                save_query(
+                    request.user_id,
+                    request.conversation_id,
+                    None,
+                    request.question,
+                    working_question,
+                    "NO_DATASET",
+                    json.dumps({"message": message})
+                )
+
+                update_conversation_title(
+                    request.conversation_id,
+                    request.question
+                )
+
+            print("MISSING DATASET BRANCH HIT")
+
             return {
-                "type":          "missing_dataset",
-                "question":      "You haven't provided a dataset or schema. Would you like me to generate one for your query?",
+                "type": "missing_dataset",
+                "question": message,
                 "last_question": working_question,
             }
 
@@ -444,7 +495,20 @@ def query_database(request: QueryRequest):
     # ------------------------------------------------------------------
     # 5. Parse → generate → validate → return
     # ------------------------------------------------------------------
-    semantic = parse_natural_language(working_question, schema_info)
+    ai_relational = extract_semantics(working_question, inferred_schema)
+
+    print("AI RELATIONAL:", ai_relational, flush=True)
+
+    if ai_relational:
+        semantic = create_semantic_object()
+        semantic.update({
+            "query_type": "relational_query",
+            "domain": "database",
+            "intent": "retrieve",
+        })
+        semantic["relational"].update(ai_relational)
+    else:
+        semantic = parse_natural_language(working_question, schema_info)
     print(f"SEMANTIC: {semantic}", flush=True)
 
     if semantic.get("query_type") == "inverse_design":
@@ -458,16 +522,20 @@ def query_database(request: QueryRequest):
 
     sql = generate_sql_from_semantic(semantic, inferred_schema)
 
+    if not sql or sql.strip().upper().startswith("ERROR"):
+        return {
+            "type": "sql_generation_error",
+            "sql": sql,
+            "error": "SQL generator could not create valid SQL from the semantic object.",
+            "semantic": semantic,
+        }
+
     if not validate_query(sql):
         return {
             "type":  "blocked",
             "sql":   sql,
             "error": "The generated SQL was blocked by the safety validator.",
         }
-
-    if request.user_id:
-        dataset_id = dataset["dataset_id"] if dataset else None
-        save_query(request.user_id, request.conversation_id, dataset_id, request.question, working_question, sql)
 
     results = "No dataset execution available."
 
@@ -495,6 +563,25 @@ def query_database(request: QueryRequest):
             dict(zip(column_names, row))
             for row in rows
         ]
+
+    if request.user_id:
+        dataset_id = dataset["dataset_id"] if dataset else None
+
+        save_query(
+            request.user_id,
+            request.conversation_id,
+            dataset_id,
+            request.question,
+            working_question,
+            sql,
+            json.dumps(results)
+        )
+
+        if request.conversation_id:
+            update_conversation_title(
+                request.conversation_id,
+                request.question
+            )
 
     return {
         "type":        "success",
@@ -536,3 +623,7 @@ def get_conversation_messages(conversation_id: int):
         "success": True,
         "messages": get_queries_for_conversation(conversation_id)
     }
+
+@app.delete("/user/{user_id}/factory-reset")
+def factory_reset(user_id: int):
+    return factory_reset_user(user_id)

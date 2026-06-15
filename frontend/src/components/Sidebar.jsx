@@ -13,6 +13,18 @@ function Sidebar({
     setUser(null);
   };
 
+  const deleteConversation = async (conversationId) => {
+    try {
+      await fetch(`http://localhost:8000/conversation/${conversationId}`, {
+        method: "DELETE",
+      });
+
+      window.location.reload();
+    } catch (err) {
+      console.error("Failed to delete conversation:", err);
+    }
+  };
+
   return (
     <aside className="w-[13%] bg-white border-r border-gray-200 flex flex-col">
       <div className="p-6">
@@ -52,15 +64,29 @@ function Sidebar({
         ) : (
           <div className="space-y-2">
             {conversions.map((item) => (
-              <button
+              <div
                 key={item.conversation_id}
-                onClick={() =>
-                  loadConversationMessages(item.conversation_id)
-                }
-                className="w-full text-left px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100"
+                className="flex items-center gap-2 group"
               >
-                {item.title || "New Chat"}
-              </button>
+                <button
+                  onClick={() =>
+                    loadConversationMessages(item.conversation_id)
+                  }
+                  className="flex-1 text-left px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 truncate"
+                >
+                  {item.title || "New Chat"}
+                </button>
+
+                <button
+                  onClick={() =>
+                    deleteConversation(item.conversation_id)
+                  }
+                  className="text-red-500 hover:text-red-700 px-2 text-lg font-bold"
+                  title="Delete chat"
+                >
+                  ✕
+                </button>
+              </div>
             ))}
           </div>
         )}

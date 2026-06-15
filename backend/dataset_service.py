@@ -2,16 +2,16 @@ import sqlite3
 from auth_db import DB_NAME
 
 
-def save_schema_dataset(user_id, name, schema_text):
+def save_schema_dataset(user_id, name, schema_text, conversation_id=None):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
 
     cursor.execute(
         """
-        INSERT INTO datasets(user_id, name, schema_text, file_type, file_path)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO datasets(user_id, conversation_id, name, schema_text, file_type, file_path)
+        VALUES (?, ?, ?, ?, ?, ?)
         """,
-        (user_id, name, schema_text, "schema", None)
+        (user_id, conversation_id, name, schema_text, "schema", None)
     )
 
     conn.commit()
@@ -92,7 +92,8 @@ def save_query(
     dataset_id,
     question,
     clean_query,
-    sql
+    sql,
+    results=None
 ):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
@@ -105,9 +106,10 @@ def save_query(
             dataset_id,
             question,
             clean_query,
-            sql
+            sql,
+            results
         )
-        VALUES (?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
         """,
         (
             user_id,
@@ -115,7 +117,8 @@ def save_query(
             dataset_id,
             question,
             clean_query,
-            sql
+            sql,
+            results
         )
     )
 
@@ -162,7 +165,7 @@ def get_queries_for_conversation(conversation_id):
 
     cursor.execute(
         """
-        SELECT id, dataset_id, question, clean_query, sql, created_at
+        SELECT id, dataset_id, question, clean_query, sql, results, created_at
         FROM queries
         WHERE conversation_id = ?
         ORDER BY created_at ASC
@@ -180,7 +183,8 @@ def get_queries_for_conversation(conversation_id):
             "question": row[2],
             "clean_query": row[3],
             "sql": row[4],
-            "created_at": row[5]
+            "results": row[5],
+            "created_at": row[6]
         }
         for row in rows
     ]

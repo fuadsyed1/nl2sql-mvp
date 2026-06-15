@@ -159,7 +159,12 @@ function App() {
           type: "system",
           output:
             `SQL\n${"─".repeat(40)}\n${msg.sql || ""}\n\n` +
-            `Clean Query\n${"─".repeat(40)}\n${msg.clean_query || ""}`,
+            `Clean Query\n${"─".repeat(40)}\n${msg.clean_query || ""}\n\n` +
+            `Results\n${"─".repeat(40)}\n${
+              msg.results
+                ? JSON.stringify(JSON.parse(msg.results), null, 2)
+                : "No results saved"
+            }`,
         });
       });
 
@@ -193,7 +198,17 @@ function App() {
         }
 
         conversationId = data.conversation_id;
+
         setCurrentConversationId(conversationId);
+
+        setConversions((prev) => [
+          {
+            conversation_id: conversationId,
+            title: userInput,
+          },
+          ...prev,
+        ]);
+
         await loadConversations();
       } catch (err) {
         console.error("Failed to auto-create conversation:", err);
@@ -202,6 +217,17 @@ function App() {
     }
 
     const userInput = input.trim();
+
+    setConversions((prev) =>
+      prev.map((chat) =>
+        chat.conversation_id === conversationId
+          ? {
+              ...chat,
+              title: userInput,
+            }
+          : chat
+      )
+    );
 
     const userMessage = {
       type: "user",
@@ -274,18 +300,29 @@ function App() {
         )}
 
         {activePage === "account" && (
-          <AccountSettings target={target} setTarget={setTarget} />
+          <AccountSettings
+            target={target}
+            setTarget={setTarget}
+            user={user}
+            onFactoryReset={() => {
+              setConversions([]);
+              setMessages([]);
+              setCurrentConversationId(null);
+              setActivePage("dashboard");
+            }}
+          />
         )}
 
         {activePage === "conversion" && (
-          <ConversionPage
-            target={target}
-            messages={messages}
-            isProcessing={isProcessing}
-            input={input}
-            setInput={setInput}
-            handleSubmit={handleSubmit}
-          />
+        <ConversionPage
+          target={target}
+          messages={messages}
+          isProcessing={isProcessing}
+          input={input}
+          setInput={setInput}
+          handleSubmit={handleSubmit}
+          currentConversationId={currentConversationId}
+        />
         )}
       </main>
     </div>

@@ -1,7 +1,11 @@
-function InputBar({ input, setInput, handleSubmit }) {
+function InputBar({
+  input,
+  setInput,
+  handleSubmit,
+  currentConversationId,
+}) {
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
-
     if (!file) return;
 
     const userId = localStorage.getItem("user_id");
@@ -11,9 +15,15 @@ function InputBar({ input, setInput, handleSubmit }) {
       return;
     }
 
+    if (!currentConversationId) {
+      alert("Please start a new chat before uploading a dataset.");
+      return;
+    }
+
     const formData = new FormData();
     formData.append("file", file);
     formData.append("user_id", userId);
+    formData.append("conversation_id", currentConversationId);
 
     const response = await fetch("http://localhost:8000/upload-csv", {
       method: "POST",

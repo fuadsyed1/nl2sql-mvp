@@ -638,9 +638,21 @@ def parse_relational_query(
     group_by    = schema_info.get("group_by") or (
         detect_group_by(text, columns) if aggregation else None
     )
+    if (
+        aggregation
+        and group_by
+        and "most" in text
+    ):
+        sort = {
+            "field": aggregation["field"],
+            "direction": "DESC",
+        }
+
+        limit = 1
+    else:
+        sort = detect_sort(text, columns, group_by=group_by)
+        limit = detect_limit(text)
     filters     = detect_filters(text, columns)
-    sort        = detect_sort(text, columns, group_by=group_by)
-    limit       = detect_limit(text)
     select      = detect_selected_columns(text, columns, aggregation, group_by, sort, filters)
 
     semantic.update({
