@@ -20,7 +20,13 @@ def looks_like_header_cell(value: str) -> bool:
     return bool(re.search(r"[A-Za-z]", value))
 
 
-def detect_csv_schema(file_path: str, max_rows: int = 10):
+def detect_csv_schema(file_path: str, max_rows: int = 10, table_name: str = "uploaded_data"):
+    """Detect a CSV's header row and return a schema string.
+
+    ``table_name`` lets callers emit the real table name in the multi-table
+    path (e.g. ``pets(petid, name, age)``).  It defaults to ``uploaded_data``
+    so the existing single-table upload path is unchanged.
+    """
     best_row = None
     best_score = -1
 
@@ -56,4 +62,4 @@ def detect_csv_schema(file_path: str, max_rows: int = 10):
         )
         columns.append(clean)
 
-    return f"uploaded_data({', '.join(columns)})"
+    return f"{table_name}({', '.join(columns)})"

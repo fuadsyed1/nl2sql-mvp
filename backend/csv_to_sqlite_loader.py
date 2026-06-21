@@ -53,6 +53,36 @@ def clean_column_name(name: str) -> str:
     return name
 
 
+def clean_table_name(filename: str) -> str:
+    """Derive a safe SQLite table name from a CSV filename.
+
+    'Pets.csv'            -> 'pets'
+    'Owner Details.CSV'   -> 'owner_details'
+    '2024_sales.csv'      -> 't_2024_sales'   (cannot start with a digit)
+
+    Mirrors clean_column_name so table and column naming stay consistent.
+    """
+    # Strip any directory component and the .csv extension.
+    name = filename.replace("\\", "/").rsplit("/", 1)[-1]
+    if name.lower().endswith(".csv"):
+        name = name[:-4]
+
+    name = name.strip().lower()
+    name = name.replace("%", "percent")
+    name = re.sub(r"[^a-zA-Z0-9_]+", "_", name)
+    name = name.strip("_")
+
+    if not name:
+        return "table"
+
+    # SQLite identifiers may start with a digit only if quoted; keep it
+    # simple and prefix so the name is always a bare-safe identifier.
+    if name[0].isdigit():
+        name = "t_" + name
+
+    return name
+
+
 def load_csv_to_sqlite(csv_path: str, db_path: str = "app_data.db", table_name: str = "uploaded_data"):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
@@ -81,6 +111,9 @@ def load_csv_to_sqlite(csv_path: str, db_path: str = "app_data.db", table_name: 
 
     columns = [clean_column_name(col) for col in headers]
 
+    # Drops ONLY the table being (re)loaded — sibling tables in the same
+    # database file are left intact, which is what makes a multi-table
+    # database possible.
     cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
 
     column_type = {}
@@ -93,7 +126,7 @@ def load_csv_to_sqlite(csv_path: str, db_path: str = "app_data.db", table_name: 
                 values.append(row[index])
 
         column_type[col] = infer_sqlite_type(values)
-    
+
     print("COLUMN TYPES:", column_type, flush=True)
 
     column_defs = ", ".join([
@@ -128,7 +161,6 @@ def load_csv_to_sqlite(csv_path: str, db_path: str = "app_data.db", table_name: 
                 values.append(float(raw_value))
             else:
                 values.append(raw_value)
-
 
         if len(values) < len(columns):
             values += [""] * (len(columns) - len(values))
