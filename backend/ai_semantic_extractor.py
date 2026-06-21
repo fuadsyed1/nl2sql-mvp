@@ -1,21 +1,42 @@
+"""
+ai_semantic_extractor.py
+────────────────────────
+Calls the local Ollama LLM to perform semantic understanding of a
+natural-language question against a known schema.
+
+Responsibilities:
+  - Send question + schema to the model
+  - Parse the model's JSON response
+  - Return a raw dict that semantic_parser.validate_and_normalise() will
+    validate and schema-bind
+
+This module does NOT validate column names against the schema.
+That is validate_and_normalise()'s job.
+"""
+
 import json
 import re
 import requests
 
-from config import (
-    OLLAMA_URL,
-    MODEL_NAME,
-    DEFAULT_OPTIONS,
-)
+from config import OLLAMA_URL, MODEL_NAME, DEFAULT_OPTIONS
 
 
-def strip_think_blocks(text: str) -> str:
+# ---------------------------------------------------------------------------
+# Response parsing
+# ---------------------------------------------------------------------------
+
+def _strip_think_blocks(text: str) -> str:
+    """Remove <think>...</think> blocks that qwen3 emits."""
     return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
 
 
-def extract_json(text: str) -> dict | None:
-    clean = strip_think_blocks(text)
-
+def _extract_json(text: str) -> dict | None:
+    """
+    Extract the first valid JSON object from raw LLM output.
+    Uses bracket-depth walking so nested objects are handled correctly.
+    Returns None if no valid JSON object is found.
+    """
+    clean = _strip_think_blocks(text)
     depth = 0
     start = None
 
@@ -24,123 +45,214 @@ def extract_json(text: str) -> dict | None:
             if depth == 0:
                 start = i
             depth += 1
-
         elif ch == "}":
             depth -= 1
-
             if depth == 0 and start is not None:
-                candidate = clean[start : i + 1]
-
+                candidate = clean[start:i + 1]
                 try:
                     return json.loads(candidate)
                 except json.JSONDecodeError:
-                    start = None
+                    start = None   # keep scanning for a later object
 
     return None
 
-def repair_semantics(data: dict) -> dict:
-    if isinstance(data.get("group_by"), list):
-        data["group_by"] = data["group_by"][0] if data["group_by"] else None
 
-    aggregation = data.get("aggregation")
-    sort = data.get("sort")
-    select = data.get("select") or []
+# ---------------------------------------------------------------------------
+# Prompt
+# ---------------------------------------------------------------------------
 
-    if aggregation and sort:
-        agg_field = aggregation.get("field")
-        if agg_field:
-            sort["field"] = agg_field
-
-    if aggregation and not data.get("group_by"):
-        if select and select[0] != "*":
-            data["group_by"] = select[0]
-
-    return data
-
-def extract_semantics(question: str, schema_text: str) -> dict | None:
-    prompt = f"""
+_PROMPT_TEMPLATE = """\
 /no_think
 
-You are a semantic meaning extractor for a natural-language database system.
+You are an IR extractor for a natural-language database query system.
 
-Your task is not to guess SQL directly.
-Your task is to understand the user's question and return the correct database meaning.
+Your job is to understand the user's question and convert it into a simple backend-independent IR.
 
-Return ONLY valid JSON.
-No explanation.
+Do NOT generate SQL.
+Do NOT explain anything.
+Return ONLY one valid JSON object.
 No markdown.
 No extra text.
 
 Schema:
-{schema_text}
+{schema}
 
 Question:
 {question}
 
-Think about the question at the semantic level:
-
-1. What table/entity is the user asking about?
-2. What object should appear in the answer?
-3. What value or measure is being compared, counted, totaled, averaged, filtered, or sorted?
-4. Is the question asking about individual rows, or is it asking about groups/categories?
-5. If a category is being compared by a numeric measure, represent that category-level comparison correctly.
-6. If the question asks for a single best/worst/largest/smallest answer, return only one result.
-7. The output JSON must preserve the real meaning of the question.
-8. The generated SQL from this JSON should not change the user's intent.
-
-Important semantic guidance:
-
-- If the answer object is a category/text column and the comparison/sort measure is numeric,
-  then the meaning is usually category-level, not row-level.
-- In category-level comparison, use group_by on the answer object.
-- In category-level comparison, aggregate the numeric measure.
-- Use SUM when the numeric column already stores counts, totals, quantities, sizes, amounts, allocated space, or file counts.
-- Use AVG only when the user asks for average/mean.
-- Use COUNT only when the user asks how many rows/records/items exist and there is no count-like numeric column.
-- Sorting direction should match the meaning of the question.
-- Limit should match the amount of results requested by the user.
-- If the user asks for one answer, set limit to 1.
-- If the user asks for top N, set limit to N.
-- If no limit is implied, set limit to null.
-
-Return JSON exactly in this structure:
+Return JSON exactly in this IR shape:
 
 {{
+  "operation": "retrieve",
   "entity": "table_name",
-  "select": ["column_or_*"],
-  "filters": [],
-  "aggregation": null,
+  "answer": "column_or_*",
+  "measure": null,
+  "measure_operation": null,
   "group_by": null,
-  "sort": null,
-  "limit": null
+  "order": null,
+  "limit": null,
+  "filters": []
 }}
 
-Aggregation format, only when needed:
+Meaning of each field:
 
+operation:
+- retrieve = simple select query
+- filter = query with where/filter condition
+- rank = top/bottom/best/worst/highest/lowest/most/least query
+- aggregate = one summary value
+- group_aggregate = summary grouped by a category
+
+entity:
+- table name from the schema
+
+answer:
+- the column the user wants to see in the final answer
+- use "*" only if the user wants all columns
+
+measure:
+- numeric column being counted, summed, averaged, ranked, compared, or summarized
+- null if no numeric measure is involved
+
+measure_operation:
+- SUM, AVG, COUNT, MIN, MAX, or null
+- Use SUM when the measure column already stores counts, totals, quantities, sizes, amounts, or file counts
+- Use AVG when the user asks for average or mean
+- Use COUNT when the user asks how many rows/items exist and there is no numeric count column
+- Use MIN or MAX when the user asks for minimum or maximum value
+
+group_by:
+- category column used for grouping
+- usually same as answer for grouped/ranking-by-category questions
+- null if no grouping is needed
+
+order:
+- "desc" for highest, largest, most, top, maximum
+- "asc" for lowest, smallest, least, minimum
+- null if no ordering is needed
+
+limit:
+- integer if user asks for one result, top N, first N, etc.
+- use 1 for a single best/worst/highest/lowest answer
+- null if no limit is implied
+
+filters:
+- list of filter objects
+- each filter must look like:
+  {{"field": "column_name", "operator": ">", "value": 1000}}
+- use [] if there are no filters
+
+Important:
+- Use only table and column names from the schema.
+- Do not return SQL-style aggregation objects.
+- Do not return "aggregation".
+- Do not return "select".
+- Do not return "sort".
+- Return only the IR fields listed above.
+
+Examples:
+
+Question:
+Which extension has the most files?
+
+JSON:
 {{
-  "function": "SUM",
-  "field": "column_name"
+  "operation": "rank",
+  "entity": "uploaded_data",
+  "answer": "extension",
+  "measure": "files",
+  "measure_operation": "SUM",
+  "group_by": "extension",
+  "order": "desc",
+  "limit": 1,
+  "filters": []
 }}
 
-Sort format, only when needed:
+Question:
+Which extension has the least files?
 
+JSON:
 {{
-  "field": "column_name",
-  "direction": "DESC"
+  "operation": "rank",
+  "entity": "uploaded_data",
+  "answer": "extension",
+  "measure": "files",
+  "measure_operation": "SUM",
+  "group_by": "extension",
+  "order": "asc",
+  "limit": 1,
+  "filters": []
 }}
 
-Before returning, silently check your JSON:
+Question:
+Top 5 extensions by size
 
-- Does select contain the object the user wants to see?
-- Does aggregation represent the numeric measure being compared or summarized?
-- Does group_by exist when a category is compared by a numeric measure?
-- Does sort use the same field as the compared measure?
-- Does direction match the meaning of the question?
-- Does limit match the number of answers requested?
-- Are all names from the provided schema only?
+JSON:
+{{
+  "operation": "rank",
+  "entity": "uploaded_data",
+  "answer": "extension",
+  "measure": "size",
+  "measure_operation": "SUM",
+  "group_by": "extension",
+  "order": "desc",
+  "limit": 5,
+  "filters": []
+}}
 
-Now return only the final corrected JSON.
+Question:
+Average size by extension
+
+JSON:
+{{
+  "operation": "group_aggregate",
+  "entity": "uploaded_data",
+  "answer": "extension",
+  "measure": "size",
+  "measure_operation": "AVG",
+  "group_by": "extension",
+  "order": null,
+  "limit": null,
+  "filters": []
+}}
+
+Question:
+show files where size > 1000000
+
+JSON:
+{{
+  "operation": "filter",
+  "entity": "uploaded_data",
+  "answer": "*",
+  "measure": null,
+  "measure_operation": null,
+  "group_by": null,
+  "order": null,
+  "limit": 50,
+  "filters": [
+    {{"field": "size", "operator": ">", "value": 1000000}}
+  ]
+}}
+
+Now return only the final JSON object.
 """
+
+
+# ---------------------------------------------------------------------------
+# Public API
+# ---------------------------------------------------------------------------
+
+def extract_semantics(question: str, schema_text: str) -> dict | None:
+    """
+    Ask the LLM to extract the semantic meaning of *question* given *schema_text*.
+
+    Returns a raw dict (not yet schema-validated) or None on any failure.
+    The caller (app.py) passes the result to validate_and_normalise() before use.
+    """
+    prompt = _PROMPT_TEMPLATE.format(
+        schema=schema_text.strip(),
+        question=question.strip(),
+    )
 
     try:
         print("CALLING SEMANTIC EXTRACTOR...", flush=True)
@@ -148,45 +260,58 @@ Now return only the final corrected JSON.
         response = requests.post(
             OLLAMA_URL,
             json={
-                "model": MODEL_NAME,
+                "model":  MODEL_NAME,
                 "prompt": prompt,
                 "stream": False,
                 "options": {
                     **DEFAULT_OPTIONS,
                     "temperature": 0,
-                    "num_predict": 500,
+                    # qwen3:1.7b emits a <think> block even with /no_think.
+                    # Give it enough budget: ~500 think + ~300 JSON = 800.
+                    "num_predict": 800,
                 },
             },
             timeout=90,
         )
-
         response.raise_for_status()
 
         raw_text = response.json().get("response", "").strip()
+        print("RAW EXTRACTOR RESPONSE:", raw_text, flush=True)
 
-        print("RAW SEMANTIC EXTRACTOR:", raw_text, flush=True)
+        if not raw_text:
+            print("SEMANTIC EXTRACTOR: empty response, retrying once...", flush=True)
 
-        data = extract_json(raw_text)
+            response = requests.post(
+                OLLAMA_URL,
+                json={
+                    "model": MODEL_NAME,
+                    "prompt": prompt,
+                    "stream": False,
+                    "options": {
+                        **DEFAULT_OPTIONS,
+                        "temperature": 0,
+                        "num_predict": 1000,
+                    },
+                },
+                timeout=90,
+            )
 
-        if not data:
-            print("SEMANTIC EXTRACTOR ERROR: no valid JSON found", flush=True)
+            response.raise_for_status()
+            raw_text = response.json().get("response", "").strip()
+
+            print("RAW EXTRACTOR RETRY RESPONSE:", raw_text, flush=True)
+
+            if not raw_text:
+                print("SEMANTIC EXTRACTOR: retry also empty", flush=True)
+                return None
+
+        data = _extract_json(raw_text)
+
+        if data is None:
+            print("SEMANTIC EXTRACTOR: no valid JSON found in response", flush=True)
             return None
 
-        data = repair_semantics(data)
-        print("REPAIRED SEMANTICS:", data, flush=True)
-
-        # Normalize group_by shape
-        if isinstance(data.get("group_by"), list):
-            data["group_by"] = data["group_by"][0] if data["group_by"] else None
-
-        # If aggregation exists, sort should use aggregation field, not group/category field
-        if data.get("aggregation") and data.get("sort"):
-            agg_field = data["aggregation"].get("field")
-            sort_field = data["sort"].get("field")
-
-            if agg_field and sort_field != agg_field:
-                data["sort"]["field"] = agg_field
-
+        print("EXTRACTED SEMANTICS:", data, flush=True)
         return data
 
     except Exception as exc:
@@ -194,21 +319,25 @@ Now return only the final corrected JSON.
         return None
 
 
+# ---------------------------------------------------------------------------
+# CLI test
+# ---------------------------------------------------------------------------
+
 if __name__ == "__main__":
-    print("STARTING SEMANTIC TEST...", flush=True)
-
-    tests = [
-        "Which extension has the most files?",
-        "Which extension has the least files?",
-        "Top 5 extensions by size",
-        "Average size by extension",
-        "Highest allocated space",
-    ]
-
     schema = "uploaded_data(extension, file_type, percent, size, allocated, files)"
 
+    tests = [
+        "show all files",
+        "show top 5 files by size",
+        "show files where extension is .dll",
+        "show the largest allocated files",
+        "which extension has the most files?",
+        "which extension has the fewest files?",
+        "average size by extension",
+        "show files where size > 1000000",
+    ]
+
     for question in tests:
-        print("\nQUESTION:", question)
+        print(f"\nQ: {question!r}")
         result = extract_semantics(question, schema)
-        print("FINAL RESULT:")
-        print(json.dumps(result, indent=2))
+        print("RESULT:", json.dumps(result, indent=2))
