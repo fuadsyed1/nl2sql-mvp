@@ -32,13 +32,29 @@ from fastapi import UploadFile, File, Form
 import os
 import shutil
 from csv_schema_detector import detect_csv_schema
-from csv_to_sqlite_loader import load_csv_to_sqlite
+from csv_to_sqlite_loader import load_csv_to_sqlite, clean_table_name
 from conversation_service import (
     create_conversation,
     get_user_conversations,
     delete_conversation,
     update_conversation_title,
     factory_reset_user,
+)
+from schema_extractor import extract_table_columns
+from relationship_detector import detect_relationships
+from database_service import (
+    create_database,
+    set_database_path,
+    add_database_table,
+    get_user_databases,
+    get_database,
+    get_database_tables,
+    add_table_columns,
+    get_database_schema,
+    add_relationships,
+    get_relationships,
+    clear_relationships,
+    get_database_graph,
 )
 
 # ---------------------------------------------------------------------------
@@ -234,6 +250,91 @@ async def upload_csv(
         "path": file_path
     }
 
+@app.post("/upload-database")
+async def upload_database(
+    user_id: int = Form(...),
+    conversation_id: int | None = Form(None),
+    name: str | None = Form(None),
+    files: list[UploadFile] = File(...),
+):
+    csv_files = [f for f in files if f.filename.lower().endswith(".csv")]
+    if not csv_files:
+        return {"success": False, "message": "No CSV files provided"}
+
+    db_name = name or "database"
+    database_id = create_database(user_id, db_name, conversation_id)
+
+    db_dir = f"uploads/user_{user_id}/databases/db_{database_id}"
+    os.makedirs(db_dir, exist_ok=True)
+    db_path = os.path.join(db_dir, "data.db")
+    set_database_path(database_id, db_path)
+
+    created_tables = []
+    used_names = set()
+
+    for file in csv_files:
+        file_path = os.path.join(db_dir, file.filename)
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+
+        base = clean_table_name(file.filename)
+        table_name = base
+        suffix = 2
+        while table_name in used_names:
+            table_name = f"{base}_{suffix}"
+            suffix += 1
+        used_names.add(table_name)
+
+        load_result = load_csv_to_sqlite(
+            file_path, db_path=db_path, table_name=table_name
+        )
+
+        if not load_result.get("success"):
+            created_tables.append({
+                "source_filename": file.filename,
+                "table_name": table_name,
+                "success": False,
+                "message": load_result.get("message"),
+            })
+            continue
+
+        schema_text = detect_csv_schema(file_path, table_name=table_name)
+        rows_inserted = load_result.get("rows_inserted", 0)
+
+        table_id = add_database_table(
+            database_id,
+            table_name,
+            file.filename,
+            file_path,
+            schema_text,
+            rows_inserted,
+        )
+
+        columns_meta = extract_table_columns(db_path, table_name)
+        add_table_columns(table_id, columns_meta)
+
+        created_tables.append({
+            "source_filename": file.filename,
+            "table_name": table_name,
+            "rows_inserted": rows_inserted,
+            "schema_text": schema_text,
+            "columns": columns_meta,
+            "success": True,
+        })
+
+    clear_relationships(database_id)
+    relationships = detect_relationships(database_id)
+    add_relationships(database_id, relationships)
+
+    return {
+        "success": True,
+        "database_id": database_id,
+        "name": db_name,
+        "db_path": db_path,
+        "tables": created_tables,
+        "relationships": relationships,
+    }
+
 @app.get("/datasets/{user_id}")
 def get_user_datasets(user_id: int):
     conn = get_connection()
@@ -267,6 +368,50 @@ def get_user_datasets(user_id: int):
         "success": True,
         "datasets": datasets
     }
+
+@app.get("/databases/{user_id}")
+def list_databases(user_id: int):
+    return {"success": True, "databases": get_user_databases(user_id)}
+
+
+@app.get("/database/{database_id}")
+def database_detail(database_id: int):
+    db = get_database(database_id)
+    if not db:
+        return {"success": False, "message": "Database not found"}
+    db["tables"] = get_database_tables(database_id)
+    return {"success": True, "database": db}
+
+
+@app.get("/database/{database_id}/schema")
+def database_schema(database_id: int):
+    schema = get_database_schema(database_id)
+    if not schema:
+        return {"success": False, "message": "Database not found"}
+    return {"success": True, "database": schema}
+
+
+@app.get("/database/{database_id}/relationships")
+def database_relationships(database_id: int):
+    return {"success": True, "relationships": get_relationships(database_id)}
+
+
+@app.post("/database/{database_id}/detect-relationships")
+def redetect_relationships(database_id: int):
+    if not get_database(database_id):
+        return {"success": False, "message": "Database not found"}
+    clear_relationships(database_id)
+    relationships = detect_relationships(database_id)
+    add_relationships(database_id, relationships)
+    return {"success": True, "relationships": relationships}
+
+
+@app.get("/database/{database_id}/graph")
+def database_graph(database_id: int):
+    graph = get_database_graph(database_id)
+    if not graph:
+        return {"success": False, "message": "Database not found"}
+    return {"success": True, "database": graph}
 
 @app.post("/dataset/schema")
 def add_schema_dataset(request: SchemaDatasetRequest):
