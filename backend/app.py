@@ -56,6 +56,10 @@ from database_service import (
     clear_relationships,
     get_database_graph,
 )
+from ai_semantic_extractor import extract_semantics, extract_multitable_ir_extraction
+from ir_builder import build_from_extraction
+from ir_validator import validate_ir
+from semantic_ir import to_dict as ir_to_dict
 
 # ---------------------------------------------------------------------------
 # App setup
@@ -108,6 +112,9 @@ class SignupRequest(BaseModel):
 class LoginRequest(BaseModel):
     email: str
     password: str
+
+class IRRequest(BaseModel):
+    question: str
 
 # ---------------------------------------------------------------------------
 # Schema parsing helper
@@ -425,6 +432,24 @@ def latest_dataset(user_id: int):
         return {"success": False, "message": "No dataset found"}
     return {"success": True, "dataset": dataset}
 
+@app.post("/database/{database_id}/ir")
+def inspect_ir(database_id: int, body: IRRequest):
+    graph = get_database_graph(database_id)
+    if not graph:
+        return {"success": False, "message": "Database not found"}
+
+    extraction = extract_multitable_ir_extraction(body.question, graph)
+    ir = build_from_extraction(database_id, extraction, graph)
+    validation = validate_ir(ir, graph)
+
+    return {
+        "success": True,
+        "database_id": database_id,
+        "question": body.question,
+        "extraction": extraction,
+        "ir": ir_to_dict(ir),
+        "validation": validation,
+    }
 
 @app.get("/queries/{user_id}")
 def user_queries(user_id: int):
