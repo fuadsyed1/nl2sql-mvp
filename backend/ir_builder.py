@@ -57,6 +57,32 @@ def _graph_relationships(graph):
     return []
 
 
+def _referenced_tables(clause_lists):
+    """First-seen-ordered list of table names appearing on any clause entry."""
+    seen = []
+    for clause in clause_lists:
+        for entry in clause or []:
+            if isinstance(entry, dict) and entry.get("table"):
+                t = _lower(entry["table"])
+                if t and t not in seen:
+                    seen.append(t)
+    return seen
+
+
+def _union_tables(provided, clause_lists):
+    """Union of model-provided tables and tables referenced by clause entries,
+    preserving provided order first, then first-seen referenced order. Lossless
+    and additive: it never removes, renames, or remaps anything."""
+    tables = []
+    for t in provided:
+        if t and t not in tables:
+            tables.append(t)
+    for t in _referenced_tables(clause_lists):
+        if t not in tables:
+            tables.append(t)
+    return tables
+
+
 def _relationship_hints(graph, tables_set):
     """Direct relationships whose BOTH endpoint tables are among `tables_set`,
     reduced to by-value, non-authoritative hints. Volatile fields (confirmed,
@@ -99,24 +125,39 @@ def _relationship_hints(graph, tables_set):
 def build_from_extraction(database_id, extraction, graph=None):
     """Build a MultiTableSemanticIR from an extraction dict.
 
-    If `graph` is provided, direct relationship hints between the extraction's
-    tables are attached; otherwise relationship_hints is empty. No path search,
-    no table inference, no validation.
+    `tables` is derived as the union of the model-provided tables and every
+    table referenced in select, filters, aggregations, group_by, having, and
+    order_by. This fills in a list the model sometimes omits even though its
+    columns are already table-qualified; it is lossless and never remaps or
+    invents column references. If `graph` is provided, direct relationship
+    hints between the resulting tables are attached; otherwise relationship_hints
+    is empty. No path search, no table inference beyond the union, no validation.
     """
     extraction = extraction or {}
 
-    tables = [_lower(t) for t in (extraction.get("tables") or [])]
+    select = _normalize_list(extraction.get("select"))
+    filters = _normalize_list(extraction.get("filters"))
+    aggregations = _normalize_list(extraction.get("aggregations"))
+    group_by = _normalize_list(extraction.get("group_by"))
+    having = _normalize_list(extraction.get("having"))
+    order_by = _normalize_list(extraction.get("order_by"))
+
+    provided = [_lower(t) for t in (extraction.get("tables") or [])]
+    tables = _union_tables(
+        provided,
+        [select, filters, aggregations, group_by, having, order_by],
+    )
     tables_set = set(tables)
 
     return MultiTableSemanticIR(
         database_id=database_id,
         tables=tables,
-        select=_normalize_list(extraction.get("select")),
-        filters=_normalize_list(extraction.get("filters")),
-        aggregations=_normalize_list(extraction.get("aggregations")),
-        group_by=_normalize_list(extraction.get("group_by")),
-        having=_normalize_list(extraction.get("having")),
-        order_by=_normalize_list(extraction.get("order_by")),
+        select=select,
+        filters=filters,
+        aggregations=aggregations,
+        group_by=group_by,
+        having=having,
+        order_by=order_by,
         limit=extraction.get("limit"),
         distinct=bool(extraction.get("distinct", False)),
         relationship_hints=_relationship_hints(graph, tables_set) if graph else [],
