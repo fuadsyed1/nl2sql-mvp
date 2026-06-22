@@ -208,53 +208,28 @@ _IR_EXTRACTION_KEYS = (
     "group_by", "having", "order_by", "limit", "distinct",
 )
 
-# Instruction block + worked examples. Kept as a plain (non-f) string so the
-# literal JSON braces need no escaping.
+# Compact instruction block + two worked examples (filter, aggregate). Kept as
+# a plain (non-f) string so the literal JSON braces need no escaping. Short on
+# purpose: a long prompt makes the model spend its token budget before
+# emitting JSON, which is the empty-response failure this guards against.
 _MULTITABLE_IR_GUIDE = """
-Return ONLY one valid JSON object in EXACTLY this shape (no SQL, no markdown,
-no commentary):
-
-{
-  "tables": [],
-  "select": [],
-  "filters": [],
-  "aggregations": [],
-  "group_by": [],
-  "having": [],
-  "order_by": [],
-  "limit": null,
-  "distinct": false
-}
+Return ONE JSON object with EXACTLY these keys:
+{"tables":[],"select":[],"filters":[],"aggregations":[],"group_by":[],"having":[],"order_by":[],"limit":null,"distinct":false}
 
 Rules:
-- Use ONLY table and column names listed in "Available tables" above.
-- Every column reference MUST be table-qualified: {"table": "...", "column": "..."}.
-- "tables" lists every table the answer needs.
-- "filters" entries look like {"table","column","op","value","connector"} (connector "AND"/"OR").
-- "aggregations" entries look like {"function","table","column","alias"};
-  function is one of COUNT, SUM, AVG, MIN, MAX; use "*" as column for COUNT(*).
-- "group_by" entries are {"table","column"}.
-- "order_by" entries are {"table","column","direction"} OR {"aggregation_alias","direction"}.
-- "having" entries reference an aggregation alias: {"aggregation_alias","op","value"}.
-- The relationships shown above are CONTEXT ONLY. Do NOT invent joins and do
-  NOT add any join or relationship fields — they are added later automatically.
-- If you are unsure about any part, return empty lists for it instead of guessing.
+- Use only the tables/columns listed above. Every column is {"table":"..","column":".."}.
+- filters: {"table","column","op","value","connector"}.
+- aggregations: {"function","table","column","alias"}; function in COUNT,SUM,AVG,MIN,MAX; COUNT(*) uses column "*".
+- group_by: {"table","column"}. order_by: {"table","column","direction"} or {"aggregation_alias","direction"}.
+- Do not add joins or relationship fields. If unsure, use empty lists.
 
-Examples (format only — map to the actual schema above):
-
-Question: Show owners and their pets
-{"tables":["owners","pets"],"select":[{"table":"owners","column":"lastname"},{"table":"pets","column":"name"}],"filters":[],"aggregations":[],"group_by":[],"having":[],"order_by":[],"limit":null,"distinct":false}
-
-Question: Which owners have dogs?
+Example - "Which owners have dogs?":
 {"tables":["owners","pets"],"select":[{"table":"owners","column":"lastname"}],"filters":[{"table":"pets","column":"species","op":"=","value":"dog","connector":"AND"}],"aggregations":[],"group_by":[],"having":[],"order_by":[],"limit":null,"distinct":true}
 
-Question: Count pets by city
+Example - "Count pets by city":
 {"tables":["owners","pets"],"select":[{"table":"owners","column":"city"}],"filters":[],"aggregations":[{"function":"COUNT","table":"pets","column":"petid","alias":"pet_count"}],"group_by":[{"table":"owners","column":"city"}],"having":[],"order_by":[{"aggregation_alias":"pet_count","direction":"DESC"}],"limit":null,"distinct":false}
 
-Question: List pet names and owner last names
-{"tables":["pets","owners"],"select":[{"table":"pets","column":"name","alias":"pet_name"},{"table":"owners","column":"lastname","alias":"owner_last_name"}],"filters":[],"aggregations":[],"group_by":[],"having":[],"order_by":[],"limit":null,"distinct":false}
-
-Now return only the final JSON for the question.
+Output JSON now:
 """
 
 
@@ -338,31 +313,37 @@ def _normalize_ir_extraction(data) -> dict:
     return result
 
 
-def extract_multitable_ir_extraction(question: str, graph) -> dict:
-    """Schema-graph-aware extraction.
-
-    Given a natural-language question and a schema graph, ask the model for an
-    IR-shaped extraction dict (tables + table-qualified clauses). Returns ONLY
-    the extraction shape — never SQL and never relationship_hints. On any
-    failure it returns empty lists rather than inventing content.
-    """
-    tables_block, rel_block = _describe_graph(graph)
-
-    prompt = (
-        "/no_think\n\n"
-        "You are a schema-aware semantic extractor for a multi-table "
-        "natural-language database system.\n"
-        "Understand the question against the schema and return the database "
-        "meaning as structured JSON — not SQL.\n\n"
-        f"Available tables:\n{tables_block}\n\n"
-        f"Relationships (context only):\n{rel_block}\n\n"
-        f"Question:\n{question}\n"
+def _primary_ir_prompt(question, tables_block, rel_block):
+    """Compact primary prompt: schema + relationships-as-context + 2 examples."""
+    return (
+        "/no_think\n"
+        "Extract the query meaning as JSON only. No SQL, no prose.\n\n"
+        f"Tables:\n{tables_block}\n\n"
+        f"Relationships (context only, do not invent joins):\n{rel_block}\n\n"
+        f"Question: {question}\n"
         f"{_MULTITABLE_IR_GUIDE}"
     )
 
+
+def _fallback_ir_prompt(question, tables_block):
+    """Even shorter retry prompt: no relationships, no examples, inline shape."""
+    return (
+        "/no_think\n"
+        "Output ONLY one JSON object, nothing else.\n\n"
+        f"Tables:\n{tables_block}\n\n"
+        f"Question: {question}\n\n"
+        'Shape: {"tables":[],"select":[{"table":"t","column":"c"}],"filters":[],'
+        '"aggregations":[],"group_by":[],"having":[],"order_by":[],"limit":null,"distinct":false}\n'
+        'Use only the tables/columns above. Every column is {"table":..,"column":..}. '
+        "No SQL. No joins. If unsure use empty lists.\nJSON:"
+    )
+
+
+def _call_ir_model(prompt, num_predict):
+    """One model call. Returns a parsed dict, or None if the response is empty,
+    has no JSON, or the request fails."""
     try:
         print("CALLING MULTITABLE IR EXTRACTOR...", flush=True)
-
         response = requests.post(
             OLLAMA_URL,
             json={
@@ -372,29 +353,49 @@ def extract_multitable_ir_extraction(question: str, graph) -> dict:
                 "options": {
                     **DEFAULT_OPTIONS,
                     "temperature": 0,
-                    "num_predict": 700,
+                    "num_predict": num_predict,
                 },
             },
             timeout=90,
         )
-
         response.raise_for_status()
 
         raw_text = response.json().get("response", "").strip()
         print("RAW MULTITABLE IR EXTRACTOR:", raw_text, flush=True)
-
-        data = extract_json(raw_text)
-        if not data:
-            print("MULTITABLE IR EXTRACTOR: no valid JSON found", flush=True)
-            return _empty_ir_extraction()
-
-        extraction = _normalize_ir_extraction(data)
-        print("MULTITABLE IR EXTRACTION:", extraction, flush=True)
-        return extraction
-
+        if not raw_text:
+            return None
+        return extract_json(raw_text)
     except Exception as exc:
         print(f"MULTITABLE IR EXTRACTOR ERROR: {exc}", flush=True)
+        return None
+
+
+def extract_multitable_ir_extraction(question: str, graph) -> dict:
+    """Schema-graph-aware extraction.
+
+    Given a natural-language question and a schema graph, ask the model for an
+    IR-shaped extraction dict (tables + table-qualified clauses). Returns ONLY
+    the extraction shape - never SQL and never relationship_hints. Makes one
+    retry with a shorter prompt when the model returns an empty / non-JSON
+    response, and falls back to empty lists rather than inventing content.
+    """
+    tables_block, rel_block = _describe_graph(graph)
+
+    # Attempt 1: compact prompt with two examples.
+    data = _call_ir_model(_primary_ir_prompt(question, tables_block, rel_block), 2000)
+
+    # Attempt 2: even shorter prompt when the first yields nothing usable.
+    if not data:
+        print("MULTITABLE IR EXTRACTOR: retrying with a shorter prompt", flush=True)
+        data = _call_ir_model(_fallback_ir_prompt(question, tables_block), 1200)
+
+    if not data:
+        print("MULTITABLE IR EXTRACTOR: no valid JSON after retry", flush=True)
         return _empty_ir_extraction()
+
+    extraction = _normalize_ir_extraction(data)
+    print("MULTITABLE IR EXTRACTION:", extraction, flush=True)
+    return extraction
 
 
 if __name__ == "__main__":
