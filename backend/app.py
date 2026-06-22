@@ -60,6 +60,8 @@ from ai_semantic_extractor import extract_semantics, extract_multitable_ir_extra
 from ir_builder import build_from_extraction
 from ir_validator import validate_ir
 from semantic_ir import to_dict as ir_to_dict
+from plan_resolver import resolve_plan
+from query_plan import to_dict as plan_to_dict
 
 # ---------------------------------------------------------------------------
 # App setup
@@ -449,6 +451,46 @@ def inspect_ir(database_id: int, body: IRRequest):
         "extraction": extraction,
         "ir": ir_to_dict(ir),
         "validation": validation,
+    }
+
+@app.post("/database/{database_id}/resolve")
+def resolve_query_plan(database_id: int, body: IRRequest):
+    graph = get_database_graph(database_id)
+
+    if not graph:
+        return {
+            "success": False,
+            "message": "Database not found"
+        }
+
+    extraction = extract_multitable_ir_extraction(
+        body.question,
+        graph
+    )
+
+    ir = build_from_extraction(
+        database_id,
+        extraction,
+        graph
+    )
+
+    validation = validate_ir(ir, graph)
+
+    plan = None
+
+    if validation["valid"]:
+        plan = plan_to_dict(
+            resolve_plan(ir, graph)
+        )
+
+    return {
+        "success": True,
+        "database_id": database_id,
+        "question": body.question,
+        "extraction": extraction,
+        "ir": ir_to_dict(ir),
+        "validation": validation,
+        "plan": plan
     }
 
 @app.get("/queries/{user_id}")
