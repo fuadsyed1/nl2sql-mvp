@@ -425,3 +425,20 @@ def get_database_graph(database_id):
         return None
     schema["relationships"] = get_relationships(database_id)
     return schema
+
+
+# ----------------------------------------------------------------------------
+# Phase 8 — execution path resolution
+# ----------------------------------------------------------------------------
+
+def get_database_path(database_id):
+    """Return the SQLite file path for a database group, or None.
+
+    Small read-only helper for the execution layer: the SQL executor is given a
+    db_path directly and never resolves it itself. Returns None when the
+    database does not exist (or has no path recorded yet).
+    """
+    db = get_database(database_id)
+    if not db:
+        return None
+    return db.get("db_path")
