@@ -1,12 +1,20 @@
 """
 llm — SpiderSQL LLM provider abstraction layer.
 
-Step 1 exposes only the interface + configuration foundation. Concrete
-providers (Ollama, MindRouter) and the factory are added in later steps.
+Exposes the interface + configuration foundation, the typed errors, and the
+provider factory (get_provider / reset_provider_cache). Concrete providers live
+in llm.providers.
 """
 
 from .base import Message, GenerationResult, ChatResult, LLMProvider
 from .config import LLMConfig, load_from_env, DEFAULTS
+from .errors import (
+    ProviderError,
+    ProviderUnavailable,
+    ProviderAuthError,
+    ProviderQuotaError,
+)
+from .factory import get_provider, reset_provider_cache
 
 __all__ = [
     "Message",
@@ -16,4 +24,10 @@ __all__ = [
     "LLMConfig",
     "load_from_env",
     "DEFAULTS",
+    "ProviderError",
+    "ProviderUnavailable",
+    "ProviderAuthError",
+    "ProviderQuotaError",
+    "get_provider",
+    "reset_provider_cache",
 ]
