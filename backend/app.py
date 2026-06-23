@@ -55,6 +55,7 @@ from database_service import (
     get_relationships,
     clear_relationships,
     get_database_graph,
+    get_database_path,
 )
 from ai_semantic_extractor import extract_semantics, extract_multitable_ir_extraction
 from ir_builder import build_from_extraction
@@ -64,6 +65,8 @@ from plan_resolver import resolve_plan
 from query_plan import to_dict as plan_to_dict
 from multitable_sql_generator import generate_sql
 from sql_types import to_dict as sql_to_dict
+from sql_executor import execute_sql
+from execution_result import to_dict as execution_to_dict
 
 # ---------------------------------------------------------------------------
 # App setup
@@ -539,6 +542,67 @@ def generate_sql_endpoint(database_id: int, body: IRRequest):
         **base,
         "plan": plan,
         "generated_sql": generated,
+    }
+
+@app.post("/database/{database_id}/execute_sql")
+def execute_sql_endpoint(database_id: int, body: IRRequest):
+    graph = get_database_graph(database_id)
+    if not graph:
+        return {"success": False, "message": "Database not found"}
+
+    extraction = extract_multitable_ir_extraction(body.question, graph)
+    ir = build_from_extraction(database_id, extraction, graph)
+    validation = validate_ir(ir, graph)
+
+    base = {
+        "database_id": database_id,
+        "question": body.question,
+        "extraction": extraction,
+        "ir": ir_to_dict(ir),
+        "validation": validation,
+    }
+
+    if not validation["valid"]:
+        return {
+            "success": False,
+            **base,
+            "plan": None,
+            "generated_sql": None,
+            "execution": None,
+        }
+
+    plan_obj = resolve_plan(ir, graph)
+    plan = plan_to_dict(plan_obj)
+
+    if not plan["resolved"]:
+        return {
+            "success": False,
+            **base,
+            "plan": plan,
+            "generated_sql": None,
+            "execution": None,
+        }
+
+    generated = sql_to_dict(generate_sql(plan_obj))
+
+    if not generated["generated"]:
+        return {
+            "success": False,
+            **base,
+            "plan": plan,
+            "generated_sql": generated,
+            "execution": None,
+        }
+
+    db_path = get_database_path(database_id)
+    execution = execution_to_dict(execute_sql(generated, db_path))
+
+    return {
+        "success": execution["executed"],
+        **base,
+        "plan": plan,
+        "generated_sql": generated,
+        "execution": execution,
     }
 
 @app.get("/queries/{user_id}")
