@@ -48,6 +48,9 @@ question must bridge through the junction table. The verified end-to-end example
   simple select, single-table filter, two-table join, bridge-table join through
   `owns`, aggregation, group by, order by, limit, distinct, and failure/edge
   cases.
+- `run_petshop_benchmark.py` — the runner (Phase 9 Step 2). Standard library
+  only; it changes no application code.
+- `results/` — timestamped JSON result files written by the runner.
 
 ### Item shape
 
@@ -97,9 +100,59 @@ When the runner is built, it is expected to, per question:
   pitfall** that should be *correctly rejected* by the validator — it is an
   accepted correct-rejection case, not a bug to fix.
 
+## Running the benchmark
+
+Prerequisites:
+
+1. The SpiderSQL backend is running (default `http://localhost:8000`).
+2. The PetShop database is uploaded and registered as the target `database_id`
+   (default `1`) with the owners/pets/owns schema above.
+3. The LLM provider is configured (local Ollama or MindRouter via `.env`). The
+   runner records `LLM_PROVIDER` / `LLM_MODEL_NAME` from its own environment for
+   provenance.
+
+Commands (run from the `backend/` directory):
+
+```
+python benchmarks/run_petshop_benchmark.py
+python benchmarks/run_petshop_benchmark.py --database-id 1
+python benchmarks/run_petshop_benchmark.py --base-url http://localhost:8000
+# optional: --timeout 180   (per-request seconds; raise it for large remote models)
+```
+
+For each question the runner POSTs `{"question": "..."}` to
+`/database/{database_id}/execute_sql`, measures latency, captures the full
+response, and grades it structurally:
+
+- **Normal cases** pass only when `validation.valid`, `plan.resolved`,
+  `generated_sql.generated`, and `execution.executed` are all true, AND the
+  `expected_tables` appear in `ir.tables`/`plan.tables_used`, the
+  `expected_bridge_tables` appear in `plan.bridge_tables`, every
+  `expected_sql_contains` fragment is in `generated_sql.sql`, `expected_params`
+  equals `generated_sql.params`, and every `expected_result_contains` value
+  appears in `execution.rows`.
+- **Failure/edge cases** pass when the pipeline *correctly declines*
+  (`validation.valid == false` OR `plan.resolved == false` OR
+  `generated_sql.generated == false`) and `execution` is null or
+  `executed == false` — i.e. no SQL is run on an unanswerable question.
+
+### Output
+
+- Per-question `PASS`/`FAIL` lines (with the failure reason and latency).
+- A per-category summary (`passed/total`).
+- An overall summary: total, passed, failed, pass rate, average latency.
+- A JSON result file at `benchmarks/results/petshop_benchmark_<timestamp>.json`
+  containing the timestamp, base URL, database id, provider/model (from
+  environment), the summary and category breakdown, and the full per-question
+  responses + grading details.
+
+Because the extraction step (LLM) is nondeterministic, grading is structural,
+not exact-string — pass rates reflect real pipeline accuracy and can be compared
+across providers (Ollama vs. MindRouter) on the identical question set.
+
 ## Scope and rules
 
-- This step adds **data and documentation only** — no runner, no `app.py`
-  changes, no provider-layer changes, and no Phase 5/6/7/8 logic changes.
+- Step 1 added the dataset + docs; Step 2 adds the runner. Neither changes
+  `app.py`, the provider layer, the extractor, or any Phase 5/6/7/8 logic.
 - The dataset is versioned (`"version": "1.0"`); changes to questions or
   expectations should bump the version so historical results stay comparable.
