@@ -1,12 +1,8 @@
 import json
 import re
-import requests
 
-from config import (
-    OLLAMA_URL,
-    MODEL_NAME,
-    DEFAULT_OPTIONS,
-)
+from llm import get_provider
+from llm.errors import ProviderError
 
 
 def strip_think_blocks(text: str) -> str:
@@ -145,24 +141,12 @@ Now return only the final corrected JSON.
     try:
         print("CALLING SEMANTIC EXTRACTOR...", flush=True)
 
-        response = requests.post(
-            OLLAMA_URL,
-            json={
-                "model": MODEL_NAME,
-                "prompt": prompt,
-                "stream": False,
-                "options": {
-                    **DEFAULT_OPTIONS,
-                    "temperature": 0,
-                    "num_predict": 500,
-                },
-            },
-            timeout=90,
+        result = get_provider().generate(
+            prompt,
+            options={"temperature": 0, "num_predict": 500, "think": False},
         )
 
-        response.raise_for_status()
-
-        raw_text = response.json().get("response", "").strip()
+        raw_text = (result.text or "").strip()
 
         print("RAW SEMANTIC EXTRACTOR:", raw_text, flush=True)
 
@@ -189,6 +173,9 @@ Now return only the final corrected JSON.
 
         return data
 
+    except ProviderError as exc:
+        print(f"SEMANTIC EXTRACTOR ERROR (provider): {exc}", flush=True)
+        return None
     except Exception as exc:
         print(f"SEMANTIC EXTRACTOR ERROR: {exc}", flush=True)
         return None
@@ -344,27 +331,19 @@ def _call_ir_model(prompt, num_predict):
     has no JSON, or the request fails."""
     try:
         print("CALLING MULTITABLE IR EXTRACTOR...", flush=True)
-        response = requests.post(
-            OLLAMA_URL,
-            json={
-                "model": MODEL_NAME,
-                "prompt": prompt,
-                "stream": False,
-                "options": {
-                    **DEFAULT_OPTIONS,
-                    "temperature": 0,
-                    "num_predict": num_predict,
-                },
-            },
-            timeout=90,
+        result = get_provider().generate(
+            prompt,
+            options={"temperature": 0, "num_predict": num_predict, "think": False},
         )
-        response.raise_for_status()
 
-        raw_text = response.json().get("response", "").strip()
+        raw_text = (result.text or "").strip()
         print("RAW MULTITABLE IR EXTRACTOR:", raw_text, flush=True)
         if not raw_text:
             return None
         return extract_json(raw_text)
+    except ProviderError as exc:
+        print(f"MULTITABLE IR EXTRACTOR ERROR (provider): {exc}", flush=True)
+        return None
     except Exception as exc:
         print(f"MULTITABLE IR EXTRACTOR ERROR: {exc}", flush=True)
         return None
@@ -382,12 +361,12 @@ def extract_multitable_ir_extraction(question: str, graph) -> dict:
     tables_block, rel_block = _describe_graph(graph)
 
     # Attempt 1: compact prompt with two examples.
-    data = _call_ir_model(_primary_ir_prompt(question, tables_block, rel_block), 2000)
+    data = _call_ir_model(_primary_ir_prompt(question, tables_block, rel_block), 700)
 
     # Attempt 2: even shorter prompt when the first yields nothing usable.
     if not data:
         print("MULTITABLE IR EXTRACTOR: retrying with a shorter prompt", flush=True)
-        data = _call_ir_model(_fallback_ir_prompt(question, tables_block), 1200)
+        data = _call_ir_model(_fallback_ir_prompt(question, tables_block), 500)
 
     if not data:
         print("MULTITABLE IR EXTRACTOR: no valid JSON after retry", flush=True)
