@@ -1,0 +1,378 @@
+{
+  "benchmark": "petshop",
+  "version": "1.0",
+  "schema": {
+    "tables": {
+      "owners": ["oid", "lastname", "city"],
+      "pets": ["petid", "name", "species"],
+      "owns": ["oid", "petid"]
+    },
+    "relationships": [
+      "owns.oid -> owners.oid",
+      "owns.petid -> pets.petid"
+    ],
+    "junction_tables": ["owns"]
+  },
+  "notes": "Expectations describe the deterministic Phase 6/7/8 output. SQL fragments use the quoted, table-qualified form the generator emits. expected_params lists bound (?) values in order; LIMIT is inlined and never a param. Failure cases assert structured declines, not rows. The extraction step (LLM) is the only nondeterministic link, so a runner should grade structurally where exact wording may vary.",
+  "queries": [
+    {
+      "id": "petshop_001",
+      "category": "simple select",
+      "question": "List all owner last names.",
+      "expected_tables": ["owners"],
+      "expected_bridge_tables": [],
+      "expected_sql_contains": ["SELECT", "\"owners\".\"lastname\"", "FROM \"owners\""],
+      "expected_params": [],
+      "expected_result_contains": ["Smith", "Lee"],
+      "notes": "Single table, no joins, no filter."
+    },
+    {
+      "id": "petshop_002",
+      "category": "simple select",
+      "question": "Show all pet names and species.",
+      "expected_tables": ["pets"],
+      "expected_bridge_tables": [],
+      "expected_sql_contains": ["\"pets\".\"name\"", "\"pets\".\"species\"", "FROM \"pets\""],
+      "expected_params": [],
+      "expected_result_contains": ["dog", "cat"],
+      "notes": "Multiple columns, single table."
+    },
+    {
+      "id": "petshop_003",
+      "category": "simple select",
+      "question": "Show all cities of owners.",
+      "expected_tables": ["owners"],
+      "expected_bridge_tables": [],
+      "expected_sql_contains": ["\"owners\".\"city\"", "FROM \"owners\""],
+      "expected_params": [],
+      "expected_result_contains": ["Moscow", "Pullman"],
+      "notes": "Single column projection."
+    },
+    {
+      "id": "petshop_004",
+      "category": "single-table filter",
+      "question": "List the names of all dogs.",
+      "expected_tables": ["pets"],
+      "expected_bridge_tables": [],
+      "expected_sql_contains": ["\"pets\".\"name\"", "FROM \"pets\"", "WHERE \"pets\".\"species\" = ?"],
+      "expected_params": ["dog"],
+      "expected_result_contains": [],
+      "notes": "Equality filter, value parameterized."
+    },
+    {
+      "id": "petshop_005",
+      "category": "single-table filter",
+      "question": "Which owners live in Moscow?",
+      "expected_tables": ["owners"],
+      "expected_bridge_tables": [],
+      "expected_sql_contains": ["FROM \"owners\"", "WHERE \"owners\".\"city\" = ?"],
+      "expected_params": ["Moscow"],
+      "expected_result_contains": ["Smith"],
+      "notes": "Filter on owners.city."
+    },
+    {
+      "id": "petshop_006",
+      "category": "single-table filter",
+      "question": "List pets that are not cats.",
+      "expected_tables": ["pets"],
+      "expected_bridge_tables": [],
+      "expected_sql_contains": ["FROM \"pets\"", "\"pets\".\"species\" != ?"],
+      "expected_params": ["cat"],
+      "expected_result_contains": [],
+      "notes": "Inequality operator."
+    },
+    {
+      "id": "petshop_007",
+      "category": "single-table filter",
+      "question": "Show owners whose city is Pullman or Moscow.",
+      "expected_tables": ["owners"],
+      "expected_bridge_tables": [],
+      "expected_sql_contains": ["FROM \"owners\"", "\"owners\".\"city\" IN (?, ?)"],
+      "expected_params": ["Pullman", "Moscow"],
+      "expected_result_contains": [],
+      "notes": "IN operator with two values; order of values may vary by extraction."
+    },
+    {
+      "id": "petshop_008",
+      "category": "two-table join",
+      "question": "Show each owner's last name and the names of pets they own.",
+      "expected_tables": ["owners", "pets"],
+      "expected_bridge_tables": ["owns"],
+      "expected_sql_contains": [
+        "\"owners\".\"lastname\"",
+        "\"pets\".\"name\"",
+        "INNER JOIN \"owns\"",
+        "INNER JOIN \"pets\""
+      ],
+      "expected_params": [],
+      "expected_result_contains": [],
+      "notes": "owners <-> pets requires the owns bridge."
+    },
+    {
+      "id": "petshop_009",
+      "category": "two-table join",
+      "question": "List the species of pets owned by Smith.",
+      "expected_tables": ["owners", "pets"],
+      "expected_bridge_tables": ["owns"],
+      "expected_sql_contains": [
+        "\"pets\".\"species\"",
+        "INNER JOIN \"owns\"",
+        "INNER JOIN \"pets\"",
+        "WHERE \"owners\".\"lastname\" = ?"
+      ],
+      "expected_params": ["Smith"],
+      "expected_result_contains": [],
+      "notes": "Join + filter on the far table."
+    },
+    {
+      "id": "petshop_010",
+      "category": "bridge-table join through owns",
+      "question": "Which owners have dogs?",
+      "expected_tables": ["owners", "pets"],
+      "expected_bridge_tables": ["owns"],
+      "expected_sql_contains": [
+        "\"owners\".\"lastname\"",
+        "INNER JOIN \"owns\" ON \"owners\".\"oid\" = \"owns\".\"oid\"",
+        "INNER JOIN \"pets\" ON \"owns\".\"petid\" = \"pets\".\"petid\"",
+        "WHERE \"pets\".\"species\" = ?"
+      ],
+      "expected_params": ["dog"],
+      "expected_result_contains": ["Smith", "Lee"],
+      "notes": "Canonical bridge case verified end to end (Smith/Moscow, Lee/Pullman)."
+    },
+    {
+      "id": "petshop_011",
+      "category": "bridge-table join through owns",
+      "question": "List the last names of owners who have cats.",
+      "expected_tables": ["owners", "pets"],
+      "expected_bridge_tables": ["owns"],
+      "expected_sql_contains": [
+        "INNER JOIN \"owns\"",
+        "INNER JOIN \"pets\"",
+        "WHERE \"pets\".\"species\" = ?"
+      ],
+      "expected_params": ["cat"],
+      "expected_result_contains": [],
+      "notes": "Same bridge shape, different species."
+    },
+    {
+      "id": "petshop_012",
+      "category": "bridge-table join through owns",
+      "question": "Find the cities of owners who own dogs.",
+      "expected_tables": ["owners", "pets"],
+      "expected_bridge_tables": ["owns"],
+      "expected_sql_contains": [
+        "\"owners\".\"city\"",
+        "INNER JOIN \"owns\"",
+        "INNER JOIN \"pets\"",
+        "WHERE \"pets\".\"species\" = ?"
+      ],
+      "expected_params": ["dog"],
+      "expected_result_contains": ["Moscow", "Pullman"],
+      "notes": "Projects a column from the root while filtering the far table."
+    },
+    {
+      "id": "petshop_013",
+      "category": "aggregation",
+      "question": "How many pets are there?",
+      "expected_tables": ["pets"],
+      "expected_bridge_tables": [],
+      "expected_sql_contains": ["COUNT(", "FROM \"pets\""],
+      "expected_params": [],
+      "expected_result_contains": [],
+      "notes": "COUNT with no group_by; may be COUNT(*) or COUNT(\"pets\".\"petid\")."
+    },
+    {
+      "id": "petshop_014",
+      "category": "aggregation",
+      "question": "How many owners live in Moscow?",
+      "expected_tables": ["owners"],
+      "expected_bridge_tables": [],
+      "expected_sql_contains": ["COUNT(", "FROM \"owners\"", "WHERE \"owners\".\"city\" = ?"],
+      "expected_params": ["Moscow"],
+      "expected_result_contains": [],
+      "notes": "Aggregation combined with a filter."
+    },
+    {
+      "id": "petshop_015",
+      "category": "aggregation",
+      "question": "How many pets does each owner have?",
+      "expected_tables": ["owners", "pets"],
+      "expected_bridge_tables": ["owns"],
+      "expected_sql_contains": ["COUNT(", "INNER JOIN \"owns\"", "GROUP BY \"owners\".\"lastname\""],
+      "expected_params": [],
+      "expected_result_contains": [],
+      "notes": "Aggregation over a join with grouping; may group by lastname or oid."
+    },
+    {
+      "id": "petshop_016",
+      "category": "group by",
+      "question": "Count the number of pets per species.",
+      "expected_tables": ["pets"],
+      "expected_bridge_tables": [],
+      "expected_sql_contains": ["COUNT(", "\"pets\".\"species\"", "GROUP BY \"pets\".\"species\""],
+      "expected_params": [],
+      "expected_result_contains": [],
+      "notes": "Single-table group by."
+    },
+    {
+      "id": "petshop_017",
+      "category": "group by",
+      "question": "Count the number of owners in each city.",
+      "expected_tables": ["owners"],
+      "expected_bridge_tables": [],
+      "expected_sql_contains": ["COUNT(", "\"owners\".\"city\"", "GROUP BY \"owners\".\"city\""],
+      "expected_params": [],
+      "expected_result_contains": [],
+      "notes": "Group by city."
+    },
+    {
+      "id": "petshop_018",
+      "category": "group by",
+      "question": "Count pets by city of their owner.",
+      "expected_tables": ["owners", "pets"],
+      "expected_bridge_tables": ["owns"],
+      "expected_sql_contains": ["COUNT(", "INNER JOIN \"owns\"", "GROUP BY \"owners\".\"city\""],
+      "expected_params": [],
+      "expected_result_contains": [],
+      "notes": "Group by across a bridge join."
+    },
+    {
+      "id": "petshop_019",
+      "category": "order by",
+      "question": "List owner last names ordered alphabetically.",
+      "expected_tables": ["owners"],
+      "expected_bridge_tables": [],
+      "expected_sql_contains": ["\"owners\".\"lastname\"", "ORDER BY \"owners\".\"lastname\" ASC"],
+      "expected_params": [],
+      "expected_result_contains": [],
+      "notes": "ORDER BY ascending on a column."
+    },
+    {
+      "id": "petshop_020",
+      "category": "order by",
+      "question": "Show pets ordered by species descending.",
+      "expected_tables": ["pets"],
+      "expected_bridge_tables": [],
+      "expected_sql_contains": ["FROM \"pets\"", "ORDER BY \"pets\".\"species\" DESC"],
+      "expected_params": [],
+      "expected_result_contains": [],
+      "notes": "ORDER BY descending."
+    },
+    {
+      "id": "petshop_021",
+      "category": "order by",
+      "question": "List cities of owners sorted by city name.",
+      "expected_tables": ["owners"],
+      "expected_bridge_tables": [],
+      "expected_sql_contains": ["\"owners\".\"city\"", "ORDER BY \"owners\".\"city\""],
+      "expected_params": [],
+      "expected_result_contains": [],
+      "notes": "Direction may default to ASC."
+    },
+    {
+      "id": "petshop_022",
+      "category": "limit",
+      "question": "Show the first 3 owner last names.",
+      "expected_tables": ["owners"],
+      "expected_bridge_tables": [],
+      "expected_sql_contains": ["FROM \"owners\"", "LIMIT 3"],
+      "expected_params": [],
+      "expected_result_contains": [],
+      "notes": "LIMIT inlined as an integer literal; must NOT appear in params."
+    },
+    {
+      "id": "petshop_023",
+      "category": "limit",
+      "question": "List 5 pet names.",
+      "expected_tables": ["pets"],
+      "expected_bridge_tables": [],
+      "expected_sql_contains": ["\"pets\".\"name\"", "LIMIT 5"],
+      "expected_params": [],
+      "expected_result_contains": [],
+      "notes": "Inline LIMIT literal."
+    },
+    {
+      "id": "petshop_024",
+      "category": "order by",
+      "question": "Show the species with the most pets, highest count first.",
+      "expected_tables": ["pets"],
+      "expected_bridge_tables": [],
+      "expected_sql_contains": ["COUNT(", "GROUP BY \"pets\".\"species\"", "ORDER BY", "DESC"],
+      "expected_params": [],
+      "expected_result_contains": [],
+      "notes": "ORDER BY an aggregation alias, descending; alias name may vary."
+    },
+    {
+      "id": "petshop_025",
+      "category": "distinct",
+      "question": "List the distinct species of pets.",
+      "expected_tables": ["pets"],
+      "expected_bridge_tables": [],
+      "expected_sql_contains": ["SELECT DISTINCT", "\"pets\".\"species\""],
+      "expected_params": [],
+      "expected_result_contains": ["dog", "cat"],
+      "notes": "DISTINCT on a single column."
+    },
+    {
+      "id": "petshop_026",
+      "category": "distinct",
+      "question": "List the distinct last names of owners who have dogs.",
+      "expected_tables": ["owners", "pets"],
+      "expected_bridge_tables": ["owns"],
+      "expected_sql_contains": [
+        "SELECT DISTINCT",
+        "\"owners\".\"lastname\"",
+        "INNER JOIN \"owns\"",
+        "WHERE \"pets\".\"species\" = ?"
+      ],
+      "expected_params": ["dog"],
+      "expected_result_contains": ["Smith", "Lee"],
+      "notes": "DISTINCT over a bridge join avoids duplicate owners with multiple dogs."
+    },
+    {
+      "id": "petshop_027",
+      "category": "failure/edge cases",
+      "question": "Which owners have ordered the most expensive food?",
+      "expected_tables": [],
+      "expected_bridge_tables": [],
+      "expected_sql_contains": [],
+      "expected_params": [],
+      "expected_result_contains": [],
+      "notes": "Out-of-schema concepts (food/price). Expect either an empty/invalid IR (validation fails) or an unresolved plan; SQL should NOT be generated. resolved=false or validation.valid=false."
+    },
+    {
+      "id": "petshop_028",
+      "category": "failure/edge cases",
+      "question": "Show owners, pets, and cities.",
+      "expected_tables": [],
+      "expected_bridge_tables": [],
+      "expected_sql_contains": [],
+      "expected_params": [],
+      "expected_result_contains": [],
+      "notes": "Known extractor pitfall: tends to misqualify lastname/city onto the junction 'owns'. The validator should reject the IR (validation.valid=false). Accepted correct-rejection case."
+    },
+    {
+      "id": "petshop_029",
+      "category": "failure/edge cases",
+      "question": "List the phone numbers of all owners.",
+      "expected_tables": [],
+      "expected_bridge_tables": [],
+      "expected_sql_contains": [],
+      "expected_params": [],
+      "expected_result_contains": [],
+      "notes": "Requests a column that does not exist (no phone in schema). Validator should reject (column not found). No SQL generated."
+    },
+    {
+      "id": "petshop_030",
+      "category": "failure/edge cases",
+      "question": "Show purchases joined with suppliers.",
+      "expected_tables": [],
+      "expected_bridge_tables": [],
+      "expected_sql_contains": [],
+      "expected_params": [],
+      "expected_result_contains": [],
+      "notes": "Tables not in the PetShop schema. Expect empty/invalid IR or unresolved plan (no_relationships / disconnected); SQL should NOT be generated."
+    }
+  ]
+}
