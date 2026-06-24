@@ -1,0 +1,279 @@
+{
+  "benchmark": "assignment_petfood",
+  "benchmark_version": "1.0",
+  "timestamp": "2026-06-24T11:33:02.839030-07:00",
+  "base_url": "http://localhost:8000",
+  "database_id": 2,
+  "summary": {
+    "total": 1,
+    "passed": 0,
+    "failed": 1,
+    "pass_rate": 0.0,
+    "avg_latency_ms": 4014.3
+  },
+  "category_summary": {
+    "single-table filter": {
+      "passed": 0,
+      "total": 1
+    }
+  },
+  "results": [
+    {
+      "id": "assignment_petfood_001",
+      "category": "single-table filter",
+      "question": "List all cats aged at least 2 that live in Idaho but not in Moscow.",
+      "latency_ms": 4014.3,
+      "passed": false,
+      "reasons": [
+        "sql missing fragments ['Name']"
+      ],
+      "grading": {
+        "mode": "normal_case",
+        "checks": {
+          "validation_valid": true,
+          "plan_resolved": true,
+          "generated": true,
+          "executed": true,
+          "expected_tables_present": true,
+          "expected_bridge_tables_present": true,
+          "sql_contains": false,
+          "params_match": true,
+          "result_contains": true
+        },
+        "sql": "SELECT DISTINCT \"pets\".\"petid\" FROM \"pets\" WHERE \"pets\".\"typeofpet\" = ? AND \"pets\".\"age\" >= ? AND \"pets\".\"state\" = ? AND \"pets\".\"city\" != ?",
+        "params": [
+          "cat",
+          2,
+          "Idaho",
+          "Moscow"
+        ],
+        "tables_used": [
+          "pets"
+        ],
+        "bridge_tables": []
+      },
+      "response": {
+        "success": true,
+        "database_id": 2,
+        "question": "List all cats aged at least 2 that live in Idaho but not in Moscow.",
+        "extraction": {
+          "tables": [
+            "pets"
+          ],
+          "select": [
+            {
+              "table": "pets",
+              "column": "petid"
+            }
+          ],
+          "filters": [
+            {
+              "table": "pets",
+              "column": "typeofpet",
+              "op": "=",
+              "value": "cat",
+              "connector": "AND"
+            },
+            {
+              "table": "pets",
+              "column": "age",
+              "op": ">=",
+              "value": 2,
+              "connector": "AND"
+            },
+            {
+              "table": "pets",
+              "column": "state",
+              "op": "=",
+              "value": "Idaho",
+              "connector": "AND"
+            },
+            {
+              "table": "pets",
+              "column": "city",
+              "op": "!=",
+              "value": "Moscow",
+              "connector": "AND"
+            }
+          ],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": true
+        },
+        "ir": {
+          "version": "1.0",
+          "database_id": 2,
+          "tables": [
+            "pets"
+          ],
+          "select": [
+            {
+              "table": "pets",
+              "column": "petid"
+            }
+          ],
+          "filters": [
+            {
+              "table": "pets",
+              "column": "typeofpet",
+              "op": "=",
+              "value": "cat",
+              "connector": "AND"
+            },
+            {
+              "table": "pets",
+              "column": "age",
+              "op": ">=",
+              "value": 2,
+              "connector": "AND"
+            },
+            {
+              "table": "pets",
+              "column": "state",
+              "op": "=",
+              "value": "Idaho",
+              "connector": "AND"
+            },
+            {
+              "table": "pets",
+              "column": "city",
+              "op": "!=",
+              "value": "Moscow",
+              "connector": "AND"
+            }
+          ],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": true,
+          "relationship_hints": []
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "warnings": []
+        },
+        "plan": {
+          "resolved": true,
+          "from_table": "pets",
+          "joins": [],
+          "tables_used": [
+            "pets"
+          ],
+          "bridge_tables": [],
+          "ir": {
+            "database_id": 2,
+            "version": "1.0",
+            "tables": [
+              "pets"
+            ],
+            "select": [
+              {
+                "table": "pets",
+                "column": "petid"
+              }
+            ],
+            "filters": [
+              {
+                "table": "pets",
+                "column": "typeofpet",
+                "op": "=",
+                "value": "cat",
+                "connector": "AND"
+              },
+              {
+                "table": "pets",
+                "column": "age",
+                "op": ">=",
+                "value": 2,
+                "connector": "AND"
+              },
+              {
+                "table": "pets",
+                "column": "state",
+                "op": "=",
+                "value": "Idaho",
+                "connector": "AND"
+              },
+              {
+                "table": "pets",
+                "column": "city",
+                "op": "!=",
+                "value": "Moscow",
+                "connector": "AND"
+              }
+            ],
+            "aggregations": [],
+            "group_by": [],
+            "having": [],
+            "order_by": [],
+            "limit": null,
+            "distinct": true,
+            "relationship_hints": []
+          },
+          "diagnostics": {
+            "root": "pets",
+            "root_selection": {
+              "rule": "(-confirmed_degree_within_plan, ir_table_index, table_name)",
+              "confirmed_degree": {
+                "pets": 0
+              }
+            },
+            "bridge_tables_added": [],
+            "spanning_edge_count": 0,
+            "components": [
+              [
+                "pets"
+              ]
+            ]
+          }
+        },
+        "generated_sql": {
+          "generated": true,
+          "sql": "SELECT DISTINCT \"pets\".\"petid\" FROM \"pets\" WHERE \"pets\".\"typeofpet\" = ? AND \"pets\".\"age\" >= ? AND \"pets\".\"state\" = ? AND \"pets\".\"city\" != ?",
+          "params": [
+            "cat",
+            2,
+            "Idaho",
+            "Moscow"
+          ],
+          "diagnostics": {
+            "from_table": "pets",
+            "join_count": 0,
+            "bridge_tables": [],
+            "parameter_count": 4,
+            "clauses": [
+              "select",
+              "from",
+              "where"
+            ]
+          }
+        },
+        "execution": {
+          "executed": true,
+          "columns": [
+            "petid"
+          ],
+          "rows": [
+            [
+              2
+            ],
+            [
+              5
+            ]
+          ],
+          "row_count": 2,
+          "truncated": false,
+          "diagnostics": {
+            "param_count": 4
+          }
+        }
+      }
+    }
+  ]
+}

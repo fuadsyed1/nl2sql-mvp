@@ -208,6 +208,8 @@ Rules:
 - filters: {"table","column","op","value","connector"}.
 - aggregations: {"function","table","column","alias"}; function in COUNT,SUM,AVG,MIN,MAX; COUNT(*) uses column "*".
 - group_by: {"table","column"}. order_by: {"table","column","direction"} or {"aggregation_alias","direction"}.
+- having MUST reference an aggregation alias: {"aggregation_alias":"alias_from_aggregations","op":">=","value":2,"connector":"AND"}.
+- Never put HAVING aliases in {"table":"","column":"alias"} form.
 - Do not add joins or relationship fields. If unsure, use empty lists.
 
 Example - "Which owners have dogs?":
@@ -215,6 +217,9 @@ Example - "Which owners have dogs?":
 
 Example - "Count pets by city":
 {"tables":["owners","pets"],"select":[{"table":"owners","column":"city"}],"filters":[],"aggregations":[{"function":"COUNT","table":"pets","column":"petid","alias":"pet_count"}],"group_by":[{"table":"owners","column":"city"}],"having":[],"order_by":[{"aggregation_alias":"pet_count","direction":"DESC"}],"limit":null,"distinct":false}
+
+Example - "List owners who own at least two pets":
+{"tables":["owners","pets"],"select":[{"table":"owners","column":"oid"},{"table":"owners","column":"lastname"}],"filters":[],"aggregations":[{"function":"COUNT","table":"pets","column":"petid","alias":"pet_count"}],"group_by":[{"table":"owners","column":"oid"},{"table":"owners","column":"lastname"}],"having":[{"aggregation_alias":"pet_count","op":">=","value":2,"connector":"AND"}],"order_by":[],"limit":null,"distinct":false}
 
 Output JSON now:
 """
@@ -296,6 +301,37 @@ def _normalize_ir_extraction(data) -> dict:
             limit = None
     result["limit"] = limit
 
+    # Repair common model mistake:
+    # HAVING must use aggregation_alias, but models sometimes emit
+    # {"table": "", "column": "pet_count", ...}. Convert that safely
+    # when the column value matches one of the aggregation aliases.
+    aliases = {
+        agg.get("alias")
+        for agg in result["aggregations"]
+        if isinstance(agg, dict) and agg.get("alias")
+    }
+    repaired_having = []
+    for item in result["having"]:
+        if not isinstance(item, dict):
+            continue
+
+        if item.get("aggregation_alias"):
+            repaired_having.append(item)
+            continue
+
+        column = item.get("column")
+        if column in aliases:
+            repaired_having.append({
+                "aggregation_alias": column,
+                "op": item.get("op"),
+                "value": item.get("value"),
+                "connector": item.get("connector") or "AND",
+            })
+            continue
+
+        repaired_having.append(item)
+
+    result["having"] = repaired_having
     result["distinct"] = bool(data.get("distinct", False))
     return result
 

@@ -3,3 +3,7 @@ __pycache__/
 backend/uploads/
 backend/app_data.db
 *.db
+.env
+*.env
+.env.*
+!.env.example

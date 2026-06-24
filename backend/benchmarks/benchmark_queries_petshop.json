@@ -87,10 +87,14 @@
       "question": "Show owners whose city is Pullman or Moscow.",
       "expected_tables": ["owners"],
       "expected_bridge_tables": [],
-      "expected_sql_contains": ["FROM \"owners\"", "\"owners\".\"city\" IN (?, ?)"],
+      "expected_sql_contains": ["FROM \"owners\""],
+      "expected_sql_any_of": [
+        ["\"owners\".\"city\" IN (?, ?)"],
+        ["\"owners\".\"city\" = ?", "OR", "\"owners\".\"city\" = ?"]
+      ],
       "expected_params": ["Pullman", "Moscow"],
       "expected_result_contains": [],
-      "notes": "IN operator with two values; order of values may vary by extraction."
+      "notes": "Pullman OR Moscow. Accepts either the IN (?, ?) form or the equivalent '= ? OR = ?' chain (both semantically identical with params [Pullman, Moscow]); the extractor may emit either. Order of values may vary by extraction."
     },
     {
       "id": "petshop_008",

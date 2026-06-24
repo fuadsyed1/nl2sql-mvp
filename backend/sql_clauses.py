@@ -87,9 +87,23 @@ def _render_predicate(ref_sql, op, value):
     return f"{ref_sql} {sym} ?", [value]
 
 
+def _coerce_connector(value):
+    """Return 'AND'/'OR' if `value` is a recognized connector, else '' (empty),
+    so callers can fall back to another source before defaulting to 'AND'."""
+    text = str(value).strip().upper() if value is not None else ""
+    return text if text in ("AND", "OR") else ""
+
+
 def _chain(entries, ref_of):
     """Chain predicates with their connectors. entries: list of dicts carrying
-    op/value/connector; ref_of(entry) -> the left-hand reference SQL."""
+    op/value/connector; ref_of(entry) -> the left-hand reference SQL.
+
+    Connector placement is tolerant: the extractor stores the connector on the
+    PREVIOUS filter (the one it connects from), so for predicate i > 0 we prefer
+    entries[i-1]["connector"], then fall back to entries[i]["connector"], and
+    normalize anything missing/None/invalid to 'AND'. No invalid token (e.g.
+    'NONE') can ever be emitted.
+    """
     parts = []
     params = []
     for i, e in enumerate(entries):
@@ -98,7 +112,8 @@ def _chain(entries, ref_of):
         if i == 0:
             parts.append(pred)
         else:
-            connector = str(e.get("connector", "AND")).upper()
+            prev = _coerce_connector(entries[i - 1].get("connector"))
+            connector = prev or _coerce_connector(entries[i].get("connector")) or "AND"
             parts.append(f"{connector} {pred}")
     return " ".join(parts), params
 

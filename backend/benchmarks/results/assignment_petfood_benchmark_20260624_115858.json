@@ -1,0 +1,1591 @@
+{
+  "benchmark": "assignment_petfood",
+  "benchmark_version": "1.0",
+  "timestamp": "2026-06-24T11:58:58.742016-07:00",
+  "base_url": "http://localhost:8000",
+  "database_id": 2,
+  "summary": {
+    "total": 5,
+    "passed": 2,
+    "failed": 3,
+    "pass_rate": 40.0,
+    "avg_latency_ms": 3991.6
+  },
+  "results": [
+    {
+      "id": "assignment_petfood_001",
+      "category": "single-table filter",
+      "question": "List all cats with pet ID, name, and pet type that are aged at least 2 and live in Idaho but not in Moscow.",
+      "latency_ms": 4224.6,
+      "passed": true,
+      "reasons": [],
+      "grading": {
+        "checks": {
+          "validation_valid": true,
+          "plan_resolved": true,
+          "generated": true,
+          "executed": true,
+          "expected_tables_present": true,
+          "expected_bridge_tables_present": true,
+          "sql_contains": true,
+          "params_match": true,
+          "result_contains": true
+        },
+        "sql": "SELECT \"pets\".\"petid\", \"pets\".\"name\", \"pets\".\"typeofpet\" FROM \"pets\" WHERE \"pets\".\"typeofpet\" = ? AND \"pets\".\"age\" >= ? AND \"pets\".\"state\" = ? AND \"pets\".\"city\" != ?",
+        "params": [
+          "cat",
+          2,
+          "Idaho",
+          "Moscow"
+        ],
+        "tables_used": [
+          "pets"
+        ],
+        "bridge_tables": []
+      },
+      "response": {
+        "success": true,
+        "database_id": 2,
+        "question": "List all cats with pet ID, name, and pet type that are aged at least 2 and live in Idaho but not in Moscow.",
+        "extraction": {
+          "tables": [
+            "pets"
+          ],
+          "select": [
+            {
+              "table": "pets",
+              "column": "petid"
+            },
+            {
+              "table": "pets",
+              "column": "name"
+            },
+            {
+              "table": "pets",
+              "column": "typeofpet"
+            }
+          ],
+          "filters": [
+            {
+              "table": "pets",
+              "column": "typeofpet",
+              "op": "=",
+              "value": "cat",
+              "connector": "AND"
+            },
+            {
+              "table": "pets",
+              "column": "age",
+              "op": ">=",
+              "value": 2,
+              "connector": "AND"
+            },
+            {
+              "table": "pets",
+              "column": "state",
+              "op": "=",
+              "value": "Idaho",
+              "connector": "AND"
+            },
+            {
+              "table": "pets",
+              "column": "city",
+              "op": "!=",
+              "value": "Moscow",
+              "connector": "AND"
+            }
+          ],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false
+        },
+        "ir": {
+          "version": "1.0",
+          "database_id": 2,
+          "tables": [
+            "pets"
+          ],
+          "select": [
+            {
+              "table": "pets",
+              "column": "petid"
+            },
+            {
+              "table": "pets",
+              "column": "name"
+            },
+            {
+              "table": "pets",
+              "column": "typeofpet"
+            }
+          ],
+          "filters": [
+            {
+              "table": "pets",
+              "column": "typeofpet",
+              "op": "=",
+              "value": "cat",
+              "connector": "AND"
+            },
+            {
+              "table": "pets",
+              "column": "age",
+              "op": ">=",
+              "value": 2,
+              "connector": "AND"
+            },
+            {
+              "table": "pets",
+              "column": "state",
+              "op": "=",
+              "value": "Idaho",
+              "connector": "AND"
+            },
+            {
+              "table": "pets",
+              "column": "city",
+              "op": "!=",
+              "value": "Moscow",
+              "connector": "AND"
+            }
+          ],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false,
+          "relationship_hints": []
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "warnings": []
+        },
+        "plan": {
+          "resolved": true,
+          "from_table": "pets",
+          "joins": [],
+          "tables_used": [
+            "pets"
+          ],
+          "bridge_tables": [],
+          "ir": {
+            "database_id": 2,
+            "version": "1.0",
+            "tables": [
+              "pets"
+            ],
+            "select": [
+              {
+                "table": "pets",
+                "column": "petid"
+              },
+              {
+                "table": "pets",
+                "column": "name"
+              },
+              {
+                "table": "pets",
+                "column": "typeofpet"
+              }
+            ],
+            "filters": [
+              {
+                "table": "pets",
+                "column": "typeofpet",
+                "op": "=",
+                "value": "cat",
+                "connector": "AND"
+              },
+              {
+                "table": "pets",
+                "column": "age",
+                "op": ">=",
+                "value": 2,
+                "connector": "AND"
+              },
+              {
+                "table": "pets",
+                "column": "state",
+                "op": "=",
+                "value": "Idaho",
+                "connector": "AND"
+              },
+              {
+                "table": "pets",
+                "column": "city",
+                "op": "!=",
+                "value": "Moscow",
+                "connector": "AND"
+              }
+            ],
+            "aggregations": [],
+            "group_by": [],
+            "having": [],
+            "order_by": [],
+            "limit": null,
+            "distinct": false,
+            "relationship_hints": []
+          },
+          "diagnostics": {
+            "root": "pets",
+            "root_selection": {
+              "rule": "(-confirmed_degree_within_plan, ir_table_index, table_name)",
+              "confirmed_degree": {
+                "pets": 0
+              }
+            },
+            "bridge_tables_added": [],
+            "spanning_edge_count": 0,
+            "components": [
+              [
+                "pets"
+              ]
+            ]
+          }
+        },
+        "generated_sql": {
+          "generated": true,
+          "sql": "SELECT \"pets\".\"petid\", \"pets\".\"name\", \"pets\".\"typeofpet\" FROM \"pets\" WHERE \"pets\".\"typeofpet\" = ? AND \"pets\".\"age\" >= ? AND \"pets\".\"state\" = ? AND \"pets\".\"city\" != ?",
+          "params": [
+            "cat",
+            2,
+            "Idaho",
+            "Moscow"
+          ],
+          "diagnostics": {
+            "from_table": "pets",
+            "join_count": 0,
+            "bridge_tables": [],
+            "parameter_count": 4,
+            "clauses": [
+              "select",
+              "from",
+              "where"
+            ]
+          }
+        },
+        "execution": {
+          "executed": true,
+          "columns": [
+            "petid",
+            "name",
+            "typeofpet"
+          ],
+          "rows": [
+            [
+              2,
+              "Milo",
+              "cat"
+            ],
+            [
+              5,
+              "Luna",
+              "cat"
+            ]
+          ],
+          "row_count": 2,
+          "truncated": false,
+          "diagnostics": {
+            "param_count": 4
+          }
+        }
+      }
+    },
+    {
+      "id": "assignment_petfood_002",
+      "category": "join aggregation",
+      "question": "List all pet owners and their pets with owner ID, last name, pet ID, and pet name where the owner owns at least two pets.",
+      "latency_ms": 4115.8,
+      "passed": false,
+      "reasons": [
+        "missing expected_bridge_tables ['owns']",
+        "params [2] != expected []",
+        "results missing ['Milo']"
+      ],
+      "grading": {
+        "checks": {
+          "validation_valid": true,
+          "plan_resolved": true,
+          "generated": true,
+          "executed": true,
+          "expected_tables_present": true,
+          "expected_bridge_tables_present": false,
+          "sql_contains": true,
+          "params_match": false,
+          "result_contains": false
+        },
+        "sql": "SELECT \"owners\".\"oid\", \"owners\".\"lastname\", \"pets\".\"petid\", \"pets\".\"name\", COUNT(\"pets\".\"petid\") AS \"pet_count\" FROM \"owners\" INNER JOIN \"owns\" ON \"owners\".\"oid\" = \"owns\".\"oid\" INNER JOIN \"pets\" ON \"owners\".\"zipcode\" = \"pets\".\"zipcode\" GROUP BY \"owners\".\"oid\", \"owners\".\"lastname\", \"pets\".\"petid\", \"pets\".\"name\" HAVING \"pet_count\" >= ?",
+        "params": [
+          2
+        ],
+        "tables_used": [
+          "owners",
+          "owns",
+          "pets"
+        ],
+        "bridge_tables": []
+      },
+      "response": {
+        "success": true,
+        "database_id": 2,
+        "question": "List all pet owners and their pets with owner ID, last name, pet ID, and pet name where the owner owns at least two pets.",
+        "extraction": {
+          "tables": [
+            "owners",
+            "pets",
+            "owns"
+          ],
+          "select": [
+            {
+              "table": "owners",
+              "column": "oid"
+            },
+            {
+              "table": "owners",
+              "column": "lastname"
+            },
+            {
+              "table": "pets",
+              "column": "petid"
+            },
+            {
+              "table": "pets",
+              "column": "name"
+            }
+          ],
+          "filters": [],
+          "aggregations": [
+            {
+              "function": "COUNT",
+              "table": "pets",
+              "column": "petid",
+              "alias": "pet_count"
+            }
+          ],
+          "group_by": [
+            {
+              "table": "owners",
+              "column": "oid"
+            },
+            {
+              "table": "owners",
+              "column": "lastname"
+            },
+            {
+              "table": "pets",
+              "column": "petid"
+            },
+            {
+              "table": "pets",
+              "column": "name"
+            }
+          ],
+          "having": [
+            {
+              "aggregation_alias": "pet_count",
+              "op": ">=",
+              "value": 2,
+              "connector": "AND"
+            }
+          ],
+          "order_by": [],
+          "limit": null,
+          "distinct": false
+        },
+        "ir": {
+          "version": "1.0",
+          "database_id": 2,
+          "tables": [
+            "owners",
+            "pets",
+            "owns"
+          ],
+          "select": [
+            {
+              "table": "owners",
+              "column": "oid"
+            },
+            {
+              "table": "owners",
+              "column": "lastname"
+            },
+            {
+              "table": "pets",
+              "column": "petid"
+            },
+            {
+              "table": "pets",
+              "column": "name"
+            }
+          ],
+          "filters": [],
+          "aggregations": [
+            {
+              "function": "COUNT",
+              "table": "pets",
+              "column": "petid",
+              "alias": "pet_count"
+            }
+          ],
+          "group_by": [
+            {
+              "table": "owners",
+              "column": "oid"
+            },
+            {
+              "table": "owners",
+              "column": "lastname"
+            },
+            {
+              "table": "pets",
+              "column": "petid"
+            },
+            {
+              "table": "pets",
+              "column": "name"
+            }
+          ],
+          "having": [
+            {
+              "aggregation_alias": "pet_count",
+              "op": ">=",
+              "value": 2,
+              "connector": "AND"
+            }
+          ],
+          "order_by": [],
+          "limit": null,
+          "distinct": false,
+          "relationship_hints": [
+            {
+              "from_table": "owns",
+              "from_column": "petid",
+              "to_table": "pets",
+              "to_column": "petid",
+              "relationship_id": 10
+            },
+            {
+              "from_table": "owns",
+              "from_column": "oid",
+              "to_table": "owners",
+              "to_column": "oid",
+              "relationship_id": 12
+            },
+            {
+              "from_table": "pets",
+              "from_column": "zipcode",
+              "to_table": "owners",
+              "to_column": "zipcode",
+              "relationship_id": 14
+            },
+            {
+              "from_table": "owns",
+              "from_column": "petageatownership",
+              "to_table": "pets",
+              "to_column": "petid",
+              "relationship_id": 11
+            }
+          ]
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "warnings": []
+        },
+        "plan": {
+          "resolved": true,
+          "from_table": "owners",
+          "joins": [
+            {
+              "from_table": "owners",
+              "from_column": "oid",
+              "to_table": "owns",
+              "to_column": "oid",
+              "join_type": "inner"
+            },
+            {
+              "from_table": "owners",
+              "from_column": "zipcode",
+              "to_table": "pets",
+              "to_column": "zipcode",
+              "join_type": "inner"
+            }
+          ],
+          "tables_used": [
+            "owners",
+            "owns",
+            "pets"
+          ],
+          "bridge_tables": [],
+          "ir": {
+            "database_id": 2,
+            "version": "1.0",
+            "tables": [
+              "owners",
+              "pets",
+              "owns"
+            ],
+            "select": [
+              {
+                "table": "owners",
+                "column": "oid"
+              },
+              {
+                "table": "owners",
+                "column": "lastname"
+              },
+              {
+                "table": "pets",
+                "column": "petid"
+              },
+              {
+                "table": "pets",
+                "column": "name"
+              }
+            ],
+            "filters": [],
+            "aggregations": [
+              {
+                "function": "COUNT",
+                "table": "pets",
+                "column": "petid",
+                "alias": "pet_count"
+              }
+            ],
+            "group_by": [
+              {
+                "table": "owners",
+                "column": "oid"
+              },
+              {
+                "table": "owners",
+                "column": "lastname"
+              },
+              {
+                "table": "pets",
+                "column": "petid"
+              },
+              {
+                "table": "pets",
+                "column": "name"
+              }
+            ],
+            "having": [
+              {
+                "aggregation_alias": "pet_count",
+                "op": ">=",
+                "value": 2,
+                "connector": "AND"
+              }
+            ],
+            "order_by": [],
+            "limit": null,
+            "distinct": false,
+            "relationship_hints": [
+              {
+                "from_table": "owns",
+                "from_column": "petid",
+                "to_table": "pets",
+                "to_column": "petid",
+                "relationship_id": 10
+              },
+              {
+                "from_table": "owns",
+                "from_column": "oid",
+                "to_table": "owners",
+                "to_column": "oid",
+                "relationship_id": 12
+              },
+              {
+                "from_table": "pets",
+                "from_column": "zipcode",
+                "to_table": "owners",
+                "to_column": "zipcode",
+                "relationship_id": 14
+              },
+              {
+                "from_table": "owns",
+                "from_column": "petageatownership",
+                "to_table": "pets",
+                "to_column": "petid",
+                "relationship_id": 11
+              }
+            ]
+          },
+          "diagnostics": {
+            "root": "owners",
+            "root_selection": {
+              "rule": "(-confirmed_degree_within_plan, ir_table_index, table_name)",
+              "confirmed_degree": {
+                "owners": 2,
+                "pets": 1,
+                "owns": 1
+              }
+            },
+            "bridge_tables_added": [],
+            "spanning_edge_count": 2,
+            "components": [
+              [
+                "owners",
+                "pets",
+                "owns"
+              ]
+            ]
+          }
+        },
+        "generated_sql": {
+          "generated": true,
+          "sql": "SELECT \"owners\".\"oid\", \"owners\".\"lastname\", \"pets\".\"petid\", \"pets\".\"name\", COUNT(\"pets\".\"petid\") AS \"pet_count\" FROM \"owners\" INNER JOIN \"owns\" ON \"owners\".\"oid\" = \"owns\".\"oid\" INNER JOIN \"pets\" ON \"owners\".\"zipcode\" = \"pets\".\"zipcode\" GROUP BY \"owners\".\"oid\", \"owners\".\"lastname\", \"pets\".\"petid\", \"pets\".\"name\" HAVING \"pet_count\" >= ?",
+          "params": [
+            2
+          ],
+          "diagnostics": {
+            "from_table": "owners",
+            "join_count": 2,
+            "bridge_tables": [],
+            "parameter_count": 1,
+            "clauses": [
+              "select",
+              "from",
+              "join",
+              "group_by",
+              "having"
+            ]
+          }
+        },
+        "execution": {
+          "executed": true,
+          "columns": [
+            "oid",
+            "lastname",
+            "petid",
+            "name",
+            "pet_count"
+          ],
+          "rows": [
+            [
+              10,
+              "Smith",
+              1,
+              "Rex",
+              2
+            ],
+            [
+              10,
+              "Smith",
+              3,
+              "Zoe",
+              2
+            ]
+          ],
+          "row_count": 2,
+          "truncated": false,
+          "diagnostics": {
+            "param_count": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "assignment_petfood_003",
+      "category": "complex logic",
+      "question": "List pets with pet ID and name that always ate foods they like and never ate foods they did not like.",
+      "latency_ms": 4188.2,
+      "passed": false,
+      "reasons": [
+        "missing expected_tables ['foods']",
+        "sql missing fragments ['foods']",
+        "params ['liked_purchases'] != expected []"
+      ],
+      "grading": {
+        "checks": {
+          "validation_valid": true,
+          "plan_resolved": true,
+          "generated": true,
+          "executed": true,
+          "expected_tables_present": false,
+          "expected_bridge_tables_present": true,
+          "sql_contains": false,
+          "params_match": false,
+          "result_contains": true
+        },
+        "sql": "SELECT \"pets\".\"petid\", \"pets\".\"name\", COUNT(\"purchases\".\"foodid\") AS \"total_purchases\", COUNT(\"purchases\".\"foodid\") AS \"liked_purchases\" FROM \"pets\" INNER JOIN \"likes\" ON \"pets\".\"petid\" = \"likes\".\"petid\" INNER JOIN \"purchases\" ON \"pets\".\"petid\" = \"purchases\".\"petid\" GROUP BY \"pets\".\"petid\", \"pets\".\"name\" HAVING \"total_purchases\" = ?",
+        "params": [
+          "liked_purchases"
+        ],
+        "tables_used": [
+          "likes",
+          "pets",
+          "purchases"
+        ],
+        "bridge_tables": []
+      },
+      "response": {
+        "success": true,
+        "database_id": 2,
+        "question": "List pets with pet ID and name that always ate foods they like and never ate foods they did not like.",
+        "extraction": {
+          "tables": [
+            "pets",
+            "purchases",
+            "likes"
+          ],
+          "select": [
+            {
+              "table": "pets",
+              "column": "petid"
+            },
+            {
+              "table": "pets",
+              "column": "name"
+            }
+          ],
+          "filters": [],
+          "aggregations": [
+            {
+              "function": "COUNT",
+              "table": "purchases",
+              "column": "foodid",
+              "alias": "total_purchases"
+            },
+            {
+              "function": "COUNT",
+              "table": "purchases",
+              "column": "foodid",
+              "alias": "liked_purchases"
+            }
+          ],
+          "group_by": [
+            {
+              "table": "pets",
+              "column": "petid"
+            },
+            {
+              "table": "pets",
+              "column": "name"
+            }
+          ],
+          "having": [
+            {
+              "aggregation_alias": "total_purchases",
+              "op": "=",
+              "value": "liked_purchases",
+              "connector": "AND"
+            }
+          ],
+          "order_by": [],
+          "limit": null,
+          "distinct": false
+        },
+        "ir": {
+          "version": "1.0",
+          "database_id": 2,
+          "tables": [
+            "pets",
+            "purchases",
+            "likes"
+          ],
+          "select": [
+            {
+              "table": "pets",
+              "column": "petid"
+            },
+            {
+              "table": "pets",
+              "column": "name"
+            }
+          ],
+          "filters": [],
+          "aggregations": [
+            {
+              "function": "COUNT",
+              "table": "purchases",
+              "column": "foodid",
+              "alias": "total_purchases"
+            },
+            {
+              "function": "COUNT",
+              "table": "purchases",
+              "column": "foodid",
+              "alias": "liked_purchases"
+            }
+          ],
+          "group_by": [
+            {
+              "table": "pets",
+              "column": "petid"
+            },
+            {
+              "table": "pets",
+              "column": "name"
+            }
+          ],
+          "having": [
+            {
+              "aggregation_alias": "total_purchases",
+              "op": "=",
+              "value": "liked_purchases",
+              "connector": "AND"
+            }
+          ],
+          "order_by": [],
+          "limit": null,
+          "distinct": false,
+          "relationship_hints": [
+            {
+              "from_table": "purchases",
+              "from_column": "petid",
+              "to_table": "pets",
+              "to_column": "petid",
+              "relationship_id": 4
+            },
+            {
+              "from_table": "likes",
+              "from_column": "petid",
+              "to_table": "pets",
+              "to_column": "petid",
+              "relationship_id": 9
+            },
+            {
+              "from_table": "pets",
+              "from_column": "age",
+              "to_table": "purchases",
+              "to_column": "petid",
+              "relationship_id": 13
+            },
+            {
+              "from_table": "purchases",
+              "from_column": "quantity",
+              "to_table": "pets",
+              "to_column": "petid",
+              "relationship_id": 6
+            }
+          ]
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "warnings": []
+        },
+        "plan": {
+          "resolved": true,
+          "from_table": "pets",
+          "joins": [
+            {
+              "from_table": "pets",
+              "from_column": "petid",
+              "to_table": "likes",
+              "to_column": "petid",
+              "join_type": "inner"
+            },
+            {
+              "from_table": "pets",
+              "from_column": "petid",
+              "to_table": "purchases",
+              "to_column": "petid",
+              "join_type": "inner"
+            }
+          ],
+          "tables_used": [
+            "pets",
+            "likes",
+            "purchases"
+          ],
+          "bridge_tables": [],
+          "ir": {
+            "database_id": 2,
+            "version": "1.0",
+            "tables": [
+              "pets",
+              "purchases",
+              "likes"
+            ],
+            "select": [
+              {
+                "table": "pets",
+                "column": "petid"
+              },
+              {
+                "table": "pets",
+                "column": "name"
+              }
+            ],
+            "filters": [],
+            "aggregations": [
+              {
+                "function": "COUNT",
+                "table": "purchases",
+                "column": "foodid",
+                "alias": "total_purchases"
+              },
+              {
+                "function": "COUNT",
+                "table": "purchases",
+                "column": "foodid",
+                "alias": "liked_purchases"
+              }
+            ],
+            "group_by": [
+              {
+                "table": "pets",
+                "column": "petid"
+              },
+              {
+                "table": "pets",
+                "column": "name"
+              }
+            ],
+            "having": [
+              {
+                "aggregation_alias": "total_purchases",
+                "op": "=",
+                "value": "liked_purchases",
+                "connector": "AND"
+              }
+            ],
+            "order_by": [],
+            "limit": null,
+            "distinct": false,
+            "relationship_hints": [
+              {
+                "from_table": "purchases",
+                "from_column": "petid",
+                "to_table": "pets",
+                "to_column": "petid",
+                "relationship_id": 4
+              },
+              {
+                "from_table": "likes",
+                "from_column": "petid",
+                "to_table": "pets",
+                "to_column": "petid",
+                "relationship_id": 9
+              },
+              {
+                "from_table": "pets",
+                "from_column": "age",
+                "to_table": "purchases",
+                "to_column": "petid",
+                "relationship_id": 13
+              },
+              {
+                "from_table": "purchases",
+                "from_column": "quantity",
+                "to_table": "pets",
+                "to_column": "petid",
+                "relationship_id": 6
+              }
+            ]
+          },
+          "diagnostics": {
+            "root": "pets",
+            "root_selection": {
+              "rule": "(-confirmed_degree_within_plan, ir_table_index, table_name)",
+              "confirmed_degree": {
+                "pets": 2,
+                "purchases": 1,
+                "likes": 1
+              }
+            },
+            "bridge_tables_added": [],
+            "spanning_edge_count": 2,
+            "components": [
+              [
+                "pets",
+                "purchases",
+                "likes"
+              ]
+            ]
+          }
+        },
+        "generated_sql": {
+          "generated": true,
+          "sql": "SELECT \"pets\".\"petid\", \"pets\".\"name\", COUNT(\"purchases\".\"foodid\") AS \"total_purchases\", COUNT(\"purchases\".\"foodid\") AS \"liked_purchases\" FROM \"pets\" INNER JOIN \"likes\" ON \"pets\".\"petid\" = \"likes\".\"petid\" INNER JOIN \"purchases\" ON \"pets\".\"petid\" = \"purchases\".\"petid\" GROUP BY \"pets\".\"petid\", \"pets\".\"name\" HAVING \"total_purchases\" = ?",
+          "params": [
+            "liked_purchases"
+          ],
+          "diagnostics": {
+            "from_table": "pets",
+            "join_count": 2,
+            "bridge_tables": [],
+            "parameter_count": 1,
+            "clauses": [
+              "select",
+              "from",
+              "join",
+              "group_by",
+              "having"
+            ]
+          }
+        },
+        "execution": {
+          "executed": true,
+          "columns": [
+            "petid",
+            "name",
+            "total_purchases",
+            "liked_purchases"
+          ],
+          "rows": [],
+          "row_count": 0,
+          "truncated": false,
+          "diagnostics": {
+            "param_count": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "assignment_petfood_004",
+      "category": "multi-table join",
+      "question": "List the pet ID, pet name, food ID, food name, and brand for each food that each pet eats.",
+      "latency_ms": 3665.0,
+      "passed": true,
+      "reasons": [],
+      "grading": {
+        "checks": {
+          "validation_valid": true,
+          "plan_resolved": true,
+          "generated": true,
+          "executed": true,
+          "expected_tables_present": true,
+          "expected_bridge_tables_present": true,
+          "sql_contains": true,
+          "params_match": true,
+          "result_contains": true
+        },
+        "sql": "SELECT \"pets\".\"petid\", \"pets\".\"name\", \"foods\".\"foodid\", \"foods\".\"name\", \"foods\".\"brand\" FROM \"purchases\" INNER JOIN \"foods\" ON \"purchases\".\"foodid\" = \"foods\".\"foodid\" INNER JOIN \"pets\" ON \"purchases\".\"petid\" = \"pets\".\"petid\"",
+        "params": [],
+        "tables_used": [
+          "foods",
+          "pets",
+          "purchases"
+        ],
+        "bridge_tables": []
+      },
+      "response": {
+        "success": true,
+        "database_id": 2,
+        "question": "List the pet ID, pet name, food ID, food name, and brand for each food that each pet eats.",
+        "extraction": {
+          "tables": [
+            "pets",
+            "purchases",
+            "foods"
+          ],
+          "select": [
+            {
+              "table": "pets",
+              "column": "petid"
+            },
+            {
+              "table": "pets",
+              "column": "name"
+            },
+            {
+              "table": "foods",
+              "column": "foodid"
+            },
+            {
+              "table": "foods",
+              "column": "name"
+            },
+            {
+              "table": "foods",
+              "column": "brand"
+            }
+          ],
+          "filters": [],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false
+        },
+        "ir": {
+          "version": "1.0",
+          "database_id": 2,
+          "tables": [
+            "pets",
+            "purchases",
+            "foods"
+          ],
+          "select": [
+            {
+              "table": "pets",
+              "column": "petid"
+            },
+            {
+              "table": "pets",
+              "column": "name"
+            },
+            {
+              "table": "foods",
+              "column": "foodid"
+            },
+            {
+              "table": "foods",
+              "column": "name"
+            },
+            {
+              "table": "foods",
+              "column": "brand"
+            }
+          ],
+          "filters": [],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false,
+          "relationship_hints": [
+            {
+              "from_table": "purchases",
+              "from_column": "foodid",
+              "to_table": "foods",
+              "to_column": "foodid",
+              "relationship_id": 3
+            },
+            {
+              "from_table": "purchases",
+              "from_column": "petid",
+              "to_table": "pets",
+              "to_column": "petid",
+              "relationship_id": 4
+            },
+            {
+              "from_table": "pets",
+              "from_column": "age",
+              "to_table": "purchases",
+              "to_column": "petid",
+              "relationship_id": 13
+            },
+            {
+              "from_table": "purchases",
+              "from_column": "quantity",
+              "to_table": "pets",
+              "to_column": "petid",
+              "relationship_id": 6
+            }
+          ]
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "warnings": []
+        },
+        "plan": {
+          "resolved": true,
+          "from_table": "purchases",
+          "joins": [
+            {
+              "from_table": "purchases",
+              "from_column": "foodid",
+              "to_table": "foods",
+              "to_column": "foodid",
+              "join_type": "inner"
+            },
+            {
+              "from_table": "purchases",
+              "from_column": "petid",
+              "to_table": "pets",
+              "to_column": "petid",
+              "join_type": "inner"
+            }
+          ],
+          "tables_used": [
+            "purchases",
+            "foods",
+            "pets"
+          ],
+          "bridge_tables": [],
+          "ir": {
+            "database_id": 2,
+            "version": "1.0",
+            "tables": [
+              "pets",
+              "purchases",
+              "foods"
+            ],
+            "select": [
+              {
+                "table": "pets",
+                "column": "petid"
+              },
+              {
+                "table": "pets",
+                "column": "name"
+              },
+              {
+                "table": "foods",
+                "column": "foodid"
+              },
+              {
+                "table": "foods",
+                "column": "name"
+              },
+              {
+                "table": "foods",
+                "column": "brand"
+              }
+            ],
+            "filters": [],
+            "aggregations": [],
+            "group_by": [],
+            "having": [],
+            "order_by": [],
+            "limit": null,
+            "distinct": false,
+            "relationship_hints": [
+              {
+                "from_table": "purchases",
+                "from_column": "foodid",
+                "to_table": "foods",
+                "to_column": "foodid",
+                "relationship_id": 3
+              },
+              {
+                "from_table": "purchases",
+                "from_column": "petid",
+                "to_table": "pets",
+                "to_column": "petid",
+                "relationship_id": 4
+              },
+              {
+                "from_table": "pets",
+                "from_column": "age",
+                "to_table": "purchases",
+                "to_column": "petid",
+                "relationship_id": 13
+              },
+              {
+                "from_table": "purchases",
+                "from_column": "quantity",
+                "to_table": "pets",
+                "to_column": "petid",
+                "relationship_id": 6
+              }
+            ]
+          },
+          "diagnostics": {
+            "root": "purchases",
+            "root_selection": {
+              "rule": "(-confirmed_degree_within_plan, ir_table_index, table_name)",
+              "confirmed_degree": {
+                "pets": 1,
+                "purchases": 2,
+                "foods": 1
+              }
+            },
+            "bridge_tables_added": [],
+            "spanning_edge_count": 2,
+            "components": [
+              [
+                "pets",
+                "purchases",
+                "foods"
+              ]
+            ]
+          }
+        },
+        "generated_sql": {
+          "generated": true,
+          "sql": "SELECT \"pets\".\"petid\", \"pets\".\"name\", \"foods\".\"foodid\", \"foods\".\"name\", \"foods\".\"brand\" FROM \"purchases\" INNER JOIN \"foods\" ON \"purchases\".\"foodid\" = \"foods\".\"foodid\" INNER JOIN \"pets\" ON \"purchases\".\"petid\" = \"pets\".\"petid\"",
+          "params": [],
+          "diagnostics": {
+            "from_table": "purchases",
+            "join_count": 2,
+            "bridge_tables": [],
+            "parameter_count": 0,
+            "clauses": [
+              "select",
+              "from",
+              "join"
+            ]
+          }
+        },
+        "execution": {
+          "executed": true,
+          "columns": [
+            "petid",
+            "name",
+            "foodid",
+            "name",
+            "brand"
+          ],
+          "rows": [
+            [
+              1,
+              "Rex",
+              100,
+              "Bone Treat",
+              "DogJoy"
+            ],
+            [
+              2,
+              "Milo",
+              101,
+              "Chicken Bites",
+              "Meow Mix"
+            ],
+            [
+              3,
+              "Zoe",
+              102,
+              "Salmon Wet Food",
+              "Meow Mix"
+            ],
+            [
+              4,
+              "Ace",
+              103,
+              "Beef Crunch",
+              "DogJoy"
+            ],
+            [
+              5,
+              "Luna",
+              104,
+              "Tuna Feast",
+              "CatBest"
+            ]
+          ],
+          "row_count": 5,
+          "truncated": false,
+          "diagnostics": {
+            "param_count": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "assignment_petfood_005",
+      "category": "max without aggregate",
+      "question": "List the highest priced cat food for each brand with food ID, brand, and price without using aggregate functions.",
+      "latency_ms": 3764.2,
+      "passed": false,
+      "reasons": [
+        "sql missing fragments ['cat']"
+      ],
+      "grading": {
+        "checks": {
+          "validation_valid": true,
+          "plan_resolved": true,
+          "generated": true,
+          "executed": true,
+          "expected_tables_present": true,
+          "expected_bridge_tables_present": true,
+          "sql_contains": false,
+          "params_match": true,
+          "result_contains": true
+        },
+        "sql": "SELECT \"foods\".\"foodid\", \"foods\".\"brand\", \"foods\".\"price\" FROM \"foods\" WHERE \"foods\".\"typeoffood\" = ?",
+        "params": [
+          "cat"
+        ],
+        "tables_used": [
+          "foods"
+        ],
+        "bridge_tables": []
+      },
+      "response": {
+        "success": true,
+        "database_id": 2,
+        "question": "List the highest priced cat food for each brand with food ID, brand, and price without using aggregate functions.",
+        "extraction": {
+          "tables": [
+            "foods"
+          ],
+          "select": [
+            {
+              "table": "foods",
+              "column": "foodid"
+            },
+            {
+              "table": "foods",
+              "column": "brand"
+            },
+            {
+              "table": "foods",
+              "column": "price"
+            }
+          ],
+          "filters": [
+            {
+              "table": "foods",
+              "column": "typeoffood",
+              "op": "=",
+              "value": "cat",
+              "connector": "AND"
+            }
+          ],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false
+        },
+        "ir": {
+          "version": "1.0",
+          "database_id": 2,
+          "tables": [
+            "foods"
+          ],
+          "select": [
+            {
+              "table": "foods",
+              "column": "foodid"
+            },
+            {
+              "table": "foods",
+              "column": "brand"
+            },
+            {
+              "table": "foods",
+              "column": "price"
+            }
+          ],
+          "filters": [
+            {
+              "table": "foods",
+              "column": "typeoffood",
+              "op": "=",
+              "value": "cat",
+              "connector": "AND"
+            }
+          ],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false,
+          "relationship_hints": []
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "warnings": []
+        },
+        "plan": {
+          "resolved": true,
+          "from_table": "foods",
+          "joins": [],
+          "tables_used": [
+            "foods"
+          ],
+          "bridge_tables": [],
+          "ir": {
+            "database_id": 2,
+            "version": "1.0",
+            "tables": [
+              "foods"
+            ],
+            "select": [
+              {
+                "table": "foods",
+                "column": "foodid"
+              },
+              {
+                "table": "foods",
+                "column": "brand"
+              },
+              {
+                "table": "foods",
+                "column": "price"
+              }
+            ],
+            "filters": [
+              {
+                "table": "foods",
+                "column": "typeoffood",
+                "op": "=",
+                "value": "cat",
+                "connector": "AND"
+              }
+            ],
+            "aggregations": [],
+            "group_by": [],
+            "having": [],
+            "order_by": [],
+            "limit": null,
+            "distinct": false,
+            "relationship_hints": []
+          },
+          "diagnostics": {
+            "root": "foods",
+            "root_selection": {
+              "rule": "(-confirmed_degree_within_plan, ir_table_index, table_name)",
+              "confirmed_degree": {
+                "foods": 0
+              }
+            },
+            "bridge_tables_added": [],
+            "spanning_edge_count": 0,
+            "components": [
+              [
+                "foods"
+              ]
+            ]
+          }
+        },
+        "generated_sql": {
+          "generated": true,
+          "sql": "SELECT \"foods\".\"foodid\", \"foods\".\"brand\", \"foods\".\"price\" FROM \"foods\" WHERE \"foods\".\"typeoffood\" = ?",
+          "params": [
+            "cat"
+          ],
+          "diagnostics": {
+            "from_table": "foods",
+            "join_count": 0,
+            "bridge_tables": [],
+            "parameter_count": 1,
+            "clauses": [
+              "select",
+              "from",
+              "where"
+            ]
+          }
+        },
+        "execution": {
+          "executed": true,
+          "columns": [
+            "foodid",
+            "brand",
+            "price"
+          ],
+          "rows": [
+            [
+              101,
+              "Meow Mix",
+              9.99
+            ],
+            [
+              102,
+              "Meow Mix",
+              14.99
+            ],
+            [
+              104,
+              "CatBest",
+              16.99
+            ]
+          ],
+          "row_count": 3,
+          "truncated": false,
+          "diagnostics": {
+            "param_count": 1
+          }
+        }
+      }
+    }
+  ]
+}

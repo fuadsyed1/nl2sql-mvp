@@ -1,0 +1,5688 @@
+{
+  "benchmark": "petshop",
+  "benchmark_version": "1.0",
+  "timestamp": "2026-06-23T13:09:10.197293-07:00",
+  "base_url": "http://localhost:8000",
+  "database_id": 1,
+  "provider_env": null,
+  "model_env": null,
+  "summary": {
+    "total": 30,
+    "passed": 24,
+    "failed": 6,
+    "pass_rate": 80.0,
+    "avg_latency_ms": 3467.2
+  },
+  "category_summary": {
+    "aggregation": {
+      "passed": 2,
+      "total": 3
+    },
+    "bridge-table join through owns": {
+      "passed": 2,
+      "total": 3
+    },
+    "distinct": {
+      "passed": 1,
+      "total": 2
+    },
+    "failure/edge cases": {
+      "passed": 3,
+      "total": 4
+    },
+    "group by": {
+      "passed": 2,
+      "total": 3
+    },
+    "limit": {
+      "passed": 2,
+      "total": 2
+    },
+    "order by": {
+      "passed": 4,
+      "total": 4
+    },
+    "simple select": {
+      "passed": 3,
+      "total": 3
+    },
+    "single-table filter": {
+      "passed": 3,
+      "total": 4
+    },
+    "two-table join": {
+      "passed": 2,
+      "total": 2
+    }
+  },
+  "results": [
+    {
+      "id": "petshop_001",
+      "category": "simple select",
+      "question": "List all owner last names.",
+      "latency_ms": 3300.2,
+      "passed": true,
+      "reasons": [],
+      "grading": {
+        "mode": "normal_case",
+        "checks": {
+          "validation_valid": true,
+          "plan_resolved": true,
+          "generated": true,
+          "executed": true,
+          "expected_tables_present": true,
+          "expected_bridge_present": true,
+          "sql_contains": true,
+          "params_match": true,
+          "result_contains": true
+        },
+        "sql": "SELECT \"owners\".\"lastname\" FROM \"owners\"",
+        "params": [],
+        "tables_used": [
+          "owners"
+        ],
+        "bridge_tables": []
+      },
+      "response": {
+        "success": true,
+        "database_id": 1,
+        "question": "List all owner last names.",
+        "extraction": {
+          "tables": [
+            "owners"
+          ],
+          "select": [
+            {
+              "table": "owners",
+              "column": "lastname"
+            }
+          ],
+          "filters": [],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false
+        },
+        "ir": {
+          "version": "1.0",
+          "database_id": 1,
+          "tables": [
+            "owners"
+          ],
+          "select": [
+            {
+              "table": "owners",
+              "column": "lastname"
+            }
+          ],
+          "filters": [],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false,
+          "relationship_hints": []
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "warnings": []
+        },
+        "plan": {
+          "resolved": true,
+          "from_table": "owners",
+          "joins": [],
+          "tables_used": [
+            "owners"
+          ],
+          "bridge_tables": [],
+          "ir": {
+            "database_id": 1,
+            "version": "1.0",
+            "tables": [
+              "owners"
+            ],
+            "select": [
+              {
+                "table": "owners",
+                "column": "lastname"
+              }
+            ],
+            "filters": [],
+            "aggregations": [],
+            "group_by": [],
+            "having": [],
+            "order_by": [],
+            "limit": null,
+            "distinct": false,
+            "relationship_hints": []
+          },
+          "diagnostics": {
+            "root": "owners",
+            "root_selection": {
+              "rule": "(-confirmed_degree_within_plan, ir_table_index, table_name)",
+              "confirmed_degree": {
+                "owners": 0
+              }
+            },
+            "bridge_tables_added": [],
+            "spanning_edge_count": 0,
+            "components": [
+              [
+                "owners"
+              ]
+            ]
+          }
+        },
+        "generated_sql": {
+          "generated": true,
+          "sql": "SELECT \"owners\".\"lastname\" FROM \"owners\"",
+          "params": [],
+          "diagnostics": {
+            "from_table": "owners",
+            "join_count": 0,
+            "bridge_tables": [],
+            "parameter_count": 0,
+            "clauses": [
+              "select",
+              "from"
+            ]
+          }
+        },
+        "execution": {
+          "executed": true,
+          "columns": [
+            "lastname"
+          ],
+          "rows": [
+            [
+              "Smith"
+            ],
+            [
+              "Jones"
+            ],
+            [
+              "Lee"
+            ]
+          ],
+          "row_count": 3,
+          "truncated": false,
+          "diagnostics": {
+            "param_count": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "petshop_002",
+      "category": "simple select",
+      "question": "Show all pet names and species.",
+      "latency_ms": 3493.0,
+      "passed": true,
+      "reasons": [],
+      "grading": {
+        "mode": "normal_case",
+        "checks": {
+          "validation_valid": true,
+          "plan_resolved": true,
+          "generated": true,
+          "executed": true,
+          "expected_tables_present": true,
+          "expected_bridge_present": true,
+          "sql_contains": true,
+          "params_match": true,
+          "result_contains": true
+        },
+        "sql": "SELECT \"pets\".\"name\", \"pets\".\"species\" FROM \"pets\"",
+        "params": [],
+        "tables_used": [
+          "pets"
+        ],
+        "bridge_tables": []
+      },
+      "response": {
+        "success": true,
+        "database_id": 1,
+        "question": "Show all pet names and species.",
+        "extraction": {
+          "tables": [
+            "pets"
+          ],
+          "select": [
+            {
+              "table": "pets",
+              "column": "name"
+            },
+            {
+              "table": "pets",
+              "column": "species"
+            }
+          ],
+          "filters": [],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false
+        },
+        "ir": {
+          "version": "1.0",
+          "database_id": 1,
+          "tables": [
+            "pets"
+          ],
+          "select": [
+            {
+              "table": "pets",
+              "column": "name"
+            },
+            {
+              "table": "pets",
+              "column": "species"
+            }
+          ],
+          "filters": [],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false,
+          "relationship_hints": []
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "warnings": []
+        },
+        "plan": {
+          "resolved": true,
+          "from_table": "pets",
+          "joins": [],
+          "tables_used": [
+            "pets"
+          ],
+          "bridge_tables": [],
+          "ir": {
+            "database_id": 1,
+            "version": "1.0",
+            "tables": [
+              "pets"
+            ],
+            "select": [
+              {
+                "table": "pets",
+                "column": "name"
+              },
+              {
+                "table": "pets",
+                "column": "species"
+              }
+            ],
+            "filters": [],
+            "aggregations": [],
+            "group_by": [],
+            "having": [],
+            "order_by": [],
+            "limit": null,
+            "distinct": false,
+            "relationship_hints": []
+          },
+          "diagnostics": {
+            "root": "pets",
+            "root_selection": {
+              "rule": "(-confirmed_degree_within_plan, ir_table_index, table_name)",
+              "confirmed_degree": {
+                "pets": 0
+              }
+            },
+            "bridge_tables_added": [],
+            "spanning_edge_count": 0,
+            "components": [
+              [
+                "pets"
+              ]
+            ]
+          }
+        },
+        "generated_sql": {
+          "generated": true,
+          "sql": "SELECT \"pets\".\"name\", \"pets\".\"species\" FROM \"pets\"",
+          "params": [],
+          "diagnostics": {
+            "from_table": "pets",
+            "join_count": 0,
+            "bridge_tables": [],
+            "parameter_count": 0,
+            "clauses": [
+              "select",
+              "from"
+            ]
+          }
+        },
+        "execution": {
+          "executed": true,
+          "columns": [
+            "name",
+            "species"
+          ],
+          "rows": [
+            [
+              "Rex",
+              "dog"
+            ],
+            [
+              "Milo",
+              "cat"
+            ],
+            [
+              "Zoe",
+              "cat"
+            ],
+            [
+              "Ace",
+              "dog"
+            ]
+          ],
+          "row_count": 4,
+          "truncated": false,
+          "diagnostics": {
+            "param_count": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "petshop_003",
+      "category": "simple select",
+      "question": "Show all cities of owners.",
+      "latency_ms": 3188.3,
+      "passed": true,
+      "reasons": [],
+      "grading": {
+        "mode": "normal_case",
+        "checks": {
+          "validation_valid": true,
+          "plan_resolved": true,
+          "generated": true,
+          "executed": true,
+          "expected_tables_present": true,
+          "expected_bridge_present": true,
+          "sql_contains": true,
+          "params_match": true,
+          "result_contains": true
+        },
+        "sql": "SELECT DISTINCT \"owners\".\"city\" FROM \"owners\"",
+        "params": [],
+        "tables_used": [
+          "owners"
+        ],
+        "bridge_tables": []
+      },
+      "response": {
+        "success": true,
+        "database_id": 1,
+        "question": "Show all cities of owners.",
+        "extraction": {
+          "tables": [
+            "owners"
+          ],
+          "select": [
+            {
+              "table": "owners",
+              "column": "city"
+            }
+          ],
+          "filters": [],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": true
+        },
+        "ir": {
+          "version": "1.0",
+          "database_id": 1,
+          "tables": [
+            "owners"
+          ],
+          "select": [
+            {
+              "table": "owners",
+              "column": "city"
+            }
+          ],
+          "filters": [],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": true,
+          "relationship_hints": []
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "warnings": []
+        },
+        "plan": {
+          "resolved": true,
+          "from_table": "owners",
+          "joins": [],
+          "tables_used": [
+            "owners"
+          ],
+          "bridge_tables": [],
+          "ir": {
+            "database_id": 1,
+            "version": "1.0",
+            "tables": [
+              "owners"
+            ],
+            "select": [
+              {
+                "table": "owners",
+                "column": "city"
+              }
+            ],
+            "filters": [],
+            "aggregations": [],
+            "group_by": [],
+            "having": [],
+            "order_by": [],
+            "limit": null,
+            "distinct": true,
+            "relationship_hints": []
+          },
+          "diagnostics": {
+            "root": "owners",
+            "root_selection": {
+              "rule": "(-confirmed_degree_within_plan, ir_table_index, table_name)",
+              "confirmed_degree": {
+                "owners": 0
+              }
+            },
+            "bridge_tables_added": [],
+            "spanning_edge_count": 0,
+            "components": [
+              [
+                "owners"
+              ]
+            ]
+          }
+        },
+        "generated_sql": {
+          "generated": true,
+          "sql": "SELECT DISTINCT \"owners\".\"city\" FROM \"owners\"",
+          "params": [],
+          "diagnostics": {
+            "from_table": "owners",
+            "join_count": 0,
+            "bridge_tables": [],
+            "parameter_count": 0,
+            "clauses": [
+              "select",
+              "from"
+            ]
+          }
+        },
+        "execution": {
+          "executed": true,
+          "columns": [
+            "city"
+          ],
+          "rows": [
+            [
+              "Moscow"
+            ],
+            [
+              "Boise"
+            ],
+            [
+              "Pullman"
+            ]
+          ],
+          "row_count": 3,
+          "truncated": false,
+          "diagnostics": {
+            "param_count": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "petshop_004",
+      "category": "single-table filter",
+      "question": "List the names of all dogs.",
+      "latency_ms": 3779.1,
+      "passed": true,
+      "reasons": [],
+      "grading": {
+        "mode": "normal_case",
+        "checks": {
+          "validation_valid": true,
+          "plan_resolved": true,
+          "generated": true,
+          "executed": true,
+          "expected_tables_present": true,
+          "expected_bridge_present": true,
+          "sql_contains": true,
+          "params_match": true,
+          "result_contains": true
+        },
+        "sql": "SELECT \"pets\".\"name\" FROM \"pets\" WHERE \"pets\".\"species\" = ?",
+        "params": [
+          "dog"
+        ],
+        "tables_used": [
+          "pets"
+        ],
+        "bridge_tables": []
+      },
+      "response": {
+        "success": true,
+        "database_id": 1,
+        "question": "List the names of all dogs.",
+        "extraction": {
+          "tables": [
+            "pets"
+          ],
+          "select": [
+            {
+              "table": "pets",
+              "column": "name"
+            }
+          ],
+          "filters": [
+            {
+              "table": "pets",
+              "column": "species",
+              "op": "=",
+              "value": "dog",
+              "connector": "AND"
+            }
+          ],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false
+        },
+        "ir": {
+          "version": "1.0",
+          "database_id": 1,
+          "tables": [
+            "pets"
+          ],
+          "select": [
+            {
+              "table": "pets",
+              "column": "name"
+            }
+          ],
+          "filters": [
+            {
+              "table": "pets",
+              "column": "species",
+              "op": "=",
+              "value": "dog",
+              "connector": "AND"
+            }
+          ],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false,
+          "relationship_hints": []
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "warnings": []
+        },
+        "plan": {
+          "resolved": true,
+          "from_table": "pets",
+          "joins": [],
+          "tables_used": [
+            "pets"
+          ],
+          "bridge_tables": [],
+          "ir": {
+            "database_id": 1,
+            "version": "1.0",
+            "tables": [
+              "pets"
+            ],
+            "select": [
+              {
+                "table": "pets",
+                "column": "name"
+              }
+            ],
+            "filters": [
+              {
+                "table": "pets",
+                "column": "species",
+                "op": "=",
+                "value": "dog",
+                "connector": "AND"
+              }
+            ],
+            "aggregations": [],
+            "group_by": [],
+            "having": [],
+            "order_by": [],
+            "limit": null,
+            "distinct": false,
+            "relationship_hints": []
+          },
+          "diagnostics": {
+            "root": "pets",
+            "root_selection": {
+              "rule": "(-confirmed_degree_within_plan, ir_table_index, table_name)",
+              "confirmed_degree": {
+                "pets": 0
+              }
+            },
+            "bridge_tables_added": [],
+            "spanning_edge_count": 0,
+            "components": [
+              [
+                "pets"
+              ]
+            ]
+          }
+        },
+        "generated_sql": {
+          "generated": true,
+          "sql": "SELECT \"pets\".\"name\" FROM \"pets\" WHERE \"pets\".\"species\" = ?",
+          "params": [
+            "dog"
+          ],
+          "diagnostics": {
+            "from_table": "pets",
+            "join_count": 0,
+            "bridge_tables": [],
+            "parameter_count": 1,
+            "clauses": [
+              "select",
+              "from",
+              "where"
+            ]
+          }
+        },
+        "execution": {
+          "executed": true,
+          "columns": [
+            "name"
+          ],
+          "rows": [
+            [
+              "Rex"
+            ],
+            [
+              "Ace"
+            ]
+          ],
+          "row_count": 2,
+          "truncated": false,
+          "diagnostics": {
+            "param_count": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "petshop_005",
+      "category": "single-table filter",
+      "question": "Which owners live in Moscow?",
+      "latency_ms": 3439.2,
+      "passed": true,
+      "reasons": [],
+      "grading": {
+        "mode": "normal_case",
+        "checks": {
+          "validation_valid": true,
+          "plan_resolved": true,
+          "generated": true,
+          "executed": true,
+          "expected_tables_present": true,
+          "expected_bridge_present": true,
+          "sql_contains": true,
+          "params_match": true,
+          "result_contains": true
+        },
+        "sql": "SELECT \"owners\".\"lastname\" FROM \"owners\" WHERE \"owners\".\"city\" = ?",
+        "params": [
+          "Moscow"
+        ],
+        "tables_used": [
+          "owners"
+        ],
+        "bridge_tables": []
+      },
+      "response": {
+        "success": true,
+        "database_id": 1,
+        "question": "Which owners live in Moscow?",
+        "extraction": {
+          "tables": [
+            "owners"
+          ],
+          "select": [
+            {
+              "table": "owners",
+              "column": "lastname"
+            }
+          ],
+          "filters": [
+            {
+              "table": "owners",
+              "column": "city",
+              "op": "=",
+              "value": "Moscow",
+              "connector": "AND"
+            }
+          ],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false
+        },
+        "ir": {
+          "version": "1.0",
+          "database_id": 1,
+          "tables": [
+            "owners"
+          ],
+          "select": [
+            {
+              "table": "owners",
+              "column": "lastname"
+            }
+          ],
+          "filters": [
+            {
+              "table": "owners",
+              "column": "city",
+              "op": "=",
+              "value": "Moscow",
+              "connector": "AND"
+            }
+          ],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false,
+          "relationship_hints": []
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "warnings": []
+        },
+        "plan": {
+          "resolved": true,
+          "from_table": "owners",
+          "joins": [],
+          "tables_used": [
+            "owners"
+          ],
+          "bridge_tables": [],
+          "ir": {
+            "database_id": 1,
+            "version": "1.0",
+            "tables": [
+              "owners"
+            ],
+            "select": [
+              {
+                "table": "owners",
+                "column": "lastname"
+              }
+            ],
+            "filters": [
+              {
+                "table": "owners",
+                "column": "city",
+                "op": "=",
+                "value": "Moscow",
+                "connector": "AND"
+              }
+            ],
+            "aggregations": [],
+            "group_by": [],
+            "having": [],
+            "order_by": [],
+            "limit": null,
+            "distinct": false,
+            "relationship_hints": []
+          },
+          "diagnostics": {
+            "root": "owners",
+            "root_selection": {
+              "rule": "(-confirmed_degree_within_plan, ir_table_index, table_name)",
+              "confirmed_degree": {
+                "owners": 0
+              }
+            },
+            "bridge_tables_added": [],
+            "spanning_edge_count": 0,
+            "components": [
+              [
+                "owners"
+              ]
+            ]
+          }
+        },
+        "generated_sql": {
+          "generated": true,
+          "sql": "SELECT \"owners\".\"lastname\" FROM \"owners\" WHERE \"owners\".\"city\" = ?",
+          "params": [
+            "Moscow"
+          ],
+          "diagnostics": {
+            "from_table": "owners",
+            "join_count": 0,
+            "bridge_tables": [],
+            "parameter_count": 1,
+            "clauses": [
+              "select",
+              "from",
+              "where"
+            ]
+          }
+        },
+        "execution": {
+          "executed": true,
+          "columns": [
+            "lastname"
+          ],
+          "rows": [
+            [
+              "Smith"
+            ]
+          ],
+          "row_count": 1,
+          "truncated": false,
+          "diagnostics": {
+            "param_count": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "petshop_006",
+      "category": "single-table filter",
+      "question": "List pets that are not cats.",
+      "latency_ms": 3370.9,
+      "passed": true,
+      "reasons": [],
+      "grading": {
+        "mode": "normal_case",
+        "checks": {
+          "validation_valid": true,
+          "plan_resolved": true,
+          "generated": true,
+          "executed": true,
+          "expected_tables_present": true,
+          "expected_bridge_present": true,
+          "sql_contains": true,
+          "params_match": true,
+          "result_contains": true
+        },
+        "sql": "SELECT \"pets\".\"name\" FROM \"pets\" WHERE \"pets\".\"species\" != ?",
+        "params": [
+          "cat"
+        ],
+        "tables_used": [
+          "pets"
+        ],
+        "bridge_tables": []
+      },
+      "response": {
+        "success": true,
+        "database_id": 1,
+        "question": "List pets that are not cats.",
+        "extraction": {
+          "tables": [
+            "pets"
+          ],
+          "select": [
+            {
+              "table": "pets",
+              "column": "name"
+            }
+          ],
+          "filters": [
+            {
+              "table": "pets",
+              "column": "species",
+              "op": "!=",
+              "value": "cat",
+              "connector": "AND"
+            }
+          ],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false
+        },
+        "ir": {
+          "version": "1.0",
+          "database_id": 1,
+          "tables": [
+            "pets"
+          ],
+          "select": [
+            {
+              "table": "pets",
+              "column": "name"
+            }
+          ],
+          "filters": [
+            {
+              "table": "pets",
+              "column": "species",
+              "op": "!=",
+              "value": "cat",
+              "connector": "AND"
+            }
+          ],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false,
+          "relationship_hints": []
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "warnings": []
+        },
+        "plan": {
+          "resolved": true,
+          "from_table": "pets",
+          "joins": [],
+          "tables_used": [
+            "pets"
+          ],
+          "bridge_tables": [],
+          "ir": {
+            "database_id": 1,
+            "version": "1.0",
+            "tables": [
+              "pets"
+            ],
+            "select": [
+              {
+                "table": "pets",
+                "column": "name"
+              }
+            ],
+            "filters": [
+              {
+                "table": "pets",
+                "column": "species",
+                "op": "!=",
+                "value": "cat",
+                "connector": "AND"
+              }
+            ],
+            "aggregations": [],
+            "group_by": [],
+            "having": [],
+            "order_by": [],
+            "limit": null,
+            "distinct": false,
+            "relationship_hints": []
+          },
+          "diagnostics": {
+            "root": "pets",
+            "root_selection": {
+              "rule": "(-confirmed_degree_within_plan, ir_table_index, table_name)",
+              "confirmed_degree": {
+                "pets": 0
+              }
+            },
+            "bridge_tables_added": [],
+            "spanning_edge_count": 0,
+            "components": [
+              [
+                "pets"
+              ]
+            ]
+          }
+        },
+        "generated_sql": {
+          "generated": true,
+          "sql": "SELECT \"pets\".\"name\" FROM \"pets\" WHERE \"pets\".\"species\" != ?",
+          "params": [
+            "cat"
+          ],
+          "diagnostics": {
+            "from_table": "pets",
+            "join_count": 0,
+            "bridge_tables": [],
+            "parameter_count": 1,
+            "clauses": [
+              "select",
+              "from",
+              "where"
+            ]
+          }
+        },
+        "execution": {
+          "executed": true,
+          "columns": [
+            "name"
+          ],
+          "rows": [
+            [
+              "Rex"
+            ],
+            [
+              "Ace"
+            ]
+          ],
+          "row_count": 2,
+          "truncated": false,
+          "diagnostics": {
+            "param_count": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "petshop_007",
+      "category": "single-table filter",
+      "question": "Show owners whose city is Pullman or Moscow.",
+      "latency_ms": 3581.5,
+      "passed": false,
+      "reasons": [
+        "sql missing fragments ['\"owners\".\"city\" IN (?, ?)']"
+      ],
+      "grading": {
+        "mode": "normal_case",
+        "checks": {
+          "validation_valid": true,
+          "plan_resolved": true,
+          "generated": true,
+          "executed": true,
+          "expected_tables_present": true,
+          "expected_bridge_present": true,
+          "sql_contains": false,
+          "params_match": true,
+          "result_contains": true
+        },
+        "sql": "SELECT \"owners\".\"lastname\" FROM \"owners\" WHERE \"owners\".\"city\" = ? AND \"owners\".\"city\" = ?",
+        "params": [
+          "Pullman",
+          "Moscow"
+        ],
+        "tables_used": [
+          "owners"
+        ],
+        "bridge_tables": []
+      },
+      "response": {
+        "success": true,
+        "database_id": 1,
+        "question": "Show owners whose city is Pullman or Moscow.",
+        "extraction": {
+          "tables": [
+            "owners"
+          ],
+          "select": [
+            {
+              "table": "owners",
+              "column": "lastname"
+            }
+          ],
+          "filters": [
+            {
+              "table": "owners",
+              "column": "city",
+              "op": "=",
+              "value": "Pullman",
+              "connector": "OR"
+            },
+            {
+              "table": "owners",
+              "column": "city",
+              "op": "=",
+              "value": "Moscow",
+              "connector": null
+            }
+          ],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false
+        },
+        "ir": {
+          "version": "1.0",
+          "database_id": 1,
+          "tables": [
+            "owners"
+          ],
+          "select": [
+            {
+              "table": "owners",
+              "column": "lastname"
+            }
+          ],
+          "filters": [
+            {
+              "table": "owners",
+              "column": "city",
+              "op": "=",
+              "value": "Pullman",
+              "connector": "OR"
+            },
+            {
+              "table": "owners",
+              "column": "city",
+              "op": "=",
+              "value": "Moscow",
+              "connector": null
+            }
+          ],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false,
+          "relationship_hints": []
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "warnings": []
+        },
+        "plan": {
+          "resolved": true,
+          "from_table": "owners",
+          "joins": [],
+          "tables_used": [
+            "owners"
+          ],
+          "bridge_tables": [],
+          "ir": {
+            "database_id": 1,
+            "version": "1.0",
+            "tables": [
+              "owners"
+            ],
+            "select": [
+              {
+                "table": "owners",
+                "column": "lastname"
+              }
+            ],
+            "filters": [
+              {
+                "table": "owners",
+                "column": "city",
+                "op": "=",
+                "value": "Pullman",
+                "connector": "OR"
+              },
+              {
+                "table": "owners",
+                "column": "city",
+                "op": "=",
+                "value": "Moscow",
+                "connector": null
+              }
+            ],
+            "aggregations": [],
+            "group_by": [],
+            "having": [],
+            "order_by": [],
+            "limit": null,
+            "distinct": false,
+            "relationship_hints": []
+          },
+          "diagnostics": {
+            "root": "owners",
+            "root_selection": {
+              "rule": "(-confirmed_degree_within_plan, ir_table_index, table_name)",
+              "confirmed_degree": {
+                "owners": 0
+              }
+            },
+            "bridge_tables_added": [],
+            "spanning_edge_count": 0,
+            "components": [
+              [
+                "owners"
+              ]
+            ]
+          }
+        },
+        "generated_sql": {
+          "generated": true,
+          "sql": "SELECT \"owners\".\"lastname\" FROM \"owners\" WHERE \"owners\".\"city\" = ? AND \"owners\".\"city\" = ?",
+          "params": [
+            "Pullman",
+            "Moscow"
+          ],
+          "diagnostics": {
+            "from_table": "owners",
+            "join_count": 0,
+            "bridge_tables": [],
+            "parameter_count": 2,
+            "clauses": [
+              "select",
+              "from",
+              "where"
+            ]
+          }
+        },
+        "execution": {
+          "executed": true,
+          "columns": [
+            "lastname"
+          ],
+          "rows": [],
+          "row_count": 0,
+          "truncated": false,
+          "diagnostics": {
+            "param_count": 2
+          }
+        }
+      }
+    },
+    {
+      "id": "petshop_008",
+      "category": "two-table join",
+      "question": "Show each owner's last name and the names of pets they own.",
+      "latency_ms": 3305.1,
+      "passed": true,
+      "reasons": [],
+      "grading": {
+        "mode": "normal_case",
+        "checks": {
+          "validation_valid": true,
+          "plan_resolved": true,
+          "generated": true,
+          "executed": true,
+          "expected_tables_present": true,
+          "expected_bridge_present": true,
+          "sql_contains": true,
+          "params_match": true,
+          "result_contains": true
+        },
+        "sql": "SELECT \"owners\".\"lastname\", \"pets\".\"name\" FROM \"owners\" INNER JOIN \"owns\" ON \"owners\".\"oid\" = \"owns\".\"oid\" INNER JOIN \"pets\" ON \"owns\".\"petid\" = \"pets\".\"petid\"",
+        "params": [],
+        "tables_used": [
+          "owners",
+          "owns",
+          "pets"
+        ],
+        "bridge_tables": [
+          "owns"
+        ]
+      },
+      "response": {
+        "success": true,
+        "database_id": 1,
+        "question": "Show each owner's last name and the names of pets they own.",
+        "extraction": {
+          "tables": [
+            "owners",
+            "pets"
+          ],
+          "select": [
+            {
+              "table": "owners",
+              "column": "lastname"
+            },
+            {
+              "table": "pets",
+              "column": "name"
+            }
+          ],
+          "filters": [],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false
+        },
+        "ir": {
+          "version": "1.0",
+          "database_id": 1,
+          "tables": [
+            "owners",
+            "pets"
+          ],
+          "select": [
+            {
+              "table": "owners",
+              "column": "lastname"
+            },
+            {
+              "table": "pets",
+              "column": "name"
+            }
+          ],
+          "filters": [],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false,
+          "relationship_hints": []
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "warnings": [
+            "multiple tables but no relationship_hints; Phase 6 will need to resolve a join path"
+          ]
+        },
+        "plan": {
+          "resolved": true,
+          "from_table": "owners",
+          "joins": [
+            {
+              "from_table": "owners",
+              "from_column": "oid",
+              "to_table": "owns",
+              "to_column": "oid",
+              "join_type": "inner"
+            },
+            {
+              "from_table": "owns",
+              "from_column": "petid",
+              "to_table": "pets",
+              "to_column": "petid",
+              "join_type": "inner"
+            }
+          ],
+          "tables_used": [
+            "owners",
+            "owns",
+            "pets"
+          ],
+          "bridge_tables": [
+            "owns"
+          ],
+          "ir": {
+            "database_id": 1,
+            "version": "1.0",
+            "tables": [
+              "owners",
+              "pets"
+            ],
+            "select": [
+              {
+                "table": "owners",
+                "column": "lastname"
+              },
+              {
+                "table": "pets",
+                "column": "name"
+              }
+            ],
+            "filters": [],
+            "aggregations": [],
+            "group_by": [],
+            "having": [],
+            "order_by": [],
+            "limit": null,
+            "distinct": false,
+            "relationship_hints": []
+          },
+          "diagnostics": {
+            "root": "owners",
+            "root_selection": {
+              "rule": "(-confirmed_degree_within_plan, ir_table_index, table_name)",
+              "confirmed_degree": {
+                "owners": 1,
+                "pets": 1
+              }
+            },
+            "bridge_tables_added": [
+              "owns"
+            ],
+            "spanning_edge_count": 2,
+            "components": [
+              [
+                "owners",
+                "pets"
+              ]
+            ]
+          }
+        },
+        "generated_sql": {
+          "generated": true,
+          "sql": "SELECT \"owners\".\"lastname\", \"pets\".\"name\" FROM \"owners\" INNER JOIN \"owns\" ON \"owners\".\"oid\" = \"owns\".\"oid\" INNER JOIN \"pets\" ON \"owns\".\"petid\" = \"pets\".\"petid\"",
+          "params": [],
+          "diagnostics": {
+            "from_table": "owners",
+            "join_count": 2,
+            "bridge_tables": [
+              "owns"
+            ],
+            "parameter_count": 0,
+            "clauses": [
+              "select",
+              "from",
+              "join"
+            ]
+          }
+        },
+        "execution": {
+          "executed": true,
+          "columns": [
+            "lastname",
+            "name"
+          ],
+          "rows": [
+            [
+              "Smith",
+              "Rex"
+            ],
+            [
+              "Smith",
+              "Milo"
+            ],
+            [
+              "Jones",
+              "Zoe"
+            ],
+            [
+              "Lee",
+              "Rex"
+            ]
+          ],
+          "row_count": 4,
+          "truncated": false,
+          "diagnostics": {
+            "param_count": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "petshop_009",
+      "category": "two-table join",
+      "question": "List the species of pets owned by Smith.",
+      "latency_ms": 3441.2,
+      "passed": true,
+      "reasons": [],
+      "grading": {
+        "mode": "normal_case",
+        "checks": {
+          "validation_valid": true,
+          "plan_resolved": true,
+          "generated": true,
+          "executed": true,
+          "expected_tables_present": true,
+          "expected_bridge_present": true,
+          "sql_contains": true,
+          "params_match": true,
+          "result_contains": true
+        },
+        "sql": "SELECT DISTINCT \"pets\".\"species\" FROM \"owners\" INNER JOIN \"owns\" ON \"owners\".\"oid\" = \"owns\".\"oid\" INNER JOIN \"pets\" ON \"owns\".\"petid\" = \"pets\".\"petid\" WHERE \"owners\".\"lastname\" = ?",
+        "params": [
+          "Smith"
+        ],
+        "tables_used": [
+          "owners",
+          "owns",
+          "pets"
+        ],
+        "bridge_tables": [
+          "owns"
+        ]
+      },
+      "response": {
+        "success": true,
+        "database_id": 1,
+        "question": "List the species of pets owned by Smith.",
+        "extraction": {
+          "tables": [
+            "owners",
+            "pets"
+          ],
+          "select": [
+            {
+              "table": "pets",
+              "column": "species"
+            }
+          ],
+          "filters": [
+            {
+              "table": "owners",
+              "column": "lastname",
+              "op": "=",
+              "value": "Smith",
+              "connector": "AND"
+            }
+          ],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": true
+        },
+        "ir": {
+          "version": "1.0",
+          "database_id": 1,
+          "tables": [
+            "owners",
+            "pets"
+          ],
+          "select": [
+            {
+              "table": "pets",
+              "column": "species"
+            }
+          ],
+          "filters": [
+            {
+              "table": "owners",
+              "column": "lastname",
+              "op": "=",
+              "value": "Smith",
+              "connector": "AND"
+            }
+          ],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": true,
+          "relationship_hints": []
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "warnings": [
+            "multiple tables but no relationship_hints; Phase 6 will need to resolve a join path"
+          ]
+        },
+        "plan": {
+          "resolved": true,
+          "from_table": "owners",
+          "joins": [
+            {
+              "from_table": "owners",
+              "from_column": "oid",
+              "to_table": "owns",
+              "to_column": "oid",
+              "join_type": "inner"
+            },
+            {
+              "from_table": "owns",
+              "from_column": "petid",
+              "to_table": "pets",
+              "to_column": "petid",
+              "join_type": "inner"
+            }
+          ],
+          "tables_used": [
+            "owners",
+            "owns",
+            "pets"
+          ],
+          "bridge_tables": [
+            "owns"
+          ],
+          "ir": {
+            "database_id": 1,
+            "version": "1.0",
+            "tables": [
+              "owners",
+              "pets"
+            ],
+            "select": [
+              {
+                "table": "pets",
+                "column": "species"
+              }
+            ],
+            "filters": [
+              {
+                "table": "owners",
+                "column": "lastname",
+                "op": "=",
+                "value": "Smith",
+                "connector": "AND"
+              }
+            ],
+            "aggregations": [],
+            "group_by": [],
+            "having": [],
+            "order_by": [],
+            "limit": null,
+            "distinct": true,
+            "relationship_hints": []
+          },
+          "diagnostics": {
+            "root": "owners",
+            "root_selection": {
+              "rule": "(-confirmed_degree_within_plan, ir_table_index, table_name)",
+              "confirmed_degree": {
+                "owners": 1,
+                "pets": 1
+              }
+            },
+            "bridge_tables_added": [
+              "owns"
+            ],
+            "spanning_edge_count": 2,
+            "components": [
+              [
+                "owners",
+                "pets"
+              ]
+            ]
+          }
+        },
+        "generated_sql": {
+          "generated": true,
+          "sql": "SELECT DISTINCT \"pets\".\"species\" FROM \"owners\" INNER JOIN \"owns\" ON \"owners\".\"oid\" = \"owns\".\"oid\" INNER JOIN \"pets\" ON \"owns\".\"petid\" = \"pets\".\"petid\" WHERE \"owners\".\"lastname\" = ?",
+          "params": [
+            "Smith"
+          ],
+          "diagnostics": {
+            "from_table": "owners",
+            "join_count": 2,
+            "bridge_tables": [
+              "owns"
+            ],
+            "parameter_count": 1,
+            "clauses": [
+              "select",
+              "from",
+              "join",
+              "where"
+            ]
+          }
+        },
+        "execution": {
+          "executed": true,
+          "columns": [
+            "species"
+          ],
+          "rows": [
+            [
+              "dog"
+            ],
+            [
+              "cat"
+            ]
+          ],
+          "row_count": 2,
+          "truncated": false,
+          "diagnostics": {
+            "param_count": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "petshop_010",
+      "category": "bridge-table join through owns",
+      "question": "Which owners have dogs?",
+      "latency_ms": 3419.1,
+      "passed": true,
+      "reasons": [],
+      "grading": {
+        "mode": "normal_case",
+        "checks": {
+          "validation_valid": true,
+          "plan_resolved": true,
+          "generated": true,
+          "executed": true,
+          "expected_tables_present": true,
+          "expected_bridge_present": true,
+          "sql_contains": true,
+          "params_match": true,
+          "result_contains": true
+        },
+        "sql": "SELECT DISTINCT \"owners\".\"lastname\" FROM \"owners\" INNER JOIN \"owns\" ON \"owners\".\"oid\" = \"owns\".\"oid\" INNER JOIN \"pets\" ON \"owns\".\"petid\" = \"pets\".\"petid\" WHERE \"pets\".\"species\" = ?",
+        "params": [
+          "dog"
+        ],
+        "tables_used": [
+          "owners",
+          "owns",
+          "pets"
+        ],
+        "bridge_tables": [
+          "owns"
+        ]
+      },
+      "response": {
+        "success": true,
+        "database_id": 1,
+        "question": "Which owners have dogs?",
+        "extraction": {
+          "tables": [
+            "owners",
+            "pets"
+          ],
+          "select": [
+            {
+              "table": "owners",
+              "column": "lastname"
+            }
+          ],
+          "filters": [
+            {
+              "table": "pets",
+              "column": "species",
+              "op": "=",
+              "value": "dog",
+              "connector": "AND"
+            }
+          ],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": true
+        },
+        "ir": {
+          "version": "1.0",
+          "database_id": 1,
+          "tables": [
+            "owners",
+            "pets"
+          ],
+          "select": [
+            {
+              "table": "owners",
+              "column": "lastname"
+            }
+          ],
+          "filters": [
+            {
+              "table": "pets",
+              "column": "species",
+              "op": "=",
+              "value": "dog",
+              "connector": "AND"
+            }
+          ],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": true,
+          "relationship_hints": []
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "warnings": [
+            "multiple tables but no relationship_hints; Phase 6 will need to resolve a join path"
+          ]
+        },
+        "plan": {
+          "resolved": true,
+          "from_table": "owners",
+          "joins": [
+            {
+              "from_table": "owners",
+              "from_column": "oid",
+              "to_table": "owns",
+              "to_column": "oid",
+              "join_type": "inner"
+            },
+            {
+              "from_table": "owns",
+              "from_column": "petid",
+              "to_table": "pets",
+              "to_column": "petid",
+              "join_type": "inner"
+            }
+          ],
+          "tables_used": [
+            "owners",
+            "owns",
+            "pets"
+          ],
+          "bridge_tables": [
+            "owns"
+          ],
+          "ir": {
+            "database_id": 1,
+            "version": "1.0",
+            "tables": [
+              "owners",
+              "pets"
+            ],
+            "select": [
+              {
+                "table": "owners",
+                "column": "lastname"
+              }
+            ],
+            "filters": [
+              {
+                "table": "pets",
+                "column": "species",
+                "op": "=",
+                "value": "dog",
+                "connector": "AND"
+              }
+            ],
+            "aggregations": [],
+            "group_by": [],
+            "having": [],
+            "order_by": [],
+            "limit": null,
+            "distinct": true,
+            "relationship_hints": []
+          },
+          "diagnostics": {
+            "root": "owners",
+            "root_selection": {
+              "rule": "(-confirmed_degree_within_plan, ir_table_index, table_name)",
+              "confirmed_degree": {
+                "owners": 1,
+                "pets": 1
+              }
+            },
+            "bridge_tables_added": [
+              "owns"
+            ],
+            "spanning_edge_count": 2,
+            "components": [
+              [
+                "owners",
+                "pets"
+              ]
+            ]
+          }
+        },
+        "generated_sql": {
+          "generated": true,
+          "sql": "SELECT DISTINCT \"owners\".\"lastname\" FROM \"owners\" INNER JOIN \"owns\" ON \"owners\".\"oid\" = \"owns\".\"oid\" INNER JOIN \"pets\" ON \"owns\".\"petid\" = \"pets\".\"petid\" WHERE \"pets\".\"species\" = ?",
+          "params": [
+            "dog"
+          ],
+          "diagnostics": {
+            "from_table": "owners",
+            "join_count": 2,
+            "bridge_tables": [
+              "owns"
+            ],
+            "parameter_count": 1,
+            "clauses": [
+              "select",
+              "from",
+              "join",
+              "where"
+            ]
+          }
+        },
+        "execution": {
+          "executed": true,
+          "columns": [
+            "lastname"
+          ],
+          "rows": [
+            [
+              "Smith"
+            ],
+            [
+              "Lee"
+            ]
+          ],
+          "row_count": 2,
+          "truncated": false,
+          "diagnostics": {
+            "param_count": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "petshop_011",
+      "category": "bridge-table join through owns",
+      "question": "List the last names of owners who have cats.",
+      "latency_ms": 3405.2,
+      "passed": false,
+      "reasons": [
+        "missing expected_bridge_tables ['owns']",
+        "sql missing fragments ['INNER JOIN \"owns\"']"
+      ],
+      "grading": {
+        "mode": "normal_case",
+        "checks": {
+          "validation_valid": true,
+          "plan_resolved": true,
+          "generated": true,
+          "executed": true,
+          "expected_tables_present": true,
+          "expected_bridge_present": false,
+          "sql_contains": false,
+          "params_match": true,
+          "result_contains": true
+        },
+        "sql": "SELECT DISTINCT \"owners\".\"lastname\" FROM \"owns\" INNER JOIN \"owners\" ON \"owns\".\"oid\" = \"owners\".\"oid\" INNER JOIN \"pets\" ON \"owns\".\"petid\" = \"pets\".\"petid\" WHERE \"pets\".\"species\" = ?",
+        "params": [
+          "cat"
+        ],
+        "tables_used": [
+          "owners",
+          "owns",
+          "pets"
+        ],
+        "bridge_tables": []
+      },
+      "response": {
+        "success": true,
+        "database_id": 1,
+        "question": "List the last names of owners who have cats.",
+        "extraction": {
+          "tables": [
+            "owners",
+            "pets",
+            "owns"
+          ],
+          "select": [
+            {
+              "table": "owners",
+              "column": "lastname"
+            }
+          ],
+          "filters": [
+            {
+              "table": "pets",
+              "column": "species",
+              "op": "=",
+              "value": "cat",
+              "connector": "AND"
+            }
+          ],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": true
+        },
+        "ir": {
+          "version": "1.0",
+          "database_id": 1,
+          "tables": [
+            "owners",
+            "pets",
+            "owns"
+          ],
+          "select": [
+            {
+              "table": "owners",
+              "column": "lastname"
+            }
+          ],
+          "filters": [
+            {
+              "table": "pets",
+              "column": "species",
+              "op": "=",
+              "value": "cat",
+              "connector": "AND"
+            }
+          ],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": true,
+          "relationship_hints": [
+            {
+              "from_table": "owns",
+              "from_column": "petid",
+              "to_table": "pets",
+              "to_column": "petid",
+              "relationship_id": 1
+            },
+            {
+              "from_table": "owns",
+              "from_column": "oid",
+              "to_table": "owners",
+              "to_column": "oid",
+              "relationship_id": 2
+            }
+          ]
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "warnings": []
+        },
+        "plan": {
+          "resolved": true,
+          "from_table": "owns",
+          "joins": [
+            {
+              "from_table": "owns",
+              "from_column": "oid",
+              "to_table": "owners",
+              "to_column": "oid",
+              "join_type": "inner"
+            },
+            {
+              "from_table": "owns",
+              "from_column": "petid",
+              "to_table": "pets",
+              "to_column": "petid",
+              "join_type": "inner"
+            }
+          ],
+          "tables_used": [
+            "owns",
+            "owners",
+            "pets"
+          ],
+          "bridge_tables": [],
+          "ir": {
+            "database_id": 1,
+            "version": "1.0",
+            "tables": [
+              "owners",
+              "pets",
+              "owns"
+            ],
+            "select": [
+              {
+                "table": "owners",
+                "column": "lastname"
+              }
+            ],
+            "filters": [
+              {
+                "table": "pets",
+                "column": "species",
+                "op": "=",
+                "value": "cat",
+                "connector": "AND"
+              }
+            ],
+            "aggregations": [],
+            "group_by": [],
+            "having": [],
+            "order_by": [],
+            "limit": null,
+            "distinct": true,
+            "relationship_hints": [
+              {
+                "from_table": "owns",
+                "from_column": "petid",
+                "to_table": "pets",
+                "to_column": "petid",
+                "relationship_id": 1
+              },
+              {
+                "from_table": "owns",
+                "from_column": "oid",
+                "to_table": "owners",
+                "to_column": "oid",
+                "relationship_id": 2
+              }
+            ]
+          },
+          "diagnostics": {
+            "root": "owns",
+            "root_selection": {
+              "rule": "(-confirmed_degree_within_plan, ir_table_index, table_name)",
+              "confirmed_degree": {
+                "owners": 1,
+                "pets": 1,
+                "owns": 2
+              }
+            },
+            "bridge_tables_added": [],
+            "spanning_edge_count": 2,
+            "components": [
+              [
+                "owners",
+                "pets",
+                "owns"
+              ]
+            ]
+          }
+        },
+        "generated_sql": {
+          "generated": true,
+          "sql": "SELECT DISTINCT \"owners\".\"lastname\" FROM \"owns\" INNER JOIN \"owners\" ON \"owns\".\"oid\" = \"owners\".\"oid\" INNER JOIN \"pets\" ON \"owns\".\"petid\" = \"pets\".\"petid\" WHERE \"pets\".\"species\" = ?",
+          "params": [
+            "cat"
+          ],
+          "diagnostics": {
+            "from_table": "owns",
+            "join_count": 2,
+            "bridge_tables": [],
+            "parameter_count": 1,
+            "clauses": [
+              "select",
+              "from",
+              "join",
+              "where"
+            ]
+          }
+        },
+        "execution": {
+          "executed": true,
+          "columns": [
+            "lastname"
+          ],
+          "rows": [
+            [
+              "Smith"
+            ],
+            [
+              "Jones"
+            ]
+          ],
+          "row_count": 2,
+          "truncated": false,
+          "diagnostics": {
+            "param_count": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "petshop_012",
+      "category": "bridge-table join through owns",
+      "question": "Find the cities of owners who own dogs.",
+      "latency_ms": 3508.8,
+      "passed": true,
+      "reasons": [],
+      "grading": {
+        "mode": "normal_case",
+        "checks": {
+          "validation_valid": true,
+          "plan_resolved": true,
+          "generated": true,
+          "executed": true,
+          "expected_tables_present": true,
+          "expected_bridge_present": true,
+          "sql_contains": true,
+          "params_match": true,
+          "result_contains": true
+        },
+        "sql": "SELECT DISTINCT \"owners\".\"city\" FROM \"owners\" INNER JOIN \"owns\" ON \"owners\".\"oid\" = \"owns\".\"oid\" INNER JOIN \"pets\" ON \"owns\".\"petid\" = \"pets\".\"petid\" WHERE \"pets\".\"species\" = ?",
+        "params": [
+          "dog"
+        ],
+        "tables_used": [
+          "owners",
+          "owns",
+          "pets"
+        ],
+        "bridge_tables": [
+          "owns"
+        ]
+      },
+      "response": {
+        "success": true,
+        "database_id": 1,
+        "question": "Find the cities of owners who own dogs.",
+        "extraction": {
+          "tables": [
+            "owners",
+            "pets"
+          ],
+          "select": [
+            {
+              "table": "owners",
+              "column": "city"
+            }
+          ],
+          "filters": [
+            {
+              "table": "pets",
+              "column": "species",
+              "op": "=",
+              "value": "dog",
+              "connector": "AND"
+            }
+          ],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": true
+        },
+        "ir": {
+          "version": "1.0",
+          "database_id": 1,
+          "tables": [
+            "owners",
+            "pets"
+          ],
+          "select": [
+            {
+              "table": "owners",
+              "column": "city"
+            }
+          ],
+          "filters": [
+            {
+              "table": "pets",
+              "column": "species",
+              "op": "=",
+              "value": "dog",
+              "connector": "AND"
+            }
+          ],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": true,
+          "relationship_hints": []
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "warnings": [
+            "multiple tables but no relationship_hints; Phase 6 will need to resolve a join path"
+          ]
+        },
+        "plan": {
+          "resolved": true,
+          "from_table": "owners",
+          "joins": [
+            {
+              "from_table": "owners",
+              "from_column": "oid",
+              "to_table": "owns",
+              "to_column": "oid",
+              "join_type": "inner"
+            },
+            {
+              "from_table": "owns",
+              "from_column": "petid",
+              "to_table": "pets",
+              "to_column": "petid",
+              "join_type": "inner"
+            }
+          ],
+          "tables_used": [
+            "owners",
+            "owns",
+            "pets"
+          ],
+          "bridge_tables": [
+            "owns"
+          ],
+          "ir": {
+            "database_id": 1,
+            "version": "1.0",
+            "tables": [
+              "owners",
+              "pets"
+            ],
+            "select": [
+              {
+                "table": "owners",
+                "column": "city"
+              }
+            ],
+            "filters": [
+              {
+                "table": "pets",
+                "column": "species",
+                "op": "=",
+                "value": "dog",
+                "connector": "AND"
+              }
+            ],
+            "aggregations": [],
+            "group_by": [],
+            "having": [],
+            "order_by": [],
+            "limit": null,
+            "distinct": true,
+            "relationship_hints": []
+          },
+          "diagnostics": {
+            "root": "owners",
+            "root_selection": {
+              "rule": "(-confirmed_degree_within_plan, ir_table_index, table_name)",
+              "confirmed_degree": {
+                "owners": 1,
+                "pets": 1
+              }
+            },
+            "bridge_tables_added": [
+              "owns"
+            ],
+            "spanning_edge_count": 2,
+            "components": [
+              [
+                "owners",
+                "pets"
+              ]
+            ]
+          }
+        },
+        "generated_sql": {
+          "generated": true,
+          "sql": "SELECT DISTINCT \"owners\".\"city\" FROM \"owners\" INNER JOIN \"owns\" ON \"owners\".\"oid\" = \"owns\".\"oid\" INNER JOIN \"pets\" ON \"owns\".\"petid\" = \"pets\".\"petid\" WHERE \"pets\".\"species\" = ?",
+          "params": [
+            "dog"
+          ],
+          "diagnostics": {
+            "from_table": "owners",
+            "join_count": 2,
+            "bridge_tables": [
+              "owns"
+            ],
+            "parameter_count": 1,
+            "clauses": [
+              "select",
+              "from",
+              "join",
+              "where"
+            ]
+          }
+        },
+        "execution": {
+          "executed": true,
+          "columns": [
+            "city"
+          ],
+          "rows": [
+            [
+              "Moscow"
+            ],
+            [
+              "Pullman"
+            ]
+          ],
+          "row_count": 2,
+          "truncated": false,
+          "diagnostics": {
+            "param_count": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "petshop_013",
+      "category": "aggregation",
+      "question": "How many pets are there?",
+      "latency_ms": 3312.7,
+      "passed": true,
+      "reasons": [],
+      "grading": {
+        "mode": "normal_case",
+        "checks": {
+          "validation_valid": true,
+          "plan_resolved": true,
+          "generated": true,
+          "executed": true,
+          "expected_tables_present": true,
+          "expected_bridge_present": true,
+          "sql_contains": true,
+          "params_match": true,
+          "result_contains": true
+        },
+        "sql": "SELECT COUNT(*) AS \"pet_count\" FROM \"pets\"",
+        "params": [],
+        "tables_used": [
+          "pets"
+        ],
+        "bridge_tables": []
+      },
+      "response": {
+        "success": true,
+        "database_id": 1,
+        "question": "How many pets are there?",
+        "extraction": {
+          "tables": [
+            "pets"
+          ],
+          "select": [],
+          "filters": [],
+          "aggregations": [
+            {
+              "function": "COUNT",
+              "table": "pets",
+              "column": "*",
+              "alias": "pet_count"
+            }
+          ],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false
+        },
+        "ir": {
+          "version": "1.0",
+          "database_id": 1,
+          "tables": [
+            "pets"
+          ],
+          "select": [],
+          "filters": [],
+          "aggregations": [
+            {
+              "function": "COUNT",
+              "table": "pets",
+              "column": "*",
+              "alias": "pet_count"
+            }
+          ],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false,
+          "relationship_hints": []
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "warnings": []
+        },
+        "plan": {
+          "resolved": true,
+          "from_table": "pets",
+          "joins": [],
+          "tables_used": [
+            "pets"
+          ],
+          "bridge_tables": [],
+          "ir": {
+            "database_id": 1,
+            "version": "1.0",
+            "tables": [
+              "pets"
+            ],
+            "select": [],
+            "filters": [],
+            "aggregations": [
+              {
+                "function": "COUNT",
+                "table": "pets",
+                "column": "*",
+                "alias": "pet_count"
+              }
+            ],
+            "group_by": [],
+            "having": [],
+            "order_by": [],
+            "limit": null,
+            "distinct": false,
+            "relationship_hints": []
+          },
+          "diagnostics": {
+            "root": "pets",
+            "root_selection": {
+              "rule": "(-confirmed_degree_within_plan, ir_table_index, table_name)",
+              "confirmed_degree": {
+                "pets": 0
+              }
+            },
+            "bridge_tables_added": [],
+            "spanning_edge_count": 0,
+            "components": [
+              [
+                "pets"
+              ]
+            ]
+          }
+        },
+        "generated_sql": {
+          "generated": true,
+          "sql": "SELECT COUNT(*) AS \"pet_count\" FROM \"pets\"",
+          "params": [],
+          "diagnostics": {
+            "from_table": "pets",
+            "join_count": 0,
+            "bridge_tables": [],
+            "parameter_count": 0,
+            "clauses": [
+              "select",
+              "from"
+            ]
+          }
+        },
+        "execution": {
+          "executed": true,
+          "columns": [
+            "pet_count"
+          ],
+          "rows": [
+            [
+              4
+            ]
+          ],
+          "row_count": 1,
+          "truncated": false,
+          "diagnostics": {
+            "param_count": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "petshop_014",
+      "category": "aggregation",
+      "question": "How many owners live in Moscow?",
+      "latency_ms": 3676.2,
+      "passed": true,
+      "reasons": [],
+      "grading": {
+        "mode": "normal_case",
+        "checks": {
+          "validation_valid": true,
+          "plan_resolved": true,
+          "generated": true,
+          "executed": true,
+          "expected_tables_present": true,
+          "expected_bridge_present": true,
+          "sql_contains": true,
+          "params_match": true,
+          "result_contains": true
+        },
+        "sql": "SELECT COUNT(*) AS \"owner_count\" FROM \"owners\" WHERE \"owners\".\"city\" = ?",
+        "params": [
+          "Moscow"
+        ],
+        "tables_used": [
+          "owners"
+        ],
+        "bridge_tables": []
+      },
+      "response": {
+        "success": true,
+        "database_id": 1,
+        "question": "How many owners live in Moscow?",
+        "extraction": {
+          "tables": [
+            "owners"
+          ],
+          "select": [],
+          "filters": [
+            {
+              "table": "owners",
+              "column": "city",
+              "op": "=",
+              "value": "Moscow",
+              "connector": "AND"
+            }
+          ],
+          "aggregations": [
+            {
+              "function": "COUNT",
+              "table": "owners",
+              "column": "*",
+              "alias": "owner_count"
+            }
+          ],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false
+        },
+        "ir": {
+          "version": "1.0",
+          "database_id": 1,
+          "tables": [
+            "owners"
+          ],
+          "select": [],
+          "filters": [
+            {
+              "table": "owners",
+              "column": "city",
+              "op": "=",
+              "value": "Moscow",
+              "connector": "AND"
+            }
+          ],
+          "aggregations": [
+            {
+              "function": "COUNT",
+              "table": "owners",
+              "column": "*",
+              "alias": "owner_count"
+            }
+          ],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false,
+          "relationship_hints": []
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "warnings": []
+        },
+        "plan": {
+          "resolved": true,
+          "from_table": "owners",
+          "joins": [],
+          "tables_used": [
+            "owners"
+          ],
+          "bridge_tables": [],
+          "ir": {
+            "database_id": 1,
+            "version": "1.0",
+            "tables": [
+              "owners"
+            ],
+            "select": [],
+            "filters": [
+              {
+                "table": "owners",
+                "column": "city",
+                "op": "=",
+                "value": "Moscow",
+                "connector": "AND"
+              }
+            ],
+            "aggregations": [
+              {
+                "function": "COUNT",
+                "table": "owners",
+                "column": "*",
+                "alias": "owner_count"
+              }
+            ],
+            "group_by": [],
+            "having": [],
+            "order_by": [],
+            "limit": null,
+            "distinct": false,
+            "relationship_hints": []
+          },
+          "diagnostics": {
+            "root": "owners",
+            "root_selection": {
+              "rule": "(-confirmed_degree_within_plan, ir_table_index, table_name)",
+              "confirmed_degree": {
+                "owners": 0
+              }
+            },
+            "bridge_tables_added": [],
+            "spanning_edge_count": 0,
+            "components": [
+              [
+                "owners"
+              ]
+            ]
+          }
+        },
+        "generated_sql": {
+          "generated": true,
+          "sql": "SELECT COUNT(*) AS \"owner_count\" FROM \"owners\" WHERE \"owners\".\"city\" = ?",
+          "params": [
+            "Moscow"
+          ],
+          "diagnostics": {
+            "from_table": "owners",
+            "join_count": 0,
+            "bridge_tables": [],
+            "parameter_count": 1,
+            "clauses": [
+              "select",
+              "from",
+              "where"
+            ]
+          }
+        },
+        "execution": {
+          "executed": true,
+          "columns": [
+            "owner_count"
+          ],
+          "rows": [
+            [
+              1
+            ]
+          ],
+          "row_count": 1,
+          "truncated": false,
+          "diagnostics": {
+            "param_count": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "petshop_015",
+      "category": "aggregation",
+      "question": "How many pets does each owner have?",
+      "latency_ms": 3405.8,
+      "passed": false,
+      "reasons": [
+        "missing expected_tables ['pets']",
+        "missing expected_bridge_tables ['owns']"
+      ],
+      "grading": {
+        "mode": "normal_case",
+        "checks": {
+          "validation_valid": true,
+          "plan_resolved": true,
+          "generated": true,
+          "executed": true,
+          "expected_tables_present": false,
+          "expected_bridge_present": false,
+          "sql_contains": true,
+          "params_match": true,
+          "result_contains": true
+        },
+        "sql": "SELECT \"owners\".\"lastname\", COUNT(\"owns\".\"petid\") AS \"pet_count\" FROM \"owners\" INNER JOIN \"owns\" ON \"owners\".\"oid\" = \"owns\".\"oid\" GROUP BY \"owners\".\"lastname\"",
+        "params": [],
+        "tables_used": [
+          "owners",
+          "owns"
+        ],
+        "bridge_tables": []
+      },
+      "response": {
+        "success": true,
+        "database_id": 1,
+        "question": "How many pets does each owner have?",
+        "extraction": {
+          "tables": [
+            "owners",
+            "owns"
+          ],
+          "select": [
+            {
+              "table": "owners",
+              "column": "lastname"
+            }
+          ],
+          "filters": [],
+          "aggregations": [
+            {
+              "function": "COUNT",
+              "table": "owns",
+              "column": "petid",
+              "alias": "pet_count"
+            }
+          ],
+          "group_by": [
+            {
+              "table": "owners",
+              "column": "lastname"
+            }
+          ],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false
+        },
+        "ir": {
+          "version": "1.0",
+          "database_id": 1,
+          "tables": [
+            "owners",
+            "owns"
+          ],
+          "select": [
+            {
+              "table": "owners",
+              "column": "lastname"
+            }
+          ],
+          "filters": [],
+          "aggregations": [
+            {
+              "function": "COUNT",
+              "table": "owns",
+              "column": "petid",
+              "alias": "pet_count"
+            }
+          ],
+          "group_by": [
+            {
+              "table": "owners",
+              "column": "lastname"
+            }
+          ],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false,
+          "relationship_hints": [
+            {
+              "from_table": "owns",
+              "from_column": "oid",
+              "to_table": "owners",
+              "to_column": "oid",
+              "relationship_id": 2
+            }
+          ]
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "warnings": []
+        },
+        "plan": {
+          "resolved": true,
+          "from_table": "owners",
+          "joins": [
+            {
+              "from_table": "owners",
+              "from_column": "oid",
+              "to_table": "owns",
+              "to_column": "oid",
+              "join_type": "inner"
+            }
+          ],
+          "tables_used": [
+            "owners",
+            "owns"
+          ],
+          "bridge_tables": [],
+          "ir": {
+            "database_id": 1,
+            "version": "1.0",
+            "tables": [
+              "owners",
+              "owns"
+            ],
+            "select": [
+              {
+                "table": "owners",
+                "column": "lastname"
+              }
+            ],
+            "filters": [],
+            "aggregations": [
+              {
+                "function": "COUNT",
+                "table": "owns",
+                "column": "petid",
+                "alias": "pet_count"
+              }
+            ],
+            "group_by": [
+              {
+                "table": "owners",
+                "column": "lastname"
+              }
+            ],
+            "having": [],
+            "order_by": [],
+            "limit": null,
+            "distinct": false,
+            "relationship_hints": [
+              {
+                "from_table": "owns",
+                "from_column": "oid",
+                "to_table": "owners",
+                "to_column": "oid",
+                "relationship_id": 2
+              }
+            ]
+          },
+          "diagnostics": {
+            "root": "owners",
+            "root_selection": {
+              "rule": "(-confirmed_degree_within_plan, ir_table_index, table_name)",
+              "confirmed_degree": {
+                "owners": 1,
+                "owns": 1
+              }
+            },
+            "bridge_tables_added": [],
+            "spanning_edge_count": 1,
+            "components": [
+              [
+                "owners",
+                "owns"
+              ]
+            ]
+          }
+        },
+        "generated_sql": {
+          "generated": true,
+          "sql": "SELECT \"owners\".\"lastname\", COUNT(\"owns\".\"petid\") AS \"pet_count\" FROM \"owners\" INNER JOIN \"owns\" ON \"owners\".\"oid\" = \"owns\".\"oid\" GROUP BY \"owners\".\"lastname\"",
+          "params": [],
+          "diagnostics": {
+            "from_table": "owners",
+            "join_count": 1,
+            "bridge_tables": [],
+            "parameter_count": 0,
+            "clauses": [
+              "select",
+              "from",
+              "join",
+              "group_by"
+            ]
+          }
+        },
+        "execution": {
+          "executed": true,
+          "columns": [
+            "lastname",
+            "pet_count"
+          ],
+          "rows": [
+            [
+              "Jones",
+              1
+            ],
+            [
+              "Lee",
+              1
+            ],
+            [
+              "Smith",
+              2
+            ]
+          ],
+          "row_count": 3,
+          "truncated": false,
+          "diagnostics": {
+            "param_count": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "petshop_016",
+      "category": "group by",
+      "question": "Count the number of pets per species.",
+      "latency_ms": 3424.6,
+      "passed": true,
+      "reasons": [],
+      "grading": {
+        "mode": "normal_case",
+        "checks": {
+          "validation_valid": true,
+          "plan_resolved": true,
+          "generated": true,
+          "executed": true,
+          "expected_tables_present": true,
+          "expected_bridge_present": true,
+          "sql_contains": true,
+          "params_match": true,
+          "result_contains": true
+        },
+        "sql": "SELECT COUNT(\"pets\".\"petid\") AS \"pet_count\" FROM \"pets\" GROUP BY \"pets\".\"species\"",
+        "params": [],
+        "tables_used": [
+          "pets"
+        ],
+        "bridge_tables": []
+      },
+      "response": {
+        "success": true,
+        "database_id": 1,
+        "question": "Count the number of pets per species.",
+        "extraction": {
+          "tables": [
+            "pets"
+          ],
+          "select": [],
+          "filters": [],
+          "aggregations": [
+            {
+              "function": "COUNT",
+              "table": "pets",
+              "column": "petid",
+              "alias": "pet_count"
+            }
+          ],
+          "group_by": [
+            {
+              "table": "pets",
+              "column": "species"
+            }
+          ],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false
+        },
+        "ir": {
+          "version": "1.0",
+          "database_id": 1,
+          "tables": [
+            "pets"
+          ],
+          "select": [],
+          "filters": [],
+          "aggregations": [
+            {
+              "function": "COUNT",
+              "table": "pets",
+              "column": "petid",
+              "alias": "pet_count"
+            }
+          ],
+          "group_by": [
+            {
+              "table": "pets",
+              "column": "species"
+            }
+          ],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false,
+          "relationship_hints": []
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "warnings": []
+        },
+        "plan": {
+          "resolved": true,
+          "from_table": "pets",
+          "joins": [],
+          "tables_used": [
+            "pets"
+          ],
+          "bridge_tables": [],
+          "ir": {
+            "database_id": 1,
+            "version": "1.0",
+            "tables": [
+              "pets"
+            ],
+            "select": [],
+            "filters": [],
+            "aggregations": [
+              {
+                "function": "COUNT",
+                "table": "pets",
+                "column": "petid",
+                "alias": "pet_count"
+              }
+            ],
+            "group_by": [
+              {
+                "table": "pets",
+                "column": "species"
+              }
+            ],
+            "having": [],
+            "order_by": [],
+            "limit": null,
+            "distinct": false,
+            "relationship_hints": []
+          },
+          "diagnostics": {
+            "root": "pets",
+            "root_selection": {
+              "rule": "(-confirmed_degree_within_plan, ir_table_index, table_name)",
+              "confirmed_degree": {
+                "pets": 0
+              }
+            },
+            "bridge_tables_added": [],
+            "spanning_edge_count": 0,
+            "components": [
+              [
+                "pets"
+              ]
+            ]
+          }
+        },
+        "generated_sql": {
+          "generated": true,
+          "sql": "SELECT COUNT(\"pets\".\"petid\") AS \"pet_count\" FROM \"pets\" GROUP BY \"pets\".\"species\"",
+          "params": [],
+          "diagnostics": {
+            "from_table": "pets",
+            "join_count": 0,
+            "bridge_tables": [],
+            "parameter_count": 0,
+            "clauses": [
+              "select",
+              "from",
+              "group_by"
+            ]
+          }
+        },
+        "execution": {
+          "executed": true,
+          "columns": [
+            "pet_count"
+          ],
+          "rows": [
+            [
+              2
+            ],
+            [
+              2
+            ]
+          ],
+          "row_count": 2,
+          "truncated": false,
+          "diagnostics": {
+            "param_count": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "petshop_017",
+      "category": "group by",
+      "question": "Count the number of owners in each city.",
+      "latency_ms": 3569.0,
+      "passed": true,
+      "reasons": [],
+      "grading": {
+        "mode": "normal_case",
+        "checks": {
+          "validation_valid": true,
+          "plan_resolved": true,
+          "generated": true,
+          "executed": true,
+          "expected_tables_present": true,
+          "expected_bridge_present": true,
+          "sql_contains": true,
+          "params_match": true,
+          "result_contains": true
+        },
+        "sql": "SELECT \"owners\".\"city\", COUNT(*) AS \"owner_count\" FROM \"owners\" GROUP BY \"owners\".\"city\"",
+        "params": [],
+        "tables_used": [
+          "owners"
+        ],
+        "bridge_tables": []
+      },
+      "response": {
+        "success": true,
+        "database_id": 1,
+        "question": "Count the number of owners in each city.",
+        "extraction": {
+          "tables": [
+            "owners"
+          ],
+          "select": [
+            {
+              "table": "owners",
+              "column": "city"
+            }
+          ],
+          "filters": [],
+          "aggregations": [
+            {
+              "function": "COUNT",
+              "table": "owners",
+              "column": "*",
+              "alias": "owner_count"
+            }
+          ],
+          "group_by": [
+            {
+              "table": "owners",
+              "column": "city"
+            }
+          ],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false
+        },
+        "ir": {
+          "version": "1.0",
+          "database_id": 1,
+          "tables": [
+            "owners"
+          ],
+          "select": [
+            {
+              "table": "owners",
+              "column": "city"
+            }
+          ],
+          "filters": [],
+          "aggregations": [
+            {
+              "function": "COUNT",
+              "table": "owners",
+              "column": "*",
+              "alias": "owner_count"
+            }
+          ],
+          "group_by": [
+            {
+              "table": "owners",
+              "column": "city"
+            }
+          ],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false,
+          "relationship_hints": []
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "warnings": []
+        },
+        "plan": {
+          "resolved": true,
+          "from_table": "owners",
+          "joins": [],
+          "tables_used": [
+            "owners"
+          ],
+          "bridge_tables": [],
+          "ir": {
+            "database_id": 1,
+            "version": "1.0",
+            "tables": [
+              "owners"
+            ],
+            "select": [
+              {
+                "table": "owners",
+                "column": "city"
+              }
+            ],
+            "filters": [],
+            "aggregations": [
+              {
+                "function": "COUNT",
+                "table": "owners",
+                "column": "*",
+                "alias": "owner_count"
+              }
+            ],
+            "group_by": [
+              {
+                "table": "owners",
+                "column": "city"
+              }
+            ],
+            "having": [],
+            "order_by": [],
+            "limit": null,
+            "distinct": false,
+            "relationship_hints": []
+          },
+          "diagnostics": {
+            "root": "owners",
+            "root_selection": {
+              "rule": "(-confirmed_degree_within_plan, ir_table_index, table_name)",
+              "confirmed_degree": {
+                "owners": 0
+              }
+            },
+            "bridge_tables_added": [],
+            "spanning_edge_count": 0,
+            "components": [
+              [
+                "owners"
+              ]
+            ]
+          }
+        },
+        "generated_sql": {
+          "generated": true,
+          "sql": "SELECT \"owners\".\"city\", COUNT(*) AS \"owner_count\" FROM \"owners\" GROUP BY \"owners\".\"city\"",
+          "params": [],
+          "diagnostics": {
+            "from_table": "owners",
+            "join_count": 0,
+            "bridge_tables": [],
+            "parameter_count": 0,
+            "clauses": [
+              "select",
+              "from",
+              "group_by"
+            ]
+          }
+        },
+        "execution": {
+          "executed": true,
+          "columns": [
+            "city",
+            "owner_count"
+          ],
+          "rows": [
+            [
+              "Boise",
+              1
+            ],
+            [
+              "Moscow",
+              1
+            ],
+            [
+              "Pullman",
+              1
+            ]
+          ],
+          "row_count": 3,
+          "truncated": false,
+          "diagnostics": {
+            "param_count": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "petshop_018",
+      "category": "group by",
+      "question": "Count pets by city of their owner.",
+      "latency_ms": 3530.7,
+      "passed": false,
+      "reasons": [
+        "missing expected_bridge_tables ['owns']",
+        "sql missing fragments ['INNER JOIN \"owns\"']"
+      ],
+      "grading": {
+        "mode": "normal_case",
+        "checks": {
+          "validation_valid": true,
+          "plan_resolved": true,
+          "generated": true,
+          "executed": true,
+          "expected_tables_present": true,
+          "expected_bridge_present": false,
+          "sql_contains": false,
+          "params_match": true,
+          "result_contains": true
+        },
+        "sql": "SELECT \"owners\".\"city\", COUNT(\"pets\".\"petid\") AS \"pet_count\" FROM \"owns\" INNER JOIN \"owners\" ON \"owns\".\"oid\" = \"owners\".\"oid\" INNER JOIN \"pets\" ON \"owns\".\"petid\" = \"pets\".\"petid\" GROUP BY \"owners\".\"city\"",
+        "params": [],
+        "tables_used": [
+          "owners",
+          "owns",
+          "pets"
+        ],
+        "bridge_tables": []
+      },
+      "response": {
+        "success": true,
+        "database_id": 1,
+        "question": "Count pets by city of their owner.",
+        "extraction": {
+          "tables": [
+            "owners",
+            "pets",
+            "owns"
+          ],
+          "select": [
+            {
+              "table": "owners",
+              "column": "city"
+            }
+          ],
+          "filters": [],
+          "aggregations": [
+            {
+              "function": "COUNT",
+              "table": "pets",
+              "column": "petid",
+              "alias": "pet_count"
+            }
+          ],
+          "group_by": [
+            {
+              "table": "owners",
+              "column": "city"
+            }
+          ],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false
+        },
+        "ir": {
+          "version": "1.0",
+          "database_id": 1,
+          "tables": [
+            "owners",
+            "pets",
+            "owns"
+          ],
+          "select": [
+            {
+              "table": "owners",
+              "column": "city"
+            }
+          ],
+          "filters": [],
+          "aggregations": [
+            {
+              "function": "COUNT",
+              "table": "pets",
+              "column": "petid",
+              "alias": "pet_count"
+            }
+          ],
+          "group_by": [
+            {
+              "table": "owners",
+              "column": "city"
+            }
+          ],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false,
+          "relationship_hints": [
+            {
+              "from_table": "owns",
+              "from_column": "petid",
+              "to_table": "pets",
+              "to_column": "petid",
+              "relationship_id": 1
+            },
+            {
+              "from_table": "owns",
+              "from_column": "oid",
+              "to_table": "owners",
+              "to_column": "oid",
+              "relationship_id": 2
+            }
+          ]
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "warnings": []
+        },
+        "plan": {
+          "resolved": true,
+          "from_table": "owns",
+          "joins": [
+            {
+              "from_table": "owns",
+              "from_column": "oid",
+              "to_table": "owners",
+              "to_column": "oid",
+              "join_type": "inner"
+            },
+            {
+              "from_table": "owns",
+              "from_column": "petid",
+              "to_table": "pets",
+              "to_column": "petid",
+              "join_type": "inner"
+            }
+          ],
+          "tables_used": [
+            "owns",
+            "owners",
+            "pets"
+          ],
+          "bridge_tables": [],
+          "ir": {
+            "database_id": 1,
+            "version": "1.0",
+            "tables": [
+              "owners",
+              "pets",
+              "owns"
+            ],
+            "select": [
+              {
+                "table": "owners",
+                "column": "city"
+              }
+            ],
+            "filters": [],
+            "aggregations": [
+              {
+                "function": "COUNT",
+                "table": "pets",
+                "column": "petid",
+                "alias": "pet_count"
+              }
+            ],
+            "group_by": [
+              {
+                "table": "owners",
+                "column": "city"
+              }
+            ],
+            "having": [],
+            "order_by": [],
+            "limit": null,
+            "distinct": false,
+            "relationship_hints": [
+              {
+                "from_table": "owns",
+                "from_column": "petid",
+                "to_table": "pets",
+                "to_column": "petid",
+                "relationship_id": 1
+              },
+              {
+                "from_table": "owns",
+                "from_column": "oid",
+                "to_table": "owners",
+                "to_column": "oid",
+                "relationship_id": 2
+              }
+            ]
+          },
+          "diagnostics": {
+            "root": "owns",
+            "root_selection": {
+              "rule": "(-confirmed_degree_within_plan, ir_table_index, table_name)",
+              "confirmed_degree": {
+                "owners": 1,
+                "pets": 1,
+                "owns": 2
+              }
+            },
+            "bridge_tables_added": [],
+            "spanning_edge_count": 2,
+            "components": [
+              [
+                "owners",
+                "pets",
+                "owns"
+              ]
+            ]
+          }
+        },
+        "generated_sql": {
+          "generated": true,
+          "sql": "SELECT \"owners\".\"city\", COUNT(\"pets\".\"petid\") AS \"pet_count\" FROM \"owns\" INNER JOIN \"owners\" ON \"owns\".\"oid\" = \"owners\".\"oid\" INNER JOIN \"pets\" ON \"owns\".\"petid\" = \"pets\".\"petid\" GROUP BY \"owners\".\"city\"",
+          "params": [],
+          "diagnostics": {
+            "from_table": "owns",
+            "join_count": 2,
+            "bridge_tables": [],
+            "parameter_count": 0,
+            "clauses": [
+              "select",
+              "from",
+              "join",
+              "group_by"
+            ]
+          }
+        },
+        "execution": {
+          "executed": true,
+          "columns": [
+            "city",
+            "pet_count"
+          ],
+          "rows": [
+            [
+              "Boise",
+              1
+            ],
+            [
+              "Moscow",
+              2
+            ],
+            [
+              "Pullman",
+              1
+            ]
+          ],
+          "row_count": 3,
+          "truncated": false,
+          "diagnostics": {
+            "param_count": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "petshop_019",
+      "category": "order by",
+      "question": "List owner last names ordered alphabetically.",
+      "latency_ms": 3537.7,
+      "passed": true,
+      "reasons": [],
+      "grading": {
+        "mode": "normal_case",
+        "checks": {
+          "validation_valid": true,
+          "plan_resolved": true,
+          "generated": true,
+          "executed": true,
+          "expected_tables_present": true,
+          "expected_bridge_present": true,
+          "sql_contains": true,
+          "params_match": true,
+          "result_contains": true
+        },
+        "sql": "SELECT \"owners\".\"lastname\" FROM \"owners\" ORDER BY \"owners\".\"lastname\" ASC",
+        "params": [],
+        "tables_used": [
+          "owners"
+        ],
+        "bridge_tables": []
+      },
+      "response": {
+        "success": true,
+        "database_id": 1,
+        "question": "List owner last names ordered alphabetically.",
+        "extraction": {
+          "tables": [
+            "owners"
+          ],
+          "select": [
+            {
+              "table": "owners",
+              "column": "lastname"
+            }
+          ],
+          "filters": [],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [
+            {
+              "table": "owners",
+              "column": "lastname",
+              "direction": "ASC"
+            }
+          ],
+          "limit": null,
+          "distinct": false
+        },
+        "ir": {
+          "version": "1.0",
+          "database_id": 1,
+          "tables": [
+            "owners"
+          ],
+          "select": [
+            {
+              "table": "owners",
+              "column": "lastname"
+            }
+          ],
+          "filters": [],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [
+            {
+              "table": "owners",
+              "column": "lastname",
+              "direction": "ASC"
+            }
+          ],
+          "limit": null,
+          "distinct": false,
+          "relationship_hints": []
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "warnings": []
+        },
+        "plan": {
+          "resolved": true,
+          "from_table": "owners",
+          "joins": [],
+          "tables_used": [
+            "owners"
+          ],
+          "bridge_tables": [],
+          "ir": {
+            "database_id": 1,
+            "version": "1.0",
+            "tables": [
+              "owners"
+            ],
+            "select": [
+              {
+                "table": "owners",
+                "column": "lastname"
+              }
+            ],
+            "filters": [],
+            "aggregations": [],
+            "group_by": [],
+            "having": [],
+            "order_by": [
+              {
+                "table": "owners",
+                "column": "lastname",
+                "direction": "ASC"
+              }
+            ],
+            "limit": null,
+            "distinct": false,
+            "relationship_hints": []
+          },
+          "diagnostics": {
+            "root": "owners",
+            "root_selection": {
+              "rule": "(-confirmed_degree_within_plan, ir_table_index, table_name)",
+              "confirmed_degree": {
+                "owners": 0
+              }
+            },
+            "bridge_tables_added": [],
+            "spanning_edge_count": 0,
+            "components": [
+              [
+                "owners"
+              ]
+            ]
+          }
+        },
+        "generated_sql": {
+          "generated": true,
+          "sql": "SELECT \"owners\".\"lastname\" FROM \"owners\" ORDER BY \"owners\".\"lastname\" ASC",
+          "params": [],
+          "diagnostics": {
+            "from_table": "owners",
+            "join_count": 0,
+            "bridge_tables": [],
+            "parameter_count": 0,
+            "clauses": [
+              "select",
+              "from",
+              "order_by"
+            ]
+          }
+        },
+        "execution": {
+          "executed": true,
+          "columns": [
+            "lastname"
+          ],
+          "rows": [
+            [
+              "Jones"
+            ],
+            [
+              "Lee"
+            ],
+            [
+              "Smith"
+            ]
+          ],
+          "row_count": 3,
+          "truncated": false,
+          "diagnostics": {
+            "param_count": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "petshop_020",
+      "category": "order by",
+      "question": "Show pets ordered by species descending.",
+      "latency_ms": 3556.4,
+      "passed": true,
+      "reasons": [],
+      "grading": {
+        "mode": "normal_case",
+        "checks": {
+          "validation_valid": true,
+          "plan_resolved": true,
+          "generated": true,
+          "executed": true,
+          "expected_tables_present": true,
+          "expected_bridge_present": true,
+          "sql_contains": true,
+          "params_match": true,
+          "result_contains": true
+        },
+        "sql": "SELECT \"pets\".\"name\", \"pets\".\"species\" FROM \"pets\" ORDER BY \"pets\".\"species\" DESC",
+        "params": [],
+        "tables_used": [
+          "pets"
+        ],
+        "bridge_tables": []
+      },
+      "response": {
+        "success": true,
+        "database_id": 1,
+        "question": "Show pets ordered by species descending.",
+        "extraction": {
+          "tables": [
+            "pets"
+          ],
+          "select": [
+            {
+              "table": "pets",
+              "column": "name"
+            },
+            {
+              "table": "pets",
+              "column": "species"
+            }
+          ],
+          "filters": [],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [
+            {
+              "table": "pets",
+              "column": "species",
+              "direction": "DESC"
+            }
+          ],
+          "limit": null,
+          "distinct": false
+        },
+        "ir": {
+          "version": "1.0",
+          "database_id": 1,
+          "tables": [
+            "pets"
+          ],
+          "select": [
+            {
+              "table": "pets",
+              "column": "name"
+            },
+            {
+              "table": "pets",
+              "column": "species"
+            }
+          ],
+          "filters": [],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [
+            {
+              "table": "pets",
+              "column": "species",
+              "direction": "DESC"
+            }
+          ],
+          "limit": null,
+          "distinct": false,
+          "relationship_hints": []
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "warnings": []
+        },
+        "plan": {
+          "resolved": true,
+          "from_table": "pets",
+          "joins": [],
+          "tables_used": [
+            "pets"
+          ],
+          "bridge_tables": [],
+          "ir": {
+            "database_id": 1,
+            "version": "1.0",
+            "tables": [
+              "pets"
+            ],
+            "select": [
+              {
+                "table": "pets",
+                "column": "name"
+              },
+              {
+                "table": "pets",
+                "column": "species"
+              }
+            ],
+            "filters": [],
+            "aggregations": [],
+            "group_by": [],
+            "having": [],
+            "order_by": [
+              {
+                "table": "pets",
+                "column": "species",
+                "direction": "DESC"
+              }
+            ],
+            "limit": null,
+            "distinct": false,
+            "relationship_hints": []
+          },
+          "diagnostics": {
+            "root": "pets",
+            "root_selection": {
+              "rule": "(-confirmed_degree_within_plan, ir_table_index, table_name)",
+              "confirmed_degree": {
+                "pets": 0
+              }
+            },
+            "bridge_tables_added": [],
+            "spanning_edge_count": 0,
+            "components": [
+              [
+                "pets"
+              ]
+            ]
+          }
+        },
+        "generated_sql": {
+          "generated": true,
+          "sql": "SELECT \"pets\".\"name\", \"pets\".\"species\" FROM \"pets\" ORDER BY \"pets\".\"species\" DESC",
+          "params": [],
+          "diagnostics": {
+            "from_table": "pets",
+            "join_count": 0,
+            "bridge_tables": [],
+            "parameter_count": 0,
+            "clauses": [
+              "select",
+              "from",
+              "order_by"
+            ]
+          }
+        },
+        "execution": {
+          "executed": true,
+          "columns": [
+            "name",
+            "species"
+          ],
+          "rows": [
+            [
+              "Rex",
+              "dog"
+            ],
+            [
+              "Ace",
+              "dog"
+            ],
+            [
+              "Milo",
+              "cat"
+            ],
+            [
+              "Zoe",
+              "cat"
+            ]
+          ],
+          "row_count": 4,
+          "truncated": false,
+          "diagnostics": {
+            "param_count": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "petshop_021",
+      "category": "order by",
+      "question": "List cities of owners sorted by city name.",
+      "latency_ms": 3500.7,
+      "passed": true,
+      "reasons": [],
+      "grading": {
+        "mode": "normal_case",
+        "checks": {
+          "validation_valid": true,
+          "plan_resolved": true,
+          "generated": true,
+          "executed": true,
+          "expected_tables_present": true,
+          "expected_bridge_present": true,
+          "sql_contains": true,
+          "params_match": true,
+          "result_contains": true
+        },
+        "sql": "SELECT \"owners\".\"city\" FROM \"owners\" ORDER BY \"owners\".\"city\" ASC",
+        "params": [],
+        "tables_used": [
+          "owners"
+        ],
+        "bridge_tables": []
+      },
+      "response": {
+        "success": true,
+        "database_id": 1,
+        "question": "List cities of owners sorted by city name.",
+        "extraction": {
+          "tables": [
+            "owners"
+          ],
+          "select": [
+            {
+              "table": "owners",
+              "column": "city"
+            }
+          ],
+          "filters": [],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [
+            {
+              "table": "owners",
+              "column": "city",
+              "direction": "ASC"
+            }
+          ],
+          "limit": null,
+          "distinct": false
+        },
+        "ir": {
+          "version": "1.0",
+          "database_id": 1,
+          "tables": [
+            "owners"
+          ],
+          "select": [
+            {
+              "table": "owners",
+              "column": "city"
+            }
+          ],
+          "filters": [],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [
+            {
+              "table": "owners",
+              "column": "city",
+              "direction": "ASC"
+            }
+          ],
+          "limit": null,
+          "distinct": false,
+          "relationship_hints": []
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "warnings": []
+        },
+        "plan": {
+          "resolved": true,
+          "from_table": "owners",
+          "joins": [],
+          "tables_used": [
+            "owners"
+          ],
+          "bridge_tables": [],
+          "ir": {
+            "database_id": 1,
+            "version": "1.0",
+            "tables": [
+              "owners"
+            ],
+            "select": [
+              {
+                "table": "owners",
+                "column": "city"
+              }
+            ],
+            "filters": [],
+            "aggregations": [],
+            "group_by": [],
+            "having": [],
+            "order_by": [
+              {
+                "table": "owners",
+                "column": "city",
+                "direction": "ASC"
+              }
+            ],
+            "limit": null,
+            "distinct": false,
+            "relationship_hints": []
+          },
+          "diagnostics": {
+            "root": "owners",
+            "root_selection": {
+              "rule": "(-confirmed_degree_within_plan, ir_table_index, table_name)",
+              "confirmed_degree": {
+                "owners": 0
+              }
+            },
+            "bridge_tables_added": [],
+            "spanning_edge_count": 0,
+            "components": [
+              [
+                "owners"
+              ]
+            ]
+          }
+        },
+        "generated_sql": {
+          "generated": true,
+          "sql": "SELECT \"owners\".\"city\" FROM \"owners\" ORDER BY \"owners\".\"city\" ASC",
+          "params": [],
+          "diagnostics": {
+            "from_table": "owners",
+            "join_count": 0,
+            "bridge_tables": [],
+            "parameter_count": 0,
+            "clauses": [
+              "select",
+              "from",
+              "order_by"
+            ]
+          }
+        },
+        "execution": {
+          "executed": true,
+          "columns": [
+            "city"
+          ],
+          "rows": [
+            [
+              "Boise"
+            ],
+            [
+              "Moscow"
+            ],
+            [
+              "Pullman"
+            ]
+          ],
+          "row_count": 3,
+          "truncated": false,
+          "diagnostics": {
+            "param_count": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "petshop_022",
+      "category": "limit",
+      "question": "Show the first 3 owner last names.",
+      "latency_ms": 3410.0,
+      "passed": true,
+      "reasons": [],
+      "grading": {
+        "mode": "normal_case",
+        "checks": {
+          "validation_valid": true,
+          "plan_resolved": true,
+          "generated": true,
+          "executed": true,
+          "expected_tables_present": true,
+          "expected_bridge_present": true,
+          "sql_contains": true,
+          "params_match": true,
+          "result_contains": true
+        },
+        "sql": "SELECT \"owners\".\"lastname\" FROM \"owners\" LIMIT 3",
+        "params": [],
+        "tables_used": [
+          "owners"
+        ],
+        "bridge_tables": []
+      },
+      "response": {
+        "success": true,
+        "database_id": 1,
+        "question": "Show the first 3 owner last names.",
+        "extraction": {
+          "tables": [
+            "owners"
+          ],
+          "select": [
+            {
+              "table": "owners",
+              "column": "lastname"
+            }
+          ],
+          "filters": [],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": 3,
+          "distinct": false
+        },
+        "ir": {
+          "version": "1.0",
+          "database_id": 1,
+          "tables": [
+            "owners"
+          ],
+          "select": [
+            {
+              "table": "owners",
+              "column": "lastname"
+            }
+          ],
+          "filters": [],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": 3,
+          "distinct": false,
+          "relationship_hints": []
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "warnings": []
+        },
+        "plan": {
+          "resolved": true,
+          "from_table": "owners",
+          "joins": [],
+          "tables_used": [
+            "owners"
+          ],
+          "bridge_tables": [],
+          "ir": {
+            "database_id": 1,
+            "version": "1.0",
+            "tables": [
+              "owners"
+            ],
+            "select": [
+              {
+                "table": "owners",
+                "column": "lastname"
+              }
+            ],
+            "filters": [],
+            "aggregations": [],
+            "group_by": [],
+            "having": [],
+            "order_by": [],
+            "limit": 3,
+            "distinct": false,
+            "relationship_hints": []
+          },
+          "diagnostics": {
+            "root": "owners",
+            "root_selection": {
+              "rule": "(-confirmed_degree_within_plan, ir_table_index, table_name)",
+              "confirmed_degree": {
+                "owners": 0
+              }
+            },
+            "bridge_tables_added": [],
+            "spanning_edge_count": 0,
+            "components": [
+              [
+                "owners"
+              ]
+            ]
+          }
+        },
+        "generated_sql": {
+          "generated": true,
+          "sql": "SELECT \"owners\".\"lastname\" FROM \"owners\" LIMIT 3",
+          "params": [],
+          "diagnostics": {
+            "from_table": "owners",
+            "join_count": 0,
+            "bridge_tables": [],
+            "parameter_count": 0,
+            "clauses": [
+              "select",
+              "from",
+              "limit"
+            ]
+          }
+        },
+        "execution": {
+          "executed": true,
+          "columns": [
+            "lastname"
+          ],
+          "rows": [
+            [
+              "Smith"
+            ],
+            [
+              "Jones"
+            ],
+            [
+              "Lee"
+            ]
+          ],
+          "row_count": 3,
+          "truncated": false,
+          "diagnostics": {
+            "param_count": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "petshop_023",
+      "category": "limit",
+      "question": "List 5 pet names.",
+      "latency_ms": 3177.6,
+      "passed": true,
+      "reasons": [],
+      "grading": {
+        "mode": "normal_case",
+        "checks": {
+          "validation_valid": true,
+          "plan_resolved": true,
+          "generated": true,
+          "executed": true,
+          "expected_tables_present": true,
+          "expected_bridge_present": true,
+          "sql_contains": true,
+          "params_match": true,
+          "result_contains": true
+        },
+        "sql": "SELECT \"pets\".\"name\" FROM \"pets\" LIMIT 5",
+        "params": [],
+        "tables_used": [
+          "pets"
+        ],
+        "bridge_tables": []
+      },
+      "response": {
+        "success": true,
+        "database_id": 1,
+        "question": "List 5 pet names.",
+        "extraction": {
+          "tables": [
+            "pets"
+          ],
+          "select": [
+            {
+              "table": "pets",
+              "column": "name"
+            }
+          ],
+          "filters": [],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": 5,
+          "distinct": false
+        },
+        "ir": {
+          "version": "1.0",
+          "database_id": 1,
+          "tables": [
+            "pets"
+          ],
+          "select": [
+            {
+              "table": "pets",
+              "column": "name"
+            }
+          ],
+          "filters": [],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": 5,
+          "distinct": false,
+          "relationship_hints": []
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "warnings": []
+        },
+        "plan": {
+          "resolved": true,
+          "from_table": "pets",
+          "joins": [],
+          "tables_used": [
+            "pets"
+          ],
+          "bridge_tables": [],
+          "ir": {
+            "database_id": 1,
+            "version": "1.0",
+            "tables": [
+              "pets"
+            ],
+            "select": [
+              {
+                "table": "pets",
+                "column": "name"
+              }
+            ],
+            "filters": [],
+            "aggregations": [],
+            "group_by": [],
+            "having": [],
+            "order_by": [],
+            "limit": 5,
+            "distinct": false,
+            "relationship_hints": []
+          },
+          "diagnostics": {
+            "root": "pets",
+            "root_selection": {
+              "rule": "(-confirmed_degree_within_plan, ir_table_index, table_name)",
+              "confirmed_degree": {
+                "pets": 0
+              }
+            },
+            "bridge_tables_added": [],
+            "spanning_edge_count": 0,
+            "components": [
+              [
+                "pets"
+              ]
+            ]
+          }
+        },
+        "generated_sql": {
+          "generated": true,
+          "sql": "SELECT \"pets\".\"name\" FROM \"pets\" LIMIT 5",
+          "params": [],
+          "diagnostics": {
+            "from_table": "pets",
+            "join_count": 0,
+            "bridge_tables": [],
+            "parameter_count": 0,
+            "clauses": [
+              "select",
+              "from",
+              "limit"
+            ]
+          }
+        },
+        "execution": {
+          "executed": true,
+          "columns": [
+            "name"
+          ],
+          "rows": [
+            [
+              "Rex"
+            ],
+            [
+              "Milo"
+            ],
+            [
+              "Zoe"
+            ],
+            [
+              "Ace"
+            ]
+          ],
+          "row_count": 4,
+          "truncated": false,
+          "diagnostics": {
+            "param_count": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "petshop_024",
+      "category": "order by",
+      "question": "Show the species with the most pets, highest count first.",
+      "latency_ms": 3584.6,
+      "passed": true,
+      "reasons": [],
+      "grading": {
+        "mode": "normal_case",
+        "checks": {
+          "validation_valid": true,
+          "plan_resolved": true,
+          "generated": true,
+          "executed": true,
+          "expected_tables_present": true,
+          "expected_bridge_present": true,
+          "sql_contains": true,
+          "params_match": true,
+          "result_contains": true
+        },
+        "sql": "SELECT \"pets\".\"species\", COUNT(\"pets\".\"petid\") AS \"pet_count\" FROM \"pets\" GROUP BY \"pets\".\"species\" ORDER BY \"pet_count\" DESC",
+        "params": [],
+        "tables_used": [
+          "pets"
+        ],
+        "bridge_tables": []
+      },
+      "response": {
+        "success": true,
+        "database_id": 1,
+        "question": "Show the species with the most pets, highest count first.",
+        "extraction": {
+          "tables": [
+            "pets"
+          ],
+          "select": [
+            {
+              "table": "pets",
+              "column": "species"
+            }
+          ],
+          "filters": [],
+          "aggregations": [
+            {
+              "function": "COUNT",
+              "table": "pets",
+              "column": "petid",
+              "alias": "pet_count"
+            }
+          ],
+          "group_by": [
+            {
+              "table": "pets",
+              "column": "species"
+            }
+          ],
+          "having": [],
+          "order_by": [
+            {
+              "aggregation_alias": "pet_count",
+              "direction": "DESC"
+            }
+          ],
+          "limit": null,
+          "distinct": false
+        },
+        "ir": {
+          "version": "1.0",
+          "database_id": 1,
+          "tables": [
+            "pets"
+          ],
+          "select": [
+            {
+              "table": "pets",
+              "column": "species"
+            }
+          ],
+          "filters": [],
+          "aggregations": [
+            {
+              "function": "COUNT",
+              "table": "pets",
+              "column": "petid",
+              "alias": "pet_count"
+            }
+          ],
+          "group_by": [
+            {
+              "table": "pets",
+              "column": "species"
+            }
+          ],
+          "having": [],
+          "order_by": [
+            {
+              "aggregation_alias": "pet_count",
+              "direction": "DESC"
+            }
+          ],
+          "limit": null,
+          "distinct": false,
+          "relationship_hints": []
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "warnings": []
+        },
+        "plan": {
+          "resolved": true,
+          "from_table": "pets",
+          "joins": [],
+          "tables_used": [
+            "pets"
+          ],
+          "bridge_tables": [],
+          "ir": {
+            "database_id": 1,
+            "version": "1.0",
+            "tables": [
+              "pets"
+            ],
+            "select": [
+              {
+                "table": "pets",
+                "column": "species"
+              }
+            ],
+            "filters": [],
+            "aggregations": [
+              {
+                "function": "COUNT",
+                "table": "pets",
+                "column": "petid",
+                "alias": "pet_count"
+              }
+            ],
+            "group_by": [
+              {
+                "table": "pets",
+                "column": "species"
+              }
+            ],
+            "having": [],
+            "order_by": [
+              {
+                "aggregation_alias": "pet_count",
+                "direction": "DESC"
+              }
+            ],
+            "limit": null,
+            "distinct": false,
+            "relationship_hints": []
+          },
+          "diagnostics": {
+            "root": "pets",
+            "root_selection": {
+              "rule": "(-confirmed_degree_within_plan, ir_table_index, table_name)",
+              "confirmed_degree": {
+                "pets": 0
+              }
+            },
+            "bridge_tables_added": [],
+            "spanning_edge_count": 0,
+            "components": [
+              [
+                "pets"
+              ]
+            ]
+          }
+        },
+        "generated_sql": {
+          "generated": true,
+          "sql": "SELECT \"pets\".\"species\", COUNT(\"pets\".\"petid\") AS \"pet_count\" FROM \"pets\" GROUP BY \"pets\".\"species\" ORDER BY \"pet_count\" DESC",
+          "params": [],
+          "diagnostics": {
+            "from_table": "pets",
+            "join_count": 0,
+            "bridge_tables": [],
+            "parameter_count": 0,
+            "clauses": [
+              "select",
+              "from",
+              "group_by",
+              "order_by"
+            ]
+          }
+        },
+        "execution": {
+          "executed": true,
+          "columns": [
+            "species",
+            "pet_count"
+          ],
+          "rows": [
+            [
+              "dog",
+              2
+            ],
+            [
+              "cat",
+              2
+            ]
+          ],
+          "row_count": 2,
+          "truncated": false,
+          "diagnostics": {
+            "param_count": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "petshop_025",
+      "category": "distinct",
+      "question": "List the distinct species of pets.",
+      "latency_ms": 3438.5,
+      "passed": true,
+      "reasons": [],
+      "grading": {
+        "mode": "normal_case",
+        "checks": {
+          "validation_valid": true,
+          "plan_resolved": true,
+          "generated": true,
+          "executed": true,
+          "expected_tables_present": true,
+          "expected_bridge_present": true,
+          "sql_contains": true,
+          "params_match": true,
+          "result_contains": true
+        },
+        "sql": "SELECT DISTINCT \"pets\".\"species\" FROM \"pets\"",
+        "params": [],
+        "tables_used": [
+          "pets"
+        ],
+        "bridge_tables": []
+      },
+      "response": {
+        "success": true,
+        "database_id": 1,
+        "question": "List the distinct species of pets.",
+        "extraction": {
+          "tables": [
+            "pets"
+          ],
+          "select": [
+            {
+              "table": "pets",
+              "column": "species"
+            }
+          ],
+          "filters": [],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": true
+        },
+        "ir": {
+          "version": "1.0",
+          "database_id": 1,
+          "tables": [
+            "pets"
+          ],
+          "select": [
+            {
+              "table": "pets",
+              "column": "species"
+            }
+          ],
+          "filters": [],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": true,
+          "relationship_hints": []
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "warnings": []
+        },
+        "plan": {
+          "resolved": true,
+          "from_table": "pets",
+          "joins": [],
+          "tables_used": [
+            "pets"
+          ],
+          "bridge_tables": [],
+          "ir": {
+            "database_id": 1,
+            "version": "1.0",
+            "tables": [
+              "pets"
+            ],
+            "select": [
+              {
+                "table": "pets",
+                "column": "species"
+              }
+            ],
+            "filters": [],
+            "aggregations": [],
+            "group_by": [],
+            "having": [],
+            "order_by": [],
+            "limit": null,
+            "distinct": true,
+            "relationship_hints": []
+          },
+          "diagnostics": {
+            "root": "pets",
+            "root_selection": {
+              "rule": "(-confirmed_degree_within_plan, ir_table_index, table_name)",
+              "confirmed_degree": {
+                "pets": 0
+              }
+            },
+            "bridge_tables_added": [],
+            "spanning_edge_count": 0,
+            "components": [
+              [
+                "pets"
+              ]
+            ]
+          }
+        },
+        "generated_sql": {
+          "generated": true,
+          "sql": "SELECT DISTINCT \"pets\".\"species\" FROM \"pets\"",
+          "params": [],
+          "diagnostics": {
+            "from_table": "pets",
+            "join_count": 0,
+            "bridge_tables": [],
+            "parameter_count": 0,
+            "clauses": [
+              "select",
+              "from"
+            ]
+          }
+        },
+        "execution": {
+          "executed": true,
+          "columns": [
+            "species"
+          ],
+          "rows": [
+            [
+              "dog"
+            ],
+            [
+              "cat"
+            ]
+          ],
+          "row_count": 2,
+          "truncated": false,
+          "diagnostics": {
+            "param_count": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "petshop_026",
+      "category": "distinct",
+      "question": "List the distinct last names of owners who have dogs.",
+      "latency_ms": 3782.4,
+      "passed": false,
+      "reasons": [
+        "missing expected_bridge_tables ['owns']",
+        "sql missing fragments ['INNER JOIN \"owns\"']"
+      ],
+      "grading": {
+        "mode": "normal_case",
+        "checks": {
+          "validation_valid": true,
+          "plan_resolved": true,
+          "generated": true,
+          "executed": true,
+          "expected_tables_present": true,
+          "expected_bridge_present": false,
+          "sql_contains": false,
+          "params_match": true,
+          "result_contains": true
+        },
+        "sql": "SELECT DISTINCT \"owners\".\"lastname\" FROM \"owns\" INNER JOIN \"owners\" ON \"owns\".\"oid\" = \"owners\".\"oid\" INNER JOIN \"pets\" ON \"owns\".\"petid\" = \"pets\".\"petid\" WHERE \"pets\".\"species\" = ?",
+        "params": [
+          "dog"
+        ],
+        "tables_used": [
+          "owners",
+          "owns",
+          "pets"
+        ],
+        "bridge_tables": []
+      },
+      "response": {
+        "success": true,
+        "database_id": 1,
+        "question": "List the distinct last names of owners who have dogs.",
+        "extraction": {
+          "tables": [
+            "owners",
+            "pets",
+            "owns"
+          ],
+          "select": [
+            {
+              "table": "owners",
+              "column": "lastname"
+            }
+          ],
+          "filters": [
+            {
+              "table": "pets",
+              "column": "species",
+              "op": "=",
+              "value": "dog",
+              "connector": "AND"
+            }
+          ],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": true
+        },
+        "ir": {
+          "version": "1.0",
+          "database_id": 1,
+          "tables": [
+            "owners",
+            "pets",
+            "owns"
+          ],
+          "select": [
+            {
+              "table": "owners",
+              "column": "lastname"
+            }
+          ],
+          "filters": [
+            {
+              "table": "pets",
+              "column": "species",
+              "op": "=",
+              "value": "dog",
+              "connector": "AND"
+            }
+          ],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": true,
+          "relationship_hints": [
+            {
+              "from_table": "owns",
+              "from_column": "petid",
+              "to_table": "pets",
+              "to_column": "petid",
+              "relationship_id": 1
+            },
+            {
+              "from_table": "owns",
+              "from_column": "oid",
+              "to_table": "owners",
+              "to_column": "oid",
+              "relationship_id": 2
+            }
+          ]
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "warnings": []
+        },
+        "plan": {
+          "resolved": true,
+          "from_table": "owns",
+          "joins": [
+            {
+              "from_table": "owns",
+              "from_column": "oid",
+              "to_table": "owners",
+              "to_column": "oid",
+              "join_type": "inner"
+            },
+            {
+              "from_table": "owns",
+              "from_column": "petid",
+              "to_table": "pets",
+              "to_column": "petid",
+              "join_type": "inner"
+            }
+          ],
+          "tables_used": [
+            "owns",
+            "owners",
+            "pets"
+          ],
+          "bridge_tables": [],
+          "ir": {
+            "database_id": 1,
+            "version": "1.0",
+            "tables": [
+              "owners",
+              "pets",
+              "owns"
+            ],
+            "select": [
+              {
+                "table": "owners",
+                "column": "lastname"
+              }
+            ],
+            "filters": [
+              {
+                "table": "pets",
+                "column": "species",
+                "op": "=",
+                "value": "dog",
+                "connector": "AND"
+              }
+            ],
+            "aggregations": [],
+            "group_by": [],
+            "having": [],
+            "order_by": [],
+            "limit": null,
+            "distinct": true,
+            "relationship_hints": [
+              {
+                "from_table": "owns",
+                "from_column": "petid",
+                "to_table": "pets",
+                "to_column": "petid",
+                "relationship_id": 1
+              },
+              {
+                "from_table": "owns",
+                "from_column": "oid",
+                "to_table": "owners",
+                "to_column": "oid",
+                "relationship_id": 2
+              }
+            ]
+          },
+          "diagnostics": {
+            "root": "owns",
+            "root_selection": {
+              "rule": "(-confirmed_degree_within_plan, ir_table_index, table_name)",
+              "confirmed_degree": {
+                "owners": 1,
+                "pets": 1,
+                "owns": 2
+              }
+            },
+            "bridge_tables_added": [],
+            "spanning_edge_count": 2,
+            "components": [
+              [
+                "owners",
+                "pets",
+                "owns"
+              ]
+            ]
+          }
+        },
+        "generated_sql": {
+          "generated": true,
+          "sql": "SELECT DISTINCT \"owners\".\"lastname\" FROM \"owns\" INNER JOIN \"owners\" ON \"owns\".\"oid\" = \"owners\".\"oid\" INNER JOIN \"pets\" ON \"owns\".\"petid\" = \"pets\".\"petid\" WHERE \"pets\".\"species\" = ?",
+          "params": [
+            "dog"
+          ],
+          "diagnostics": {
+            "from_table": "owns",
+            "join_count": 2,
+            "bridge_tables": [],
+            "parameter_count": 1,
+            "clauses": [
+              "select",
+              "from",
+              "join",
+              "where"
+            ]
+          }
+        },
+        "execution": {
+          "executed": true,
+          "columns": [
+            "lastname"
+          ],
+          "rows": [
+            [
+              "Smith"
+            ],
+            [
+              "Lee"
+            ]
+          ],
+          "row_count": 2,
+          "truncated": false,
+          "diagnostics": {
+            "param_count": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "petshop_027",
+      "category": "failure/edge cases",
+      "question": "Which owners have ordered the most expensive food?",
+      "latency_ms": 3102.1,
+      "passed": true,
+      "reasons": [],
+      "grading": {
+        "mode": "failure_case",
+        "validation_valid": true,
+        "plan_resolved": false,
+        "generated": null,
+        "execution_executed": null,
+        "declined": true
+      },
+      "response": {
+        "success": false,
+        "database_id": 1,
+        "question": "Which owners have ordered the most expensive food?",
+        "extraction": {
+          "tables": [],
+          "select": [],
+          "filters": [],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false
+        },
+        "ir": {
+          "version": "1.0",
+          "database_id": 1,
+          "tables": [],
+          "select": [],
+          "filters": [],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false,
+          "relationship_hints": []
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "warnings": []
+        },
+        "plan": {
+          "resolved": false,
+          "reason": "empty_tables",
+          "unresolved_tables": [],
+          "components": [],
+          "from_table": null,
+          "joins": [],
+          "tables_used": [],
+          "bridge_tables": [],
+          "ir": {
+            "database_id": 1,
+            "version": "1.0",
+            "tables": [],
+            "select": [],
+            "filters": [],
+            "aggregations": [],
+            "group_by": [],
+            "having": [],
+            "order_by": [],
+            "limit": null,
+            "distinct": false,
+            "relationship_hints": []
+          },
+          "diagnostics": {
+            "reason": "empty_tables",
+            "note": "IR has no tables"
+          }
+        },
+        "generated_sql": null,
+        "execution": null
+      }
+    },
+    {
+      "id": "petshop_028",
+      "category": "failure/edge cases",
+      "question": "Show owners, pets, and cities.",
+      "latency_ms": 3708.5,
+      "passed": false,
+      "reasons": [
+        "expected a decline (invalid IR / unresolved plan / no SQL), but pipeline produced output",
+        "execution should be null or executed=false for a failure case"
+      ],
+      "grading": {
+        "mode": "failure_case",
+        "validation_valid": true,
+        "plan_resolved": true,
+        "generated": true,
+        "execution_executed": true,
+        "declined": false
+      },
+      "response": {
+        "success": true,
+        "database_id": 1,
+        "question": "Show owners, pets, and cities.",
+        "extraction": {
+          "tables": [
+            "owners",
+            "pets",
+            "owns"
+          ],
+          "select": [
+            {
+              "table": "owners",
+              "column": "lastname"
+            },
+            {
+              "table": "pets",
+              "column": "name"
+            },
+            {
+              "table": "owners",
+              "column": "city"
+            }
+          ],
+          "filters": [],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false
+        },
+        "ir": {
+          "version": "1.0",
+          "database_id": 1,
+          "tables": [
+            "owners",
+            "pets",
+            "owns"
+          ],
+          "select": [
+            {
+              "table": "owners",
+              "column": "lastname"
+            },
+            {
+              "table": "pets",
+              "column": "name"
+            },
+            {
+              "table": "owners",
+              "column": "city"
+            }
+          ],
+          "filters": [],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false,
+          "relationship_hints": [
+            {
+              "from_table": "owns",
+              "from_column": "petid",
+              "to_table": "pets",
+              "to_column": "petid",
+              "relationship_id": 1
+            },
+            {
+              "from_table": "owns",
+              "from_column": "oid",
+              "to_table": "owners",
+              "to_column": "oid",
+              "relationship_id": 2
+            }
+          ]
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "warnings": []
+        },
+        "plan": {
+          "resolved": true,
+          "from_table": "owns",
+          "joins": [
+            {
+              "from_table": "owns",
+              "from_column": "oid",
+              "to_table": "owners",
+              "to_column": "oid",
+              "join_type": "inner"
+            },
+            {
+              "from_table": "owns",
+              "from_column": "petid",
+              "to_table": "pets",
+              "to_column": "petid",
+              "join_type": "inner"
+            }
+          ],
+          "tables_used": [
+            "owns",
+            "owners",
+            "pets"
+          ],
+          "bridge_tables": [],
+          "ir": {
+            "database_id": 1,
+            "version": "1.0",
+            "tables": [
+              "owners",
+              "pets",
+              "owns"
+            ],
+            "select": [
+              {
+                "table": "owners",
+                "column": "lastname"
+              },
+              {
+                "table": "pets",
+                "column": "name"
+              },
+              {
+                "table": "owners",
+                "column": "city"
+              }
+            ],
+            "filters": [],
+            "aggregations": [],
+            "group_by": [],
+            "having": [],
+            "order_by": [],
+            "limit": null,
+            "distinct": false,
+            "relationship_hints": [
+              {
+                "from_table": "owns",
+                "from_column": "petid",
+                "to_table": "pets",
+                "to_column": "petid",
+                "relationship_id": 1
+              },
+              {
+                "from_table": "owns",
+                "from_column": "oid",
+                "to_table": "owners",
+                "to_column": "oid",
+                "relationship_id": 2
+              }
+            ]
+          },
+          "diagnostics": {
+            "root": "owns",
+            "root_selection": {
+              "rule": "(-confirmed_degree_within_plan, ir_table_index, table_name)",
+              "confirmed_degree": {
+                "owners": 1,
+                "pets": 1,
+                "owns": 2
+              }
+            },
+            "bridge_tables_added": [],
+            "spanning_edge_count": 2,
+            "components": [
+              [
+                "owners",
+                "pets",
+                "owns"
+              ]
+            ]
+          }
+        },
+        "generated_sql": {
+          "generated": true,
+          "sql": "SELECT \"owners\".\"lastname\", \"pets\".\"name\", \"owners\".\"city\" FROM \"owns\" INNER JOIN \"owners\" ON \"owns\".\"oid\" = \"owners\".\"oid\" INNER JOIN \"pets\" ON \"owns\".\"petid\" = \"pets\".\"petid\"",
+          "params": [],
+          "diagnostics": {
+            "from_table": "owns",
+            "join_count": 2,
+            "bridge_tables": [],
+            "parameter_count": 0,
+            "clauses": [
+              "select",
+              "from",
+              "join"
+            ]
+          }
+        },
+        "execution": {
+          "executed": true,
+          "columns": [
+            "lastname",
+            "name",
+            "city"
+          ],
+          "rows": [
+            [
+              "Smith",
+              "Rex",
+              "Moscow"
+            ],
+            [
+              "Smith",
+              "Milo",
+              "Moscow"
+            ],
+            [
+              "Jones",
+              "Zoe",
+              "Boise"
+            ],
+            [
+              "Lee",
+              "Rex",
+              "Pullman"
+            ]
+          ],
+          "row_count": 4,
+          "truncated": false,
+          "diagnostics": {
+            "param_count": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "petshop_029",
+      "category": "failure/edge cases",
+      "question": "List the phone numbers of all owners.",
+      "latency_ms": 3174.7,
+      "passed": true,
+      "reasons": [],
+      "grading": {
+        "mode": "failure_case",
+        "validation_valid": true,
+        "plan_resolved": true,
+        "generated": false,
+        "execution_executed": null,
+        "declined": true
+      },
+      "response": {
+        "success": false,
+        "database_id": 1,
+        "question": "List the phone numbers of all owners.",
+        "extraction": {
+          "tables": [
+            "owners"
+          ],
+          "select": [],
+          "filters": [],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false
+        },
+        "ir": {
+          "version": "1.0",
+          "database_id": 1,
+          "tables": [
+            "owners"
+          ],
+          "select": [],
+          "filters": [],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false,
+          "relationship_hints": []
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "warnings": []
+        },
+        "plan": {
+          "resolved": true,
+          "from_table": "owners",
+          "joins": [],
+          "tables_used": [
+            "owners"
+          ],
+          "bridge_tables": [],
+          "ir": {
+            "database_id": 1,
+            "version": "1.0",
+            "tables": [
+              "owners"
+            ],
+            "select": [],
+            "filters": [],
+            "aggregations": [],
+            "group_by": [],
+            "having": [],
+            "order_by": [],
+            "limit": null,
+            "distinct": false,
+            "relationship_hints": []
+          },
+          "diagnostics": {
+            "root": "owners",
+            "root_selection": {
+              "rule": "(-confirmed_degree_within_plan, ir_table_index, table_name)",
+              "confirmed_degree": {
+                "owners": 0
+              }
+            },
+            "bridge_tables_added": [],
+            "spanning_edge_count": 0,
+            "components": [
+              [
+                "owners"
+              ]
+            ]
+          }
+        },
+        "generated_sql": {
+          "generated": false,
+          "reason": "empty_select",
+          "sql": null,
+          "params": [],
+          "diagnostics": {}
+        },
+        "execution": null
+      }
+    },
+    {
+      "id": "petshop_030",
+      "category": "failure/edge cases",
+      "question": "Show purchases joined with suppliers.",
+      "latency_ms": 3893.7,
+      "passed": true,
+      "reasons": [],
+      "grading": {
+        "mode": "failure_case",
+        "validation_valid": true,
+        "plan_resolved": false,
+        "generated": null,
+        "execution_executed": null,
+        "declined": true
+      },
+      "response": {
+        "success": false,
+        "database_id": 1,
+        "question": "Show purchases joined with suppliers.",
+        "extraction": {
+          "tables": [],
+          "select": [],
+          "filters": [],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false
+        },
+        "ir": {
+          "version": "1.0",
+          "database_id": 1,
+          "tables": [],
+          "select": [],
+          "filters": [],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false,
+          "relationship_hints": []
+        },
+        "validation": {
+          "valid": true,
+          "errors": [],
+          "warnings": []
+        },
+        "plan": {
+          "resolved": false,
+          "reason": "empty_tables",
+          "unresolved_tables": [],
+          "components": [],
+          "from_table": null,
+          "joins": [],
+          "tables_used": [],
+          "bridge_tables": [],
+          "ir": {
+            "database_id": 1,
+            "version": "1.0",
+            "tables": [],
+            "select": [],
+            "filters": [],
+            "aggregations": [],
+            "group_by": [],
+            "having": [],
+            "order_by": [],
+            "limit": null,
+            "distinct": false,
+            "relationship_hints": []
+          },
+          "diagnostics": {
+            "reason": "empty_tables",
+            "note": "IR has no tables"
+          }
+        },
+        "generated_sql": null,
+        "execution": null
+      }
+    }
+  ]
+}

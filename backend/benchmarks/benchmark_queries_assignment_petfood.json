@@ -1,0 +1,211 @@
+{
+"benchmark": "assignment_petfood",
+"version": "1.0",
+"schema": {
+"tables": {
+"pets": [
+"petid",
+"name",
+"age",
+"street",
+"city",
+"zipcode",
+"state",
+"typeofpet"
+],
+"owners": [
+"oid",
+"lastname",
+"street",
+"city",
+"zipcode",
+"state",
+"age",
+"annualincome"
+],
+"owns": [
+"petid",
+"year",
+"oid",
+"petageatownership",
+"pricepaid"
+],
+"likes": [
+"petid",
+"typeoffood"
+],
+"foods": [
+"foodid",
+"name",
+"brand",
+"typeoffood",
+"price",
+"itemweight",
+"classoffood"
+],
+"purchases": [
+"oid",
+"foodid",
+"petid",
+"month",
+"year",
+"quantity"
+]
+},
+"relationships": [
+"owns.petid -> pets.petid",
+"owns.oid -> owners.oid",
+"likes.petid -> pets.petid",
+"purchases.oid -> owners.oid",
+"purchases.foodid -> foods.foodid",
+"purchases.petid -> pets.petid"
+],
+"domain_links": [
+"pets.typeofpet = foods.typeoffood",
+"likes.typeoffood = foods.typeoffood"
+]
+},
+"notes": "Assignment-style benchmark based on CS 360 Assignment #1. These five questions match the assignment's intended SQL tasks and are used to evaluate realistic natural-language-to-SQL behavior.",
+"queries": [
+{
+"id": "assignment_petfood_001",
+"category": "single-table filter",
+"question": "List all cats with pet ID, name, and pet type that are aged at least 2 and live in Idaho but not in Moscow.",
+"expected_tables": [
+"pets"
+],
+"expected_bridge_tables": [],
+"expected_sql_contains": [
+"select",
+"pets",
+"petid",
+"name",
+"typeofpet",
+"from",
+"where",
+"age",
+">=",
+"state",
+"city",
+"!="
+],
+"expected_params": [
+"cat",
+2,
+"Idaho",
+"Moscow"
+],
+"expected_result_contains": [
+"Milo",
+"Luna"
+],
+"notes": "Assignment query 1: cats aged at least 2 in Idaho except Moscow."
+},
+{
+"id": "assignment_petfood_002",
+"category": "join aggregation",
+"question": "List all pet owners and their pets with owner ID, last name, pet ID, and pet name where the owner owns at least two pets.",
+"expected_tables": [
+"owners",
+"pets"
+],
+"expected_bridge_tables": [
+"owns"
+],
+"expected_sql_contains": [
+"owners",
+"lastname",
+"pets",
+"name",
+"join",
+"owns"
+],
+"expected_params": [],
+"expected_result_contains": [
+"Smith",
+"Rex",
+"Milo"
+],
+"notes": "Assignment query 2: owners and pets where owner owns at least two pets. May require GROUP BY/HAVING or a subquery."
+},
+{
+"id": "assignment_petfood_003",
+"category": "complex logic",
+"question": "List pets with pet ID and name that always ate foods they like and never ate foods they did not like.",
+"expected_tables": [
+"pets",
+"likes",
+"foods",
+"purchases"
+],
+"expected_bridge_tables": [],
+"expected_sql_contains": [
+"pets",
+"petid",
+"name",
+"likes",
+"foods",
+"purchases"
+],
+"expected_params": [],
+"expected_result_contains": [],
+"notes": "Assignment query 3: complex all/never logic. This may require NOT EXISTS or set difference style SQL."
+},
+{
+"id": "assignment_petfood_004",
+"category": "multi-table join",
+"question": "List the pet ID, pet name, food ID, food name, and brand for each food that each pet eats.",
+"expected_tables": [
+"pets",
+"foods",
+"purchases"
+],
+"expected_bridge_tables": [],
+"expected_sql_contains": [
+"pets",
+"petid",
+"pets",
+"name",
+"foods",
+"foodid",
+"foods",
+"name",
+"brand",
+"purchases",
+"join"
+],
+"expected_params": [],
+"expected_result_contains": [
+"Rex",
+"Bone Treat",
+"DogJoy"
+],
+"notes": "Assignment query 4: join pets, purchases, and foods."
+},
+{
+"id": "assignment_petfood_005",
+"category": "max without aggregate",
+"question": "List the highest priced cat food for each brand with food ID, brand, and price without using aggregate functions.",
+"expected_tables": [
+"foods"
+],
+"expected_bridge_tables": [],
+"expected_sql_contains": [
+"foods",
+"foodid",
+"brand",
+"price",
+"typeoffood",
+"cat"
+],
+"expected_params": [
+"cat"
+],
+"expected_result_contains": [
+"Meow Mix",
+"CatBest"
+],
+"notes": "Assignment query 5: highest priced cat food per brand without aggregate functions. Correct SQL may require self-join or NOT EXISTS."
+}
+]
+}

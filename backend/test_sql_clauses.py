@@ -75,6 +75,86 @@ def test_where_parameterization():
     print("[5] WHERE parameterization (+connectors) -> OK")
 
 
+def test_where_connectors_and_or_mixed():
+    # Case A (OR stored on the CURRENT filter — still works)
+    a, ap = render_where([
+        {"table": "owners", "column": "city", "op": "=", "value": "Moscow"},
+        {"table": "owners", "column": "city", "op": "=", "value": "Pullman", "connector": "OR"},
+    ])
+    assert a == 'WHERE "owners"."city" = ? OR "owners"."city" = ?', a
+    assert ap == ["Moscow", "Pullman"]
+
+    # Case B: AND chain
+    b, bp = render_where([
+        {"table": "owners", "column": "city", "op": "=", "value": "Moscow"},
+        {"table": "owners", "column": "lastname", "op": "=", "value": "Smith", "connector": "AND"},
+    ])
+    assert b == 'WHERE "owners"."city" = ? AND "owners"."lastname" = ?', b
+    assert bp == ["Moscow", "Smith"]
+
+    # Case C: three-filter OR chain (current-filter placement)
+    c, cp = render_where([
+        {"table": "owners", "column": "city", "op": "=", "value": "Moscow"},
+        {"table": "owners", "column": "city", "op": "=", "value": "Pullman", "connector": "OR"},
+        {"table": "owners", "column": "city", "op": "=", "value": "Boise", "connector": "OR"},
+    ])
+    assert c == ('WHERE "owners"."city" = ? OR "owners"."city" = ? '
+                 'OR "owners"."city" = ?'), c
+    assert cp == ["Moscow", "Pullman", "Boise"]
+    print("[5b] connectors: OR / AND / 3-filter (current-filter placement) -> OK")
+
+
+def test_where_connector_previous_filter_placement():
+    # The extractor's convention: connector is stored on the PREVIOUS filter
+    # (the one it connects from). [Pullman OR, Moscow None] -> ... = ? OR ... = ?
+    clause, params = render_where([
+        {"table": "owners", "column": "city", "op": "=", "value": "Pullman", "connector": "OR"},
+        {"table": "owners", "column": "city", "op": "=", "value": "Moscow", "connector": None},
+    ])
+    assert "NONE" not in clause, clause
+    assert clause == 'WHERE "owners"."city" = ? OR "owners"."city" = ?', clause
+    assert params == ["Pullman", "Moscow"]
+
+    # three-filter OR via previous-filter placement
+    c3, p3 = render_where([
+        {"table": "owners", "column": "city", "op": "=", "value": "Moscow", "connector": "OR"},
+        {"table": "owners", "column": "city", "op": "=", "value": "Pullman", "connector": "OR"},
+        {"table": "owners", "column": "city", "op": "=", "value": "Boise", "connector": None},
+    ])
+    assert c3 == ('WHERE "owners"."city" = ? OR "owners"."city" = ? '
+                  'OR "owners"."city" = ?'), c3
+    assert p3 == ["Moscow", "Pullman", "Boise"]
+
+    # AND via previous-filter placement
+    aclause, _ = render_where([
+        {"table": "owners", "column": "city", "op": "=", "value": "Moscow", "connector": "AND"},
+        {"table": "owners", "column": "lastname", "op": "=", "value": "Smith", "connector": None},
+    ])
+    assert aclause == 'WHERE "owners"."city" = ? AND "owners"."lastname" = ?', aclause
+    print("[5d] connector on PREVIOUS filter honored (OR/AND, no NONE) -> OK")
+
+
+def test_where_connector_none_regression():
+    # Both filters None on a chain -> default AND, never 'NONE'.
+    clause, params = render_where([
+        {"table": "owners", "column": "city", "op": "=", "value": "Pullman", "connector": None},
+        {"table": "owners", "column": "city", "op": "=", "value": "Moscow", "connector": None},
+    ])
+    assert "NONE" not in clause, clause
+    assert clause == 'WHERE "owners"."city" = ? AND "owners"."city" = ?', clause
+    assert params == ["Pullman", "Moscow"]
+    # empty string and garbage connectors also coalesce to AND
+    c2, _ = render_where([
+        {"table": "owners", "column": "city", "op": "=", "value": "A", "connector": ""},
+        {"table": "owners", "column": "city", "op": "=", "value": "B", "connector": "THEN"},
+        {"table": "owners", "column": "city", "op": "=", "value": "C"},
+    ])
+    assert "NONE" not in c2 and "THEN" not in c2, c2
+    assert c2 == ('WHERE "owners"."city" = ? AND "owners"."city" = ? '
+                  'AND "owners"."city" = ?'), c2
+    print("[5c] None/empty/invalid connector -> AND (no 'NONE'/'THEN') -> OK")
+
+
 def test_where_in():
     clause, params = render_where([
         {"table": "owners", "column": "city", "op": "IN", "value": ["Moscow", "Boise"]},
@@ -141,6 +221,9 @@ def main():
         test_select_aggregations,
         test_join_chain,
         test_where_parameterization,
+        test_where_connectors_and_or_mixed,
+        test_where_connector_previous_filter_placement,
+        test_where_connector_none_regression,
         test_where_in,
         test_where_is_null,
         test_group_by,

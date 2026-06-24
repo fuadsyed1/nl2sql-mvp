@@ -1,0 +1,174 @@
+{
+  "benchmark": "assignment_petfood",
+  "benchmark_version": "1.0",
+  "timestamp": "2026-06-24T11:21:18.708236-07:00",
+  "base_url": "http://localhost:8000",
+  "database_id": 1,
+  "summary": {
+    "total": 1,
+    "passed": 0,
+    "failed": 1,
+    "pass_rate": 0.0,
+    "avg_latency_ms": 4305.0
+  },
+  "category_summary": {
+    "single-table filter": {
+      "passed": 0,
+      "total": 1
+    }
+  },
+  "results": [
+    {
+      "id": "assignment_petfood_001",
+      "category": "single-table filter",
+      "question": "List all cats aged at least 2 that live in Idaho but not in Moscow.",
+      "latency_ms": 4305.0,
+      "passed": false,
+      "reasons": [
+        "validation.valid != true",
+        "plan.resolved != true",
+        "generated_sql.generated != true",
+        "execution.executed != true",
+        "sql missing fragments ['FROM', 'Pets', 'PetID', 'Name', 'TypeofPet', 'Age', 'State', 'City']",
+        "params [] != expected ['cat', 2, 'Idaho', 'Moscow']"
+      ],
+      "grading": {
+        "mode": "normal_case",
+        "checks": {
+          "validation_valid": false,
+          "plan_resolved": false,
+          "generated": false,
+          "executed": false,
+          "expected_tables_present": true,
+          "expected_bridge_tables_present": true,
+          "sql_contains": false,
+          "params_match": false,
+          "result_contains": true
+        },
+        "sql": "",
+        "params": [],
+        "tables_used": [
+          "owners",
+          "pets"
+        ],
+        "bridge_tables": []
+      },
+      "response": {
+        "success": false,
+        "database_id": 1,
+        "question": "List all cats aged at least 2 that live in Idaho but not in Moscow.",
+        "extraction": {
+          "tables": [
+            "pets",
+            "owners"
+          ],
+          "select": [
+            {
+              "table": "pets",
+              "column": "name"
+            }
+          ],
+          "filters": [
+            {
+              "table": "pets",
+              "column": "species",
+              "op": "=",
+              "value": "cat",
+              "connector": "AND"
+            },
+            {
+              "table": "pets",
+              "column": "age",
+              "op": ">=",
+              "value": 2,
+              "connector": "AND"
+            },
+            {
+              "table": "owners",
+              "column": "city",
+              "op": "=",
+              "value": "Idaho",
+              "connector": "AND"
+            },
+            {
+              "table": "owners",
+              "column": "city",
+              "op": "!=",
+              "value": "Moscow",
+              "connector": "AND"
+            }
+          ],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false
+        },
+        "ir": {
+          "version": "1.0",
+          "database_id": 1,
+          "tables": [
+            "pets",
+            "owners"
+          ],
+          "select": [
+            {
+              "table": "pets",
+              "column": "name"
+            }
+          ],
+          "filters": [
+            {
+              "table": "pets",
+              "column": "species",
+              "op": "=",
+              "value": "cat",
+              "connector": "AND"
+            },
+            {
+              "table": "pets",
+              "column": "age",
+              "op": ">=",
+              "value": 2,
+              "connector": "AND"
+            },
+            {
+              "table": "owners",
+              "column": "city",
+              "op": "=",
+              "value": "Idaho",
+              "connector": "AND"
+            },
+            {
+              "table": "owners",
+              "column": "city",
+              "op": "!=",
+              "value": "Moscow",
+              "connector": "AND"
+            }
+          ],
+          "aggregations": [],
+          "group_by": [],
+          "having": [],
+          "order_by": [],
+          "limit": null,
+          "distinct": false,
+          "relationship_hints": []
+        },
+        "validation": {
+          "valid": false,
+          "errors": [
+            "filters: column 'pets.age' not found in schema"
+          ],
+          "warnings": [
+            "multiple tables but no relationship_hints; Phase 6 will need to resolve a join path"
+          ]
+        },
+        "plan": null,
+        "generated_sql": null,
+        "execution": null
+      }
+    }
+  ]
+}

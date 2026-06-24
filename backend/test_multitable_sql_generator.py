@@ -124,6 +124,35 @@ def test_order_by_alias_and_limit():
     print("[6/7] ORDER BY alias + LIMIT (full clause order) -> OK")
 
 
+def test_or_filter_chain_generation():
+    # Exact reported case + exact extractor convention: connector "OR" is stored
+    # on the PREVIOUS filter (Pullman), Moscow's connector is null.
+    ir = mk_ir(tables=["owners"],
+               select=[{"table": "owners", "column": "lastname"}],
+               filters=[
+                   {"table": "owners", "column": "city", "op": "=", "value": "Pullman", "connector": "OR"},
+                   {"table": "owners", "column": "city", "op": "=", "value": "Moscow", "connector": None},
+               ])
+    d = sql_to_dict(generate_sql(single_table_plan("owners", ir)))
+    assert d["generated"] is True
+    assert "NONE" not in d["sql"], d["sql"]
+    assert d["sql"] == (
+        'SELECT "owners"."lastname" FROM "owners" '
+        'WHERE "owners"."city" = ? OR "owners"."city" = ?'), d["sql"]
+    assert d["params"] == ["Pullman", "Moscow"]
+
+    # current-filter placement still works too
+    ir2 = mk_ir(tables=["owners"],
+                select=[{"table": "owners", "column": "lastname"}],
+                filters=[
+                    {"table": "owners", "column": "city", "op": "=", "value": "Pullman"},
+                    {"table": "owners", "column": "city", "op": "=", "value": "Moscow", "connector": "OR"},
+                ])
+    d2 = sql_to_dict(generate_sql(single_table_plan("owners", ir2)))
+    assert d2["sql"].endswith('WHERE "owners"."city" = ? OR "owners"."city" = ?'), d2["sql"]
+    print("[12] OR-filter chain (prev- and current-filter placement, no NONE) -> OK")
+
+
 def test_unresolved_failure():
     plan = failure_plan("disconnected_tables", unresolved_tables=["payments"],
                         components=[["owners"], ["payments"]], ir=mk_ir(tables=["owners", "payments"]))
@@ -171,6 +200,7 @@ def main():
         test_group_by_aggregation,
         test_having_and_param_order,
         test_order_by_alias_and_limit,
+        test_or_filter_chain_generation,
         test_unresolved_failure,
         test_empty_select_failure,
         test_deterministic,
