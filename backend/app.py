@@ -255,39 +255,47 @@ def _register_assignment_schema(user_id, name, conversation_id, spec):
 
 def _generate_assignment_sql(database_id, questions):
     """Run each question through the existing IR -> plan -> SQL pipeline
-    WITHOUT executing it."""
+    WITHOUT executing it. A failure on one question is captured as a result
+    entry so it never aborts the whole import response."""
     graph = get_database_graph(database_id)
     results = []
     for q in questions:
-        extraction = extract_multitable_ir_extraction(q, graph)
-        ir = build_from_extraction(database_id, extraction, graph)
-        validation = validate_ir(ir, graph)
-        if not validation["valid"]:
+        try:
+            extraction = extract_multitable_ir_extraction(q, graph)
+            ir = build_from_extraction(database_id, extraction, graph)
+            validation = validate_ir(ir, graph)
+            if not validation["valid"]:
+                results.append({
+                    "question": q, "sql": None, "params": [],
+                    "relationships_used": [], "resolved": False,
+                    "reason": "invalid_ir", "validation": validation,
+                })
+                continue
+            plan_obj = resolve_plan(ir, graph)
+            plan = plan_to_dict(plan_obj)
+            if not plan["resolved"]:
+                results.append({
+                    "question": q, "sql": None, "params": [],
+                    "relationships_used": [], "resolved": False,
+                    "reason": plan.get("reason"),
+                })
+                continue
+            generated = sql_to_dict(generate_sql(plan_obj))
+            results.append({
+                "question": q,
+                "sql": generated["sql"],
+                "params": generated["params"],
+                "relationships_used": plan["joins"],
+                "tables_used": plan["tables_used"],
+                "resolved": True,
+                "generated": generated["generated"],
+            })
+        except Exception as e:
             results.append({
                 "question": q, "sql": None, "params": [],
                 "relationships_used": [], "resolved": False,
-                "reason": "invalid_ir", "validation": validation,
+                "reason": f"generation_error: {type(e).__name__}: {e}",
             })
-            continue
-        plan_obj = resolve_plan(ir, graph)
-        plan = plan_to_dict(plan_obj)
-        if not plan["resolved"]:
-            results.append({
-                "question": q, "sql": None, "params": [],
-                "relationships_used": [], "resolved": False,
-                "reason": plan.get("reason"),
-            })
-            continue
-        generated = sql_to_dict(generate_sql(plan_obj))
-        results.append({
-            "question": q,
-            "sql": generated["sql"],
-            "params": generated["params"],
-            "relationships_used": plan["joins"],
-            "tables_used": plan["tables_used"],
-            "resolved": True,
-            "generated": generated["generated"],
-        })
     return results
 
 

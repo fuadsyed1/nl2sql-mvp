@@ -278,6 +278,34 @@ function App() {
     }
   };
 
+  // Mode B / Mode C: mirror the schema-only assignment result into the chat
+  // body, reusing the same system-message mechanism as normal query output.
+  const addAssignmentToChat = (data) => {
+    const tables = (data.tables || [])
+      .map((t) => t.name || t.table_name)
+      .join(", ");
+    const lines = [];
+    lines.push("Schema-Based SQL Generation");
+    lines.push(`Database ${data.database_id}: ${tables}`);
+    lines.push("");
+    (data.generated_sql || []).forEach((q, i) => {
+      lines.push(`Q${i + 1}. ${q.question}`);
+      if (q.sql) {
+        lines.push(`SQL: ${q.sql}`);
+      } else {
+        lines.push(`No SQL generated${q.reason ? ` (${q.reason})` : ""}.`);
+      }
+      lines.push("");
+    });
+    lines.push(
+      "Note: This schema does not include a dataset, so only SQL was generated."
+    );
+    setMessages((prev) => [
+      ...prev,
+      { type: "system", output: lines.join("\n") },
+    ]);
+  };
+
   if (!user) {
     return <AuthPage setUser={setUser} />;
   }
@@ -322,6 +350,7 @@ function App() {
           setInput={setInput}
           handleSubmit={handleSubmit}
           currentConversationId={currentConversationId}
+          onAssignmentResult={addAssignmentToChat}
         />
         )}
       </main>

@@ -9,6 +9,7 @@ function ConversionPage({
   setInput,
   handleSubmit,
   currentConversationId,
+  onAssignmentResult,
 }) {
   return (
     <div className="flex flex-col h-screen bg-gray-100">
@@ -62,6 +63,7 @@ function ConversionPage({
         setInput={setInput}
         handleSubmit={handleSubmit}
         currentConversationId={currentConversationId}
+        onAssignmentResult={onAssignmentResult}
       />
     </div>
   );

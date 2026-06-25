@@ -10,6 +10,7 @@ function InputBar({
   handleSubmit,
   currentConversationId,
   onDatabaseCreated = () => {},
+  onAssignmentResult = () => {},
 }) {
   // --- multi-file "Create database" flow state ----------------------------
   const [stagedFiles, setStagedFiles] = useState([]);
@@ -72,6 +73,7 @@ function InputBar({
       setAssignmentResult(data);
       setInput("");
       onDatabaseCreated(data);
+      onAssignmentResult(data);
     } catch (err) {
       alert(`Could not reach the server: ${err.message}`);
     } finally {
@@ -117,6 +119,7 @@ function InputBar({
 
       setAssignmentResult(data);
       onDatabaseCreated(data);
+      onAssignmentResult(data);
     } catch (err) {
       alert(`Could not reach the server: ${err.message}`);
     } finally {
