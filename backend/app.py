@@ -5,20 +5,20 @@ import json
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
-from ai_semantic_extractor import extract_semantics
-from ir_converter import ir_to_semantic
-from sql_generator import generate_sql_from_semantic
-from semantic_parser import (
+from semantic.ai_semantic_extractor import extract_semantics
+from semantic.ir_converter import ir_to_semantic
+from generation.sql_generator import generate_sql_from_semantic
+from semantic.semantic_parser import (
     parse_natural_language,
     create_semantic_object,
     validate_and_normalise,
 )
-from validator import validate_query
-from llm_clarifier import clarify_query
-from ai_schema_inferencer import infer_schema_with_ai
-from auth_db import init_auth_db, get_connection
-from auth_service import create_user, login_user
-from dataset_service import (
+from semantic.validator import validate_query
+from llm.llm_clarifier import clarify_query
+from schema.ai_schema_inferencer import infer_schema_with_ai
+from db.auth_db import init_auth_db, get_connection
+from services.auth_service import create_user, login_user
+from services.dataset_service import (
     save_schema_dataset,
     get_latest_dataset,
     get_latest_dataset_for_conversation,
@@ -29,22 +29,22 @@ from dataset_service import (
     get_chat_state,
     clear_chat_state,
 )
-from conversation_manager import understand_followup
+from services.conversation_manager import understand_followup
 from fastapi import UploadFile, File, Form
 import os
 import shutil
-from csv_schema_detector import detect_csv_schema
-from csv_to_sqlite_loader import load_csv_to_sqlite, clean_table_name
-from conversation_service import (
+from schema.csv_schema_detector import detect_csv_schema
+from schema.csv_to_sqlite_loader import load_csv_to_sqlite, clean_table_name
+from services.conversation_service import (
     create_conversation,
     get_user_conversations,
     delete_conversation,
     update_conversation_title,
     factory_reset_user,
 )
-from schema_extractor import extract_table_columns
-from relationship_detector import detect_relationships
-from database_service import (
+from schema.schema_extractor import extract_table_columns
+from schema.relationship_detector import detect_relationships
+from db.database_service import (
     create_database,
     set_database_path,
     add_database_table,
@@ -59,18 +59,18 @@ from database_service import (
     get_database_graph,
     get_database_path,
 )
-from ai_semantic_extractor import extract_semantics, extract_multitable_ir_extraction
-from ir_builder import build_from_extraction
-from ir_validator import validate_ir
-from semantic_ir import to_dict as ir_to_dict
-from plan_resolver import resolve_plan
-from query_plan import to_dict as plan_to_dict
-from multitable_sql_generator import generate_sql
-from sql_types import to_dict as sql_to_dict
-from sql_executor import execute_sql
-from execution_result import to_dict as execution_to_dict
-from assignment_parser import extract_assignment_spec
-from assignment_db_builder import build_empty_database
+from semantic.ai_semantic_extractor import extract_semantics, extract_multitable_ir_extraction
+from semantic.ir_builder import build_from_extraction
+from semantic.ir_validator import validate_ir
+from semantic.semantic_ir import to_dict as ir_to_dict
+from planning.plan_resolver import resolve_plan
+from planning.query_plan import to_dict as plan_to_dict
+from generation.multitable_sql_generator import generate_sql
+from generation.sql_types import to_dict as sql_to_dict
+from generation.sql_executor import execute_sql
+from generation.execution_result import to_dict as execution_to_dict
+from assignment.assignment_parser import extract_assignment_spec
+from assignment.assignment_db_builder import build_empty_database
 
 # ---------------------------------------------------------------------------
 # App setup
