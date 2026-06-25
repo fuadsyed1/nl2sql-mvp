@@ -93,11 +93,12 @@ def _components(adjacency, required):
 def _local_rank(path):
     """Rank used to pick among candidate connection paths (mirrors the resolver
     minus hints, which were already applied per-pair)."""
+    non_key = sum(1 for e in path if e.get("relationship_type") != "foreign_key")
     hop = len(path)
     unconfirmed = sum(1 for e in path if not e.get("confirmed"))
     min_conf = min((_edge_conf(e) for e in path), default=1.0)
     signature = "|".join(_conn_sig(e) for e in path)
-    return (hop, unconfirmed, -min_conf, signature)
+    return (non_key, hop, unconfirmed, -min_conf, signature)
 
 
 def _span_edges(required, adjacency, hints):

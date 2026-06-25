@@ -63,11 +63,12 @@ def _path_signature(path):
 
 
 def _rank_key(path, hint_keys):
+    non_key = sum(1 for e in path if e.get("relationship_type") != "foreign_key")
     hop = len(path)
     unconfirmed = sum(1 for e in path if not e.get("confirmed"))
     min_conf = min((_edge_confidence(e) for e in path), default=1.0)
     hint_mismatch = 0 if all(_edge_key(e) in hint_keys for e in path) else 1
-    return (hop, unconfirmed, -min_conf, hint_mismatch, _path_signature(path))
+    return (non_key, hop, unconfirmed, -min_conf, hint_mismatch, _path_signature(path))
 
 
 def _all_simple_paths(adjacency, source, target):

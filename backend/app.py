@@ -69,6 +69,8 @@ from multitable_sql_generator import generate_sql
 from sql_types import to_dict as sql_to_dict
 from sql_executor import execute_sql
 from execution_result import to_dict as execution_to_dict
+from assignment_parser import extract_assignment_spec
+from assignment_db_builder import build_empty_database
 
 # ---------------------------------------------------------------------------
 # App setup
@@ -124,6 +126,12 @@ class LoginRequest(BaseModel):
 
 class IRRequest(BaseModel):
     question: str
+
+class AssignmentTextRequest(BaseModel):
+    user_id: int
+    text: str
+    name: str | None = None
+    conversation_id: int | None = None
 
 # ---------------------------------------------------------------------------
 # Schema parsing helper
@@ -199,6 +207,115 @@ def get_latest_dataset_for_user(user_id: int):
         "schema_text": row[3],
     }
 
+def _register_assignment_schema(user_id, name, conversation_id, spec):
+    """Create a database group, build EMPTY tables from the parsed spec, and
+    register schema + parser-inferred relationships. Inserts no rows."""
+    db_name = name or "assignment"
+    database_id = create_database(user_id, db_name, conversation_id)
+
+    db_dir = f"uploads/user_{user_id}/databases/db_{database_id}"
+    os.makedirs(db_dir, exist_ok=True)
+    db_path = os.path.join(db_dir, "data.db")
+    set_database_path(database_id, db_path)
+
+    manifest = build_empty_database(spec, db_path)
+
+    for t in manifest["tables"]:
+        schema_text = f"{t['name']}(" + ", ".join(c["name"] for c in t["columns"]) + ")"
+        table_id = add_database_table(
+            database_id, t["name"], "assignment_schema", db_path, schema_text, 0
+        )
+        columns_meta = extract_table_columns(db_path, t["name"])
+        add_table_columns(table_id, columns_meta)
+
+    edges = [
+        {
+            "from_table": r["from_table"], "from_column": r["from_column"],
+            "to_table": r["to_table"], "to_column": r["to_column"],
+            "relationship_type": "foreign_key",
+            "name_similarity": 1.0, "value_overlap": 1.0,
+            "confidence": 1.0, "confirmed": 1,
+        }
+        for r in manifest["relationships"]
+    ]
+    clear_relationships(database_id)
+    add_relationships(database_id, edges)
+
+    return database_id, db_path, manifest
+
+
+def _generate_assignment_sql(database_id, questions):
+    """Run each question through the existing IR -> plan -> SQL pipeline
+    WITHOUT executing it."""
+    graph = get_database_graph(database_id)
+    results = []
+    for q in questions:
+        extraction = extract_multitable_ir_extraction(q, graph)
+        ir = build_from_extraction(database_id, extraction, graph)
+        validation = validate_ir(ir, graph)
+        if not validation["valid"]:
+            results.append({
+                "question": q, "sql": None, "params": [],
+                "relationships_used": [], "resolved": False,
+                "reason": "invalid_ir", "validation": validation,
+            })
+            continue
+        plan_obj = resolve_plan(ir, graph)
+        plan = plan_to_dict(plan_obj)
+        if not plan["resolved"]:
+            results.append({
+                "question": q, "sql": None, "params": [],
+                "relationships_used": [], "resolved": False,
+                "reason": plan.get("reason"),
+            })
+            continue
+        generated = sql_to_dict(generate_sql(plan_obj))
+        results.append({
+            "question": q,
+            "sql": generated["sql"],
+            "params": generated["params"],
+            "relationships_used": plan["joins"],
+            "tables_used": plan["tables_used"],
+            "resolved": True,
+            "generated": generated["generated"],
+        })
+    return results
+
+
+def _assignment_response(database_id, db_path, manifest):
+    return {
+        "success": True,
+        "mode": "schema_only_assignment",
+        "database_id": database_id,
+        "db_path": db_path,
+        "tables": manifest["tables"],
+        "relationships": manifest["relationships"],
+        "questions": manifest["questions"],
+        "generated_sql": _generate_assignment_sql(database_id, manifest["questions"]),
+        "executed": False,
+    }
+
+
+def _extract_text_from_upload(upload) -> str:
+    name = (upload.filename or "").lower()
+    raw = upload.file.read()
+    if name.endswith((".txt", ".md", ".sql", ".csv")):
+        return raw.decode("utf-8-sig", errors="ignore")
+    if name.endswith(".docx"):
+        import io as _io, zipfile as _zip
+        with _zip.ZipFile(_io.BytesIO(raw)) as z:
+            xml = z.read("word/document.xml").decode("utf-8", errors="ignore")
+        xml = xml.replace("</w:p>", "\n")
+        return re.sub(r"<[^>]+>", "", xml)
+    if name.endswith(".pdf"):
+        try:
+            import io as _io, pdfplumber
+            with pdfplumber.open(_io.BytesIO(raw)) as pdf:
+                return "\n".join(p.extract_text() or "" for p in pdf.pages)
+        except Exception:
+            return ""
+    return raw.decode("utf-8", errors="ignore")
+
 # ---------------------------------------------------------------------------
 # Routes
 # ---------------------------------------------------------------------------
@@ -223,7 +340,7 @@ async def upload_csv(
     user_id: int = Form(...),
     conversation_id: int = Form(...),
     file: UploadFile = File(...)
-):
+    ):
     if not file.filename.endswith(".csv"):
         return {"success": False, "message": "Only CSV files are allowed"}
 
@@ -272,7 +389,7 @@ async def upload_database(
     conversation_id: int | None = Form(None),
     name: str | None = Form(None),
     files: list[UploadFile] = File(...),
-):
+    ):
     csv_files = [f for f in files if f.filename.lower().endswith(".csv")]
     if not csv_files:
         return {"success": False, "message": "No CSV files provided"}
@@ -545,6 +662,37 @@ def generate_sql_endpoint(database_id: int, body: IRRequest):
         "plan": plan,
         "generated_sql": generated,
     }
+
+@app.post("/assignment/import-text")
+def assignment_import_text(body: AssignmentTextRequest):
+    """Mode C — pasted assignment/schema text -> empty tables + SQL per question."""
+    spec = extract_assignment_spec(body.text)
+    if not spec["tables"]:
+        return {"success": False, "mode": "schema_only_assignment",
+                "message": "No table definitions found in the provided text."}
+    database_id, db_path, manifest = _register_assignment_schema(
+        body.user_id, body.name, body.conversation_id, spec
+    )
+    return _assignment_response(database_id, db_path, manifest)
+
+
+@app.post("/assignment/import-file")
+async def assignment_import_file(
+    user_id: int = Form(...),
+    conversation_id: int | None = Form(None),
+    name: str | None = Form(None),
+    file: UploadFile = File(...),
+):
+    """Mode B — assignment document upload -> empty tables + SQL per question."""
+    text = _extract_text_from_upload(file)
+    spec = extract_assignment_spec(text)
+    if not spec["tables"]:
+        return {"success": False, "mode": "schema_only_assignment",
+                "message": "No table definitions found in the uploaded document."}
+    database_id, db_path, manifest = _register_assignment_schema(
+        user_id, name or (file.filename or "assignment"), conversation_id, spec
+    )
+    return _assignment_response(database_id, db_path, manifest)
 
 @app.post("/database/{database_id}/execute_sql")
 def execute_sql_endpoint(database_id: int, body: IRRequest):

@@ -37,6 +37,7 @@ def _make_edge(cur_table, cur_column, nbr_table, nbr_column, rel):
         "to_column": nbr_column,
         "confirmed": bool(rel.get("confirmed")),
         "confidence": rel.get("confidence"),
+        "relationship_type": rel.get("relationship_type"),
     }
     rid = rel.get("relationship_id")
     if rid is not None:

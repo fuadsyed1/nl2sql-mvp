@@ -1,5 +1,6 @@
 import { useState } from "react";
 import DatabaseWorkspace from "./DatabaseWorkspace";
+import AssignmentResult from "./AssignmentResult";
 
 const API = "http://localhost:8000";
 
@@ -21,6 +22,115 @@ function InputBar({
   const [workspaceDbId, setWorkspaceDbId] = useState(null);
 
   const userId = localStorage.getItem("user_id");
+
+    // --- Mode B/C assignment flow ------------------------------------------
+  const [assignmentResult, setAssignmentResult] = useState(null);
+  const [assignmentBusy, setAssignmentBusy] = useState(false);
+
+  const looksLikeAssignment = (text) => {
+    const lines = (text || "").split("\n");
+    const tableDefs = lines.filter((line) =>
+      /^\s*[A-Za-z_]\w*\s*\(.+\)\s*$/.test(line)
+    ).length;
+    const numbered = lines.filter((line) =>
+      /^\s*\d+\s*[.)]\s+\S/.test(line)
+    ).length;
+    const directive =
+      /write\s+(the\s+following\s+)?(sql|quer(y|ies))|generate\s+sql/i.test(
+        text || ""
+      );
+
+    return tableDefs >= 2 || numbered >= 2 || directive;
+  };
+
+  const importAssignmentText = async () => {
+    if (!userId) {
+      alert("Please sign in first.");
+      return;
+    }
+
+    setAssignmentBusy(true);
+
+    try {
+      const response = await fetch(`${API}/assignment/import-text`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: Number(userId),
+          text: input,
+          conversation_id: currentConversationId,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        alert(data.message || "Assignment import failed.");
+        return;
+      }
+
+      setAssignmentResult(data);
+      setInput("");
+      onDatabaseCreated(data);
+    } catch (err) {
+      alert(`Could not reach the server: ${err.message}`);
+    } finally {
+      setAssignmentBusy(false);
+    }
+  };
+
+  const handleAssignmentFile = async (e) => {
+    const file = e.target.files[0];
+    e.target.value = "";
+
+    if (!file) return;
+
+    if (!userId) {
+      alert("Please sign in first.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("user_id", userId);
+
+    if (currentConversationId) {
+      formData.append("conversation_id", currentConversationId);
+    }
+
+    formData.append("name", file.name);
+
+    setAssignmentBusy(true);
+
+    try {
+      const response = await fetch(`${API}/assignment/import-file`, {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        alert(data.message || "Assignment import failed.");
+        return;
+      }
+
+      setAssignmentResult(data);
+      onDatabaseCreated(data);
+    } catch (err) {
+      alert(`Could not reach the server: ${err.message}`);
+    } finally {
+      setAssignmentBusy(false);
+    }
+  };
+
+  const onConvert = () => {
+    if (looksLikeAssignment(input)) {
+      importAssignmentText();
+    } else {
+      handleSubmit();
+    }
+  };
 
   // --- existing single-CSV upload (unchanged, still feeds /query) ---------
   const handleFileUpload = async (e) => {
@@ -146,6 +256,13 @@ function InputBar({
         />
       )}
 
+      {assignmentResult && (
+        <AssignmentResult
+          result={assignmentResult}
+          onClose={() => setAssignmentResult(null)}
+        />
+      )}      
+
       <footer className="fixed bottom-6 left-[13%] w-[87%] z-30 pointer-events-none">
         <div className="w-[900px] mx-auto flex flex-col gap-3">
           {/* Browse existing databases */}
@@ -247,21 +364,35 @@ function InputBar({
               />
             </label>
 
+            <label
+              className="cursor-pointer bg-gray-100 px-5 py-4 rounded-xl hover:bg-gray-200"
+              title="Upload assignment document"
+            >
+              📄
+              <input
+                type="file"
+                accept=".txt,.md,.sql,.docx,.pdf"
+                onChange={handleAssignmentFile}
+                className="hidden"
+              />
+            </label>
+
             <input
               className="flex-1 border border-gray-300 rounded-xl px-5 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Type natural language input..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter") handleSubmit();
+                if (e.key === "Enter") onConvert();
               }}
             />
 
             <button
-              onClick={handleSubmit}
-              className="bg-blue-500 text-white px-6 py-4 rounded-xl hover:bg-blue-600"
+              onClick={onConvert}
+              disabled={assignmentBusy}
+              className="bg-blue-500 text-white px-6 py-4 rounded-xl hover:bg-blue-600 disabled:opacity-60"
             >
-              Convert
+              {assignmentBusy ? "Working…" : "Convert"}
             </button>
           </div>
         </div>
