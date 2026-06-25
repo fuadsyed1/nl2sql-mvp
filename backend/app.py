@@ -210,7 +210,16 @@ def get_latest_dataset_for_user(user_id: int):
 def _register_assignment_schema(user_id, name, conversation_id, spec):
     """Create a database group, build EMPTY tables from the parsed spec, and
     register schema + parser-inferred relationships. Inserts no rows."""
-    db_name = name or "assignment"
+    generic = {"", "assignment", "database"}
+    if not name or str(name).strip().lower() in generic:
+        parsed = [
+            t.get("name")
+            for t in (spec.get("tables") or [])
+            if t.get("name")
+        ]
+        db_name = ", ".join(parsed) if parsed else "assignment"
+    else:
+        db_name = name
     database_id = create_database(user_id, db_name, conversation_id)
 
     db_dir = f"uploads/user_{user_id}/databases/db_{database_id}"
@@ -690,7 +699,7 @@ async def assignment_import_file(
         return {"success": False, "mode": "schema_only_assignment",
                 "message": "No table definitions found in the uploaded document."}
     database_id, db_path, manifest = _register_assignment_schema(
-        user_id, name or (file.filename or "assignment"), conversation_id, spec
+        user_id, name, conversation_id, spec
     )
     return _assignment_response(database_id, db_path, manifest)
 

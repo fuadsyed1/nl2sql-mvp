@@ -63,20 +63,24 @@ function DatabaseWorkspace({ userId, databaseId = null, onClose }) {
         </div>
 
         {list.length > 0 && (
-          <div className="flex gap-2 flex-wrap px-6 py-3 border-b border-gray-100">
-            {list.map((db) => (
-              <button
-                key={db.database_id}
-                onClick={() => setActiveId(db.database_id)}
-                className={`px-3 py-1.5 rounded-full text-sm ${
-                  db.database_id === activeId
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                {db.name} <span className="opacity-60">#{db.database_id}</span>
-              </button>
-            ))}
+          <div className="px-6 py-3 border-b border-gray-100">
+            <select
+              value={activeId || ""}
+              onChange={(e) => setActiveId(Number(e.target.value))}
+              className="w-full border border-gray-300 rounded-xl px-4 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {list.map((db) => {
+                const names = (db.tables || [])
+                  .map((t) => t.table_name)
+                  .join(", ");
+
+                return (
+                  <option key={db.database_id} value={db.database_id}>
+                    Database {db.database_id}: {`{${names}}`}
+                  </option>
+                );
+              })}
+            </select>
           </div>
         )}
 

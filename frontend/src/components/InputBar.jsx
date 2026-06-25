@@ -239,6 +239,54 @@ function InputBar({
     }
   };
 
+    // --- unified upload button: routes by selected file type ----------------
+  const handleUploadAny = (e) => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = "";
+
+    if (files.length === 0) return;
+
+    const isCsv = (file) => /\.csv$/i.test(file.name);
+    const csvFiles = files.filter(isCsv);
+    const otherFiles = files.filter((file) => !isCsv(file));
+
+    if (csvFiles.length > 0 && otherFiles.length > 0) {
+      alert("Please upload either CSV files or one assignment document, not both.");
+      return;
+    }
+
+    if (otherFiles.length > 0) {
+      if (otherFiles.length > 1) {
+        alert("Please upload only one assignment document.");
+        return;
+      }
+
+      handleAssignmentFile({
+        target: {
+          files: [otherFiles[0]],
+          value: "",
+        },
+      });
+      return;
+    }
+
+    if (csvFiles.length === 1) {
+      handleFileUpload({
+        target: {
+          files: [csvFiles[0]],
+          value: "",
+        },
+      });
+    } else {
+      handleDatabaseSelect({
+        target: {
+          files: csvFiles,
+          value: "",
+        },
+      });
+    }
+  };
+
   const openDatabaseBrowser = () => {
     setWorkspaceDbId(null); // null => workspace picks the most recent
     setWorkspaceOpen(true);
@@ -337,42 +385,17 @@ function InputBar({
 
           {/* Input bar (existing layout, plus the database picker button) */}
           <div className="flex gap-3 bg-white rounded-3xl shadow-xl p-3 pointer-events-auto">
+
             <label
               className="cursor-pointer bg-gray-100 px-5 py-4 rounded-xl hover:bg-gray-200"
-              title="Upload one CSV"
+              title="Upload CSV file(s) or assignment document"
             >
               📎
               <input
                 type="file"
-                accept=".csv"
-                onChange={handleFileUpload}
-                className="hidden"
-              />
-            </label>
-
-            <label
-              className="cursor-pointer bg-gray-100 px-5 py-4 rounded-xl hover:bg-gray-200"
-              title="Upload several CSVs as one database"
-            >
-              🗄️
-              <input
-                type="file"
-                accept=".csv"
+                accept=".csv,.txt,.md,.sql,.docx,.pdf"
                 multiple
-                onChange={handleDatabaseSelect}
-                className="hidden"
-              />
-            </label>
-
-            <label
-              className="cursor-pointer bg-gray-100 px-5 py-4 rounded-xl hover:bg-gray-200"
-              title="Upload assignment document"
-            >
-              📄
-              <input
-                type="file"
-                accept=".txt,.md,.sql,.docx,.pdf"
-                onChange={handleAssignmentFile}
+                onChange={handleUploadAny}
                 className="hidden"
               />
             </label>
