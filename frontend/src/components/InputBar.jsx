@@ -377,13 +377,16 @@ function InputBar({
               />
             </label>
 
-            <input
-              className="flex-1 border border-gray-300 rounded-xl px-5 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Type natural language input..."
+            <textarea
+              className="flex-1 border border-gray-300 rounded-xl px-5 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none min-h-[56px] max-h-[180px]"
+              placeholder="Type a question, or paste assignment schema + questions..."
               value={input}
+              rows={1}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter") onConvert();
+                if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                  onConvert();
+                }
               }}
             />
 
