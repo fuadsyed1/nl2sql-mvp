@@ -248,6 +248,19 @@ def _parse_questions(lines, start):
                 current += " " + s
     if current is not None:
         questions.append(current.strip())
+
+    # Fallback: a numbered list pasted from a .docx may lose its visible "1." "2."
+    # prefixes (Word stores list numbering as formatting, not literal text). When
+    # no numbered questions were found but a question region exists, treat each
+    # non-empty line that is neither a directive nor a table definition as one
+    # question.
+    if not questions:
+        for ln in lines[start:]:
+            s = ln.strip()
+            if not s or _DIRECTIVE.search(s) or _TABLE_DEF.match(ln):
+                continue
+            questions.append(s)
+
     return [q for q in questions if q]
 
 

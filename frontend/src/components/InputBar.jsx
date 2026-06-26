@@ -11,6 +11,8 @@ function InputBar({
   currentConversationId,
   onDatabaseCreated = () => {},
   onAssignmentResult = () => {},
+  onSelectDatabase = () => {},
+  activeDatabaseId = null,
 }) {
   // --- multi-file "Create database" flow state ----------------------------
   const [stagedFiles, setStagedFiles] = useState([]);
@@ -28,20 +30,20 @@ function InputBar({
   const [assignmentResult, setAssignmentResult] = useState(null);
   const [assignmentBusy, setAssignmentBusy] = useState(false);
 
-  const looksLikeAssignment = (text) => {
+  // Mode C is detected ONLY by the presence of table/schema definitions, NOT by
+  // numbered questions alone. A schema line is composed only of one or more
+  // Name(col, ...) definitions, so question lines like "1. List ... (PetID, Name)"
+  // are never mistaken for schema.
+  const hasSchemaDefinitions = (text) => {
     const lines = (text || "").split("\n");
-    const tableDefs = lines.filter((line) =>
-      /^\s*[A-Za-z_]\w*\s*\(.+\)\s*$/.test(line)
-    ).length;
-    const numbered = lines.filter((line) =>
-      /^\s*\d+\s*[.)]\s+\S/.test(line)
-    ).length;
-    const directive =
-      /write\s+(the\s+following\s+)?(sql|quer(y|ies))|generate\s+sql/i.test(
-        text || ""
-      );
-
-    return tableDefs >= 2 || numbered >= 2 || directive;
+    let tableDefs = 0;
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (/^([A-Za-z_]\w*\s*\([^)]*\)\s*)+$/.test(trimmed)) {
+        tableDefs += (trimmed.match(/[A-Za-z_]\w*\s*\([^)]*\)/g) || []).length;
+      }
+    }
+    return tableDefs >= 2;
   };
 
   const importAssignmentText = async () => {
@@ -50,6 +52,7 @@ function InputBar({
       return;
     }
 
+    const pasted = input;
     setAssignmentBusy(true);
 
     try {
@@ -58,22 +61,27 @@ function InputBar({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           user_id: Number(userId),
-          text: input,
+          text: pasted,
           conversation_id: currentConversationId,
         }),
       });
 
       const data = await response.json();
 
+      // Output goes to the chat body (no auto-modal). On failure, report in
+      // chat too instead of an alert.
       if (!data.success) {
-        alert(data.message || "Assignment import failed.");
+        onAssignmentResult({
+          userMessage: pasted,
+          error: data.message || "Assignment import failed.",
+        });
+        setInput("");
         return;
       }
 
-      setAssignmentResult(data);
-      setInput("");
       onDatabaseCreated(data);
-      onAssignmentResult(data);
+      onAssignmentResult({ userMessage: pasted, data });
+      setInput("");
     } catch (err) {
       alert(`Could not reach the server: ${err.message}`);
     } finally {
@@ -112,14 +120,17 @@ function InputBar({
 
       const data = await response.json();
 
+      const fileLabel = `Uploaded assignment file: ${file.name}`;
       if (!data.success) {
-        alert(data.message || "Assignment import failed.");
+        onAssignmentResult({
+          userMessage: fileLabel,
+          error: data.message || "Assignment import failed.",
+        });
         return;
       }
 
-      setAssignmentResult(data);
       onDatabaseCreated(data);
-      onAssignmentResult(data);
+      onAssignmentResult({ userMessage: fileLabel, data });
     } catch (err) {
       alert(`Could not reach the server: ${err.message}`);
     } finally {
@@ -128,11 +139,20 @@ function InputBar({
   };
 
   const onConvert = () => {
-    if (looksLikeAssignment(input)) {
-      importAssignmentText();
-    } else {
+    // Active database -> everything typed is a query for that database
+    // (App handles single vs. multiple numbered questions). Never assignment.
+    if (activeDatabaseId) {
       handleSubmit();
+      return;
     }
+    // No active database: treat as a Mode C assignment paste ONLY if it actually
+    // contains table/schema definitions; otherwise it's a normal query and App
+    // shows the no-database message.
+    if (hasSchemaDefinitions(input)) {
+      importAssignmentText();
+      return;
+    }
+    handleSubmit();
   };
 
   // --- existing single-CSV upload (unchanged, still feeds /query) ---------
@@ -273,21 +293,15 @@ function InputBar({
       return;
     }
 
-    if (csvFiles.length === 1) {
-      handleFileUpload({
-        target: {
-          files: [csvFiles[0]],
-          value: "",
-        },
-      });
-    } else {
-      handleDatabaseSelect({
-        target: {
-          files: csvFiles,
-          value: "",
-        },
-      });
-    }
+    // Any number of CSVs (including a single file) goes through the database
+    // staging flow so it creates/opens a Database Workspace. A single CSV no
+    // longer routes to the dataset-only /upload-csv path.
+    handleDatabaseSelect({
+      target: {
+        files: csvFiles,
+        value: "",
+      },
+    });
   };
 
   const openDatabaseBrowser = () => {
@@ -302,8 +316,9 @@ function InputBar({
       {workspaceOpen && (
         <DatabaseWorkspace
           userId={userId}
-          databaseId={workspaceDbId}
+          activeDatabaseId={activeDatabaseId}
           onClose={() => setWorkspaceOpen(false)}
+          onSelectDatabase={onSelectDatabase}
         />
       )}
 

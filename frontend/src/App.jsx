@@ -13,6 +13,11 @@ function App() {
   const [conversions, setConversions] = useState([]);
   const [currentConversationId, setCurrentConversationId] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  // Active database for the current chat. The database workspace is the single
+  // source of truth: when null, chat queries return a "no database" message and
+  // never trigger schema generation from the question.
+  const [currentDatabaseId, setCurrentDatabaseId] = useState(null);
+  const [activeDatabaseSchemaOnly, setActiveDatabaseSchemaOnly] = useState(false);
 
   const [user, setUser] = useState(() => {
     const user_id = localStorage.getItem("user_id");
@@ -127,6 +132,8 @@ function App() {
       setCurrentConversationId(data.conversation_id);
       setMessages([]);
       setInput("");
+      setCurrentDatabaseId(null);
+      setActiveDatabaseSchemaOnly(false);
       setActivePage("conversion");
 
       await loadConversations();
@@ -150,20 +157,31 @@ function App() {
       const restoredMessages = [];
 
       data.messages.forEach((msg) => {
-        restoredMessages.push({
-          type: "user",
-          text: msg.question,
-        });
+        // New chat-format messages store the assistant text as {"output": "..."}.
+        let parsed = null;
+        try {
+          parsed = msg.results ? JSON.parse(msg.results) : null;
+        } catch (e) {
+          parsed = null;
+        }
 
+        if (parsed && typeof parsed.output === "string") {
+          if (msg.question) {
+            restoredMessages.push({ type: "user", text: msg.question });
+          }
+          restoredMessages.push({ type: "system", output: parsed.output });
+          return;
+        }
+
+        // Legacy /query format.
+        restoredMessages.push({ type: "user", text: msg.question });
         restoredMessages.push({
           type: "system",
           output:
             `SQL\n${"─".repeat(40)}\n${msg.sql || ""}\n\n` +
             `Clean Query\n${"─".repeat(40)}\n${msg.clean_query || ""}\n\n` +
             `Results\n${"─".repeat(40)}\n${
-              msg.results
-                ? JSON.stringify(JSON.parse(msg.results), null, 2)
-                : "No results saved"
+              parsed ? JSON.stringify(parsed, null, 2) : "No results saved"
             }`,
         });
       });
@@ -171,15 +189,133 @@ function App() {
       setCurrentConversationId(conversationId);
       setMessages(restoredMessages);
       setInput("");
+      // Chat -> database mapping is not persisted yet, so a reopened chat starts
+      // with no active database (see reported limitation).
+      setCurrentDatabaseId(null);
+      setActiveDatabaseSchemaOnly(false);
       setActivePage("conversion");
     } catch (err) {
       console.error("Failed to load conversation:", err);
     }
   };
 
+  // A database was created/opened (Mode A CSV upload, or Mode B/C assignment)
+  // -> make it the active query target for the current chat. Schema-only
+  // (assignment) databases are flagged so empty results read clearly.
+  const handleDatabaseCreated = (data) => {
+    if (data && data.database_id) {
+      setCurrentDatabaseId(data.database_id);
+      // Mode B/C (schema-only assignment) databases have no rows.
+      setActiveDatabaseSchemaOnly(data.mode === "schema_only_assignment");
+    }
+  };
+
+  // User picked a previous database from the workspace dropdown -> make it the
+  // active query target for the current chat.
+  const handleSelectDatabase = (databaseId) => {
+    // databaseId is null when the user picks "None".
+    setCurrentDatabaseId(databaseId || null);
+    setActiveDatabaseSchemaOnly(false);
+    console.log("ACTIVE DATABASE ->", databaseId || null);
+  };
+
+  // Split a "1. ... 2. ..." block into individual questions. Returns [] when
+  // there are not at least two numbered items.
+  const splitNumberedQuestions = (text) => {
+    const lines = (text || "").split("\n");
+    const items = [];
+    let cur = null;
+    const numRe = /^\s*\d+\s*[).\-]\s+(.*\S)\s*$/;
+    for (const line of lines) {
+      const m = line.match(numRe);
+      if (m) {
+        if (cur !== null) items.push(cur.trim());
+        cur = m[1];
+      } else if (cur !== null) {
+        const s = line.trim();
+        if (s) cur += " " + s;
+      }
+    }
+    if (cur !== null) items.push(cur.trim());
+    return items.length >= 2 ? items : [];
+  };
+
+  // Ensure a conversation exists; create one if needed. Returns its id or null.
+  const ensureConversation = async () => {
+    if (currentConversationId) return currentConversationId;
+    if (!user) return null;
+    try {
+      const response = await fetch(
+        `http://localhost:8000/conversation/create?user_id=${user.user_id}`,
+        { method: "POST" }
+      );
+      const data = await response.json();
+      if (!data.success) return null;
+      setCurrentConversationId(data.conversation_id);
+      return data.conversation_id;
+    } catch (err) {
+      console.error("Failed to create conversation:", err);
+      return null;
+    }
+  };
+
+  // Persist an exchange to backend history. items: [{question, output}].
+  // The title is applied only to the first message of the conversation.
+  const persistExchange = async (conversationId, items, title) => {
+    if (!conversationId || !user || !items || items.length === 0) return;
+    try {
+      await fetch(
+        `http://localhost:8000/conversation/${conversationId}/messages`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_id: Number(user.user_id),
+            items,
+            title: title || (items[0] && items[0].question) || null,
+          }),
+        }
+      );
+      await loadConversations();
+    } catch (err) {
+      console.error("Failed to persist messages:", err);
+    }
+  };
+
+  // Render a database query result (SQL + executed rows) as chat text.
+  const formatDatabaseQueryOutput = (data) => {
+    if (!data.success) {
+      const reason =
+        (data.execution && (data.execution.error || data.execution.reason)) ||
+        (data.validation && data.validation.reason) ||
+        (data.plan && data.plan.reason) ||
+        "Could not generate SQL for this question.";
+      const sql = data.generated_sql && data.generated_sql.sql;
+      return `Could not run the query.\n${reason}${sql ? `\n\nSQL:\n${sql}` : ""}`;
+    }
+    const sql = (data.generated_sql && data.generated_sql.sql) || "";
+    const cols = (data.execution && data.execution.columns) || [];
+    const rows = (data.execution && data.execution.rows) || [];
+    const count =
+      (data.execution && data.execution.row_count) != null
+        ? data.execution.row_count
+        : rows.length;
+    if (rows.length === 0) {
+      const note = activeDatabaseSchemaOnly
+        ? "This database contains schema only, so SQL was generated but no rows were executed."
+        : "No rows returned.";
+      return `SQL:\n${sql}\n\n${note}`;
+    }
+    const header = cols.join(" | ");
+    const sep = cols.map(() => "---").join(" | ");
+    const body = rows.map((r) => r.join(" | ")).join("\n");
+    return `SQL:\n${sql}\n\nResult (${count} rows):\n${header}\n${sep}\n${body}`;
+  };
+
   const handleSubmit = async () => {
     if (!input.trim()) return;
 
+    const userInput = input.trim();
     let conversationId = currentConversationId;
 
     if (!conversationId) {
@@ -216,8 +352,6 @@ function App() {
       }
     }
 
-    const userInput = input.trim();
-
     setConversions((prev) =>
       prev.map((chat) =>
         chat.conversation_id === conversationId
@@ -238,72 +372,136 @@ function App() {
     setInput("");
     setIsProcessing(true);
 
-    try {
-      const response = await fetch("http://localhost:8000/query", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          user_id: Number(user.user_id),
-          conversation_id: conversationId,
-          question: userInput,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Backend error: ${response.status}`);
+    // Mode A: if a CSV database is active, query it via the multitable pipeline
+    // (executes SQL and returns rows) instead of the legacy dataset path.
+    if (currentDatabaseId) {
+      // Multiple numbered questions are run one at a time; a single question
+      // runs as-is. Each result is shown separately in the chat.
+      const numbered = splitNumberedQuestions(userInput);
+      const toRun = numbered.length >= 2 ? numbered : [userInput];
+      const items = [];
+      try {
+        for (let i = 0; i < toRun.length; i++) {
+          const q = toRun[i];
+          const response = await fetch(
+            `http://localhost:8000/database/${currentDatabaseId}/execute_sql`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ question: q }),
+            }
+          );
+          if (!response.ok) {
+            throw new Error(`Backend error: ${response.status}`);
+          }
+          const data = await response.json();
+          const label = toRun.length > 1 ? `Q${i + 1}. ${q}\n\n` : "";
+          const out = label + formatDatabaseQueryOutput(data);
+          setMessages((prev) => [...prev, { type: "system", output: out }]);
+          // First item carries the user bubble; later items are system-only.
+          items.push({ question: i === 0 ? userInput : "", output: out });
+        }
+        await persistExchange(conversationId, items, userInput);
+      } catch (error) {
+        setMessages((prev) => [
+          ...prev,
+          { type: "system", output: `Error:\n${error.message}` },
+        ]);
+      } finally {
+        setIsProcessing(false);
       }
-
-      const data = await response.json();
-      console.log("BACKEND RESPONSE:", data);
-
-      const systemMessage = {
-        type: "system",
-        output: formatBackendOutput(data),
-      };
-
-      setMessages((prev) => [...prev, systemMessage]);
-
-      await loadConversations();
-    } catch (error) {
-      const systemMessage = {
-        type: "system",
-        output: `Error:\n${error.message}`,
-      };
-
-      setMessages((prev) => [...prev, systemMessage]);
-    } finally {
-      setIsProcessing(false);
+      return;
     }
+
+    // No active database: the database workspace is the single source of truth.
+    // Do NOT fall back to the legacy /query schema-generation path.
+    const noDbOutput =
+      "No database uploaded or selected. Please upload a dataset or select a database workspace first.";
+    setMessages((prev) => [
+      ...prev,
+      { type: "system", output: noDbOutput },
+    ]);
+    await persistExchange(
+      conversationId,
+      [{ question: userInput, output: noDbOutput }],
+      userInput
+    );
+    setIsProcessing(false);
   };
 
   // Mode B / Mode C: mirror the schema-only assignment result into the chat
   // body, reusing the same system-message mechanism as normal query output.
-  const addAssignmentToChat = (data) => {
-    const tables = (data.tables || [])
-      .map((t) => t.name || t.table_name)
-      .join(", ");
-    const lines = [];
-    lines.push("Schema-Based SQL Generation");
-    lines.push(`Database ${data.database_id}: ${tables}`);
-    lines.push("");
-    (data.generated_sql || []).forEach((q, i) => {
-      lines.push(`Q${i + 1}. ${q.question}`);
-      if (q.sql) {
-        lines.push(`SQL: ${q.sql}`);
+  const addAssignmentToChat = async (payload) => {
+    // Payload: { userMessage, data } on success, or { userMessage, error }.
+    const userMessage = payload && payload.userMessage;
+    const data = payload && payload.data;
+    const error = payload && payload.error;
+
+    const lines = ["Schema-Based SQL Generation"];
+    if (error || !data) {
+      lines.push("");
+      lines.push(error || "Could not import the assignment.");
+    } else {
+      lines.push(`Database ${data.database_id}`);
+      lines.push("");
+      lines.push("Detected tables:");
+      (data.tables || []).forEach((t) => {
+        const name = t.name || t.table_name;
+        const cols = (t.columns || [])
+          .map((c) => c.name || c.column_name || c)
+          .join(", ");
+        lines.push(`- ${name}(${cols})`);
+      });
+      lines.push("");
+      lines.push("Detected relationships:");
+      const rels = data.relationships || [];
+      if (rels.length === 0) {
+        lines.push("- None");
       } else {
-        lines.push(`No SQL generated${q.reason ? ` (${q.reason})` : ""}.`);
+        rels.forEach((r) =>
+          lines.push(
+            `- ${r.from_table}.${r.from_column} -> ${r.to_table}.${r.to_column}`
+          )
+        );
       }
       lines.push("");
+      lines.push("Generated SQL:");
+      (data.generated_sql || []).forEach((q, i) => {
+        lines.push(`Q${i + 1}. ${q.question}`);
+        if (q.sql) {
+          lines.push(`SQL: ${q.sql}`);
+        } else {
+          lines.push(`No SQL generated${q.reason ? ` (${q.reason})` : ""}.`);
+        }
+        lines.push("");
+      });
+      lines.push(
+        "Note: This schema does not include a dataset, so only SQL was generated."
+      );
+    }
+
+    const assistantOutput = lines.join("\n");
+    setMessages((prev) => {
+      const next = [...prev];
+      if (userMessage) next.push({ type: "user", text: userMessage });
+      next.push({ type: "system", output: assistantOutput });
+      return next;
     });
-    lines.push(
-      "Note: This schema does not include a dataset, so only SQL was generated."
+
+    // Persist the exchange so it survives refresh / chat switch, and set the
+    // chat title from the first line of the user's input (or the file label).
+    const conversationId = await ensureConversation();
+    const title = (
+      (userMessage || "")
+        .split("\n")
+        .map((s) => s.trim())
+        .find(Boolean) || "Assignment"
+    ).slice(0, 60);
+    await persistExchange(
+      conversationId,
+      [{ question: userMessage || "", output: assistantOutput }],
+      title
     );
-    setMessages((prev) => [
-      ...prev,
-      { type: "system", output: lines.join("\n") },
-    ]);
   };
 
   if (!user) {
@@ -351,6 +549,9 @@ function App() {
           handleSubmit={handleSubmit}
           currentConversationId={currentConversationId}
           onAssignmentResult={addAssignmentToChat}
+          onDatabaseCreated={handleDatabaseCreated}
+          onSelectDatabase={handleSelectDatabase}
+          activeDatabaseId={currentDatabaseId}
         />
         )}
       </main>

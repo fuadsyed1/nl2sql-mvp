@@ -10,6 +10,9 @@ function ConversionPage({
   handleSubmit,
   currentConversationId,
   onAssignmentResult,
+  onDatabaseCreated,
+  onSelectDatabase,
+  activeDatabaseId,
 }) {
   return (
     <div className="flex flex-col h-screen bg-gray-100">
@@ -64,6 +67,9 @@ function ConversionPage({
         handleSubmit={handleSubmit}
         currentConversationId={currentConversationId}
         onAssignmentResult={onAssignmentResult}
+        onDatabaseCreated={onDatabaseCreated}
+        onSelectDatabase={onSelectDatabase}
+        activeDatabaseId={activeDatabaseId}
       />
     </div>
   );

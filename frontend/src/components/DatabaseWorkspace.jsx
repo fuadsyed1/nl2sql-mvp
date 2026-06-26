@@ -4,9 +4,8 @@ import RelationshipsView from "./RelationshipsView";
 
 const API = "http://localhost:8000";
 
-function DatabaseWorkspace({ userId, databaseId = null, onClose }) {
+function DatabaseWorkspace({ userId, activeDatabaseId = null, onClose, onSelectDatabase = () => {} }) {
   const [list, setList] = useState([]);
-  const [activeId, setActiveId] = useState(databaseId);
   const [graph, setGraph] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -19,20 +18,21 @@ function DatabaseWorkspace({ userId, databaseId = null, onClose }) {
       .then((d) => {
         const dbs = d.databases || [];
         setList(dbs);
-        setActiveId((cur) => cur || (dbs[0] && dbs[0].database_id) || null);
+        // Do NOT auto-select. The active database is controlled by App
+        // (activeDatabaseId); a new chat starts with None selected.
       })
       .catch((e) => setError(`Could not load databases: ${e.message}`));
   }, [userId]);
 
   // Load the active database's graph (schema + relationships in one call).
   useEffect(() => {
-    if (!activeId) {
+    if (!activeDatabaseId) {
       setGraph(null);
       return;
     }
     setLoading(true);
     setError("");
-    fetch(`${API}/database/${activeId}/graph`)
+    fetch(`${API}/database/${activeDatabaseId}/graph`)
       .then((r) => r.json())
       .then((d) => {
         if (!d.success) {
@@ -44,7 +44,7 @@ function DatabaseWorkspace({ userId, databaseId = null, onClose }) {
       })
       .catch((e) => setError(`Could not load database: ${e.message}`))
       .finally(() => setLoading(false));
-  }, [activeId]);
+  }, [activeDatabaseId]);
 
   return (
     <div
@@ -62,34 +62,39 @@ function DatabaseWorkspace({ userId, databaseId = null, onClose }) {
           </button>
         </div>
 
-        {list.length > 0 && (
-          <div className="px-6 py-3 border-b border-gray-100">
-            <select
-              value={activeId || ""}
-              onChange={(e) => setActiveId(Number(e.target.value))}
-              className="w-full border border-gray-300 rounded-xl px-4 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              {list.map((db) => {
-                const names = (db.tables || [])
-                  .map((t) => t.table_name)
-                  .join(", ");
+        <div className="px-6 py-3 border-b border-gray-100">
+          <label className="block text-xs font-medium text-gray-500 mb-1">
+            Active database
+          </label>
+          <select
+            value={activeDatabaseId || ""}
+            onChange={(e) => {
+              const v = e.target.value;
+              onSelectDatabase(v ? Number(v) : null);
+            }}
+            className="w-full border border-gray-300 rounded-xl px-4 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">None</option>
+            {list.map((db) => {
+              const names = (db.tables || [])
+                .map((t) => t.table_name)
+                .join(", ");
 
-                return (
-                  <option key={db.database_id} value={db.database_id}>
-                    Database {db.database_id}: {`{${names}}`}
-                  </option>
-                );
-              })}
-            </select>
-          </div>
-        )}
+              return (
+                <option key={db.database_id} value={db.database_id}>
+                  Database {db.database_id}: {`{${names}}`}
+                </option>
+              );
+            })}
+          </select>
+        </div>
 
         <div className="overflow-y-auto px-6 py-4">
           {error && <p className="text-sm text-red-500 mb-3">{error}</p>}
           {loading && <p className="text-sm text-gray-500">Loading…</p>}
           {!loading && !graph && !error && (
             <p className="text-sm text-gray-500">
-              No database selected. Upload CSVs to create one.
+              No active database selected.
             </p>
           )}
 

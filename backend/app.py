@@ -1123,6 +1123,34 @@ def get_conversation_messages(conversation_id: int):
         "messages": get_queries_for_conversation(conversation_id)
     }
 
+
+class SaveMessagesRequest(BaseModel):
+    user_id: int
+    items: list[dict] = []
+    title: str | None = None
+
+
+@app.post("/conversation/{conversation_id}/messages")
+def save_conversation_messages(conversation_id: int, body: SaveMessagesRequest):
+    """Persist chat-format exchanges (database-aware queries, assignment output,
+    no-database notes). Each item is {question, output}; the assistant output is
+    stored as JSON in the `results` column so it round-trips verbatim. The title
+    is set only on the first message of the conversation (matching old behavior)."""
+    existing = get_queries_for_conversation(conversation_id)
+    for item in body.items:
+        save_query(
+            body.user_id,
+            conversation_id,
+            None,
+            item.get("question", ""),
+            None,
+            None,
+            json.dumps({"output": item.get("output", "")}),
+        )
+    if not existing and body.title:
+        update_conversation_title(conversation_id, body.title)
+    return {"success": True}
+
 @app.delete("/user/{user_id}/factory-reset")
 def factory_reset(user_id: int):
     return factory_reset_user(user_id)
