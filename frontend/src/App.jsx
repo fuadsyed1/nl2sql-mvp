@@ -165,7 +165,16 @@ function App() {
           parsed = null;
         }
 
-        if (parsed && typeof parsed.output === "string") {
+        // Structured query result -> render as a table card.
+        if (parsed && parsed.result) {
+          if (msg.question) {
+            restoredMessages.push({ type: "user", text: msg.question });
+          }
+          restoredMessages.push({ type: "system", result: parsed.result });
+          return;
+        }
+
+        if (parsed && typeof parsed.output === "string" && parsed.output) {
           if (msg.question) {
             restoredMessages.push({ type: "user", text: msg.question });
           }
@@ -312,6 +321,38 @@ function App() {
     return `SQL:\n${sql}\n\nResult (${count} rows):\n${header}\n${sep}\n${body}`;
   };
 
+  // Structured result for QueryResultCard (SQL + relational algebra + table).
+  const buildQueryResult = (data, label) => {
+    const sql = (data.generated_sql && data.generated_sql.sql) || "";
+    const ra = data.relational_algebra || "";
+    const ex = data.execution || {};
+    const columns = ex.columns || [];
+    const rows = ex.rows || [];
+    const rowCount = ex.row_count != null ? ex.row_count : rows.length;
+    let note = null;
+    if (!data.success) {
+      const reason =
+        (ex.error || ex.reason) ||
+        (data.validation && data.validation.reason) ||
+        (data.plan && data.plan.reason) ||
+        "Could not generate SQL for this question.";
+      note = `Could not run the query. ${reason}`;
+    } else if (rows.length === 0) {
+      note = activeDatabaseSchemaOnly
+        ? "This database contains schema only, so SQL was generated but no rows were executed."
+        : null; // QueryResultCard shows its own "No rows returned."
+    }
+    return {
+      label,
+      sql,
+      relational_algebra: ra,
+      columns,
+      rows,
+      row_count: rowCount,
+      note,
+    };
+  };
+
   const handleSubmit = async () => {
     if (!input.trim()) return;
 
@@ -395,11 +436,11 @@ function App() {
             throw new Error(`Backend error: ${response.status}`);
           }
           const data = await response.json();
-          const label = toRun.length > 1 ? `Q${i + 1}. ${q}\n\n` : "";
-          const out = label + formatDatabaseQueryOutput(data);
-          setMessages((prev) => [...prev, { type: "system", output: out }]);
+          const label = toRun.length > 1 ? `Q${i + 1}. ${q}` : null;
+          const result = buildQueryResult(data, label);
+          setMessages((prev) => [...prev, { type: "system", result }]);
           // First item carries the user bubble; later items are system-only.
-          items.push({ question: i === 0 ? userInput : "", output: out });
+          items.push({ question: i === 0 ? userInput : "", result });
         }
         await persistExchange(conversationId, items, userInput);
       } catch (error) {
@@ -508,8 +549,12 @@ function App() {
     return <AuthPage setUser={setUser} />;
   }
 
+  const conversationTitle =
+    conversions.find((c) => c.conversation_id === currentConversationId)?.title ||
+    "";
+
   return (
-    <div className="min-h-screen bg-gray-100 flex">
+    <div className="h-screen overflow-hidden bg-gray-100 flex">
       <Sidebar
         target={target}
         conversions={conversions}
@@ -520,7 +565,7 @@ function App() {
         setUser={setUser}
       />
 
-      <main className="flex-1 flex flex-col">
+      <main className="flex-1 flex flex-col min-h-0">
         {activePage === "dashboard" && (
           <Dashboard newConversion={newConversion} />
         )}
@@ -552,6 +597,7 @@ function App() {
           onDatabaseCreated={handleDatabaseCreated}
           onSelectDatabase={handleSelectDatabase}
           activeDatabaseId={currentDatabaseId}
+          conversationTitle={conversationTitle}
         />
         )}
       </main>

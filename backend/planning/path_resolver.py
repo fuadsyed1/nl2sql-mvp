@@ -62,13 +62,26 @@ def _path_signature(path):
     )
 
 
+def _id_like(column):
+    """True when a column name looks like a key (ends in 'id'). A real foreign
+    key's from-column is id-like; a weak numeric overlap column (days_supplied)
+    is not."""
+    import re
+    return re.sub(r"[^a-z0-9]", "", str(column or "").lower()).endswith("id")
+
+
 def _rank_key(path, hint_keys):
-    non_key = sum(1 for e in path if e.get("relationship_type") != "foreign_key")
-    hop = len(path)
+    # Confirmed status dominates hop count: an all-confirmed path always beats a
+    # shorter path that contains an unconfirmed (weak) edge. weak_from then
+    # penalizes edges whose from-column is not id-like (numeric-overlap shortcuts).
     unconfirmed = sum(1 for e in path if not e.get("confirmed"))
+    non_key = sum(1 for e in path if e.get("relationship_type") != "foreign_key")
+    weak_from = sum(1 for e in path if not _id_like(e.get("from_column")))
+    hop = len(path)
     min_conf = min((_edge_confidence(e) for e in path), default=1.0)
     hint_mismatch = 0 if all(_edge_key(e) in hint_keys for e in path) else 1
-    return (non_key, hop, unconfirmed, -min_conf, hint_mismatch, _path_signature(path))
+    return (unconfirmed, non_key, weak_from, hop, -min_conf, hint_mismatch,
+            _path_signature(path))
 
 
 def _all_simple_paths(adjacency, source, target):

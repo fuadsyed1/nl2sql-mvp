@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import DatabaseWorkspace from "./DatabaseWorkspace";
 import AssignmentResult from "./AssignmentResult";
 
 const API = "http://localhost:8000";
+
+const TEXTAREA_MAX_H = 180;
 
 function InputBar({
   input,
@@ -13,7 +15,35 @@ function InputBar({
   onAssignmentResult = () => {},
   onSelectDatabase = () => {},
   activeDatabaseId = null,
+  onBarResize = () => {},
 }) {
+  // Auto-grow textarea: reset to auto then grow to content, capped at max.
+  const textareaRef = useRef(null);
+  const barRef = useRef(null);
+
+  const resizeTextarea = () => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, TEXTAREA_MAX_H)}px`;
+  };
+
+  // Re-fit whenever the value changes (typing, paste, or programmatic clear).
+  useLayoutEffect(() => {
+    resizeTextarea();
+  }, [input]);
+
+  // Report the footer's rendered height up so the chat area can reserve space.
+  useEffect(() => {
+    const node = barRef.current;
+    if (!node || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(() => {
+      onBarResize(node.offsetHeight);
+    });
+    ro.observe(node);
+    onBarResize(node.offsetHeight);
+    return () => ro.disconnect();
+  }, [onBarResize]);
   // --- multi-file "Create database" flow state ----------------------------
   const [stagedFiles, setStagedFiles] = useState([]);
   const [dbName, setDbName] = useState("");
@@ -304,11 +334,6 @@ function InputBar({
     });
   };
 
-  const openDatabaseBrowser = () => {
-    setWorkspaceDbId(null); // null => workspace picks the most recent
-    setWorkspaceOpen(true);
-  };
-
   const isStaging = stagedFiles.length > 0;
 
   return (
@@ -329,20 +354,11 @@ function InputBar({
         />
       )}      
 
-      <footer className="fixed bottom-6 left-[13%] w-[87%] z-30 pointer-events-none">
+      <footer
+        ref={barRef}
+        className="fixed bottom-6 left-[13%] w-[87%] z-30 pointer-events-none"
+      >
         <div className="w-[900px] mx-auto flex flex-col gap-3">
-          {/* Browse existing databases */}
-          {!isStaging && (
-            <div className="pointer-events-auto">
-              <button
-                onClick={openDatabaseBrowser}
-                className="text-sm bg-white shadow rounded-full px-4 py-1.5 text-gray-600 hover:text-gray-800"
-              >
-                🗄️ Databases
-              </button>
-            </div>
-          )}
-
           {/* Staging panel: name + confirm before creating */}
           {isStaging && (
             <div className="bg-white rounded-2xl shadow-xl p-4 pointer-events-auto">
@@ -419,14 +435,19 @@ function InputBar({
             </label>
 
             <textarea
-              className="flex-1 border border-gray-300 rounded-xl px-5 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none min-h-[56px] max-h-[180px]"
+              ref={textareaRef}
+              className="flex-1 border border-gray-300 rounded-xl px-5 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none min-h-[56px] max-h-[180px] overflow-y-auto"
               placeholder="Type a question, or paste assignment schema + questions..."
               value={input}
               rows={1}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-                  onConvert();
+                // Enter submits; Shift+Enter inserts a new line.
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  if (input.trim()) {
+                    onConvert();
+                  }
                 }
               }}
             />

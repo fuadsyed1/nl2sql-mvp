@@ -90,15 +90,24 @@ def _components(adjacency, required):
     return [groups[L] for L in ordered_labels]
 
 
+def _id_like(column):
+    """True when a column name looks like a key (ends in 'id'). Mirrors the
+    path_resolver helper so both rankers agree."""
+    import re
+    return re.sub(r"[^a-z0-9]", "", str(column or "").lower()).endswith("id")
+
+
 def _local_rank(path):
     """Rank used to pick among candidate connection paths (mirrors the resolver
-    minus hints, which were already applied per-pair)."""
-    non_key = sum(1 for e in path if e.get("relationship_type") != "foreign_key")
-    hop = len(path)
+    minus hints, which were already applied per-pair). Confirmed status dominates
+    hop count; weak_from penalizes non-id from-columns."""
     unconfirmed = sum(1 for e in path if not e.get("confirmed"))
+    non_key = sum(1 for e in path if e.get("relationship_type") != "foreign_key")
+    weak_from = sum(1 for e in path if not _id_like(e.get("from_column")))
+    hop = len(path)
     min_conf = min((_edge_conf(e) for e in path), default=1.0)
     signature = "|".join(_conn_sig(e) for e in path)
-    return (non_key, hop, unconfirmed, -min_conf, signature)
+    return (unconfirmed, non_key, weak_from, hop, -min_conf, signature)
 
 
 def _span_edges(required, adjacency, hints):

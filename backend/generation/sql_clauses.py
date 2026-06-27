@@ -74,11 +74,17 @@ def _normalize_op(op):
     return str(op or "").strip().upper()
 
 
-def _render_predicate(ref_sql, op, value):
-    """Return (predicate_str, params) for one comparison."""
+def _render_predicate(ref_sql, op, value, value_ref=None):
+    """Return (predicate_str, params) for one comparison.
+
+    When `value_ref` ({table, column}) is given, the right-hand side is rendered
+    as that qualified column (a column-to-column comparison) with NO parameter."""
     op = _normalize_op(op)
     if op in ("IS NULL", "IS NOT NULL"):
         return f"{ref_sql} {op}", []
+    if value_ref:
+        sym = _SYMBOLIC.get(op, op)
+        return f"{ref_sql} {sym} {qualify_ref(value_ref)}", []
     if op == "IN":
         vals = list(value) if isinstance(value, (list, tuple)) else [value]
         placeholders = ", ".join(["?"] * len(vals))
@@ -107,7 +113,8 @@ def _chain(entries, ref_of):
     parts = []
     params = []
     for i, e in enumerate(entries):
-        pred, p = _render_predicate(ref_of(e), e.get("op"), e.get("value"))
+        pred, p = _render_predicate(
+            ref_of(e), e.get("op"), e.get("value"), e.get("value_ref"))
         params.extend(p)
         if i == 0:
             parts.append(pred)
@@ -121,10 +128,40 @@ def _chain(entries, ref_of):
 # ---------------------------------------------------------------------------
 # Clause renderers
 # ---------------------------------------------------------------------------
+_EXPR_PREC = {"*": 2, "/": 2, "+": 1, "-": 1}
+
+
+def _render_expr(node, parent_prec=0):
+    """Render a small arithmetic expression tree:
+        {"col": {table, column}} | {"lit": <number>} |
+        {"op": "*|/|+|-", "left": <node>, "right": <node>}
+    A binary node is parenthesized only when its operator binds looser than its
+    parent (so  a * b * (1 - c / 100.0)  comes out correctly)."""
+    if not isinstance(node, dict):
+        return str(node)
+    if "col" in node:
+        return qualify_ref(node["col"])
+    if "lit" in node:
+        v = node["lit"]
+        return repr(v) if isinstance(v, float) else str(v)
+    if "op" in node:
+        op = str(node["op"])
+        prec = _EXPR_PREC.get(op, 0)
+        left = _render_expr(node.get("left"), prec)
+        right = _render_expr(node.get("right"), prec)
+        rendered = f"{left} {op} {right}"
+        return f"({rendered})" if prec < parent_prec else rendered
+    return ""
+
+
 def _render_aggregation(agg):
     fn = str(agg.get("function", "")).upper()
-    col = agg.get("column")
-    arg = "*" if (col is None or str(col).strip() == "*") else qualify(agg.get("table"), col)
+    expr_node = agg.get("expr")
+    if expr_node is not None:
+        arg = _render_expr(expr_node)
+    else:
+        col = agg.get("column")
+        arg = "*" if (col is None or str(col).strip() == "*") else qualify(agg.get("table"), col)
     expr = f"{fn}({arg})"
     alias = agg.get("alias")
     if alias:

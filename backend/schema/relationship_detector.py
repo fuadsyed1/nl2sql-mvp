@@ -177,6 +177,28 @@ def _rank_pk_candidates(table):
     return candidates[:MAX_PK_TARGETS_PER_TABLE]
 
 
+def _is_own_key(col, table) -> bool:
+    """True when `col` is its own table's key: either flagged a primary-key
+    candidate (unique, non-null) OR named after the table (e.g. student_id in
+    students, patient_id in patients) via _key_home. The name signal makes the
+    rule robust when the uniqueness flag is missing."""
+    name = col.get("column_name")
+    return bool(col.get("is_primary_key_candidate") or _key_home(name, table))
+
+
+def _is_pk_to_pk_crosslink(a_col, a_table, b_col, b_table) -> bool:
+    """True when both columns are their own table's key but have different names
+    — a spurious cross-table key-to-key pairing (e.g. patient_id <-> medication_id,
+    student_id <-> course_id) that is never a real foreign key. A genuine FK's
+    from-column is not its own table's key (enrollments.student_id), and a
+    same-named shared key (1:1 extension) is kept."""
+    return bool(
+        _is_own_key(a_col, a_table)
+        and _is_own_key(b_col, b_table)
+        and _norm(a_col.get("column_name")) != _norm(b_col.get("column_name"))
+    )
+
+
 def _classify(b_col, b_table) -> str:
     return "foreign_key" if _is_id_like(b_col["column_name"], b_table) else "shared_identifier"
 
@@ -238,6 +260,16 @@ def detect_relationships(database_id):
             for b_col in pk_targets[b["table_name"]]:
                 for a_col in a["columns"]:
                     if not _types_compatible(a_col.get("data_type"), b_col.get("data_type")):
+                        continue
+
+                    # Skip spurious primary-key-to-primary-key edges between
+                    # different tables (e.g. patient_id <-> medication_id). A real
+                    # foreign key's from-column is never its own table's primary
+                    # key; two unrelated integer PKs only overlap because both
+                    # span 1..N. Same-named keys (1:1 extensions) are still kept.
+                    if _is_pk_to_pk_crosslink(
+                        a_col, a["table_name"], b_col, b["table_name"]
+                    ):
                         continue
 
                     overlap, denom = _value_overlap(

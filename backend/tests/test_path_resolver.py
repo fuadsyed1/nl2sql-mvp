@@ -169,6 +169,38 @@ def test_deterministic_and_readonly():
     print("[10] identical across runs; adjacency not mutated -> OK")
 
 
+# --- 11. confirmed bridge beats an unconfirmed 1-hop shortcut --------------
+def test_confirmed_bridge_beats_unconfirmed_shortcut():
+    adj = {}
+    # Confirmed bridge: patients <- visits <- medications.
+    link(adj, "visits", "patient_id", "patients", "patient_id", confirmed=True, rid=1)
+    link(adj, "medications", "visit_id", "visits", "visit_id", confirmed=True, rid=2)
+    # Unconfirmed numeric-overlap shortcuts patients <-> medications.
+    link(adj, "medications", "days_supplied", "patients", "patient_id", confirmed=False, rid=3)
+    link(adj, "medications", "medication_id", "patients", "patient_id", confirmed=False, rid=4)
+    path = find_best_path(adj, "patients", "medications")
+    assert tables_in(path) == ["patients", "visits", "medications"], tables_in(path)
+    print("[11] confirmed bridge beats unconfirmed 1-hop shortcut -> OK")
+
+
+# --- 12. no confirmed path: fallback uses weak_from then confidence --------
+def test_fallback_unconfirmed_uses_weak_from_then_confidence():
+    # Two unconfirmed 1-hop edges; the one with an id-like from-column wins even
+    # though it has LOWER confidence (weak_from is ranked before confidence).
+    adj = {}
+    link(adj, "s", "ref_id", "t", "tid", confirmed=False, confidence=0.8, rid=1)
+    link(adj, "s", "amount", "t", "tid", confirmed=False, confidence=0.95, rid=2)
+    path = find_best_path(adj, "s", "t")
+    assert path[0]["from_column"] == "ref_id", path[0]
+
+    # Equal weak_from (both id-like) -> higher confidence wins.
+    adj2 = {}
+    link(adj2, "s", "a_id", "t", "tid", confirmed=False, confidence=0.6, rid=1)
+    link(adj2, "s", "b_id", "t", "tid", confirmed=False, confidence=0.9, rid=2)
+    assert find_best_path(adj2, "s", "t")[0]["from_column"] == "b_id"
+    print("[12] fallback unconfirmed: weak_from then confidence -> OK")
+
+
 def main():
     tests = [
         test_direct_path,
@@ -181,6 +213,8 @@ def main():
         test_signature_tiebreak,
         test_low_confidence_still_returned,
         test_deterministic_and_readonly,
+        test_confirmed_bridge_beats_unconfirmed_shortcut,
+        test_fallback_unconfirmed_uses_weak_from_then_confidence,
     ]
     passed = 0
     for t in tests:

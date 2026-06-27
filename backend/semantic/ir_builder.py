@@ -15,6 +15,8 @@ in by the caller). Its only import is semantic_ir.
 """
 
 from semantic.semantic_ir import MultiTableSemanticIR
+from semantic.ir_normalizer import normalize_ir
+from semantic.ir_semantics import apply_question_semantics
 
 
 # ---------------------------------------------------------------------------
@@ -122,7 +124,7 @@ def _relationship_hints(graph, tables_set):
 # ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
-def build_from_extraction(database_id, extraction, graph=None):
+def build_from_extraction(database_id, extraction, graph=None, question=None):
     """Build a MultiTableSemanticIR from an extraction dict.
 
     `tables` is derived as the union of the model-provided tables and every
@@ -132,8 +134,14 @@ def build_from_extraction(database_id, extraction, graph=None):
     invents column references. If `graph` is provided, direct relationship
     hints between the resulting tables are attached; otherwise relationship_hints
     is empty. No path search, no table inference beyond the union, no validation.
+
+    When `question` and `graph` are both provided, question-aware semantic
+    rewrites (ir_semantics) are applied first to correct common intent errors.
     """
     extraction = extraction or {}
+
+    if question and graph:
+        extraction = apply_question_semantics(question, extraction, graph)
 
     select = _normalize_list(extraction.get("select"))
     filters = _normalize_list(extraction.get("filters"))
@@ -141,6 +149,10 @@ def build_from_extraction(database_id, extraction, graph=None):
     group_by = _normalize_list(extraction.get("group_by"))
     having = _normalize_list(extraction.get("having"))
     order_by = _normalize_list(extraction.get("order_by"))
+
+    # Deterministic, schema-aware clean-ups (year ranges, GROUP BY label in
+    # SELECT, stored-value casing/booleans). No-op when graph is None.
+    select, filters, group_by = normalize_ir(select, filters, group_by, graph)
 
     provided = [_lower(t) for t in (extraction.get("tables") or [])]
     tables = _union_tables(

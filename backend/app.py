@@ -64,8 +64,10 @@ from semantic.ir_builder import build_from_extraction
 from semantic.ir_validator import validate_ir
 from semantic.semantic_ir import to_dict as ir_to_dict
 from planning.plan_resolver import resolve_plan
+from planning.plan_postprocess import apply_left_join_for_each
 from planning.query_plan import to_dict as plan_to_dict
 from generation.multitable_sql_generator import generate_sql
+from generation.relational_algebra import to_relational_algebra
 from generation.sql_types import to_dict as sql_to_dict
 from generation.sql_executor import execute_sql
 from generation.execution_result import to_dict as execution_to_dict
@@ -262,7 +264,7 @@ def _generate_assignment_sql(database_id, questions):
     for q in questions:
         try:
             extraction = extract_multitable_ir_extraction(q, graph)
-            ir = build_from_extraction(database_id, extraction, graph)
+            ir = build_from_extraction(database_id, extraction, graph, question=q)
             validation = validate_ir(ir, graph)
             if not validation["valid"]:
                 results.append({
@@ -272,6 +274,7 @@ def _generate_assignment_sql(database_id, questions):
                 })
                 continue
             plan_obj = resolve_plan(ir, graph)
+            apply_left_join_for_each(q, plan_obj)
             plan = plan_to_dict(plan_obj)
             if not plan["resolved"]:
                 results.append({
@@ -285,6 +288,7 @@ def _generate_assignment_sql(database_id, questions):
                 "question": q,
                 "sql": generated["sql"],
                 "params": generated["params"],
+                "relational_algebra": to_relational_algebra(plan_obj),
                 "relationships_used": plan["joins"],
                 "tables_used": plan["tables_used"],
                 "resolved": True,
@@ -582,7 +586,7 @@ def inspect_ir(database_id: int, body: IRRequest):
         return {"success": False, "message": "Database not found"}
 
     extraction = extract_multitable_ir_extraction(body.question, graph)
-    ir = build_from_extraction(database_id, extraction, graph)
+    ir = build_from_extraction(database_id, extraction, graph, question=body.question)
     validation = validate_ir(ir, graph)
 
     return {
@@ -612,7 +616,8 @@ def resolve_query_plan(database_id: int, body: IRRequest):
     ir = build_from_extraction(
         database_id,
         extraction,
-        graph
+        graph,
+        question=body.question
     )
 
     validation = validate_ir(ir, graph)
@@ -641,7 +646,7 @@ def generate_sql_endpoint(database_id: int, body: IRRequest):
         return {"success": False, "message": "Database not found"}
 
     extraction = extract_multitable_ir_extraction(body.question, graph)
-    ir = build_from_extraction(database_id, extraction, graph)
+    ir = build_from_extraction(database_id, extraction, graph, question=body.question)
     validation = validate_ir(ir, graph)
 
     base = {
@@ -661,6 +666,7 @@ def generate_sql_endpoint(database_id: int, body: IRRequest):
         }
 
     plan_obj = resolve_plan(ir, graph)
+    apply_left_join_for_each(body.question, plan_obj)
     plan = plan_to_dict(plan_obj)
 
     if not plan["resolved"]:
@@ -678,6 +684,7 @@ def generate_sql_endpoint(database_id: int, body: IRRequest):
         **base,
         "plan": plan,
         "generated_sql": generated,
+        "relational_algebra": to_relational_algebra(plan_obj),
     }
 
 @app.post("/assignment/import-text")
@@ -718,7 +725,7 @@ def execute_sql_endpoint(database_id: int, body: IRRequest):
         return {"success": False, "message": "Database not found"}
 
     extraction = extract_multitable_ir_extraction(body.question, graph)
-    ir = build_from_extraction(database_id, extraction, graph)
+    ir = build_from_extraction(database_id, extraction, graph, question=body.question)
     validation = validate_ir(ir, graph)
 
     base = {
@@ -739,6 +746,7 @@ def execute_sql_endpoint(database_id: int, body: IRRequest):
         }
 
     plan_obj = resolve_plan(ir, graph)
+    apply_left_join_for_each(body.question, plan_obj)
     plan = plan_to_dict(plan_obj)
 
     if not plan["resolved"]:
@@ -769,6 +777,7 @@ def execute_sql_endpoint(database_id: int, body: IRRequest):
         **base,
         "plan": plan,
         "generated_sql": generated,
+        "relational_algebra": to_relational_algebra(plan_obj),
         "execution": execution,
     }
 
@@ -1145,7 +1154,7 @@ def save_conversation_messages(conversation_id: int, body: SaveMessagesRequest):
             item.get("question", ""),
             None,
             None,
-            json.dumps({"output": item.get("output", "")}),
+            json.dumps({"output": item.get("output"), "result": item.get("result")}),
         )
     if not existing and body.title:
         update_conversation_title(conversation_id, body.title)
