@@ -430,7 +430,10 @@ function App() {
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ question: q }),
+              body: JSON.stringify({
+                question: q,
+                database_id: currentDatabaseId,
+              }),
             }
           );
           if (!response.ok) {
@@ -607,3 +610,4 @@ function App() {
 }
 
 export default App;
+
