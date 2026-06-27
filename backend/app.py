@@ -84,7 +84,8 @@ init_auth_db()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5173"
+        "http://localhost:5173",
+        "https://nl2sql-mvp.vercel.app"
     ],
 
     allow_credentials=True,
@@ -1163,3 +1164,5 @@ def save_conversation_messages(conversation_id: int, body: SaveMessagesRequest):
 @app.delete("/user/{user_id}/factory-reset")
 def factory_reset(user_id: int):
     return factory_reset_user(user_id)
+
+
