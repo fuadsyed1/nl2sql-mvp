@@ -9,8 +9,8 @@ function AuthPage({ setUser }) {
   const handleAuth = async () => {
     const url =
       mode === "login"
-        ? "${API_BASE}/login"
-        : "${API_BASE}/signup";
+        ? `${API_BASE}/login`
+        : `${API_BASE}/signup`;
 
     const response = await fetch(url, {
       method: "POST",
