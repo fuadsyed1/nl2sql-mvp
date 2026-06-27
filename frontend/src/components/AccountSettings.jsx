@@ -1,3 +1,4 @@
+import { API_BASE } from "../api";
 import { useState } from "react";
 
 function AccountSettings({ target, setTarget, user, onFactoryReset }) {
@@ -12,7 +13,7 @@ function AccountSettings({ target, setTarget, user, onFactoryReset }) {
     console.log("USER:", user)
     try {
       const res = await fetch(
-        `http://127.0.0.1:8000/user/${user.user_id}/factory-reset`,
+        `${API_BASE}/user/${user.user_id}/factory-reset`,
         {
           method: "DELETE",
         }

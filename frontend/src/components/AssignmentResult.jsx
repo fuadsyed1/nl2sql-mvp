@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-const API = "http://localhost:8000";
+import { API_BASE } from "../api";
 
 // Mode B / Mode C result panel: schema-only output. Shows detected tables,
 // detected relationships, and the generated SQL per question. It deliberately
@@ -12,7 +12,7 @@ function AssignmentResult({ result, onClose }) {
   // like the database workspace (and confirm what was created).
   useEffect(() => {
     if (!result || !result.database_id) return;
-    fetch(`${API}/database/${result.database_id}/graph`)
+    fetch(`${API_BASE}/database/${result.database_id}/graph`)
       .then((r) => r.json())
       .then((d) => setGraph(d.success ? d.database : null))
       .catch(() => setGraph(null));

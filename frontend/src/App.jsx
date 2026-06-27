@@ -1,3 +1,4 @@
+import { API_BASE } from "./api";
 import { useState, useEffect } from "react";
 import Sidebar from "./components/Sidebar";
 import Dashboard from "./components/Dashboard";
@@ -93,7 +94,7 @@ function App() {
 
     try {
       const response = await fetch(
-        `http://localhost:8000/conversations/${user.user_id}`
+        `${API_BASE}/conversations/${user.user_id}`
       );
 
       const data = await response.json();
@@ -117,7 +118,7 @@ function App() {
 
     try {
       const response = await fetch(
-        `http://localhost:8000/conversation/create?user_id=${user.user_id}`,
+        `${API_BASE}/conversation/create?user_id=${user.user_id}`,
         {
           method: "POST",
         }
@@ -145,7 +146,7 @@ function App() {
   const loadConversationMessages = async (conversationId) => {
     try {
       const response = await fetch(
-        `http://localhost:8000/conversation/${conversationId}/messages`
+        `${API_BASE}/conversation/${conversationId}/messages`
       );
 
       const data = await response.json();
@@ -255,7 +256,7 @@ function App() {
     if (!user) return null;
     try {
       const response = await fetch(
-        `http://localhost:8000/conversation/create?user_id=${user.user_id}`,
+        `${API_BASE}/conversation/create?user_id=${user.user_id}`,
         { method: "POST" }
       );
       const data = await response.json();
@@ -274,7 +275,7 @@ function App() {
     if (!conversationId || !user || !items || items.length === 0) return;
     try {
       await fetch(
-        `http://localhost:8000/conversation/${conversationId}/messages`,
+        `${API_BASE}/conversation/${conversationId}/messages`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -362,7 +363,7 @@ function App() {
     if (!conversationId) {
       try {
         const response = await fetch(
-          `http://localhost:8000/conversation/create?user_id=${user.user_id}`,
+          `${API_BASE}/conversation/create?user_id=${user.user_id}`,
           {
             method: "POST",
           }
@@ -425,7 +426,7 @@ function App() {
         for (let i = 0; i < toRun.length; i++) {
           const q = toRun[i];
           const response = await fetch(
-            `http://localhost:8000/database/${currentDatabaseId}/execute_sql`,
+            `${API_BASE}/database/${currentDatabaseId}/execute_sql`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },

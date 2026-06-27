@@ -1,3 +1,4 @@
+import { API_BASE } from "../api";
 import { useState } from "react";
 
 function AuthPage({ setUser }) {
@@ -8,8 +9,8 @@ function AuthPage({ setUser }) {
   const handleAuth = async () => {
     const url =
       mode === "login"
-        ? "http://localhost:8000/login"
-        : "http://localhost:8000/signup";
+        ? "${API_BASE}/login"
+        : "${API_BASE}/signup";
 
     const response = await fetch(url, {
       method: "POST",

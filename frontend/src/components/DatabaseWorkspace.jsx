@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import SchemaView from "./SchemaView";
 import RelationshipsView from "./RelationshipsView";
 
-const API = "http://localhost:8000";
+import { API_BASE } from "../api";
 
 function DatabaseWorkspace({ userId, activeDatabaseId = null, onClose, onSelectDatabase = () => {} }) {
   const [list, setList] = useState([]);
@@ -13,7 +13,7 @@ function DatabaseWorkspace({ userId, activeDatabaseId = null, onClose, onSelectD
   // Load the user's databases for the switcher.
   useEffect(() => {
     if (!userId) return;
-    fetch(`${API}/databases/${userId}`)
+    fetch(`${API_BASE}/databases/${userId}`)
       .then((r) => r.json())
       .then((d) => {
         const dbs = d.databases || [];
@@ -32,7 +32,7 @@ function DatabaseWorkspace({ userId, activeDatabaseId = null, onClose, onSelectD
     }
     setLoading(true);
     setError("");
-    fetch(`${API}/database/${activeDatabaseId}/graph`)
+    fetch(`${API_BASE}/database/${activeDatabaseId}/graph`)
       .then((r) => r.json())
       .then((d) => {
         if (!d.success) {

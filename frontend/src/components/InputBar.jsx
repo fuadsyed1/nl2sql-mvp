@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import DatabaseWorkspace from "./DatabaseWorkspace";
 import AssignmentResult from "./AssignmentResult";
 
-const API = "http://localhost:8000";
+import { API_BASE } from "../api";
 
 const TEXTAREA_MAX_H = 180;
 
@@ -86,7 +86,7 @@ function InputBar({
     setAssignmentBusy(true);
 
     try {
-      const response = await fetch(`${API}/assignment/import-text`, {
+      const response = await fetch(`${API_BASE}/assignment/import-text`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -143,7 +143,7 @@ function InputBar({
     setAssignmentBusy(true);
 
     try {
-      const response = await fetch(`${API}/assignment/import-file`, {
+      const response = await fetch(`${API_BASE}/assignment/import-file`, {
         method: "POST",
         body: formData,
       });
@@ -205,7 +205,7 @@ function InputBar({
     formData.append("user_id", userId);
     formData.append("conversation_id", currentConversationId);
 
-    const response = await fetch(`${API}/upload-csv`, {
+    const response = await fetch(`${API_BASE}/upload-csv`, {
       method: "POST",
       body: formData,
     });
@@ -268,7 +268,7 @@ function InputBar({
     setDbError("");
 
     try {
-      const response = await fetch(`${API}/upload-database`, {
+      const response = await fetch(`${API_BASE}/upload-database`, {
         method: "POST",
         body: formData,
       });

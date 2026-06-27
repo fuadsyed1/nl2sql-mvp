@@ -1,3 +1,4 @@
+import { API_BASE } from "../api";
 function Sidebar({
   target,
   conversions,
@@ -15,7 +16,7 @@ function Sidebar({
 
   const deleteConversation = async (conversationId) => {
     try {
-      await fetch(`http://localhost:8000/conversation/${conversationId}`, {
+      await fetch(`${API_BASE}/conversation/${conversationId}`, {
         method: "DELETE",
       });
 
