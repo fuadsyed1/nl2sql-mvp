@@ -1,8 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import OutputCard from "./OutputCard";
 import QueryResultCard from "./QueryResultCard";
 import InputBar from "./InputBar";
 import DatabaseWorkspace from "./DatabaseWorkspace";
+import DatabaseWorkspaceCard from "./DatabaseWorkspaceCard";
+import DatabaseSummaryCard from "./DatabaseSummaryCard";
+import RelationshipReviewCard from "./RelationshipReviewCard";
+import SetupSummaryCard from "./SetupSummaryCard";
 
 function ConversionPage({
   target,
@@ -17,6 +21,9 @@ function ConversionPage({
   onDatabaseCreated,
   onSelectDatabase,
   activeDatabaseId,
+  activeDatabaseSummary,
+  relationshipsFinalized = false,
+  onFinalizeRelationships = () => {},
 }) {
   // Dynamic bottom padding so the last message always clears the (auto-growing)
   // input bar instead of hiding behind it.
@@ -26,6 +33,25 @@ function ConversionPage({
   const [dbBrowserOpen, setDbBrowserOpen] = useState(false);
   const userId =
     typeof window !== "undefined" ? localStorage.getItem("user_id") : null;
+
+  // Query input is only available once a database is active AND its
+  // relationships are finalized. Relationship finalization is a later step;
+  // for now relationshipsFinalized stays false, so the input stays hidden even
+  // after a database is created.
+  const canQuery = Boolean(activeDatabaseId) && relationshipsFinalized;
+  // Show the summary/relationship-review area whenever a database is active and
+  // the chat has no messages yet. It stays visible after finalizing (so the
+  // review UI isn't removed) until the user sends their first query.
+  const showSummary = Boolean(activeDatabaseId) && messages.length === 0;
+  // No active database and a fresh (empty) chat -> show the upload workspace.
+  const showWorkspaceCard = !activeDatabaseId && messages.length === 0;
+
+  // Toggle between the summary card and the (placeholder) relationship review
+  // card. Reset whenever the active database changes.
+  const [reviewingRelationships, setReviewingRelationships] = useState(false);
+  useEffect(() => {
+    setReviewingRelationships(false);
+  }, [activeDatabaseId]);
 
   return (
     <div className="flex flex-col h-full bg-gray-100">
@@ -51,15 +77,38 @@ function ConversionPage({
           className="w-1/2 flex items-center justify-between gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl px-4 py-2.5 text-sm font-medium"
           title="Browse and select a database"
         >
-          <span>🗄️ Databases</span>
+          <span>🗄️ {activeDatabaseId ? `Database #${activeDatabaseId}` : "Databases"}</span>
           <span className="text-gray-400">▾</span>
         </button>
       </header>
 
       <section
-        style={{ paddingBottom: inputBarHeight + 24 }}
+        style={{ paddingBottom: canQuery ? inputBarHeight + 56 : 32 }}
         className="flex-1 overflow-y-auto p-8 mx-2 mt-2 mb-0 bg-white rounded-tl-3xl shadow-sm space-y-6 min-h-0">
-        {messages.length === 0 && !isProcessing && (
+        {showSummary &&
+          (reviewingRelationships ? (
+            <RelationshipReviewCard
+              summary={activeDatabaseSummary}
+              onBack={() => setReviewingRelationships(false)}
+              onFinalize={onFinalizeRelationships}
+              finalized={relationshipsFinalized}
+            />
+          ) : (
+            <DatabaseSummaryCard
+              summary={activeDatabaseSummary}
+              onReviewRelationships={() => setReviewingRelationships(true)}
+            />
+          ))}
+
+        {showWorkspaceCard && (
+          <DatabaseWorkspaceCard
+            userId={userId}
+            conversationId={currentConversationId}
+            onDatabaseCreated={onDatabaseCreated}
+          />
+        )}
+
+        {!showSummary && !showWorkspaceCard && messages.length === 0 && !isProcessing && (
           <div className="h-full flex items-center justify-center">
             <div className="text-center max-w-xl">
               <h3 className="text-3xl font-bold mb-3">
@@ -84,7 +133,9 @@ function ConversionPage({
             )}
 
             {msg.type === "system" &&
-              (msg.result ? (
+              (msg.setup ? (
+                <SetupSummaryCard setup={msg.setup} />
+              ) : msg.result ? (
                 <QueryResultCard result={msg.result} />
               ) : (
                 <OutputCard output={msg.output} />
@@ -103,17 +154,19 @@ function ConversionPage({
         )}
       </section>
 
-      <InputBar
-        input={input}
-        setInput={setInput}
-        handleSubmit={handleSubmit}
-        currentConversationId={currentConversationId}
-        onAssignmentResult={onAssignmentResult}
-        onDatabaseCreated={onDatabaseCreated}
-        onSelectDatabase={onSelectDatabase}
-        activeDatabaseId={activeDatabaseId}
-        onBarResize={setInputBarHeight}
-      />
+      {canQuery && (
+        <InputBar
+          input={input}
+          setInput={setInput}
+          handleSubmit={handleSubmit}
+          currentConversationId={currentConversationId}
+          onAssignmentResult={onAssignmentResult}
+          onDatabaseCreated={onDatabaseCreated}
+          onSelectDatabase={onSelectDatabase}
+          activeDatabaseId={activeDatabaseId}
+          onBarResize={setInputBarHeight}
+        />
+      )}
     </div>
   );
 }

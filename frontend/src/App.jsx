@@ -19,6 +19,12 @@ function App() {
   // never trigger schema generation from the question.
   const [currentDatabaseId, setCurrentDatabaseId] = useState(null);
   const [activeDatabaseSchemaOnly, setActiveDatabaseSchemaOnly] = useState(false);
+  // Summary of the active database (name/id/tables) shown after creation.
+  const [activeDatabaseSummary, setActiveDatabaseSummary] = useState(null);
+  // Gating: the query input stays hidden until relationships are finalized for
+  // the active database. Finalization is frontend-only for this chat session.
+  const [relationshipsFinalized, setRelationshipsFinalized] = useState(false);
+  const [finalizedRelationships, setFinalizedRelationships] = useState(null);
 
   const [user, setUser] = useState(() => {
     const user_id = localStorage.getItem("user_id");
@@ -135,6 +141,9 @@ function App() {
       setInput("");
       setCurrentDatabaseId(null);
       setActiveDatabaseSchemaOnly(false);
+      setActiveDatabaseSummary(null);
+      setRelationshipsFinalized(false);
+      setFinalizedRelationships(null);
       setActivePage("conversion");
 
       await loadConversations();
@@ -203,6 +212,9 @@ function App() {
       // with no active database (see reported limitation).
       setCurrentDatabaseId(null);
       setActiveDatabaseSchemaOnly(false);
+      setActiveDatabaseSummary(null);
+      setRelationshipsFinalized(false);
+      setFinalizedRelationships(null);
       setActivePage("conversion");
     } catch (err) {
       console.error("Failed to load conversation:", err);
@@ -217,6 +229,20 @@ function App() {
       setCurrentDatabaseId(data.database_id);
       // Mode B/C (schema-only assignment) databases have no rows.
       setActiveDatabaseSchemaOnly(data.mode === "schema_only_assignment");
+      // Store a summary for the post-creation card. The /upload-database
+      // response carries name + per-table info.
+      const tables = (data.tables || [])
+        .filter((t) => t.success !== false)
+        .map((t) => t.table_name)
+        .filter(Boolean);
+      setActiveDatabaseSummary({
+        database_id: data.database_id,
+        name: data.name || `Database ${data.database_id}`,
+        tables,
+      });
+      // A freshly created database has not had its relationships finalized yet.
+      setRelationshipsFinalized(false);
+      setFinalizedRelationships(null);
     }
   };
 
@@ -224,9 +250,35 @@ function App() {
   // active query target for the current chat.
   const handleSelectDatabase = (databaseId) => {
     // databaseId is null when the user picks "None".
-    setCurrentDatabaseId(databaseId || null);
+    const id = databaseId || null;
+    setCurrentDatabaseId(id);
     setActiveDatabaseSchemaOnly(false);
-    console.log("ACTIVE DATABASE ->", databaseId || null);
+    setActiveDatabaseSummary(id ? { database_id: id } : null);
+    setRelationshipsFinalized(false);
+    setFinalizedRelationships(null);
+    console.log("ACTIVE DATABASE ->", id);
+  };
+
+  // Frontend-only finalize: store the confirmed relationship list for this chat
+  // session, unlock the query input, and drop a one-time setup summary message
+  // into the chat. No backend persistence (no endpoint).
+  const handleFinalizeRelationships = (rels) => {
+    if (relationshipsFinalized) return; // add the setup message only once
+    const list = rels || [];
+    setFinalizedRelationships(list);
+    setRelationshipsFinalized(true);
+    const setup = {
+      database_id: currentDatabaseId,
+      name: activeDatabaseSummary?.name,
+      tables: activeDatabaseSummary?.tables || [],
+      relationships: list.map((r) => ({
+        from_table: r.from_table,
+        from_column: r.from_column,
+        to_table: r.to_table,
+        to_column: r.to_column,
+      })),
+    };
+    setMessages((prev) => [...prev, { type: "system", setup }]);
   };
 
   // Split a "1. ... 2. ..." block into individual questions. Returns [] when
@@ -601,6 +653,9 @@ function App() {
           onDatabaseCreated={handleDatabaseCreated}
           onSelectDatabase={handleSelectDatabase}
           activeDatabaseId={currentDatabaseId}
+          activeDatabaseSummary={activeDatabaseSummary}
+          relationshipsFinalized={relationshipsFinalized}
+          onFinalizeRelationships={handleFinalizeRelationships}
           conversationTitle={conversationTitle}
         />
         )}

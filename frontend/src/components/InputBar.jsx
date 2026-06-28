@@ -420,19 +420,24 @@ function InputBar({
           {/* Input bar (existing layout, plus the database picker button) */}
           <div className="flex gap-3 bg-white rounded-3xl shadow-xl p-3 pointer-events-auto">
 
-            <label
-              className="cursor-pointer bg-gray-100 px-5 py-4 rounded-xl hover:bg-gray-200"
-              title="Upload CSV file(s) or assignment document"
-            >
-              📎
-              <input
-                type="file"
-                accept=".csv,.txt,.md,.sql,.docx,.pdf"
-                multiple
-                onChange={handleUploadAny}
-                className="hidden"
-              />
-            </label>
+            {/* Upload/create-database happens in the Database Workspace before
+                the chat input is shown. Once a database is active the query bar
+                is just text + Convert, so hide this legacy upload control. */}
+            {!activeDatabaseId && (
+              <label
+                className="cursor-pointer bg-gray-100 px-5 py-4 rounded-xl hover:bg-gray-200"
+                title="Upload CSV file(s) or assignment document"
+              >
+                📎
+                <input
+                  type="file"
+                  accept=".csv,.txt,.md,.sql,.docx,.pdf"
+                  multiple
+                  onChange={handleUploadAny}
+                  className="hidden"
+                />
+              </label>
+            )}
 
             <textarea
               ref={textareaRef}
