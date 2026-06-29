@@ -6,6 +6,35 @@ import AccountSettings from "./components/AccountSettings";
 import ConversionPage from "./components/ConversionPage";
 import AuthPage from "./components/AuthPage";
 
+// Per-conversation database state (active database, finalize state, finalized
+// relationships) is not persisted on the backend, so it is kept in localStorage
+// keyed by conversation id. This lets a chat remember its database when the user
+// switches chats or reloads.
+const chatDbStateKey = (cid) => `spidersql_chat_db_state_${cid}`;
+
+const readChatDbState = (cid) => {
+  if (!cid) return null;
+  try {
+    const raw = localStorage.getItem(chatDbStateKey(cid));
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
+const saveChatDbState = (cid, partial) => {
+  if (!cid) return;
+  const current = readChatDbState(cid) || {};
+  try {
+    localStorage.setItem(
+      chatDbStateKey(cid),
+      JSON.stringify({ ...current, ...partial })
+    );
+  } catch {
+    /* ignore quota / serialization errors */
+  }
+};
+
 function App() {
   const [activePage, setActivePage] = useState("dashboard");
   const [target, setTarget] = useState("SQL");
@@ -206,15 +235,46 @@ function App() {
       });
 
       setCurrentConversationId(conversationId);
+
+      // Restore this chat's database state from localStorage (active database,
+      // finalize state, finalized relationships). The setup message and these
+      // flags are not persisted on the backend, so they live per-conversation.
+      const saved = readChatDbState(conversationId);
+      if (saved && saved.activeDatabaseId) {
+        setCurrentDatabaseId(saved.activeDatabaseId);
+        setActiveDatabaseSchemaOnly(false);
+        setActiveDatabaseSummary(
+          saved.activeDatabaseSummary || { database_id: saved.activeDatabaseId }
+        );
+        setRelationshipsFinalized(Boolean(saved.relationshipsFinalized));
+        setFinalizedRelationships(saved.finalizedRelationships || null);
+
+        // Rebuild the one-time setup message if relationships were finalized and
+        // it isn't already present (it is frontend-only, never saved to backend).
+        if (
+          saved.relationshipsFinalized &&
+          !restoredMessages.some((m) => m.setup)
+        ) {
+          restoredMessages.unshift({
+            type: "system",
+            setup: {
+              database_id: saved.activeDatabaseId,
+              name: saved.activeDatabaseSummary?.name,
+              tables: saved.activeDatabaseSummary?.tables || [],
+              relationships: saved.finalizedRelationships || [],
+            },
+          });
+        }
+      } else {
+        setCurrentDatabaseId(null);
+        setActiveDatabaseSchemaOnly(false);
+        setActiveDatabaseSummary(null);
+        setRelationshipsFinalized(false);
+        setFinalizedRelationships(null);
+      }
+
       setMessages(restoredMessages);
       setInput("");
-      // Chat -> database mapping is not persisted yet, so a reopened chat starts
-      // with no active database (see reported limitation).
-      setCurrentDatabaseId(null);
-      setActiveDatabaseSchemaOnly(false);
-      setActiveDatabaseSummary(null);
-      setRelationshipsFinalized(false);
-      setFinalizedRelationships(null);
       setActivePage("conversion");
     } catch (err) {
       console.error("Failed to load conversation:", err);
@@ -235,14 +295,22 @@ function App() {
         .filter((t) => t.success !== false)
         .map((t) => t.table_name)
         .filter(Boolean);
-      setActiveDatabaseSummary({
+      const summary = {
         database_id: data.database_id,
         name: data.name || `Database ${data.database_id}`,
         tables,
-      });
+      };
+      setActiveDatabaseSummary(summary);
       // A freshly created database has not had its relationships finalized yet.
       setRelationshipsFinalized(false);
       setFinalizedRelationships(null);
+      // Pin this database to the current chat so it restores on reopen.
+      saveChatDbState(currentConversationId, {
+        activeDatabaseId: data.database_id,
+        activeDatabaseSummary: summary,
+        relationshipsFinalized: false,
+        finalizedRelationships: null,
+      });
     }
   };
 
@@ -253,9 +321,16 @@ function App() {
     const id = databaseId || null;
     setCurrentDatabaseId(id);
     setActiveDatabaseSchemaOnly(false);
-    setActiveDatabaseSummary(id ? { database_id: id } : null);
+    const summary = id ? { database_id: id } : null;
+    setActiveDatabaseSummary(summary);
     setRelationshipsFinalized(false);
     setFinalizedRelationships(null);
+    saveChatDbState(currentConversationId, {
+      activeDatabaseId: id,
+      activeDatabaseSummary: summary,
+      relationshipsFinalized: false,
+      finalizedRelationships: null,
+    });
     console.log("ACTIVE DATABASE ->", id);
   };
 
@@ -279,6 +354,13 @@ function App() {
       })),
     };
     setMessages((prev) => [...prev, { type: "system", setup }]);
+    // Persist finalize state so the chat restores its input + setup message.
+    saveChatDbState(currentConversationId, {
+      activeDatabaseId: currentDatabaseId,
+      activeDatabaseSummary,
+      relationshipsFinalized: true,
+      finalizedRelationships: setup.relationships,
+    });
   };
 
   // Split a "1. ... 2. ..." block into individual questions. Returns [] when
