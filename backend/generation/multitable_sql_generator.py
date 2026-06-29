@@ -52,8 +52,23 @@ def generate_sql(plan):
     select = _get(ir, "select") or []
     aggregations = _get(ir, "aggregations") or []
 
-    # Rule 2: nothing to project -> decline.
+    # Rule 2: nothing to project. A resolved single-table plan (a from_table and
+    # no joins) is a "show all rows from <table>" request -> SELECT * FROM table.
+    # Truly invalid plans (no from_table) still decline with empty_select.
     if not select and not aggregations:
+        ft = _get(plan, "from_table")
+        jns = _get(plan, "joins") or []
+        if ft and not jns:
+            from_sql = render_from_joins(ft, jns)
+            diagnostics = {
+                "from_table": ft,
+                "join_count": 0,
+                "bridge_tables": list(_get(plan, "bridge_tables") or []),
+                "parameter_count": 0,
+                "clauses": ["select", "from"],
+                "select_all": True,
+            }
+            return generated_sql(f"SELECT * {from_sql}", [], diagnostics)
         return failed_sql("empty_select")
 
     distinct = bool(_get(ir, "distinct", False))

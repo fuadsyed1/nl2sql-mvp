@@ -163,10 +163,18 @@ def test_unresolved_failure():
 
 
 def test_empty_select_failure():
+    # No projection but a resolved single table -> table preview (SELECT *).
     ir = mk_ir(tables=["owners"], select=[], aggregations=[])
     d = sql_to_dict(generate_sql(single_table_plan("owners", ir)))
-    assert d["generated"] is False and d["reason"] == "empty_select"
-    print("[9] no select + no aggregations -> failed_sql('empty_select') -> OK")
+    assert d["generated"] is True and d["sql"] == 'SELECT * FROM "owners"', d
+    assert d["diagnostics"].get("select_all") is True
+    print("[9] no select + single table -> SELECT * -> OK")
+
+    # Truly invalid (resolved but no from_table) still declines.
+    ir2 = mk_ir(tables=[], select=[], aggregations=[])
+    d2 = sql_to_dict(generate_sql(single_table_plan(None, ir2)))
+    assert d2["generated"] is False and d2["reason"] == "empty_select", d2
+    print("[9b] no select + no from_table -> empty_select -> OK")
 
 
 def test_deterministic():
