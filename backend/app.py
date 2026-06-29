@@ -54,8 +54,14 @@ from schema.database_mode import (
     update_database_mode,
     set_table_columns_loaded,
 )
-from retrieval.table_retriever import retrieve_tables
+from retrieval.table_retriever import retrieve_tables, requested_dates_satisfied
 from schema.subgraph_builder import build_subgraph
+from schema.query_context import resolve_query_graph
+from schema.partition_filter import (
+    remove_redundant_partition_date_filters,
+    detect_partitioned_ambiguity,
+)
+from services.metadata_service import create_metadata
 from schema.schema_database_creator import (
     create_empty_db_from_ddl,
     extract_declared_foreign_keys,
@@ -454,8 +460,11 @@ async def upload_database(
     # detection; columns load lazily on demand.
     large = is_large_database(len(csv_files))
 
-    created_tables = []
     used_names = set()
+    table_specs = []
+    # Response rows in upload order: None is a placeholder for a successful table
+    # (filled from the metadata result); failures are inline dicts.
+    table_entries = []
 
     for file in csv_files:
         file_path = os.path.join(db_dir, file.filename)
@@ -475,7 +484,7 @@ async def upload_database(
         )
 
         if not load_result.get("success"):
-            created_tables.append({
+            table_entries.append({
                 "source_filename": file.filename,
                 "table_name": table_name,
                 "success": False,
@@ -484,56 +493,43 @@ async def upload_database(
             continue
 
         schema_text = detect_csv_schema(file_path, table_name=table_name)
-        rows_inserted = load_result.get("rows_inserted", 0)
-
-        table_id = add_database_table(
-            database_id,
-            table_name,
-            file.filename,
-            file_path,
-            schema_text,
-            rows_inserted,
-        )
-
-        if large:
-            set_table_columns_loaded(table_id, False)
-            columns_meta = []
-        else:
-            columns_meta = extract_table_columns(db_path, table_name)
-            add_table_columns(table_id, columns_meta)
-
-        created_tables.append({
-            "source_filename": file.filename,
+        table_specs.append({
             "table_name": table_name,
-            "rows_inserted": rows_inserted,
+            "source_filename": file.filename,
+            "file_path": file_path,
+            "row_count": load_result.get("rows_inserted", 0),
             "schema_text": schema_text,
-            "columns": columns_meta,
-            "success": True,
         })
+        table_entries.append(None)
 
-    clear_relationships(database_id)
-    if large:
-        # Skip expensive global value-overlap detection for large databases.
-        relationships = []
-    else:
-        relationships = detect_relationships(database_id)
-    add_relationships(database_id, relationships)
-
-    table_count = sum(1 for t in created_tables if t.get("success"))
-    mode = update_database_mode(
-        database_id, table_count, "large" if large else "small"
+    # Value-overlap detection (small mode) must read the just-saved metadata, so
+    # pass it as a callable; large mode skips it. Behavior unchanged.
+    rel_provider = (lambda _did: []) if large else (
+        lambda did: detect_relationships(did)
+    )
+    result = create_metadata(
+        database_id, db_path, db_name, table_specs, rel_provider, large
     )
 
-    return {
-        "success": True,
-        "database_id": database_id,
-        "name": db_name,
-        "mode": mode,
-        "table_count": table_count,
-        "db_path": db_path,
-        "tables": created_tables,
-        "relationships": relationships,
-    }
+    # Re-shape successful tables to the original CSV entry keys, interleaving
+    # them with failures in upload order.
+    successes = iter(result["tables"])
+    tables_out = []
+    for entry in table_entries:
+        if entry is None:
+            t = next(successes)
+            tables_out.append({
+                "source_filename": t["source_filename"],
+                "table_name": t["table_name"],
+                "rows_inserted": t["rows_inserted"],
+                "schema_text": t["schema_text"],
+                "columns": t["columns"],
+                "success": True,
+            })
+        else:
+            tables_out.append(entry)
+    result["tables"] = tables_out
+    return result
 
 
 @app.post("/create-database-from-schema")
@@ -590,31 +586,6 @@ async def create_database_from_schema(
 
     large = is_large_database(len(table_names))
 
-    created_tables = []
-    for table_name in table_names:
-        if large:
-            schema_text_t = table_name
-            table_id = add_database_table(
-                database_id, table_name, "schema_ddl", db_path, schema_text_t, 0
-            )
-            set_table_columns_loaded(table_id, False)
-        else:
-            columns_meta = extract_table_columns(db_path, table_name)
-            schema_text_t = (
-                f"{table_name}("
-                + ", ".join(c["column_name"] for c in columns_meta)
-                + ")"
-            )
-            table_id = add_database_table(
-                database_id, table_name, "schema_ddl", db_path, schema_text_t, 0
-            )
-            add_table_columns(table_id, columns_meta)
-        created_tables.append({
-            "table_name": table_name,
-            "rows_inserted": 0,
-            "success": True,
-        })
-
     # Relationship detection. Explicit FOREIGN KEY constraints are cheap and used
     # in both modes. The name-based fallback (O(tables x columns)) runs only for
     # small databases; large databases stay FK-only.
@@ -625,24 +596,21 @@ async def create_database_from_schema(
         relationships = []
     else:
         relationships = infer_schema_name_relationships(db_path, table_names)
-    clear_relationships(database_id)
-    add_relationships(database_id, relationships)
 
-    table_count = len(created_tables)
-    mode = update_database_mode(
-        database_id, table_count, "large" if large else "small"
+    table_specs = [
+        {"table_name": t, "source_filename": "schema_ddl",
+         "file_path": db_path, "row_count": 0}
+        for t in table_names
+    ]
+    result = create_metadata(
+        database_id, db_path, db_name, table_specs, relationships, large
     )
-
-    return {
-        "success": True,
-        "database_id": database_id,
-        "name": db_name,
-        "mode": mode,
-        "table_count": table_count,
-        "db_path": db_path,
-        "tables": created_tables,
-        "relationships": relationships,
-    }
+    result["tables"] = [
+        {"table_name": t["table_name"], "rows_inserted": t["rows_inserted"],
+         "success": True}
+        for t in result["tables"]
+    ]
+    return result
 
 
 # ---------------------------------------------------------------------------
@@ -703,52 +671,24 @@ def spider2_import(req: Spider2ImportRequest):
 
     large = is_large_database(len(table_names))
 
-    created_tables = []
-    for table_name in table_names:
-        if large:
-            schema_text_t = table_name
-            table_id = add_database_table(
-                database_id, table_name, "spider2_catalog", db_path, schema_text_t, 0
-            )
-            set_table_columns_loaded(table_id, False)
-        else:
-            columns_meta = extract_table_columns(db_path, table_name)
-            schema_text_t = (
-                f"{table_name}("
-                + ", ".join(c["column_name"] for c in columns_meta)
-                + ")"
-            )
-            table_id = add_database_table(
-                database_id, table_name, "spider2_catalog", db_path, schema_text_t, 0
-            )
-            add_table_columns(table_id, columns_meta)
-        created_tables.append({
-            "table_name": table_name,
-            "rows_inserted": 0,
-            "success": True,
-        })
-
     # Catalog relationships are explicit and cheap — keep them in both modes.
     relationships = spider2_entry_edges(entry)
-    clear_relationships(database_id)
-    add_relationships(database_id, relationships)
 
-    table_count = len(created_tables)
-    mode = update_database_mode(
-        database_id, table_count, "large" if large else "small"
+    table_specs = [
+        {"table_name": t, "source_filename": "spider2_catalog",
+         "file_path": db_path, "row_count": 0}
+        for t in table_names
+    ]
+    result = create_metadata(
+        database_id, db_path, db_name, table_specs, relationships, large,
+        source={"type": "spider2", "spider2_id": req.spider2_id},
     )
-
-    return {
-        "success": True,
-        "database_id": database_id,
-        "name": db_name,
-        "mode": mode,
-        "table_count": table_count,
-        "db_path": db_path,
-        "tables": created_tables,
-        "relationships": relationships,
-        "source": {"type": "spider2", "spider2_id": req.spider2_id},
-    }
+    result["tables"] = [
+        {"table_name": t["table_name"], "rows_inserted": t["rows_inserted"],
+         "success": True}
+        for t in result["tables"]
+    ]
+    return result
 
 
 @app.get("/datasets/{user_id}")
@@ -823,7 +763,23 @@ def redetect_relationships(database_id: int):
 
 
 @app.get("/database/{database_id}/graph")
-def database_graph(database_id: int):
+def database_graph(database_id: int, summary: bool = False):
+    # Opt-in lightweight summary (no full graph build). Default is unchanged so
+    # existing consumers (RelationshipReviewCard, DatabaseWorkspace) keep working.
+    if summary:
+        meta = get_database_meta(database_id)
+        if not meta:
+            return {"success": False, "message": "Database not found"}
+        return {
+            "success": True,
+            "database_id": database_id,
+            "mode": meta["mode"],
+            "table_count": meta["table_count"],
+            "relationship_count": len(get_relationships(database_id)),
+            "message": "Large database graph is available through metadata "
+                       "retrieval. Full graph is not loaded by default.",
+        }
+
     graph = get_database_graph(database_id)
     if not graph:
         return {"success": False, "message": "Database not found"}
@@ -911,9 +867,10 @@ def latest_dataset(user_id: int):
 
 @app.post("/database/{database_id}/ir")
 def inspect_ir(database_id: int, body: IRRequest):
-    graph = get_database_graph(database_id)
-    if not graph:
-        return {"success": False, "message": "Database not found"}
+    # Mode-aware schema selection (small=full graph, large=retrieved subgraph).
+    graph, _tables_considered, early = resolve_query_graph(database_id, body.question)
+    if early is not None:
+        return early
 
     extraction = extract_multitable_ir_extraction(body.question, graph)
     ir = build_from_extraction(database_id, extraction, graph, question=body.question)
@@ -930,13 +887,10 @@ def inspect_ir(database_id: int, body: IRRequest):
 
 @app.post("/database/{database_id}/resolve")
 def resolve_query_plan(database_id: int, body: IRRequest):
-    graph = get_database_graph(database_id)
-
-    if not graph:
-        return {
-            "success": False,
-            "message": "Database not found"
-        }
+    # Mode-aware schema selection (small=full graph, large=retrieved subgraph).
+    graph, _tables_considered, early = resolve_query_graph(database_id, body.question)
+    if early is not None:
+        return early
 
     extraction = extract_multitable_ir_extraction(
         body.question,
@@ -971,9 +925,10 @@ def resolve_query_plan(database_id: int, body: IRRequest):
 
 @app.post("/database/{database_id}/generate_sql")
 def generate_sql_endpoint(database_id: int, body: IRRequest):
-    graph = get_database_graph(database_id)
-    if not graph:
-        return {"success": False, "message": "Database not found"}
+    # Mode-aware schema selection (small=full graph, large=retrieved subgraph).
+    graph, _tables_considered, early = resolve_query_graph(database_id, body.question)
+    if early is not None:
+        return early
 
     extraction = extract_multitable_ir_extraction(body.question, graph)
     ir = build_from_extraction(database_id, extraction, graph, question=body.question)
@@ -1054,31 +1009,51 @@ def execute_sql_endpoint(database_id: int, body: IRRequest):
     if not meta:
         return {"success": False, "message": "Database not found"}
 
-    # Small mode: full graph (unchanged). Large mode: retrieve top-k tables and
-    # build a sub-graph so the pipeline never sees the full schema.
-    tables_considered = None
-    if meta["mode"] == "large":
-        tables_considered = retrieve_tables(database_id, body.question, k=8)
-        if not tables_considered:
-            return {
-                "success": False,
-                "error": "no_relevant_tables_found",
-                "message": "No relevant tables were found for this question.",
-                "database_id": database_id,
-                "question": body.question,
-                "tables_considered": [],
-            }
-        graph = build_subgraph(
-            database_id, [t["table_name"] for t in tables_considered]
-        )
-    else:
-        graph = get_database_graph(database_id)
-
-    if not graph:
-        return {"success": False, "message": "Database not found"}
+    # Mode-aware schema selection (small = full graph, large = retrieve top-k +
+    # sub-graph). Shared helper; behavior unchanged. Returns an early response
+    # for no_relevant_tables_found / requested_date_table_not_found / not-found.
+    graph, tables_considered, early = resolve_query_graph(
+        database_id, body.question, meta
+    )
+    if early is not None:
+        return early
 
     extraction = extract_multitable_ir_extraction(body.question, graph)
     ir = build_from_extraction(database_id, extraction, graph, question=body.question)
+
+    # Large-mode fallback only: if extraction produced no tables but retrieval
+    # found a top table, use it so a fuzzy "<...> table" request can still plan.
+    large_mode_table_fallback = False
+    fallback_table = None
+    if meta["mode"] == "large" and tables_considered:
+        ir_tables = ir["tables"] if isinstance(ir, dict) else getattr(ir, "tables", None)
+        if not ir_tables:
+            fallback_table = tables_considered[0]["table_name"]
+            if isinstance(ir, dict):
+                ir["tables"] = [fallback_table]
+            else:
+                ir.tables = [fallback_table]
+            large_mode_table_fallback = True
+
+    # Large-mode only: drop date filters that merely restate a partition encoded
+    # in the table name (e.g. events_20210110 + event_date='2021-01-10').
+    partition_diag = {}
+    if meta["mode"] == "large":
+        partition_diag = remove_redundant_partition_date_filters(ir)
+
+        # Ambiguous partitioned-table query: the IR selected several
+        # <prefix>_YYYYMMDD tables but the question named no date / exact table.
+        ir_tables_now = ir["tables"] if isinstance(ir, dict) else getattr(ir, "tables", None)
+        ambiguity = detect_partitioned_ambiguity(body.question, ir_tables_now)
+        if ambiguity:
+            return {
+                "success": False,
+                **ambiguity,
+                "database_id": database_id,
+                "question": body.question,
+                "tables_considered": tables_considered,
+            }
+
     validation = validate_ir(ir, graph)
 
     base = {
@@ -1088,6 +1063,12 @@ def execute_sql_endpoint(database_id: int, body: IRRequest):
         "ir": ir_to_dict(ir),
         "validation": validation,
         "tables_considered": tables_considered,
+        "large_mode_table_fallback": large_mode_table_fallback,
+        "fallback_table": fallback_table,
+        "removed_redundant_partition_date_filter": partition_diag.get(
+            "removed_redundant_partition_date_filter", False
+        ),
+        "partition_date": partition_diag.get("partition_date"),
     }
 
     if not validation["valid"]:

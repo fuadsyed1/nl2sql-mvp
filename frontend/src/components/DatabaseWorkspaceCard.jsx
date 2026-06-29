@@ -299,8 +299,31 @@ function DatabaseWorkspaceCard({
     }
   };
 
+  // Any in-flight create/import/load shows the blocking "creating metadata"
+  // popup until the backend request finishes.
+  const busy =
+    processing ||
+    schemaProcessing ||
+    spiderImportingId != null ||
+    loadingId != null;
+
   return (
     <div className="h-full flex items-center justify-center">
+      {busy && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-2xl shadow-xl px-8 py-6 w-[90%] max-w-md text-center flex flex-col items-center gap-3">
+            <div className="h-8 w-8 rounded-full border-2 border-gray-200 border-t-blue-500 animate-spin" />
+            <p className="text-base font-semibold text-gray-800">
+              Creating database metadata...
+            </p>
+            <p className="text-sm text-gray-500">
+              SpiderSQL is reading tables, columns, keys, and relationships.
+              This may take a moment for large databases.
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="w-[80%] max-w-5xl h-[85%] bg-white border border-gray-200 rounded-2xl shadow-lg flex flex-col overflow-hidden">
         <div className="px-6 py-5 border-b border-gray-100">
           <h2 className="text-2xl font-bold text-gray-800">Database Workspace</h2>

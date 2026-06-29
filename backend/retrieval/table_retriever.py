@@ -20,7 +20,7 @@ import sqlite3
 
 from db.database_service import get_database_tables, get_table_columns
 
-__all__ = ["build_table_index", "retrieve_tables"]
+__all__ = ["build_table_index", "retrieve_tables", "requested_dates_satisfied"]
 
 # Per-process cache of built docs, keyed by database_id.
 _INDEX_CACHE = {}
@@ -35,6 +35,49 @@ _STOPWORDS = {
 def _tokenize(text):
     toks = re.split(r"[^A-Za-z0-9]+", (text or "").lower())
     return [t for t in toks if len(t) >= 2 and t not in _STOPWORDS]
+
+
+_MONTHS = {
+    "jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6,
+    "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12,
+}
+_MONTH_RE = (
+    r"(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|"
+    r"jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|"
+    r"dec(?:ember)?)"
+)
+
+
+def _date_tokens(text):
+    """Normalize common date phrases in `text` into compact YYYYMMDD tokens, so
+    a date table like events_20210110 can be matched. Returns a set of strings.
+    Generic — no specific table/date is hardcoded."""
+    tokens = set()
+    if not text:
+        return tokens
+    low = text.lower()
+
+    # ISO: 2021-01-10
+    for m in re.finditer(r"\b(\d{4})-(\d{1,2})-(\d{1,2})\b", text):
+        y, mo, d = m.groups()
+        tokens.add(f"{int(y):04d}{int(mo):02d}{int(d):02d}")
+    # Slashes: 01/10/2021 (MM/DD/YYYY)
+    for m in re.finditer(r"\b(\d{1,2})/(\d{1,2})/(\d{4})\b", text):
+        mo, d, y = m.groups()
+        tokens.add(f"{int(y):04d}{int(mo):02d}{int(d):02d}")
+    # Month name + day + year: "January 10 2021", "Jan 10, 2021"
+    for m in re.finditer(
+        _MONTH_RE + r"\.?\s+(\d{1,2})(?:st|nd|rd|th)?,?\s+(\d{4})", low
+    ):
+        mo = _MONTHS[m.group(1)[:3]]
+        tokens.add(f"{int(m.group(3)):04d}{mo:02d}{int(m.group(2)):02d}")
+    # Day + month name + year: "10 January 2021"
+    for m in re.finditer(
+        r"\b(\d{1,2})(?:st|nd|rd|th)?\s+" + _MONTH_RE + r"\.?,?\s+(\d{4})", low
+    ):
+        mo = _MONTHS[m.group(2)[:3]]
+        tokens.add(f"{int(m.group(3)):04d}{mo:02d}{int(m.group(1)):02d}")
+    return tokens
 
 
 def build_table_index(database_id):
@@ -94,6 +137,7 @@ def retrieve_tables(database_id, question, k=8):
     fts = _fts_rank(docs, question)
     qlow = (question or "").lower()
     qtokens = set(_tokenize(question))
+    date_tokens = _date_tokens(question)
 
     results = []
     for table_name, _doc, cols in docs:
@@ -112,6 +156,12 @@ def retrieve_tables(database_id, question, k=8):
             score += 1.0
             reasons.append("table_token")
 
+        # Strong boost when a normalized date (e.g. 20210110 from "January 10
+        # 2021") appears in the table name.
+        if date_tokens and any(dt in table_name for dt in date_tokens):
+            score += 6.0
+            reasons.append("date_match")
+
         for c in cols:
             if c and c.lower() in qlow:
                 score += 2.0
@@ -128,3 +178,20 @@ def retrieve_tables(database_id, question, k=8):
     # Deterministic ordering: score desc, then name asc.
     results.sort(key=lambda r: (-r["score"], r["table_name"]))
     return results[: max(1, int(k or 8))]
+
+
+def requested_dates_satisfied(question, tables):
+    """For the large-mode date guard: returns (requested_date_tokens, satisfied).
+
+    satisfied is True when the question names no date, OR at least one retrieved
+    table name contains a requested date token. When a date is named but no
+    retrieved table matches it, satisfied is False (caller should not fall back
+    to an unrelated table)."""
+    toks = sorted(_date_tokens(question))
+    if not toks:
+        return toks, True
+    satisfied = any(
+        any(tok in (t.get("table_name") or "") for tok in toks)
+        for t in (tables or [])
+    )
+    return toks, satisfied

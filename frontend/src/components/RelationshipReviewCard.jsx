@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { API_BASE } from "../api";
 
 const SELECT_CLASS =
@@ -51,11 +51,14 @@ function RelationshipReviewCard({
   };
 
   // --- Frontend-only edit via dropdowns -----------------------------------
-  // Schema graph (tables + columns) is fetched lazily the first time a row is
-  // edited, then reused. Same shape used by the table preview.
-  const [graph, setGraph] = useState(null);
-  const [graphLoading, setGraphLoading] = useState(false);
-  const [graphError, setGraphError] = useState("");
+  // Table names + per-table columns are loaded lazily from metadata endpoints
+  // (/tables and /table/{name}/columns) — never the full /graph — so this works
+  // for large databases too and avoids loading the whole schema.
+  const [tableNames, setTableNames] = useState([]);
+  const [tablesLoading, setTablesLoading] = useState(false);
+  const [tablesError, setTablesError] = useState("");
+  const [columnsCache, setColumnsCache] = useState({});
+  const requestedCols = useRef(new Set());
   const [editingIndex, setEditingIndex] = useState(null);
   const [adding, setAdding] = useState(false);
   const [draft, setDraft] = useState(null);
@@ -98,23 +101,39 @@ function RelationshipReviewCard({
     return "";
   };
 
-  const tableNames = (graph?.tables || []).map((t) => t.table_name);
-  const columnsForTable = (tableName) =>
-    ((graph?.tables || []).find((t) => t.table_name === tableName)?.columns ||
-      []).map((c) => c.column_name);
+  const columnsForTable = (tableName) => columnsCache[tableName] || [];
 
-  const ensureGraph = () => {
-    if (graph || graphLoading || database_id == null) return;
-    setGraphLoading(true);
-    setGraphError("");
-    fetch(`${API_BASE}/database/${database_id}/graph`)
+  // Load the table-name list once (from metadata, not the full graph).
+  const ensureTables = () => {
+    if (tableNames.length || tablesLoading || database_id == null) return;
+    setTablesLoading(true);
+    setTablesError("");
+    fetch(`${API_BASE}/database/${database_id}/tables?limit=500`)
       .then((r) => r.json())
       .then((d) => {
-        if (!d.success) setGraphError(d.message || "Could not load schema.");
-        else setGraph(d.database);
+        if (!d.success) setTablesError(d.message || "Could not load tables.");
+        else setTableNames((d.tables || []).map((t) => t.table_name));
       })
-      .catch((e) => setGraphError(`Could not load schema: ${e.message}`))
-      .finally(() => setGraphLoading(false));
+      .catch((e) => setTablesError(`Could not load tables: ${e.message}`))
+      .finally(() => setTablesLoading(false));
+  };
+
+  // Lazily load + cache one table's columns (deduped across calls).
+  const loadColumns = (tableName) => {
+    if (!tableName || database_id == null) return;
+    if (requestedCols.current.has(tableName)) return;
+    requestedCols.current.add(tableName);
+    fetch(
+      `${API_BASE}/database/${database_id}/table/${encodeURIComponent(
+        tableName
+      )}/columns`
+    )
+      .then((r) => r.json())
+      .then((d) => {
+        const cols = d.success ? (d.columns || []).map((c) => c.column_name) : [];
+        setColumnsCache((prev) => ({ ...prev, [tableName]: cols }));
+      })
+      .catch(() => setColumnsCache((prev) => ({ ...prev, [tableName]: [] })));
   };
 
   const startEdit = (index) => {
@@ -128,7 +147,9 @@ function RelationshipReviewCard({
       to_column: rel.to_column || "",
     });
     setEditingIndex(index);
-    ensureGraph();
+    ensureTables();
+    loadColumns(rel.from_table);
+    loadColumns(rel.to_table);
   };
 
   const cancelEdit = () => {
@@ -142,7 +163,7 @@ function RelationshipReviewCard({
     setFormError("");
     setDraft(emptyDraft());
     setAdding(true);
-    ensureGraph();
+    ensureTables();
   };
 
   const cancelAdd = () => {
@@ -172,19 +193,15 @@ function RelationshipReviewCard({
     cancelAdd();
   };
 
-  // Changing a table clears its column if no longer valid for that table.
+  // Changing a table lazily loads that table's columns and clears the chosen
+  // column (it belongs to the previous table).
   const setDraftField = (field, value) => {
     setFormError(""); // clear stale duplicate/self errors on change
+    if (field === "from_table" || field === "to_table") loadColumns(value);
     setDraft((prev) => {
       const next = { ...prev, [field]: value };
-      if (field === "from_table" &&
-          !columnsForTable(value).includes(next.from_column)) {
-        next.from_column = "";
-      }
-      if (field === "to_table" &&
-          !columnsForTable(value).includes(next.to_column)) {
-        next.to_column = "";
-      }
+      if (field === "from_table") next.from_column = "";
+      if (field === "to_table") next.to_column = "";
       return next;
     });
   };
@@ -238,11 +255,11 @@ function RelationshipReviewCard({
                   New relationship
                 </p>
 
-                {graphLoading && (
-                  <p className="text-sm text-gray-500">Loading schema…</p>
+                {tablesLoading && (
+                  <p className="text-sm text-gray-500">Loading tables…</p>
                 )}
-                {graphError && (
-                  <p className="text-sm text-amber-600">{graphError}</p>
+                {tablesError && (
+                  <p className="text-sm text-amber-600">{tablesError}</p>
                 )}
 
                 <div className="flex flex-wrap items-center gap-2">
@@ -355,11 +372,11 @@ function RelationshipReviewCard({
                   >
                     {editingIndex === i ? (
                       <div className="flex flex-col gap-3">
-                        {graphLoading && (
-                          <p className="text-sm text-gray-500">Loading schema…</p>
+                        {tablesLoading && (
+                          <p className="text-sm text-gray-500">Loading tables…</p>
                         )}
-                        {graphError && (
-                          <p className="text-sm text-amber-600">{graphError}</p>
+                        {tablesError && (
+                          <p className="text-sm text-amber-600">{tablesError}</p>
                         )}
 
                         <div className="flex flex-wrap items-center gap-2">

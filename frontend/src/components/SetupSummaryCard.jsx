@@ -22,53 +22,13 @@ function SetupSummaryCard({ setup }) {
         </span>
       </div>
 
-      <div>
-        <p className="text-xs font-semibold text-gray-500 mb-1">
-          Tables{tables.length ? ` (${tables.length})` : ""}
-        </p>
-        {tables.length ? (
-          <div className="flex flex-wrap gap-1.5">
-            {tables.map((t, i) => (
-              <span
-                key={`${t}-${i}`}
-                className="text-xs text-gray-700 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1"
-              >
-                {t}
-              </span>
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-gray-400">—</p>
-        )}
-      </div>
-
-      <div>
-        <p className="text-xs font-semibold text-gray-500 mb-1">
-          Relationships finalized{relationships.length ? ` (${relationships.length})` : ""}
-        </p>
-        {relationships.length ? (
-          <ul className="flex flex-col gap-1">
-            {relationships.map((r, i) => (
-              <li key={i} className="text-xs text-gray-700">
-                <span className="font-medium">
-                  {r.from_table}.{r.from_column}
-                </span>
-                <span className="text-gray-400 mx-1">→</span>
-                <span className="font-medium">
-                  {r.to_table}.{r.to_column}
-                </span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-sm text-gray-500">none selected</p>
-        )}
+      <div className="text-sm text-gray-600">
+        <p>Database loaded successfully. Metadata created.</p>
+        <p>Tables: {tables.length}</p>
+        <p>Relationships saved in metadata: {relationships.length}</p>
       </div>
 
       <div className="pt-2 border-t border-gray-100">
-        <p className="text-sm text-gray-500">
-          System loaded this database in the current chat.
-        </p>
         <p className="text-sm font-medium text-gray-700">Ready for SQL queries.</p>
       </div>
     </div>

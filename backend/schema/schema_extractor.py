@@ -48,8 +48,9 @@ def extract_table_columns(db_path: str, table_name: str, sample_size: int = 5):
 
     columns = []
 
-    for cid, name, decl_type, _notnull, _dflt, _pk in pragma_rows:
+    for cid, name, decl_type, _notnull, _dflt, pk in pragma_rows:
         qcol = _quote_ident(name)
+        declared_pk = bool(pk and int(pk) > 0)
 
         # Null count = total rows minus non-null count (COUNT(col) skips NULLs).
         cursor.execute(f"SELECT COUNT(*) - COUNT({qcol}) FROM {qtable}")
@@ -67,8 +68,10 @@ def extract_table_columns(db_path: str, table_name: str, sample_size: int = 5):
         )
         sample_values = [r[0] for r in cursor.fetchall()]
 
-        # Candidate PK: every row has a distinct, non-null value.
-        is_pk_candidate = (
+        # Candidate PK: a real declared primary key (from PRAGMA table_info),
+        # OR — for messy/undeclared tables — every row has a distinct, non-null
+        # value. The declared flag preserves real PKs even on empty tables.
+        is_pk_candidate = declared_pk or (
             row_count > 0
             and null_count == 0
             and unique_count == row_count
