@@ -7,6 +7,16 @@ def get_connection():
     return sqlite3.connect(DB_NAME)
 
 
+def _ensure_column(cursor, table, column, decl):
+    """Idempotently add a column to an existing table. SQLite's ALTER TABLE ADD
+    COLUMN sets existing rows to the column's DEFAULT, so this is a safe, repeat-
+    able migration that never rewrites or drops data."""
+    cursor.execute(f"PRAGMA table_info({table})")
+    existing = {row[1] for row in cursor.fetchall()}
+    if column not in existing:
+        cursor.execute(f"ALTER TABLE {table} ADD COLUMN {column} {decl}")
+
+
 def init_auth_db():
     conn = get_connection()
     cursor = conn.cursor()
@@ -177,6 +187,29 @@ def init_auth_db():
             FOREIGN KEY(user_id) REFERENCES users(id)
         )
     """)
+
+    # ------------------------------------------------------------------
+    # Phase 0 migration — large-database support (idempotent, non-breaking)
+    #
+    # Existing databases default to small mode with columns already loaded, so
+    # the current small-DB flow is unchanged. Large mode is opt-in (Phase 2).
+    # ------------------------------------------------------------------
+    _ensure_column(cursor, "databases", "mode", "TEXT DEFAULT 'small'")
+    _ensure_column(cursor, "databases", "table_count", "INTEGER DEFAULT 0")
+    _ensure_column(cursor, "database_tables", "columns_loaded", "INTEGER DEFAULT 1")
+    _ensure_column(cursor, "database_relationships", "source", "TEXT")
+
+    # Backfill table_count for existing databases (safe to re-run).
+    cursor.execute(
+        """
+        UPDATE databases
+        SET table_count = (
+            SELECT COUNT(*) FROM database_tables
+            WHERE database_tables.database_id = databases.id
+        )
+        WHERE table_count IS NULL OR table_count = 0
+        """
+    )
 
     conn.commit()
     conn.close()

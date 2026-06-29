@@ -44,6 +44,32 @@ from services.conversation_service import (
 )
 from schema.schema_extractor import extract_table_columns
 from schema.relationship_detector import detect_relationships
+from schema.lazy_loader import (
+    get_database_meta,
+    list_tables as lazy_list_tables,
+    ensure_table_columns as lazy_ensure_table_columns,
+)
+from schema.database_mode import (
+    is_large_database,
+    update_database_mode,
+    set_table_columns_loaded,
+)
+from retrieval.table_retriever import retrieve_tables
+from schema.subgraph_builder import build_subgraph
+from schema.schema_database_creator import (
+    create_empty_db_from_ddl,
+    extract_declared_foreign_keys,
+    infer_schema_name_relationships,
+    SchemaDDLError,
+)
+from spider2.spider2_catalog import (
+    spider2_status,
+    list_catalog as spider2_list_catalog,
+    get_catalog_entry as spider2_get_entry,
+    entry_is_importable as spider2_entry_importable,
+    entry_to_ddl as spider2_entry_to_ddl,
+    entry_relationship_edges as spider2_entry_edges,
+)
 from db.database_service import (
     create_database,
     set_database_path,
@@ -424,6 +450,10 @@ async def upload_database(
     db_path = os.path.join(db_dir, "data.db")
     set_database_path(database_id, db_path)
 
+    # Large DBs (many CSVs) skip eager column extraction + global relationship
+    # detection; columns load lazily on demand.
+    large = is_large_database(len(csv_files))
+
     created_tables = []
     used_names = set()
 
@@ -465,8 +495,12 @@ async def upload_database(
             rows_inserted,
         )
 
-        columns_meta = extract_table_columns(db_path, table_name)
-        add_table_columns(table_id, columns_meta)
+        if large:
+            set_table_columns_loaded(table_id, False)
+            columns_meta = []
+        else:
+            columns_meta = extract_table_columns(db_path, table_name)
+            add_table_columns(table_id, columns_meta)
 
         created_tables.append({
             "source_filename": file.filename,
@@ -478,17 +512,244 @@ async def upload_database(
         })
 
     clear_relationships(database_id)
-    relationships = detect_relationships(database_id)
+    if large:
+        # Skip expensive global value-overlap detection for large databases.
+        relationships = []
+    else:
+        relationships = detect_relationships(database_id)
     add_relationships(database_id, relationships)
+
+    table_count = sum(1 for t in created_tables if t.get("success"))
+    mode = update_database_mode(
+        database_id, table_count, "large" if large else "small"
+    )
 
     return {
         "success": True,
         "database_id": database_id,
         "name": db_name,
+        "mode": mode,
+        "table_count": table_count,
         "db_path": db_path,
         "tables": created_tables,
         "relationships": relationships,
     }
+
+
+@app.post("/create-database-from-schema")
+async def create_database_from_schema(
+    user_id: int = Form(...),
+    conversation_id: int | None = Form(None),
+    name: str | None = Form(None),
+    schema_text: str | None = Form(None),
+    file: UploadFile | None = File(None),
+    ):
+    """Create an EMPTY SQLite database workspace from SQL DDL (CREATE TABLE
+    only). Schema may come from `schema_text` or an uploaded .txt/.md/.sql file.
+    Inserts no rows. Response shape mirrors /upload-database so the frontend can
+    reuse onDatabaseCreated()."""
+    text = schema_text or ""
+
+    # Fall back to an uploaded text-based schema file when no text was pasted.
+    if not text.strip() and file is not None:
+        fname = (file.filename or "").lower()
+        if fname.endswith(".docx"):
+            return {
+                "success": False,
+                "message": "DOCX schema upload is not connected yet. "
+                           "Please use .txt, .md, or paste SQL.",
+            }
+        if not (fname.endswith(".txt") or fname.endswith(".md")
+                or fname.endswith(".sql")):
+            return {
+                "success": False,
+                "message": "Unsupported file type. Use .txt, .md, or .sql, "
+                           "or paste SQL.",
+            }
+        raw = await file.read()
+        try:
+            text = raw.decode("utf-8")
+        except UnicodeDecodeError:
+            text = raw.decode("latin-1", errors="replace")
+
+    if not text.strip():
+        return {"success": False, "message": "No schema text provided."}
+
+    db_name = (name or "").strip() or "database"
+    database_id = create_database(user_id, db_name, conversation_id)
+
+    db_dir = f"uploads/user_{user_id}/databases/db_{database_id}"
+    os.makedirs(db_dir, exist_ok=True)
+    db_path = os.path.join(db_dir, "data.db")
+    set_database_path(database_id, db_path)
+
+    try:
+        table_names = create_empty_db_from_ddl(text, db_path)
+    except SchemaDDLError as e:
+        return {"success": False, "message": str(e)}
+
+    large = is_large_database(len(table_names))
+
+    created_tables = []
+    for table_name in table_names:
+        if large:
+            schema_text_t = table_name
+            table_id = add_database_table(
+                database_id, table_name, "schema_ddl", db_path, schema_text_t, 0
+            )
+            set_table_columns_loaded(table_id, False)
+        else:
+            columns_meta = extract_table_columns(db_path, table_name)
+            schema_text_t = (
+                f"{table_name}("
+                + ", ".join(c["column_name"] for c in columns_meta)
+                + ")"
+            )
+            table_id = add_database_table(
+                database_id, table_name, "schema_ddl", db_path, schema_text_t, 0
+            )
+            add_table_columns(table_id, columns_meta)
+        created_tables.append({
+            "table_name": table_name,
+            "rows_inserted": 0,
+            "success": True,
+        })
+
+    # Relationship detection. Explicit FOREIGN KEY constraints are cheap and used
+    # in both modes. The name-based fallback (O(tables x columns)) runs only for
+    # small databases; large databases stay FK-only.
+    fk_edges = extract_declared_foreign_keys(text)
+    if fk_edges:
+        relationships = fk_edges
+    elif large:
+        relationships = []
+    else:
+        relationships = infer_schema_name_relationships(db_path, table_names)
+    clear_relationships(database_id)
+    add_relationships(database_id, relationships)
+
+    table_count = len(created_tables)
+    mode = update_database_mode(
+        database_id, table_count, "large" if large else "small"
+    )
+
+    return {
+        "success": True,
+        "database_id": database_id,
+        "name": db_name,
+        "mode": mode,
+        "table_count": table_count,
+        "db_path": db_path,
+        "tables": created_tables,
+        "relationships": relationships,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Spider 2.0 — local sample catalog browse + import (no cloud, app-side only)
+# ---------------------------------------------------------------------------
+
+class Spider2ImportRequest(BaseModel):
+    user_id: int
+    conversation_id: int | None = None
+    spider2_id: str
+
+
+@app.get("/spider2/status")
+def spider2_status_endpoint():
+    """Report whether a local Spider 2.0 data source is configured."""
+    return {"success": True, **spider2_status()}
+
+
+@app.get("/spider2/catalog")
+def spider2_catalog(
+    user_id: int | None = None,
+    q: str | None = None,
+    include_samples: bool = False,
+):
+    """Browse/search the local Spider 2.0 catalog. Returns real local metadata
+    only; developer samples are returned solely when include_samples=true."""
+    return {"success": True, "items": spider2_list_catalog(q, include_samples)}
+
+
+@app.post("/spider2/import")
+def spider2_import(req: Spider2ImportRequest):
+    """Import a catalog entry as an EMPTY SQLite database workspace. Mirrors the
+    create-database response so the frontend reuses onDatabaseCreated(). Only
+    items that carry full table schema are importable."""
+    entry = spider2_get_entry(req.spider2_id)
+    if not entry:
+        return {"success": False, "message": f"Unknown spider2_id: {req.spider2_id}"}
+
+    if not spider2_entry_importable(entry):
+        return {
+            "success": False,
+            "message": "This Spider 2.0 item does not include local schema "
+                       "information yet.",
+        }
+
+    db_name = entry.get("name") or req.spider2_id
+    database_id = create_database(req.user_id, db_name, req.conversation_id)
+
+    db_dir = f"uploads/user_{req.user_id}/databases/db_{database_id}"
+    os.makedirs(db_dir, exist_ok=True)
+    db_path = os.path.join(db_dir, "data.db")
+    set_database_path(database_id, db_path)
+
+    try:
+        table_names = create_empty_db_from_ddl(spider2_entry_to_ddl(entry), db_path)
+    except SchemaDDLError as e:
+        return {"success": False, "message": f"Import failed: {e}"}
+
+    large = is_large_database(len(table_names))
+
+    created_tables = []
+    for table_name in table_names:
+        if large:
+            schema_text_t = table_name
+            table_id = add_database_table(
+                database_id, table_name, "spider2_catalog", db_path, schema_text_t, 0
+            )
+            set_table_columns_loaded(table_id, False)
+        else:
+            columns_meta = extract_table_columns(db_path, table_name)
+            schema_text_t = (
+                f"{table_name}("
+                + ", ".join(c["column_name"] for c in columns_meta)
+                + ")"
+            )
+            table_id = add_database_table(
+                database_id, table_name, "spider2_catalog", db_path, schema_text_t, 0
+            )
+            add_table_columns(table_id, columns_meta)
+        created_tables.append({
+            "table_name": table_name,
+            "rows_inserted": 0,
+            "success": True,
+        })
+
+    # Catalog relationships are explicit and cheap — keep them in both modes.
+    relationships = spider2_entry_edges(entry)
+    clear_relationships(database_id)
+    add_relationships(database_id, relationships)
+
+    table_count = len(created_tables)
+    mode = update_database_mode(
+        database_id, table_count, "large" if large else "small"
+    )
+
+    return {
+        "success": True,
+        "database_id": database_id,
+        "name": db_name,
+        "mode": mode,
+        "table_count": table_count,
+        "db_path": db_path,
+        "tables": created_tables,
+        "relationships": relationships,
+        "source": {"type": "spider2", "spider2_id": req.spider2_id},
+    }
+
 
 @app.get("/datasets/{user_id}")
 def get_user_datasets(user_id: int):
@@ -567,6 +828,74 @@ def database_graph(database_id: int):
     if not graph:
         return {"success": False, "message": "Database not found"}
     return {"success": True, "database": graph}
+
+
+# ---------------------------------------------------------------------------
+# Phase 1 — lazy schema endpoints (metadata, paginated tables, lazy columns).
+# Additive: query execution / SQL generation / relationships are unchanged.
+# ---------------------------------------------------------------------------
+@app.get("/database/{database_id}/meta")
+def database_meta(database_id: int):
+    meta = get_database_meta(database_id)
+    if not meta:
+        return {"success": False, "message": "Database not found"}
+    return {"success": True, **meta}
+
+
+@app.get("/database/{database_id}/tables")
+def database_tables_list(
+    database_id: int,
+    q: str | None = None,
+    limit: int = 50,
+    offset: int = 0,
+):
+    return {"success": True, **lazy_list_tables(database_id, q, limit, offset)}
+
+
+@app.get("/database/{database_id}/table/{table_name}/columns")
+def database_table_columns(database_id: int, table_name: str):
+    res = lazy_ensure_table_columns(database_id, table_name)
+    if res is None:
+        return {"success": False, "message": "Table not found"}
+    return {"success": True, **res}
+
+
+# --- Phase 3: query-time retrieval + sub-graph (large-DB scalability) --------
+class RetrieveRequest(BaseModel):
+    question: str
+    k: int | None = 8
+
+
+@app.post("/database/{database_id}/retrieve")
+def database_retrieve(database_id: int, body: RetrieveRequest):
+    """Top-k relevant tables for a question (debug / future UI). Does NOT load
+    the full graph."""
+    meta = get_database_meta(database_id)
+    if not meta:
+        return {"success": False, "message": "Database not found"}
+    tables = retrieve_tables(database_id, body.question, k=body.k or 8)
+    return {
+        "success": True,
+        "database_id": database_id,
+        "mode": meta["mode"],
+        "tables": tables,
+    }
+
+
+@app.get("/database/{database_id}/subgraph")
+def database_subgraph(database_id: int, tables: str | None = None):
+    """Build a sub-graph for an explicit comma-separated table set (testing)."""
+    names = [t.strip() for t in (tables or "").split(",") if t.strip()]
+    graph = build_subgraph(database_id, names)
+    if graph is None:
+        return {"success": False, "message": "Database not found"}
+    return {
+        "success": True,
+        "database_id": database_id,
+        "tables": graph.get("tables", []),
+        "relationships": graph.get("relationships", []),
+    }
+
 
 @app.post("/dataset/schema")
 def add_schema_dataset(request: SchemaDatasetRequest):
@@ -721,7 +1050,30 @@ async def assignment_import_file(
 
 @app.post("/database/{database_id}/execute_sql")
 def execute_sql_endpoint(database_id: int, body: IRRequest):
-    graph = get_database_graph(database_id)
+    meta = get_database_meta(database_id)
+    if not meta:
+        return {"success": False, "message": "Database not found"}
+
+    # Small mode: full graph (unchanged). Large mode: retrieve top-k tables and
+    # build a sub-graph so the pipeline never sees the full schema.
+    tables_considered = None
+    if meta["mode"] == "large":
+        tables_considered = retrieve_tables(database_id, body.question, k=8)
+        if not tables_considered:
+            return {
+                "success": False,
+                "error": "no_relevant_tables_found",
+                "message": "No relevant tables were found for this question.",
+                "database_id": database_id,
+                "question": body.question,
+                "tables_considered": [],
+            }
+        graph = build_subgraph(
+            database_id, [t["table_name"] for t in tables_considered]
+        )
+    else:
+        graph = get_database_graph(database_id)
+
     if not graph:
         return {"success": False, "message": "Database not found"}
 
@@ -735,6 +1087,7 @@ def execute_sql_endpoint(database_id: int, body: IRRequest):
         "extraction": extraction,
         "ir": ir_to_dict(ir),
         "validation": validation,
+        "tables_considered": tables_considered,
     }
 
     if not validation["valid"]:
