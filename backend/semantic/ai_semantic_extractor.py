@@ -192,7 +192,11 @@ Now return only the final corrected JSON.
 # The output shape this extractor is contracted to return.
 _IR_EXTRACTION_KEYS = (
     "tables", "select", "filters", "aggregations",
-    "group_by", "having", "order_by", "limit", "distinct",
+    "group_by", "having", "order_by", "limit", "distinct", "anti_exists",
+    "top_per_group", "universal", "set_division",
+    "aliases", "alias_joins", "alias_filters", "alias_select",
+    "explicit_joins", "null_filters", "compound_filters",
+    "derived_relations", "main_from",
 )
 
 # Compact instruction block + two worked examples (filter, aggregate). Kept as
@@ -206,11 +210,19 @@ Return ONE JSON object with EXACTLY these keys:
 Rules:
 - Use only the tables/columns listed above. Every column is {"table":"..","column":".."}.
 - filters: {"table","column","op","value","connector"}.
-- aggregations: {"function","table","column","alias"}; function in COUNT,SUM,AVG,MIN,MAX; COUNT(*) uses column "*".
+- aggregations: {"function","table","column","alias"}; function in COUNT,SUM,AVG,MIN,MAX; COUNT(*) uses column "*". Add "distinct":true for "distinct/different X" (e.g. distinct brands -> COUNT(DISTINCT)).
+- having compares an aggregation alias to a scalar value OR to ANOTHER aggregation alias via "right_aggregation_alias" (e.g. {"aggregation_alias":"fed_brands","op":">","right_aggregation_alias":"bought_brands"}).
+- set_division: for "has/contains ALL <members of a set>" via distinct-count match. Item: {"group_by":[{"table","column"}],"left":{"function":"COUNT","distinct":true,"table","column"},"op":"=","right_subquery":{"function":"COUNT","distinct":true,"table","column"}}. Omit otherwise.
+- aliases/alias_joins/alias_filters/alias_select: for PAIR / self-join questions ("pairs of X", "same/different owner", "compare two rows of the same table"). Declare each row copy in aliases:[{"alias":"p1","table":"pets"},{"alias":"p2","table":"pets"}]; connect them in alias_joins:[{"from":{"alias","column"},"to":{"alias","column"},"op":"=|<|<>","join_type":"inner"}] (use op "<" or "<>" between the two key columns to avoid duplicate/mirror pairs); compare in alias_filters:[{"left":{"alias","column"},"op":"=","right":{"alias","column"}}]; output via alias_select:[{"alias","column","as":"label"}]. When aliases is used, leave select/filters/aggregations empty. Omit all four otherwise.
+- explicit_joins/null_filters/compound_filters: for OUTER joins ("include X without Y", "show all X even when no Y", "no matching record"). Use explicit_joins:[{"join_type":"left|inner","from_table","to_table","conditions":[{"left":{"table","column"},"op":"=","right":{"table","column"}}]}] to spell out the join chain (root = first from_table); test unmatched rows with null_filters:[{"table","column","op":"IS NULL"}]; for "null OR mismatch" use compound_filters:[{"connector":"OR","conditions":[{"table","column","op":"IS NULL"},{"left":{...},"op":"<>","right":{...}}]}]. When explicit_joins is set, still fill normal select. Omit otherwise.
+- derived_relations/main_from: for per-entity AGGREGATE totals then compared/ranked ("total per X", "highest total per group", "more distinct A than B"). Each CTE: {"name":"owner_totals","from_table":"owners","joins":[...],"select":[{"table","column","alias"}],"aggregations":[{"function":"SUM","table","column","alias"}],"group_by":[{"table","column"}]}. Then read it: set "main_from":"owner_totals" and reference CTE columns by {"table":"owner_totals","column":"<alias>"} in select/top_per_group/filters. For "more distinct A than B per key", define TWO CTEs and join them with explicit_joins on the key, comparing their aliased counts in filters via value_ref. Omit when no per-group aggregate is needed.
 - group_by: {"table","column"}. order_by: {"table","column","direction"} or {"aggregation_alias","direction"}.
 - having MUST reference an aggregation alias: {"aggregation_alias":"alias_from_aggregations","op":">=","value":2,"connector":"AND"}.
 - Never put HAVING aliases in {"table":"","column":"alias"} form.
 - Do not add joins or relationship fields. If unsure, use empty lists.
+- anti_exists: for "never / no matching / not <verbed> / does not exist / without" absence checks. Each item: {"target_table":"..","joins":[{"from_table","from_column","to_table","to_column"}],"where":[{"left":{"table","column"},"op":"=","right":{"table","column"}},{"left":{"table","column"},"op":"=","value":"x"}]}. Correlate to the outer table in "where". Omit (empty list) when the question has no absence requirement.
+- top_per_group: for "highest/lowest/most/least/latest/earliest/second-highest PER <group>" (extrema or N-th within a group). Each item: {"table":"..","partition_by":[{"table","column"}],"order_by":{"table","column","direction":"desc|asc"},"rank":1,"include_ties":true}. Use desc for highest/most/latest, asc for lowest/least/earliest; rank=2 for "second". Omit (empty list) otherwise. (Ranking by an AGGREGATE total per group is not supported here.)
+- universal: for "every/all/for all/only". "every X has Y": {"domain_table":"X","domain_filters":[{"left":{"table","column"},"op":"=","right":{outer ref}}],"must_exist":{"target_table":"..","joins":[...],"where":[...]}}. "only Z" (all rows good): {"bad_match":{"target_table":"..","joins":[...],"where":[<the forbidden condition>]}}. Compound per-element ("no pets OR has purchase"): use "inner":[{"exists":{...}},{"not_exists":{...}}] instead of must_exist. Use "domain_alias" when domain_table equals an outer table. Omit otherwise. (COUNT-DISTINCT "for all members of a set" is NOT handled here.)
 
 Example - "Which owners have dogs?":
 {"tables":["owners","pets"],"select":[{"table":"owners","column":"lastname"}],"filters":[{"table":"pets","column":"species","op":"=","value":"dog","connector":"AND"}],"aggregations":[],"group_by":[],"having":[],"order_by":[],"limit":null,"distinct":true}
@@ -220,6 +232,12 @@ Example - "Count pets by city":
 
 Example - "List owners who own at least two pets":
 {"tables":["owners","pets"],"select":[{"table":"owners","column":"oid"},{"table":"owners","column":"lastname"}],"filters":[],"aggregations":[{"function":"COUNT","table":"pets","column":"petid","alias":"pet_count"}],"group_by":[{"table":"owners","column":"oid"},{"table":"owners","column":"lastname"}],"having":[{"aggregation_alias":"pet_count","op":">=","value":2,"connector":"AND"}],"order_by":[],"limit":null,"distinct":false}
+
+Example - "List foods never purchased":
+{"tables":["foods"],"select":[{"table":"foods","column":"food_name"}],"filters":[],"aggregations":[],"group_by":[],"having":[],"order_by":[],"limit":null,"distinct":false,"anti_exists":[{"target_table":"purchases","where":[{"left":{"table":"purchases","column":"food_id"},"op":"=","right":{"table":"foods","column":"food_id"}}]}]}
+
+Example - "Highest priced food per brand":
+{"tables":["foods"],"select":[{"table":"foods","column":"food_name"},{"table":"foods","column":"price"}],"filters":[],"aggregations":[],"group_by":[],"having":[],"order_by":[],"limit":null,"distinct":false,"top_per_group":[{"table":"foods","partition_by":[{"table":"foods","column":"brand"}],"order_by":{"table":"foods","column":"price","direction":"desc"},"rank":1,"include_ties":true}]}
 
 Output JSON now:
 """
@@ -236,6 +254,19 @@ def _empty_ir_extraction() -> dict:
         "order_by": [],
         "limit": None,
         "distinct": False,
+        "anti_exists": [],
+        "top_per_group": [],
+        "universal": [],
+        "set_division": [],
+        "aliases": [],
+        "alias_joins": [],
+        "alias_filters": [],
+        "alias_select": [],
+        "explicit_joins": [],
+        "null_filters": [],
+        "compound_filters": [],
+        "derived_relations": [],
+        "main_from": None,
     }
 
 
@@ -286,10 +317,15 @@ def _normalize_ir_extraction(data) -> dict:
     result = _empty_ir_extraction()
 
     for key in ("tables", "select", "filters", "aggregations",
-                "group_by", "having", "order_by"):
+                "group_by", "having", "order_by", "anti_exists", "top_per_group",
+                "universal", "set_division", "aliases", "alias_joins",
+                "alias_filters", "alias_select", "explicit_joins",
+                "null_filters", "compound_filters", "derived_relations"):
         value = data.get(key)
         if isinstance(value, list):
             result[key] = value
+    if isinstance(data.get("main_from"), str) and data["main_from"].strip():
+        result["main_from"] = data["main_from"]
 
     limit = data.get("limit")
     if isinstance(limit, bool):          # guard against true/false
@@ -362,14 +398,15 @@ def _fallback_ir_prompt(question, tables_block):
     )
 
 
-def _call_ir_model(prompt, num_predict):
+def _call_ir_model(prompt, num_predict, temperature=0):
     """One model call. Returns a parsed dict, or None if the response is empty,
     has no JSON, or the request fails."""
     try:
         print("CALLING MULTITABLE IR EXTRACTOR...", flush=True)
         result = get_provider().generate(
             prompt,
-            options={"temperature": 0, "num_predict": num_predict, "think": False},
+            options={"temperature": temperature, "num_predict": num_predict,
+                     "think": False},
         )
 
         raw_text = (result.text or "").strip()
@@ -410,6 +447,63 @@ def extract_multitable_ir_extraction(question: str, graph) -> dict:
 
     extraction = _normalize_ir_extraction(data)
     print("MULTITABLE IR EXTRACTION:", extraction, flush=True)
+    return extraction
+
+
+# ---------------------------------------------------------------------------
+# Variant extraction (multi-candidate SQL selection)
+# ---------------------------------------------------------------------------
+# Each variant reframes the SAME task with a different emphasis + a non-zero
+# temperature, so the model explores a different structural reading of the
+# question. Diversity is the point: the candidate selector compares the
+# variants' executed results against the primary path and the query-family
+# builder, and agreement between independently-produced candidates is strong
+# evidence of correctness.
+_VARIANT_HINTS = {
+    1: ("First decide which ONE structural construct fits the question best: "
+        "anti_exists (absence: never/no/not), top_per_group (extremum per "
+        "group), universal (every/all/only), set_division (has ALL members "
+        "of a set), derived_relations (per-entity totals that are compared "
+        "or ranked), explicit_joins+null_filters (outer join / include "
+        "unmatched), aliases (pairs / self-join). Then fill ONLY that "
+        "construct plus plain select/filters."),
+    2: ("Be literal and minimal: prefer plain select/filters/aggregations, "
+        "and use the special constructs ONLY when the question's wording "
+        "forces them (never -> anti_exists, extremum per group -> "
+        "top_per_group, every/all -> universal, pairs -> aliases, "
+        "include-even-without -> explicit_joins)."),
+}
+_VARIANT_TEMPERATURES = {1: 0.3, 2: 0.55}
+
+
+def extract_multitable_ir_extraction_variant(question: str, graph, variant: int = 1):
+    """Variant LLM extraction for multi-candidate selection.
+
+    Same output contract as extract_multitable_ir_extraction, but with a
+    reframed prompt and a mild temperature so a second/third candidate can
+    disagree with the primary one. Returns None (instead of an empty
+    extraction) when the model yields nothing usable, so callers can simply
+    skip the dead candidate.
+    """
+    tables_block, rel_block = _describe_graph(graph)
+    hint = _VARIANT_HINTS.get(variant, _VARIANT_HINTS[1])
+    temperature = _VARIANT_TEMPERATURES.get(variant, 0.3)
+
+    prompt = (
+        "/no_think\n"
+        "Extract the query meaning as JSON only. No SQL, no prose.\n"
+        f"{hint}\n\n"
+        f"Tables:\n{tables_block}\n\n"
+        f"Relationships (context only, do not invent joins):\n{rel_block}\n\n"
+        f"Question: {question}\n"
+        f"{_MULTITABLE_IR_GUIDE}"
+    )
+    data = _call_ir_model(prompt, 700, temperature=temperature)
+    if not data:
+        print(f"MULTITABLE IR VARIANT {variant}: no valid JSON", flush=True)
+        return None
+    extraction = _normalize_ir_extraction(data)
+    print(f"MULTITABLE IR VARIANT {variant}:", extraction, flush=True)
     return extraction
 
 

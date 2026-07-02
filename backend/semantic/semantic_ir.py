@@ -45,6 +45,19 @@ class MultiTableSemanticIR:
     limit: int | None = None
     distinct: bool = False
     relationship_hints: list = field(default_factory=list)   # {from_table, from_column, to_table, to_column, relationship_id?}
+    anti_exists: list = field(default_factory=list)          # NOT EXISTS subqueries: {target_table, joins?, where[]}
+    top_per_group: list = field(default_factory=list)        # grouped extrema/ranking: {table, partition_by[], order_by, rank, ...}
+    universal: list = field(default_factory=list)            # for-all / only: {domain_table, domain_filters[], must_exist|inner|bad_match}
+    set_division: list = field(default_factory=list)         # COUNT(DISTINCT) set division: {group_by[], left, op, right_subquery}
+    aliases: list = field(default_factory=list)              # self-join pair queries: {alias, table}
+    alias_joins: list = field(default_factory=list)          # {from:{alias,column}, to:{alias,column}, op, join_type?}
+    alias_filters: list = field(default_factory=list)        # {left:{alias,column}, op, right:{alias,column}|value}
+    alias_select: list = field(default_factory=list)         # {alias, column, as?}
+    explicit_joins: list = field(default_factory=list)       # outer joins: {join_type, from_table, to_table, conditions[]}
+    null_filters: list = field(default_factory=list)         # {table, column, op: IS NULL|IS NOT NULL}
+    compound_filters: list = field(default_factory=list)     # OR/AND groups: {connector, conditions[]}
+    derived_relations: list = field(default_factory=list)    # CTEs: {name, from_table, joins[], select[], aggregations[], group_by[], filters[]}
+    main_from: str | None = None                             # main query FROM a derived relation (CTE name)
 
 
 # ---------------------------------------------------------------------------
@@ -79,6 +92,19 @@ def to_dict(ir):
         "limit": ir.limit,
         "distinct": ir.distinct,
         "relationship_hints": ir.relationship_hints,
+        "anti_exists": ir.anti_exists,
+        "top_per_group": ir.top_per_group,
+        "universal": ir.universal,
+        "set_division": ir.set_division,
+        "aliases": ir.aliases,
+        "alias_joins": ir.alias_joins,
+        "alias_filters": ir.alias_filters,
+        "alias_select": ir.alias_select,
+        "explicit_joins": ir.explicit_joins,
+        "null_filters": ir.null_filters,
+        "compound_filters": ir.compound_filters,
+        "derived_relations": ir.derived_relations,
+        "main_from": ir.main_from,
     }
 
 
@@ -105,4 +131,17 @@ def from_dict(data):
         relationship_hints=data.get(
             "relationship_hints", data.get("relationships", [])
         ),
+        anti_exists=data.get("anti_exists", []),
+        top_per_group=data.get("top_per_group", []),
+        universal=data.get("universal", []),
+        set_division=data.get("set_division", []),
+        aliases=data.get("aliases", []),
+        alias_joins=data.get("alias_joins", []),
+        alias_filters=data.get("alias_filters", []),
+        alias_select=data.get("alias_select", []),
+        explicit_joins=data.get("explicit_joins", []),
+        null_filters=data.get("null_filters", []),
+        compound_filters=data.get("compound_filters", []),
+        derived_relations=data.get("derived_relations", []),
+        main_from=data.get("main_from"),
     )

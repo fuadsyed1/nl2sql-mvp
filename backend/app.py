@@ -71,10 +71,12 @@ from schema.schema_database_creator import (
 from spider2.spider2_catalog import (
     spider2_status,
     list_catalog as spider2_list_catalog,
+    database_signal_counts as spider2_signal_counts,
     get_catalog_entry as spider2_get_entry,
     entry_is_importable as spider2_entry_importable,
     entry_to_ddl as spider2_entry_to_ddl,
     entry_relationship_edges as spider2_entry_edges,
+    entry_inferred_edges as spider2_entry_inferred_edges,
 )
 from db.database_service import (
     create_database,
@@ -91,8 +93,29 @@ from db.database_service import (
     get_database_graph,
     get_database_path,
 )
-from semantic.ai_semantic_extractor import extract_semantics, extract_multitable_ir_extraction
+from semantic.ai_semantic_extractor import (
+    extract_semantics,
+    extract_multitable_ir_extraction,
+    extract_multitable_ir_extraction_variant,
+)
 from semantic.ir_builder import build_from_extraction
+from query_families import route_and_build
+from query_families.family_guard import validate_family_output
+from sql_candidates import (
+    build_candidate,
+    build_direct_sql_candidate,
+    score_candidate,
+    select_best,
+)
+from semantic.semantic_checklist import generate_checklist
+from semantic.llm_sql_direct import generate_direct_sql
+from semantic.llm_sql_repair import should_repair, generate_repair_sql
+from schema.value_profiler import grounding_profile, format_value_hints
+
+# Confidence gate for the deterministic query-family router. At or above this,
+# and only when the builder yields a VALID extraction, the family path is used;
+# otherwise the existing LLM extractor runs unchanged.
+FAMILY_CONFIDENCE_THRESHOLD = 0.80
 from semantic.ir_validator import validate_ir
 from semantic.semantic_ir import to_dict as ir_to_dict
 from planning.plan_resolver import resolve_plan
@@ -635,9 +658,14 @@ def spider2_catalog(
     q: str | None = None,
     include_samples: bool = False,
 ):
-    """Browse/search the local Spider 2.0 catalog. Returns real local metadata
-    only; developer samples are returned solely when include_samples=true."""
-    return {"success": True, "items": spider2_list_catalog(q, include_samples)}
+    """Browse/search the local Spider 2.0 catalog. Returns only schemas with
+    usable join signal (declared FK / inferable joins); partition-family and
+    no-join schemas are hidden. Developer samples only when include_samples=true."""
+    return {
+        "success": True,
+        "items": spider2_list_catalog(q, include_samples),
+        "signal_counts": spider2_signal_counts(),
+    }
 
 
 @app.post("/spider2/import")
@@ -671,8 +699,15 @@ def spider2_import(req: Spider2ImportRequest):
 
     large = is_large_database(len(table_names))
 
-    # Catalog relationships are explicit and cheap — keep them in both modes.
+    # Relationships: prefer REAL declared FK constraints (A). When the schema
+    # declares none but has a join signal (inferable_join_schema / mixed), fall
+    # back to bounded, deterministic name-based suggestions (B) so metadata is
+    # useful immediately. confirmed=False, confidence<1.0, capped per database.
     relationships = spider2_entry_edges(entry)
+    inferred_count = 0
+    if not relationships:
+        relationships = spider2_entry_inferred_edges(entry)
+        inferred_count = len(relationships)
 
     table_specs = [
         {"table_name": t, "source_filename": "spider2_catalog",
@@ -688,6 +723,18 @@ def spider2_import(req: Spider2ImportRequest):
          "success": True}
         for t in result["tables"]
     ]
+    # Spider 2.0 imports are schema-only (empty tables, no local data rows).
+    result["data_availability"] = "schema_only"
+    result["data_note"] = "Schema-only import. Local data rows are not included."
+    result["relationship_count"] = len(result.get("relationships", []))
+    result["inferred_relationship_count"] = inferred_count
+    skipped_reserved = entry.get("skipped_reserved_tables", 0)
+    if skipped_reserved:
+        result["skipped_reserved_tables"] = skipped_reserved
+        result["data_note"] += (
+            f" Skipped {skipped_reserved} reserved SQLite "
+            f"table name(s) (sqlite_*)."
+        )
     return result
 
 
@@ -1018,102 +1065,294 @@ def execute_sql_endpoint(database_id: int, body: IRRequest):
     if early is not None:
         return early
 
-    extraction = extract_multitable_ir_extraction(body.question, graph)
-    ir = build_from_extraction(database_id, extraction, graph, question=body.question)
+    # =========================================================================
+    # Multi-candidate SQL selection.
+    # Instead of trusting ONE path (query family gate OR LLM fallback), build
+    # several candidates (family + LLM primary + LLM variants), run each
+    # through the same IR -> plan -> SQL -> execute pipeline, score them
+    # against the question/schema, and select via execution self-consistency
+    # + validation score. Wrong-but-executable SQL scores low and loses.
+    # =========================================================================
+    db_path = get_database_path(database_id)
+    candidates = []
 
-    # Large-mode fallback only: if extraction produced no tables but retrieval
-    # found a top table, use it so a fuzzy "<...> table" request can still plan.
-    large_mode_table_fallback = False
-    fallback_table = None
-    if meta["mode"] == "large" and tables_considered:
-        ir_tables = ir["tables"] if isinstance(ir, dict) else getattr(ir, "tables", None)
-        if not ir_tables:
-            fallback_table = tables_considered[0]["table_name"]
-            if isinstance(ir, dict):
-                ir["tables"] = [fallback_table]
-            else:
-                ir.tables = [fallback_table]
-            large_mode_table_fallback = True
+    # -- Value grounding: sample distinct values of enum-like columns so the
+    #    LLM writes literals with the DB's actual conventions (yes/no vs
+    #    true/false). Schema-only DBs ground from the seeded eval copy
+    #    (prompts only — the user's DB is never written).
+    try:
+        value_profile, value_grounded_from_eval = grounding_profile(
+            database_id, db_path)
+        value_hints = format_value_hints(value_profile)
+    except Exception as exc:
+        print(f"VALUE PROFILER ERROR: {exc}", flush=True)
+        value_profile, value_grounded_from_eval, value_hints = {}, False, ""
 
-    # Large-mode only: drop date filters that merely restate a partition encoded
-    # in the table name (e.g. events_20210110 + event_date='2021-01-10').
-    partition_diag = {}
-    if meta["mode"] == "large":
-        partition_diag = remove_redundant_partition_date_filters(ir)
+    # -- Semantic checklist (Stage 2): one LLM call producing the explicit
+    #    contract the correct SQL must satisfy. Used as the strongest scorer
+    #    signal + question-anchored fatal checks. None on failure — everything
+    #    below degrades gracefully.
+    try:
+        checklist = generate_checklist(body.question, graph, value_hints)
+    except Exception as exc:
+        print(f"SEMANTIC CHECKLIST ERROR: {exc}", flush=True)
+        checklist = None
 
-        # Ambiguous partitioned-table query: the IR selected several
-        # <prefix>_YYYYMMDD tables but the question named no date / exact table.
-        ir_tables_now = ir["tables"] if isinstance(ir, dict) else getattr(ir, "tables", None)
-        ambiguity = detect_partitioned_ambiguity(body.question, ir_tables_now)
-        if ambiguity:
-            return {
-                "success": False,
-                **ambiguity,
-                "database_id": database_id,
-                "question": body.question,
-                "tables_considered": tables_considered,
-            }
+    # -- large-mode IR postprocess (table fallback + partition filter), applied
+    #    per LLM candidate. Mirrors the previous single-path behavior.
+    def _make_ir_postprocess():
+        def _post(ir):
+            diag = {"large_mode_table_fallback": False, "fallback_table": None}
+            if meta["mode"] != "large":
+                return diag
+            if tables_considered:
+                ir_tables = ir["tables"] if isinstance(ir, dict) else getattr(ir, "tables", None)
+                if not ir_tables:
+                    fb = tables_considered[0]["table_name"]
+                    if isinstance(ir, dict):
+                        ir["tables"] = [fb]
+                    else:
+                        ir.tables = [fb]
+                    diag["large_mode_table_fallback"] = True
+                    diag["fallback_table"] = fb
+            diag.update(remove_redundant_partition_date_filters(ir))
+            ir_tables_now = ir["tables"] if isinstance(ir, dict) else getattr(ir, "tables", None)
+            ambiguity = detect_partitioned_ambiguity(body.question, ir_tables_now)
+            if ambiguity:
+                diag["ambiguity"] = ambiguity
+            return diag
+        return _post
 
-    validation = validate_ir(ir, graph)
+    # -- Candidate A: query-family builder (kept behind its confidence gate).
+    #    The guard verdict no longer hard-blocks: a guard-rejected family
+    #    candidate still competes, but the scorer penalizes it, so selection
+    #    (not a binary gate) decides. Routing must never break the endpoint.
+    family_name = None
+    family_confidence = None
+    family_reason = None
+    family_guard_valid = None
+    family_guard_reasons = None
+    try:
+        fam_extraction, decision = route_and_build(body.question, graph)
+        family_name = decision.get("family")
+        family_confidence = decision.get("confidence")
+        family_reason = decision.get("reason")
+        if (fam_extraction is not None
+                and (family_confidence or 0) >= FAMILY_CONFIDENCE_THRESHOLD):
+            fam_ir = build_from_extraction(database_id, fam_extraction, graph)
+            if validate_ir(fam_ir, graph)["valid"]:
+                guard = validate_family_output(
+                    body.question, family_name, fam_extraction, fam_ir, graph)
+                family_guard_valid = guard["valid"]
+                family_guard_reasons = guard["reasons"]
+                candidates.append(build_candidate(
+                    source="query_family",
+                    label="query_family",
+                    question=body.question,
+                    database_id=database_id,
+                    extraction=fam_extraction,
+                    graph=graph,
+                    db_path=db_path,
+                    question_aware=False,
+                    family_info={
+                        "family": family_name,
+                        "confidence": family_confidence,
+                        "guard_valid": guard["valid"],
+                        "guard_reasons": guard["reasons"],
+                    },
+                ))
+    except Exception as exc:
+        print(f"QUERY FAMILY ROUTER ERROR: {exc}", flush=True)
+
+    have_family = bool(candidates)
+
+    # -- Candidate B: normal LLM extraction (unchanged primary fallback path).
+    primary_extraction = extract_multitable_ir_extraction(body.question, graph)
+    primary = build_candidate(
+        source="llm_primary",
+        label="llm_primary",
+        question=body.question,
+        database_id=database_id,
+        extraction=primary_extraction,
+        graph=graph,
+        db_path=db_path,
+        ir_postprocess=_make_ir_postprocess(),
+    )
+    candidates.append(primary)
+
+    # Partitioned-table ambiguity (large mode): preserved early clarification,
+    # unless the deterministic family candidate already answered cleanly.
+    ambiguity = primary.diagnostics.get("ambiguity")
+    if ambiguity and not any(c.source == "query_family" and c.executed_ok
+                             for c in candidates):
+        return {
+            "success": False,
+            **ambiguity,
+            "database_id": database_id,
+            "question": body.question,
+            "tables_considered": tables_considered,
+        }
+
+    # -- Candidates C/D: LLM variants (different prompt emphasis + mild
+    #    temperature). One variant when the family produced a candidate,
+    #    two otherwise — max 4 candidates total. Duplicate extractions are
+    #    skipped: an identical reading adds no information.
+    def _ext_key(e):
+        try:
+            return json.dumps(e, sort_keys=True, default=str)
+        except Exception:
+            return repr(e)
+
+    seen_extractions = {_ext_key(c.extraction) for c in candidates}
+    variant_count = 1 if have_family else 2
+    for v in range(1, variant_count + 1):
+        try:
+            var_extraction = extract_multitable_ir_extraction_variant(
+                body.question, graph, variant=v)
+        except Exception as exc:
+            print(f"LLM VARIANT {v} ERROR: {exc}", flush=True)
+            var_extraction = None
+        if not var_extraction:
+            continue
+        key = _ext_key(var_extraction)
+        if key in seen_extractions:
+            continue
+        seen_extractions.add(key)
+        candidates.append(build_candidate(
+            source="llm_variant",
+            label=f"llm_variant_{v}",
+            question=body.question,
+            database_id=database_id,
+            extraction=var_extraction,
+            graph=graph,
+            db_path=db_path,
+            ir_postprocess=_make_ir_postprocess(),
+        ))
+
+    # -- Candidate E: direct LLM SQL (Stage 2). One question->SQL call with the
+    #    relevant schema, FK edges, and the checklist. Not gated by the IR
+    #    pipeline, so it can express shapes the families/IR cannot.
+    try:
+        direct_sql = generate_direct_sql(body.question, graph, checklist,
+                                         value_hints)
+    except Exception as exc:
+        print(f"DIRECT SQL ERROR: {exc}", flush=True)
+        direct_sql = None
+    if direct_sql:
+        candidates.append(build_direct_sql_candidate(
+            label="llm_sql_direct", sql=direct_sql, db_path=db_path))
+
+    # -- Score + select.
+    for cand in candidates:
+        try:
+            score_candidate(body.question, cand, graph, checklist=checklist,
+                            value_profile=value_profile)
+        except Exception as exc:
+            print(f"CANDIDATE SCORER ERROR ({cand.label}): {exc}", flush=True)
+            cand.score = 0.0
+            cand.reasons = [f"scorer error: {exc}"]
+    selected, selection_meta = select_best(candidates)
+
+    # -- One-shot repair ("llm_sql_repair"): when the winner looks unreliable
+    #    (fatal / low score / missing concepts / zero rows / weak family pick),
+    #    ONE extra LLM call corrects the selected SQL using every candidate's
+    #    diagnostics. The repaired SQL is scored like any candidate and
+    #    selection re-runs once. Exactly one round — never a loop.
+    repair_meta = {
+        "repair_attempted": False,
+        "repair_triggers": [],
+        "repair_executed": False,
+        "repair_score": None,
+        "repair_selected": False,
+        "selected_source_before_repair": selected.source if selected else None,
+    }
+    try:
+        do_repair, repair_triggers = should_repair(selected, candidates, checklist)
+    except Exception as exc:
+        print(f"REPAIR TRIGGER ERROR: {exc}", flush=True)
+        do_repair, repair_triggers = False, []
+    if do_repair:
+        repair_meta["repair_attempted"] = True
+        repair_meta["repair_triggers"] = repair_triggers
+        repair_sql = generate_repair_sql(
+            body.question, graph, value_hints, checklist, selected, candidates)
+        if repair_sql:
+            repair_cand = build_direct_sql_candidate(
+                label="llm_sql_repair", sql=repair_sql, db_path=db_path,
+                source="llm_sql_repair")
+            try:
+                score_candidate(body.question, repair_cand, graph,
+                                checklist=checklist, value_profile=value_profile)
+            except Exception as exc:
+                print(f"REPAIR SCORER ERROR: {exc}", flush=True)
+                repair_cand.score = 0.0
+                repair_cand.reasons = [f"scorer error: {exc}"]
+            candidates.append(repair_cand)
+            repair_meta["repair_executed"] = repair_cand.executed_ok
+            repair_meta["repair_score"] = repair_cand.score
+            selected, selection_meta = select_best(candidates)
+            repair_meta["repair_selected"] = selected is repair_cand
+
+    # Value-grounding warning: the WINNER compares a profiled column against a
+    # literal that was never seen in that column's sampled values.
+    if selected is not None:
+        for v in (selected.validation or {}).get("unseen_literals") or []:
+            selection_meta["warnings"].append(
+                f"selected SQL uses literal '{v['literal']}' not found in "
+                f"sampled values of '{v['column']}' (known: {v['known_values']})")
+
+    # -- Response: same contract as before, filled from the SELECTED candidate,
+    #    plus candidate-selection metadata.
+    if selected is None:  # defensive; primary always exists
+        return {
+            "success": False,
+            "database_id": database_id,
+            "question": body.question,
+            "tables_considered": tables_considered,
+            "message": "No SQL candidates could be generated.",
+            **selection_meta,
+        }
 
     base = {
         "database_id": database_id,
         "question": body.question,
-        "extraction": extraction,
-        "ir": ir_to_dict(ir),
-        "validation": validation,
+        "extraction": selected.extraction,
+        "ir": selected.ir,
+        "validation": selected.ir_validation,
         "tables_considered": tables_considered,
-        "large_mode_table_fallback": large_mode_table_fallback,
-        "fallback_table": fallback_table,
-        "removed_redundant_partition_date_filter": partition_diag.get(
-            "removed_redundant_partition_date_filter", False
-        ),
-        "partition_date": partition_diag.get("partition_date"),
+        "large_mode_table_fallback": selected.diagnostics.get(
+            "large_mode_table_fallback", False),
+        "fallback_table": selected.diagnostics.get("fallback_table"),
+        "removed_redundant_partition_date_filter": selected.diagnostics.get(
+            "removed_redundant_partition_date_filter", False),
+        "partition_date": selected.diagnostics.get("partition_date"),
+        # legacy field: "query_family" or "llm" (benchmarks group by this)
+        "extraction_source": ("query_family"
+                              if selected.source == "query_family" else "llm"),
+        "query_family": family_name,
+        "query_family_confidence": family_confidence,
+        "query_family_reason": family_reason,
+        "family_guard_valid": family_guard_valid,
+        "family_guard_reasons": family_guard_reasons,
+        # candidate-selection metadata
+        **selection_meta,
+        "selected_candidate_score": selected.score,
+        "selected_candidate_validation": selected.validation,
+        "semantic_checklist": checklist,
+        **repair_meta,
+        "value_grounding": {
+            "profiled_columns": sum(len(c) for c in value_profile.values()),
+            "grounded_from_eval_copy": value_grounded_from_eval,
+        },
     }
 
-    if not validation["valid"]:
-        return {
-            "success": False,
-            **base,
-            "plan": None,
-            "generated_sql": None,
-            "execution": None,
-        }
-
-    plan_obj = resolve_plan(ir, graph)
-    apply_left_join_for_each(body.question, plan_obj)
-    plan = plan_to_dict(plan_obj)
-
-    if not plan["resolved"]:
-        return {
-            "success": False,
-            **base,
-            "plan": plan,
-            "generated_sql": None,
-            "execution": None,
-        }
-
-    generated = sql_to_dict(generate_sql(plan_obj))
-
-    if not generated["generated"]:
-        return {
-            "success": False,
-            **base,
-            "plan": plan,
-            "generated_sql": generated,
-            "execution": None,
-        }
-
-    db_path = get_database_path(database_id)
-    execution = execution_to_dict(execute_sql(generated, db_path))
-
     return {
-        "success": execution["executed"],
+        "success": selected.executed_ok,
         **base,
-        "plan": plan,
-        "generated_sql": generated,
-        "relational_algebra": to_relational_algebra(plan_obj),
-        "execution": execution,
+        "plan": selected.plan,
+        "generated_sql": selected.generated_sql,
+        "relational_algebra": selected.relational_algebra,
+        "execution": selected.execution,
     }
 
 @app.get("/queries/{user_id}")
@@ -1498,5 +1737,4 @@ def save_conversation_messages(conversation_id: int, body: SaveMessagesRequest):
 @app.delete("/user/{user_id}/factory-reset")
 def factory_reset(user_id: int):
     return factory_reset_user(user_id)
-
-
+# (multi-candidate SQL selection wired into /database/{id}/execute_sql)

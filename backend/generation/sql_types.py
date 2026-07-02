@@ -18,9 +18,11 @@ from dataclasses import dataclass, field
 
 # Allowed failure reasons (an enum the generator selects from).
 FAILURE_REASONS = (
-    "unresolved_plan",   # plan.resolved is False
-    "invalid_ir",        # embedded IR was flagged invalid (called out of order)
-    "empty_select",      # no select columns AND no aggregations
+    "unresolved_plan",        # plan.resolved is False
+    "invalid_ir",             # embedded IR was flagged invalid (called out of order)
+    "empty_select",           # no select columns AND no aggregations
+    "empty_alias_query",      # aliases present but no alias_select to project
+    "non_scalar_parameter",   # a non-scalar (e.g. column-ref dict) reached a bind slot
 )
 
 __all__ = [
