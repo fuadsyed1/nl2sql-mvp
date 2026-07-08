@@ -16,6 +16,7 @@ function InputBar({
   onSelectDatabase = () => {},
   activeDatabaseId = null,
   onBarResize = () => {},
+  onContainmentSubmit = () => {},
 }) {
   // Auto-grow textarea: reset to auto then grow to content, capped at max.
   const textareaRef = useRef(null);
@@ -53,6 +54,21 @@ function InputBar({
   // --- workspace overlay --------------------------------------------------
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
   const [workspaceDbId, setWorkspaceDbId] = useState(null);
+
+  // --- containment-check mode (INLINE in the input bar; no modal) ----------
+  // ONE textarea; each non-empty line is treated as a separate NL query.
+  const [mode, setMode] = useState("normal"); // "normal" | "containment"
+  const [containInput, setContainInput] = useState("");
+
+  const submitContainment = () => {
+    const queries = containInput
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean);
+    if (queries.length < 2) return; // need at least two queries
+    onContainmentSubmit(queries);
+    setContainInput("");
+  };
 
   const userId = localStorage.getItem("user_id");
 
@@ -352,7 +368,7 @@ function InputBar({
           result={assignmentResult}
           onClose={() => setAssignmentResult(null)}
         />
-      )}      
+      )}
 
       <footer
         ref={barRef}
@@ -417,13 +433,41 @@ function InputBar({
             </div>
           )}
 
+          {/* Mode toggle: normal chat vs. containment check. Switching mode only
+              changes the input area below (single box vs. two boxes) — results
+              always land in the chat, never a modal. */}
+          {activeDatabaseId && (
+            <div className="flex gap-1 bg-white rounded-full shadow-md p-1 pointer-events-auto w-fit mx-auto">
+              <button
+                onClick={() => setMode("normal")}
+                className={`px-4 py-1.5 rounded-full text-sm transition ${
+                  mode === "normal"
+                    ? "bg-blue-500 text-white"
+                    : "text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                Normal Query
+              </button>
+              <button
+                onClick={() => setMode("containment")}
+                className={`px-4 py-1.5 rounded-full text-sm transition ${
+                  mode === "containment"
+                    ? "bg-blue-500 text-white"
+                    : "text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                Containment Check
+              </button>
+            </div>
+          )}
+
           {/* Input bar (existing layout, plus the database picker button) */}
           <div className="flex gap-3 bg-white rounded-3xl shadow-xl p-3 pointer-events-auto">
 
             {/* Upload/create-database happens in the Database Workspace before
                 the chat input is shown. Once a database is active the query bar
                 is just text + Convert, so hide this legacy upload control. */}
-            {!activeDatabaseId && (
+            {!activeDatabaseId && mode === "normal" && (
               <label
                 className="cursor-pointer bg-gray-100 px-5 py-4 rounded-xl hover:bg-gray-200"
                 title="Upload CSV file(s) or assignment document"
@@ -439,26 +483,44 @@ function InputBar({
               </label>
             )}
 
-            <textarea
-              ref={textareaRef}
-              className="flex-1 border border-gray-300 rounded-xl px-5 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none min-h-[56px] max-h-[180px] overflow-y-auto"
-              placeholder="Type a question, or paste assignment schema + questions..."
-              value={input}
-              rows={1}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                // Enter submits; Shift+Enter inserts a new line.
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  if (input.trim()) {
-                    onConvert();
+            {mode === "containment" ? (
+              // ONE box; each non-empty line is a separate query. Enter adds a
+              // new line; Ctrl/Cmd+Enter (or the Convert button) submits.
+              <textarea
+                className="flex-1 border border-gray-300 rounded-xl px-5 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none min-h-[56px] max-h-[180px] overflow-y-auto"
+                placeholder="Enter multiple natural-language queries, one per line..."
+                value={containInput}
+                rows={3}
+                onChange={(e) => setContainInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                    e.preventDefault();
+                    submitContainment();
                   }
-                }
-              }}
-            />
+                }}
+              />
+            ) : (
+              <textarea
+                ref={textareaRef}
+                className="flex-1 border border-gray-300 rounded-xl px-5 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none min-h-[56px] max-h-[180px] overflow-y-auto"
+                placeholder="Type a question, or paste assignment schema + questions..."
+                value={input}
+                rows={1}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  // Enter submits; Shift+Enter inserts a new line.
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    if (input.trim()) {
+                      onConvert();
+                    }
+                  }
+                }}
+              />
+            )}
 
             <button
-              onClick={onConvert}
+              onClick={mode === "containment" ? submitContainment : onConvert}
               disabled={assignmentBusy}
               className="bg-blue-500 text-white px-6 py-4 rounded-xl hover:bg-blue-600 disabled:opacity-60"
             >

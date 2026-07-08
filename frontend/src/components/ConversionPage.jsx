@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import OutputCard from "./OutputCard";
 import QueryResultCard from "./QueryResultCard";
+import ContainmentResultCard from "./ContainmentResultCard";
+import ContainmentBatchResultCard from "./ContainmentBatchResultCard";
 import InputBar from "./InputBar";
 import DatabaseWorkspace from "./DatabaseWorkspace";
 import DatabaseWorkspaceCard from "./DatabaseWorkspaceCard";
@@ -24,6 +26,7 @@ function ConversionPage({
   activeDatabaseSummary,
   relationshipsFinalized = false,
   onFinalizeRelationships = () => {},
+  onContainmentSubmit = () => {},
 }) {
   // Dynamic bottom padding so the last message always clears the (auto-growing)
   // input bar instead of hiding behind it.
@@ -135,6 +138,14 @@ function ConversionPage({
             {msg.type === "system" &&
               (msg.setup ? (
                 <SetupSummaryCard setup={msg.setup} />
+              ) : msg.containmentBatch ? (
+                <div className="bg-white rounded-2xl shadow p-6">
+                  <ContainmentBatchResultCard data={msg.containmentBatch} />
+                </div>
+              ) : msg.containment ? (
+                <div className="bg-white rounded-2xl shadow p-6">
+                  <ContainmentResultCard data={msg.containment} />
+                </div>
               ) : msg.result ? (
                 <QueryResultCard result={msg.result} />
               ) : (
@@ -165,6 +176,7 @@ function ConversionPage({
           onSelectDatabase={onSelectDatabase}
           activeDatabaseId={activeDatabaseId}
           onBarResize={setInputBarHeight}
+          onContainmentSubmit={onContainmentSubmit}
         />
       )}
     </div>

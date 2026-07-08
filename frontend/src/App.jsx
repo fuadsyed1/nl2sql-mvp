@@ -261,6 +261,7 @@ function App() {
               database_id: saved.activeDatabaseId,
               name: saved.activeDatabaseSummary?.name,
               tables: saved.activeDatabaseSummary?.tables || [],
+              data_availability: saved.activeDatabaseSummary?.data_availability,
               relationships: saved.finalizedRelationships || [],
             },
           });
@@ -299,6 +300,9 @@ function App() {
         database_id: data.database_id,
         name: data.name || `Database ${data.database_id}`,
         tables,
+        // Carried from the import response (e.g. Spider 2.0 "schema_only") so the
+        // setup summary can note it. Undefined for normal CSV/SQLite/schema DBs.
+        data_availability: data.data_availability,
       };
       setActiveDatabaseSummary(summary);
       // A freshly created database has not had its relationships finalized yet.
@@ -346,6 +350,7 @@ function App() {
       database_id: currentDatabaseId,
       name: activeDatabaseSummary?.name,
       tables: activeDatabaseSummary?.tables || [],
+      data_availability: activeDatabaseSummary?.data_availability,
       relationships: list.map((r) => ({
         from_table: r.from_table,
         from_column: r.from_column,
@@ -683,6 +688,79 @@ function App() {
     );
   };
 
+  // Text summary of a batch containment result, persisted to history so the
+  // exchange survives reload (the live card is structured; history is text).
+  // No backend change — reuses the {question, output} persistence.
+  const buildContainmentSummary = (data) => {
+    const qref = (ids) => ids.map((i) => `Q${i}`).join(", ");
+    const lines = ["Containment Check"];
+    (data.query_results || []).forEach((q) => {
+      const flags = [];
+      if (q.empty_result) flags.push("empty result");
+      if (q.safe === false) flags.push("excluded (unsafe)");
+      lines.push(
+        `Q${q.query_id}: ${q.question}${flags.length ? ` [${flags.join(", ")}]` : ""}`
+      );
+    });
+    lines.push("");
+    (data.query_summaries || []).forEach((s) => {
+      const parts = [];
+      if (s.contained_in.length) parts.push(`contained in ${qref(s.contained_in)}`);
+      if (s.contains.length) parts.push(`contains ${qref(s.contains)}`);
+      if (s.equivalent_to.length) parts.push(`equivalent to ${qref(s.equivalent_to)}`);
+      if (s.incomparable_with.length)
+        parts.push(`incomparable with ${qref(s.incomparable_with)}`);
+      if (s.unknown_with.length) parts.push(`unknown vs ${qref(s.unknown_with)}`);
+      lines.push(
+        `Q${s.query_id}: ${parts.length ? parts.join("; ") : "no containment relationship"}`
+      );
+    });
+    if (data.limitations) lines.push("", data.limitations);
+    return lines.join("\n");
+  };
+
+  // Containment Check mode: submit N NL queries (one per line) to
+  // /check_containment_batch and add the pairwise result to the chat as a
+  // ContainmentBatchResultCard — the SAME chat-message flow as normal results,
+  // no modal. The result stays in the chat.
+  const handleContainmentSubmit = async (queries) => {
+    const list = (queries || []).map((q) => String(q).trim()).filter(Boolean);
+    if (list.length < 2 || !currentDatabaseId) return;
+
+    const conversationId = await ensureConversation();
+
+    const userText =
+      "Containment Check\n" + list.map((q, i) => `Q${i + 1}: ${q}`).join("\n");
+    setMessages((prev) => [...prev, { type: "user", text: userText }]);
+    setIsProcessing(true);
+
+    try {
+      const response = await fetch(
+        `${API_BASE}/database/${currentDatabaseId}/check_containment_batch`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ queries: list }),
+        }
+      );
+      if (!response.ok) throw new Error(`Backend error: ${response.status}`);
+      const data = await response.json();
+      setMessages((prev) => [...prev, { type: "system", containmentBatch: data }]);
+      await persistExchange(
+        conversationId,
+        [{ question: userText, output: buildContainmentSummary(data) }],
+        `Containment: ${list[0]}`.slice(0, 60)
+      );
+    } catch (error) {
+      setMessages((prev) => [
+        ...prev,
+        { type: "system", output: `Containment check failed:\n${error.message}` },
+      ]);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   if (!user) {
     return <AuthPage setUser={setUser} />;
   }
@@ -738,6 +816,7 @@ function App() {
           activeDatabaseSummary={activeDatabaseSummary}
           relationshipsFinalized={relationshipsFinalized}
           onFinalizeRelationships={handleFinalizeRelationships}
+          onContainmentSubmit={handleContainmentSubmit}
           conversationTitle={conversationTitle}
         />
         )}

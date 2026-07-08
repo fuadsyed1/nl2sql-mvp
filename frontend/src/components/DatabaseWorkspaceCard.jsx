@@ -12,7 +12,7 @@ const TABS = [
   { id: "upload", label: "Upload Database / Tables" },
   { id: "schema", label: "Create Database from Schema" },
   { id: "browse", label: "Browse Existing Databases" },
-  { id: "spider", label: "Load from Spider 2.0" },
+  { id: "spider", label: "Sample Databases" },
 ];
 
 function DatabaseWorkspaceCard({
@@ -25,6 +25,9 @@ function DatabaseWorkspaceCard({
 
   // Upload tab selections.
   const [dbFile, setDbFile] = useState(null);
+  // Holds a selected .docx schema file (parsed server-side; other schema files
+  // are read into schemaText client-side as before).
+  const [schemaFile, setSchemaFile] = useState(null);
   const [csvFiles, setCsvFiles] = useState([]);
   const [processing, setProcessing] = useState(false);
   const [notice, setNotice] = useState("");
@@ -46,6 +49,8 @@ function DatabaseWorkspaceCard({
   const [spiderStatusLoading, setSpiderStatusLoading] = useState(false);
   const [spiderQuery, setSpiderQuery] = useState("");
   const [spiderList, setSpiderList] = useState([]);
+  // Distinct-database counts (relationship/FK vs hidden) from /spider2/catalog.
+  const [spiderCounts, setSpiderCounts] = useState(null);
   const [spiderLoading, setSpiderLoading] = useState(false);
   const [spiderError, setSpiderError] = useState("");
   const [spiderImportingId, setSpiderImportingId] = useState(null);
@@ -139,8 +144,10 @@ function DatabaseWorkspaceCard({
         if (d.success === false) {
           setSpiderError(d.message || "Could not load catalog.");
           setSpiderList([]);
+          setSpiderCounts(null);
         } else {
           setSpiderList(d.items || []);
+          setSpiderCounts(d.signal_counts || null);
         }
       })
       .catch((e) => {
@@ -188,15 +195,19 @@ function DatabaseWorkspaceCard({
     if (!f) return;
     const lower = f.name.toLowerCase();
     if (lower.endsWith(".docx")) {
-      setSchemaNotice(
-        "DOCX schema upload is not connected yet. Please use .txt, .md, or paste SQL."
-      );
+      // .docx is a binary zip: send the file to the backend, which extracts
+      // the schema text and parses it like pasted / .txt / .md / .sql SQL.
+      setSchemaFile(f);
+      setSchemaText("");
+      setSchemaNotice(`Loaded ${f.name}. Click "Create database" to parse it.`);
+      if (!schemaName) setSchemaName(f.name.replace(/\.[^.]+$/, ""));
       return;
     }
     if (!(lower.endsWith(".txt") || lower.endsWith(".md") || lower.endsWith(".sql"))) {
-      setSchemaNotice("Unsupported file type. Use .txt, .md, or paste SQL.");
+      setSchemaNotice("Unsupported file type. Use .txt, .md, .docx, or paste SQL.");
       return;
     }
+    setSchemaFile(null);
     const reader = new FileReader();
     reader.onload = () => {
       setSchemaText(String(reader.result || ""));
@@ -216,7 +227,7 @@ function DatabaseWorkspaceCard({
       setSchemaNotice("Please enter a database name.");
       return;
     }
-    if (!schemaText.trim()) {
+    if (!schemaText.trim() && !schemaFile) {
       setSchemaNotice("Please paste schema text or upload a schema file.");
       return;
     }
@@ -226,7 +237,12 @@ function DatabaseWorkspaceCard({
       formData.append("user_id", userId);
       if (conversationId) formData.append("conversation_id", conversationId);
       formData.append("name", schemaName.trim());
-      formData.append("schema_text", schemaText);
+      // .docx -> send the file for server-side extraction; otherwise send text.
+      if (schemaFile) {
+        formData.append("file", schemaFile);
+      } else {
+        formData.append("schema_text", schemaText);
+      }
 
       const res = await fetch(`${API_BASE}/create-database-from-schema`, {
         method: "POST",
@@ -238,6 +254,7 @@ function DatabaseWorkspaceCard({
         setSchemaNotice(data.message || "Database creation failed.");
         return;
       }
+      setSchemaFile(null);
       onDatabaseCreated(data);
     } catch (e) {
       setSchemaNotice(`Could not reach the server: ${e.message}`);
@@ -293,9 +310,37 @@ function DatabaseWorkspaceCard({
       return;
     }
 
-    // SQLite .db only: no backend endpoint exists yet.
+    // SQLite .db upload: send the file to the backend, which stores it,
+    // inspects its real tables/columns, and registers it like any database.
     if (dbFile) {
-      setNotice("SQLite upload backend not connected yet.");
+      if (!userId) {
+        setNotice("Please sign in first.");
+        return;
+      }
+      setProcessing(true);
+      try {
+        const formData = new FormData();
+        formData.append("file", dbFile);
+        formData.append("user_id", userId);
+        if (conversationId) formData.append("conversation_id", conversationId);
+        formData.append("name", dbFile.name.replace(/\.[^.]+$/, "") || "database");
+
+        const res = await fetch(`${API_BASE}/upload-sqlite`, {
+          method: "POST",
+          body: formData,
+        });
+        const data = await res.json();
+
+        if (!data.success) {
+          setNotice(data.message || "SQLite upload failed.");
+          return;
+        }
+        onDatabaseCreated(data);
+      } catch (e) {
+        setNotice(`Could not reach the server: ${e.message}`);
+      } finally {
+        setProcessing(false);
+      }
     }
   };
 
@@ -629,9 +674,14 @@ function DatabaseWorkspaceCard({
                 spiderStatus.configured && (
                   <>
                     <p className="text-xs text-gray-500">
-                      Source: {spiderStatus.source?.path} ·{" "}
-                      {(spiderStatus.source?.detected_files || []).length}{" "}
-                      metadata files detected
+                      Source: {spiderStatus.source?.path}
+                      {spiderCounts?.supported_databases != null && (
+                        <>
+                          {" · "}
+                          {spiderCounts.supported_databases}{" "}
+                          relationship/FK databases detected
+                        </>
+                      )}
                     </p>
 
                     <input
@@ -689,6 +739,11 @@ function DatabaseWorkspaceCard({
                                         ? "LOCAL_SCHEMA_IMPORTABLE"
                                         : "LOCAL_METADATA_ONLY")}
                                   </span>
+                                  {item.data_availability === "schema_only" && (
+                                    <span className="text-[10px] uppercase tracking-wide bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">
+                                      Schema only — no local rows
+                                    </span>
+                                  )}
                                 </div>
                                 <p className="text-xs text-gray-500">
                                   {item.spider2_id}
@@ -699,6 +754,13 @@ function DatabaseWorkspaceCard({
                                     ? ` · ${item.column_count} columns`
                                     : ""}
                                 </p>
+                                {item.data_availability === "schema_only" && (
+                                  <p className="text-xs text-amber-600 mt-1">
+                                    This import creates tables and metadata only.
+                                    Queries may return 0 rows unless data is
+                                    connected.
+                                  </p>
+                                )}
                                 {item.question && (
                                   <p className="text-xs text-gray-500 mt-1">
                                     {item.question}

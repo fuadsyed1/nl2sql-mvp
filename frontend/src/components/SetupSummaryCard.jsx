@@ -8,6 +8,7 @@ function SetupSummaryCard({ setup }) {
     name,
     tables = [],
     relationships = [],
+    data_availability,
   } = setup || {};
 
   return (
@@ -25,7 +26,20 @@ function SetupSummaryCard({ setup }) {
       <div className="text-sm text-gray-600">
         <p>Database loaded successfully. Metadata created.</p>
         <p>Tables: {tables.length}</p>
-        <p>Relationships saved in metadata: {relationships.length}</p>
+        {data_availability === "schema_only" && relationships.length === 0 ? (
+          <p className="text-amber-600">
+            No declared relationships found. Join paths may be inferred from
+            schema at query time. Manual relationship review is available.
+          </p>
+        ) : (
+          <p>Relationships saved in metadata: {relationships.length}</p>
+        )}
+        {data_availability === "schema_only" && (
+          <p className="text-amber-600">
+            Schema-only import: no local data rows were loaded. Queries may
+            return 0 rows.
+          </p>
+        )}
       </div>
 
       <div className="pt-2 border-t border-gray-100">
