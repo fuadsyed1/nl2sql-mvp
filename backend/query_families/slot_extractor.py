@@ -450,6 +450,31 @@ def declared_fk_edges(idx):
     return edges
 
 
+def _referents(idx, t, c):
+    """(t,c) plus the column(s) it references: declared FK targets, or — for a
+    dangling key column that is not its table's primary key — the table's own
+    primary key (self-reference convention, e.g. employees.manager_id refers
+    to employees.employee_id). Generic; no table names are special-cased."""
+    t, c = str(t).lower(), str(c).lower()
+    out = {(t, c)}
+    has_edge = False
+    for r in idx["relationships"]:
+        ft = str(r.get("from_table") or "").lower()
+        fc = str(r.get("from_column") or "").lower()
+        tt = str(r.get("to_table") or "").lower()
+        tc = str(r.get("to_column") or "").lower()
+        if (ft, fc) == (t, c) and tt and tc:
+            out.add((tt, tc))
+            has_edge = True
+        if (tt, tc) == (t, c):
+            has_edge = True      # a referenced primary key is its own referent
+    if not has_edge and is_key(idx, t, c):
+        pk = key_column(idx, t)
+        if pk and pk != c:
+            out.add((t, pk))
+    return out
+
+
 def is_legal_edge(idx, t1, c1, t2, c2):
     """True when an equality join/correlation between t1.c1 and t2.c2 is
     structurally sound: a self-comparison (same base table), a declared FK edge,
@@ -465,7 +490,12 @@ def is_legal_edge(idx, t1, c1, t2, c2):
         return True
     k1, k2 = is_key(idx, t1, c1), is_key(idx, t2, c2)
     if k1 and k2:
-        return c1 == c2            # same-named key join ok; unrelated key=key not
+        if c1 == c2:               # same-named key join
+            return True
+        # key-to-key via a shared referent: both columns resolve to the same
+        # primary column (e.g. devices.employee_id and employees.manager_id
+        # both mean employees.employee_id) -> a valid manager/self-ref join.
+        return bool(_referents(idx, t1, c1) & _referents(idx, t2, c2))
     if k1 != k2:
         return False               # key = measure/attribute -> nonsense
     return True                    # both non-key -> content comparison, allowed

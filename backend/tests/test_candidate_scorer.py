@@ -335,3 +335,87 @@ def test_guard_rejected_family_candidate_is_penalized():
                                   "guard_reasons": ["shape mismatch"]})
     assert _score(question, rejected) == _score(question, plain) - 15
     assert any("family guard rejected" in r for r in rejected.reasons)
+
+
+# ---------------------------------------------------------------------------
+# Option C: advisory row-grain / universe checks (penalty only, never fatal)
+# ---------------------------------------------------------------------------
+def _score_cl(question, cand, checklist):
+    score_candidate(question, cand, GRAPH, checklist=checklist)
+    return cand
+
+
+def test_every_all_hardcoded_count_gets_warning():
+    sql = ("SELECT pu.oid FROM purchases pu JOIN foods f ON f.food_id = pu.food_id "
+           "GROUP BY pu.oid HAVING COUNT(DISTINCT pu.food_id) = 5")
+    c = _cand(sql, extraction={"tables": ["purchases", "foods"]},
+              execution=_exec_ok(("oid",), ((1,),)))
+    _score_cl("owners who bought every food", c,
+              {"forbidden_hardcoded_universe": True})
+    assert any("hardcodes a universe count" in r for r in c.reasons)
+    assert not any("hardcodes a universe count" in r
+                   for r in (c.validation.get("fatal") or []))
+    assert c.validation["grain"]["delta"] < 0
+
+
+def test_every_all_with_universe_subquery_passes():
+    sql = ("SELECT pu.oid FROM purchases pu JOIN foods f ON f.food_id = pu.food_id "
+           "GROUP BY pu.oid HAVING COUNT(DISTINCT pu.food_id) = "
+           "(SELECT COUNT(DISTINCT food_id) FROM foods)")
+    c = _cand(sql, extraction={"tables": ["purchases", "foods"]},
+              execution=_exec_ok(("oid",), ((1,),)))
+    _score_cl("owners who bought every food", c,
+              {"forbidden_hardcoded_universe": True})
+    assert not any("hardcodes a universe count" in r for r in c.reasons)
+    assert c.validation["grain"].get("delta", 0) == 0
+
+
+def test_group_by_wrong_grain_gets_warning():
+    sql = "SELECT o.oid FROM owners o JOIN pets p ON p.oid = o.oid GROUP BY o.oid"
+    c = _cand(sql, extraction={"tables": ["owners", "pets"]},
+              execution=_exec_ok(("oid",), ((1,),)))
+    _score_cl("list pets", c, {"row_grain": "one row per petid"})
+    assert any("expected one row per petid" in r for r in c.reasons)
+    assert not any("expected one row per petid" in r
+                   for r in (c.validation.get("fatal") or []))
+
+
+def test_group_by_correct_grain_passes():
+    sql = "SELECT p.petid FROM pets p JOIN owners o ON p.oid = o.oid GROUP BY p.petid"
+    c = _cand(sql, extraction={"tables": ["pets", "owners"]},
+              execution=_exec_ok(("petid",), ((1,),)))
+    _score_cl("list pets", c, {"row_grain": "one row per petid"})
+    assert not any("expected one row per" in r for r in c.reasons)
+    assert c.validation["grain"].get("delta", 0) == 0
+
+
+def test_required_group_key_missing_gets_warning():
+    sql = ("SELECT f.food_id FROM purchases pu JOIN foods f ON f.food_id = pu.food_id "
+           "GROUP BY f.food_id")
+    c = _cand(sql, extraction={"tables": ["purchases", "foods"]},
+              execution=_exec_ok(("food_id",), ((1,),)))
+    _score_cl("per owner", c, {"required_group_keys": ["purchases.oid"]})
+    assert any("required group key" in r for r in c.reasons)
+    assert c.validation["grain"]["delta"] < 0
+
+
+def test_simple_select_without_group_by_unaffected():
+    sql = "SELECT name FROM pets"
+    c = _cand(sql, extraction={"tables": ["pets"]},
+              execution=_exec_ok(("name",), (("rex",),)))
+    _score_cl("list pets", c,
+              {"row_grain": "one row per petid",
+               "forbidden_hardcoded_universe": True})
+    assert not any("expected one row per" in r for r in c.reasons)
+    assert not any("hardcodes a universe count" in r for r in c.reasons)
+    assert c.validation["grain"].get("delta", 0) == 0
+
+
+def test_missing_option_c_fields_do_not_fail():
+    sql = "SELECT o.oid FROM owners o GROUP BY o.oid"
+    c = _cand(sql, extraction={"tables": ["owners"]},
+              execution=_exec_ok(("oid",), ((1,),)))
+    # checklist present but with NONE of the Option C fields
+    _score_cl("list owners", c, {"target_entity": "owners"})
+    assert c.validation["grain"].get("delta", 0) == 0
+    assert "error" not in c.validation["grain"]

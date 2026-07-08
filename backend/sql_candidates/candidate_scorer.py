@@ -39,8 +39,16 @@ from query_families.family_guard import (
     _wants_count_distinct,
     _COLUMN_CONCEPTS,
 )
-from semantic.semantic_checklist import checklist_alignment
+from semantic.semantic_checklist import checklist_alignment, grain_alignment
+from sql_candidates.semantic_relationship_verifier import (
+    verify_semantic_relationships,
+)
+from sql_candidates.semantic_join_discovery import (
+    discover_semantic_join_issues,
+)
+from sql_candidates.explicit_table_lock import table_lock_penalty
 from schema.value_profiler import literal_check
+from sql_candidates.shape_verifier import verify_shape
 
 __all__ = ["score_candidate", "BASE_SCORE", "LOW_SCORE_THRESHOLD"]
 
@@ -462,6 +470,60 @@ def score_candidate(question, candidate, graph, checklist=None,
         except Exception as exc:
             checks["checklist"] = {"error": f"{type(exc).__name__}: {exc}"}
 
+    # 9b) Option C row-grain / universe alignment (advisory, penalty-only;
+    #     NEVER fatal). Wrong GROUP BY grain, a missing required group key,
+    #     or an every/all query hardcoding the universe size each subtract
+    #     a few points and leave a reason the repair prompt can read.
+    if checklist:
+        try:
+            g_delta, g_reasons, g_checks = grain_alignment(checklist, sql, idx)
+            score += g_delta
+            reasons.extend(g_reasons)
+            checks["grain"] = {"delta": g_delta, **g_checks}
+        except Exception as exc:
+            checks["grain"] = {"error": f"{type(exc).__name__}: {exc}"}
+
+    # 9c) Phase 2 semantic relationship / table-choice verifier
+    #     (advisory, penalty-only; NEVER fatal). Penalizes unsupported
+    #     key<->key joins, wrong same-shaped table choice, and dummy SQL,
+    #     reusing the checklist, schema (declared FK / confirmed / HoPF
+    #     evidence), and the already-parsed join edges. Reasons flow into
+    #     candidate.reasons so repair can use them.
+    try:
+        v_delta, v_reasons, v_checks = verify_semantic_relationships(
+            question, checklist, sql, idx, sql_edges=scan["sql_edges"])
+        score += v_delta
+        reasons.extend(v_reasons)
+        checks["semantic_rel"] = v_checks
+    except Exception as exc:
+        checks["semantic_rel"] = {"error": f"{type(exc).__name__}: {exc}"}
+
+    # 9d) Phase 3 semantic join discovery (advisory; reward OR penalty,
+    #     NEVER fatal). Prefers candidates that take the right bridge/
+    #     mapping table and table-purpose path; penalizes wrong-family
+    #     tables and direct cross-granularity joins. Reasons flow to
+    #     candidate.reasons for repair hints.
+    try:
+        j_delta, j_reasons, j_checks = discover_semantic_join_issues(
+            question, checklist, sql, idx, sql_edges=scan["sql_edges"])
+        score += j_delta
+        reasons.extend(j_reasons)
+        checks["semantic_join"] = j_checks
+    except Exception as exc:
+        checks["semantic_join"] = {"error": f"{type(exc).__name__}: {exc}"}
+
+    # 9e) Explicit table lock (emergency fix; advisory but HEAVY, never
+    #     fatal). When the question names real schema tables verbatim,
+    #     penalize a candidate that swaps in a sibling/unmentioned table,
+    #     ignores most named tables, or falls back to SELECT *.
+    try:
+        l_delta, l_reasons, l_checks = table_lock_penalty(question, sql, idx)
+        score += l_delta
+        reasons.extend(l_reasons)
+        checks["table_lock"] = l_checks
+    except Exception as exc:
+        checks["table_lock"] = {"error": f"{type(exc).__name__}: {exc}"}
+
     # 10) value grounding: literals not among a profiled column's values ------
     if value_profile:
         try:
@@ -474,6 +536,19 @@ def score_candidate(question, candidate, graph, checklist=None,
                 f"literal '{v['literal']}' is not among the sampled values of "
                 f"column '{v['column']}' (known: {v['known_values']})")
         checks["unseen_literals"] = unseen
+
+    # 11) SQL semantic-shape verification (fatal: unresolved alias /
+    #     self-comparison; penalties: weak universal, fake distinct,
+    #     incomplete pair; report-only: latest-partition + grain notes) ------
+    try:
+        s_delta, s_reasons, s_fatal, s_checks = verify_shape(question, sql, idx)
+    except Exception as exc:
+        s_delta, s_reasons, s_fatal = 0.0, [], []
+        s_checks = {"error": f"{type(exc).__name__}: {exc}"}
+    score += s_delta
+    reasons.extend(s_reasons)
+    fatal.extend(s_fatal)
+    checks["shape"] = s_checks
 
     checks["fatal"] = fatal
     candidate.score = max(0.0, min(100.0, round(score, 1)))

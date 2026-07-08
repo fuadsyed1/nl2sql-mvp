@@ -36,7 +36,26 @@ W_NAME = 0.30
 
 MAX_PK_TARGETS_PER_TABLE = 5    # cap ranked PK candidates tested per table
 
+# shared_identifier edges are weak inferences: never fully confident and never
+# auto-confirmed. Only a declared FK or an exact ID-to-PK match may reach 1.0.
+SHARED_IDENTIFIER_CONFIDENCE_CAP = 0.84
+SELF_REF_NAME_SIM = 0.9         # name signal used for self-reference edges
+
 NUMERIC_TYPES = {"INTEGER", "REAL"}
+
+# numeric measure/value columns can never be relationship endpoints
+_MEASURE_RE = re.compile(
+    r"(price|cost|amount|total|score|percent|pct|quantity|qty|capacity|rate"
+    r"|weight|height|width|length|salary|income|fee|balance|discount|size"
+    r"|calories|servings|stock|age)s?$")
+
+# semantic prefixes that signal a self-referencing key (manager_id on
+# employees, parent_category_id on categories, ...)
+_SELF_REF_PREFIXES = {
+    "parent", "manager", "supervisor", "referrer", "referred", "mentor",
+    "boss", "lead", "head", "reports", "sponsor", "previous", "next",
+    "predecessor", "successor", "replied", "root", "child", "super",
+}
 
 
 # ---------------------------------------------------------------------------
@@ -84,6 +103,31 @@ def _key_home(col: str, table: str) -> bool:
     nt = _norm(table)
     nts = _singular(nt)
     return nc in {nt + "id", nts + "id", nt, nts}
+
+
+def _is_measure(col: str) -> bool:
+    """True for numeric measure/value columns (price, amount, score, ...)
+    that must never become relationship endpoints. ID-suffixed names are
+    never measures (price_id stays a key)."""
+    nc = _norm(col)
+    if nc.endswith("id"):
+        return False
+    return bool(_MEASURE_RE.search(nc))
+
+
+def _is_self_reference_name(col: str, pk: str) -> bool:
+    """True when `col` names a self-reference to its own table's key `pk`:
+    the stem repeats the key's stem (parent_category_id -> category_id) or
+    carries a relational prefix (manager_id, supervisor_id, ...)."""
+    nc, npk = _norm(col), _norm(pk)
+    if nc == npk or not nc.endswith("id"):
+        return False
+    stem = _norm(_strip_id(col))
+    pk_stem = _norm(_strip_id(pk))
+    if pk_stem and stem != pk_stem and stem.endswith(pk_stem):
+        return True
+    first = (col or "").lower().split("_")[0]
+    return first in _SELF_REF_PREFIXES or stem in _SELF_REF_PREFIXES
 
 
 def _name_similarity(a_col: str, b_col: str, b_table: str) -> float:
@@ -161,7 +205,9 @@ def _value_overlap(db_path, a_table, a_col, b_table, b_col):
 # Ranking + classification
 # ---------------------------------------------------------------------------
 def _rank_pk_candidates(table):
-    candidates = [c for c in table["columns"] if c.get("is_primary_key_candidate")]
+    candidates = [c for c in table["columns"]
+                  if c.get("is_primary_key_candidate")
+                  and not _is_measure(c.get("column_name"))]
 
     def score(col):
         s = 0
@@ -252,6 +298,43 @@ def detect_relationships(database_id):
 
     candidates = []
 
+    # Self-reference pass: a key-like column pointing at its OWN table's
+    # primary key (categories.parent_category_id -> categories.category_id,
+    # employees.manager_id -> employees.employee_id).
+    for t in tables:
+        pks = pk_targets.get(t["table_name"]) or []
+        if not pks:
+            continue
+        pk = pks[0]
+        for col in t["columns"]:
+            if col["column_name"] == pk["column_name"]:
+                continue
+            if _is_measure(col.get("column_name")):
+                continue
+            if not _is_self_reference_name(col["column_name"], pk["column_name"]):
+                continue
+            if not _types_compatible(col.get("data_type"), pk.get("data_type")):
+                continue
+            overlap, denom = _value_overlap(
+                db_path,
+                t["table_name"], col["column_name"],
+                t["table_name"], pk["column_name"],
+            )
+            if denom == 0 or overlap < VALUE_OVERLAP_FLOOR:
+                continue
+            confidence = min(1.0, W_OVERLAP * overlap + W_NAME * SELF_REF_NAME_SIM)
+            candidates.append({
+                "from_table": t["table_name"],
+                "from_column": col["column_name"],
+                "to_table": t["table_name"],
+                "to_column": pk["column_name"],
+                "relationship_type": "foreign_key",
+                "name_similarity": round(SELF_REF_NAME_SIM, 3),
+                "value_overlap": round(overlap, 3),
+                "confidence": round(confidence, 3),
+                "dir_pref": 1,
+            })
+
     for a in tables:
         for b in tables:
             if a["table_name"] == b["table_name"]:
@@ -259,6 +342,8 @@ def detect_relationships(database_id):
 
             for b_col in pk_targets[b["table_name"]]:
                 for a_col in a["columns"]:
+                    if _is_measure(a_col.get("column_name")):
+                        continue
                     if not _types_compatible(a_col.get("data_type"), b_col.get("data_type")):
                         continue
 
@@ -283,7 +368,16 @@ def detect_relationships(database_id):
                     name_sim = _name_similarity(
                         a_col["column_name"], b_col["column_name"], b["table_name"]
                     )
+                    rel_type = _classify(b_col, b["table_name"])
+                    if rel_type == "shared_identifier":
+                        # same-name/same-values is NOT enough: both sides must
+                        # be ID-like or key-like columns.
+                        if not (_is_id_like(a_col["column_name"], a["table_name"])
+                                or a_col.get("is_primary_key_candidate")):
+                            continue
                     confidence = min(1.0, W_OVERLAP * overlap + W_NAME * name_sim)
+                    if rel_type == "shared_identifier":
+                        confidence = min(confidence, SHARED_IDENTIFIER_CONFIDENCE_CAP)
 
                     # Direction preference: +1 if the to-side owns the key by
                     # name, -1 if the from-side does (wrong orientation).
@@ -297,7 +391,7 @@ def detect_relationships(database_id):
                         "from_column": a_col["column_name"],
                         "to_table": b["table_name"],
                         "to_column": b_col["column_name"],
-                        "relationship_type": _classify(b_col, b["table_name"]),
+                        "relationship_type": rel_type,
                         "name_similarity": round(name_sim, 3),
                         "value_overlap": round(overlap, 3),
                         "confidence": round(confidence, 3),

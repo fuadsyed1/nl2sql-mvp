@@ -9,6 +9,7 @@ Mocked provider only (no network). Run from the backend dir:
 """
 
 import semantic.ai_semantic_extractor as ext
+from semantic.ai_semantic_extractor import _empty_ir_extraction
 from llm.base import GenerationResult
 from llm.errors import ProviderError
 
@@ -29,10 +30,10 @@ VALID_IR = ('{"tables":["owners","pets"],'
 VALID_SINGLE = ('{"entity":"owners","select":["lastname"],"filters":[],'
                 '"aggregation":null,"group_by":null,"sort":null,"limit":null}')
 
-EMPTY_IR = {
-    "tables": [], "select": [], "filters": [], "aggregations": [],
-    "group_by": [], "having": [], "order_by": [], "limit": None, "distinct": False,
-}
+# Canonical empty IR shape — sourced from the extractor's own helper so this
+# test tracks the current expanded IR (anti_exists, top_per_group, aliases,
+# derived_relations, main_from, ...) instead of a stale 9-key snapshot.
+EMPTY_IR = _empty_ir_extraction()
 
 
 class FakeProvider:
@@ -71,7 +72,7 @@ def test_multitable_calls_provider_with_options():
 def test_multitable_output_shape_unchanged():
     use(FakeProvider(VALID_IR))
     out = ext.extract_multitable_ir_extraction("Which owners have dogs?", GRAPH)
-    assert set(out.keys()) == set(EMPTY_IR.keys())     # canonical 9-key shape
+    assert set(out.keys()) == set(EMPTY_IR.keys())     # canonical expanded IR shape
     assert out["tables"] == ["owners", "pets"]
     assert out["select"] == [{"table": "owners", "column": "lastname"}]
     assert out["distinct"] is True

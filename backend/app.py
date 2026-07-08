@@ -35,6 +35,7 @@ import os
 import shutil
 from schema.csv_schema_detector import detect_csv_schema
 from schema.csv_to_sqlite_loader import load_csv_to_sqlite, clean_table_name
+from schema.sqlite_db_import import inspect_sqlite_file
 from services.conversation_service import (
     create_conversation,
     get_user_conversations,
@@ -44,6 +45,8 @@ from services.conversation_service import (
 )
 from schema.schema_extractor import extract_table_columns
 from schema.relationship_detector import detect_relationships
+from containment.models import ContainmentRequest, ContainmentBatchRequest
+from containment.service import check_containment, check_containment_batch
 from schema.lazy_loader import (
     get_database_meta,
     list_tables as lazy_list_tables,
@@ -57,6 +60,7 @@ from schema.database_mode import (
 from retrieval.table_retriever import retrieve_tables, requested_dates_satisfied
 from schema.subgraph_builder import build_subgraph
 from schema.query_context import resolve_query_graph
+from schema.named_table_forcing import force_named_tables
 from schema.partition_filter import (
     remove_redundant_partition_date_filters,
     detect_partitioned_ambiguity,
@@ -106,10 +110,21 @@ from sql_candidates import (
     build_direct_sql_candidate,
     score_candidate,
     select_best,
+    annotate_with_probes,
 )
 from semantic.semantic_checklist import generate_checklist
-from semantic.llm_sql_direct import generate_direct_sql
+from semantic.schema_linker import correct_checklist_tables
+from sql_candidates.direct_sql_enforcement import direct_sql_violations, required_tables_for
+from query_families.slot_extractor import index_schema as se_index_schema
+from semantic.llm_sql_direct import (
+    generate_direct_sql,
+    generate_direct_sql_grain,
+    generate_direct_sql_variant,
+)
 from semantic.llm_sql_repair import should_repair, generate_repair_sql
+from sql_candidates.semantic_join_path_candidate import (
+    build_semantic_join_path_sql,
+)
 from schema.value_profiler import grounding_profile, format_value_hints
 
 # Confidence gate for the deterministic query-family router. At or above this,
@@ -573,23 +588,30 @@ async def create_database_from_schema(
     if not text.strip() and file is not None:
         fname = (file.filename or "").lower()
         if fname.endswith(".docx"):
+            # Extract schema text from the DOCX (reuses the existing
+            # zipfile-based extractor — no new dependency), then parse it
+            # exactly like pasted / .txt / .md / .sql schema input below.
+            try:
+                text = _extract_text_from_upload(file)
+            except Exception as exc:
+                return {"success": False,
+                        "message": f"Could not read DOCX schema: {exc}"}
+            if not text.strip():
+                return {"success": False,
+                        "message": "The DOCX contained no readable schema text."}
+        elif not (fname.endswith(".txt") or fname.endswith(".md")
+                  or fname.endswith(".sql")):
             return {
                 "success": False,
-                "message": "DOCX schema upload is not connected yet. "
-                           "Please use .txt, .md, or paste SQL.",
+                "message": "Unsupported file type. Use .txt, .md, .sql, or "
+                           ".docx, or paste SQL.",
             }
-        if not (fname.endswith(".txt") or fname.endswith(".md")
-                or fname.endswith(".sql")):
-            return {
-                "success": False,
-                "message": "Unsupported file type. Use .txt, .md, or .sql, "
-                           "or paste SQL.",
-            }
-        raw = await file.read()
-        try:
-            text = raw.decode("utf-8")
-        except UnicodeDecodeError:
-            text = raw.decode("latin-1", errors="replace")
+        else:
+            raw = await file.read()
+            try:
+                text = raw.decode("utf-8")
+            except UnicodeDecodeError:
+                text = raw.decode("latin-1", errors="replace")
 
     if not text.strip():
         return {"success": False, "message": "No schema text provided."}
@@ -630,6 +652,72 @@ async def create_database_from_schema(
     )
     result["tables"] = [
         {"table_name": t["table_name"], "rows_inserted": t["rows_inserted"],
+         "success": True}
+        for t in result["tables"]
+    ]
+    return result
+
+
+@app.post("/upload-sqlite")
+async def upload_sqlite(
+    user_id: int = Form(...),
+    conversation_id: int | None = Form(None),
+    name: str | None = Form(None),
+    file: UploadFile = File(...),
+    ):
+    """Register an uploaded SQLite (.db/.sqlite/.sqlite3) file as a database
+    group. The file is stored as the database's db_path, its real tables and
+    columns are inspected, and metadata is created through the SAME pipeline
+    as CSV / schema imports (create_metadata), so it appears in the database
+    list and becomes selectable/queryable like any other database."""
+    fname = (file.filename or "").lower()
+    if not fname.endswith((".db", ".sqlite", ".sqlite3")):
+        return {"success": False,
+                "message": "Please upload a .db, .sqlite, or .sqlite3 file."}
+
+    base = os.path.splitext(os.path.basename(file.filename or ""))[0]
+    db_name = (name or "").strip() or base or "database"
+    database_id = create_database(user_id, db_name, conversation_id)
+
+    db_dir = f"uploads/user_{user_id}/databases/db_{database_id}"
+    os.makedirs(db_dir, exist_ok=True)
+    db_path = os.path.join(db_dir, "data.db")
+    set_database_path(database_id, db_path)
+
+    # Persist the uploaded SQLite bytes as the database file.
+    raw = await file.read()
+    with open(db_path, "wb") as buffer:
+        buffer.write(raw)
+
+    # Inspect real tables/columns from the uploaded database.
+    try:
+        table_specs = inspect_sqlite_file(db_path)
+    except ValueError as exc:
+        return {"success": False, "message": str(exc)}
+    except Exception as exc:
+        return {"success": False,
+                "message": f"Could not read SQLite database: {exc}"}
+    if not table_specs:
+        return {"success": False,
+                "message": "No tables found in the uploaded SQLite database."}
+
+    for spec in table_specs:
+        spec["source_filename"] = file.filename
+        spec["file_path"] = db_path
+
+    large = is_large_database(len(table_specs))
+    # Declared FKs in the uploaded DB are read by create_metadata itself;
+    # small mode adds value-overlap/name-based edges from the real data.
+    rel_provider = (lambda _did: []) if large else (
+        lambda did: detect_relationships(did)
+    )
+    result = create_metadata(
+        database_id, db_path, db_name, table_specs, rel_provider, large
+    )
+    result["tables"] = [
+        {"table_name": t["table_name"],
+         "rows_inserted": t.get("rows_inserted", 0),
+         "columns": t.get("columns", []),
          "success": True}
         for t in result["tables"]
     ]
@@ -1050,8 +1138,24 @@ async def assignment_import_file(
     )
     return _assignment_response(database_id, db_path, manifest)
 
-@app.post("/database/{database_id}/execute_sql")
-def execute_sql_endpoint(database_id: int, body: IRRequest):
+def _log_layer(n, title):
+    """Print a clear banner so the console groups each pipeline layer."""
+    bar = "=" * 72
+    print(f"\n{bar}\n  LAYER {n}: {title}\n{bar}", flush=True)
+
+
+def run_nl_sql_pipeline(database_id: int, question: str) -> dict:
+    """Shared NL->SQL pipeline (table-pick -> checklist -> multi-candidate
+    build -> score/select -> repair -> execute).
+
+    Extracted verbatim from the original execute_sql_endpoint body so that
+    /execute_sql and /check_containment run ONE identical code path with no
+    duplication. `question` replaces the former request field; a tiny local
+    `body` shim keeps every existing `body.question` reference intact, so the
+    pipeline logic below is byte-for-byte unchanged and its return contract is
+    preserved exactly.
+    """
+    body = IRRequest(question=question)
     meta = get_database_meta(database_id)
     if not meta:
         return {"success": False, "message": "Database not found"}
@@ -1059,11 +1163,36 @@ def execute_sql_endpoint(database_id: int, body: IRRequest):
     # Mode-aware schema selection (small = full graph, large = retrieve top-k +
     # sub-graph). Shared helper; behavior unchanged. Returns an early response
     # for no_relevant_tables_found / requested_date_table_not_found / not-found.
+    _log_layer(1, "TABLE-PICKING - choose which tables are in play")
     graph, tables_considered, early = resolve_query_graph(
         database_id, body.question, meta
     )
     if early is not None:
         return early
+
+    # Force explicitly-named tables into the graph (MODE-INDEPENDENT + physical
+    # fallback): top-k retrieval must never hide a table the question named
+    # verbatim, AND a table missing from database_tables METADATA but present
+    # physically must still be injected (build_subgraph drops non-metadata
+    # tables). Loud [GRAPH FORCE] logs make the table set auditable.
+    try:
+        graph, _fdbg = force_named_tables(graph, body.question, database_id)
+        print(f"[GRAPH FORCE] database_id={_fdbg['database_id']}", flush=True)
+        print(f"[GRAPH FORCE] all_db_tables={_fdbg['all_db_tables']}", flush=True)
+        print(f"[GRAPH FORCE] explicit_names={_fdbg['explicit_names']}", flush=True)
+        print(f"[GRAPH FORCE] found_named={_fdbg['found_named']}", flush=True)
+        print(f"[GRAPH FORCE] missing_named={_fdbg['missing_named']}", flush=True)
+        if _fdbg["metadata_missing"]:
+            print("[METADATA] explicitly-named tables present PHYSICALLY but "
+                  f"MISSING from database_tables metadata: {_fdbg['metadata_missing']} "
+                  "(injected into graph from physical schema)", flush=True)
+        print(f"[GRAPH FORCE] final_subgraph_tables={_fdbg['final_subgraph_tables']}",
+              flush=True)
+    except Exception as exc:
+        print(f"GRAPH FORCE ERROR: {exc}", flush=True)
+    print("[GRAPH] available tables for checklist: "
+          f"{[t.get('table_name') for t in (graph.get('tables') or [])]}",
+          flush=True)
 
     # =========================================================================
     # Multi-candidate SQL selection.
@@ -1092,11 +1221,20 @@ def execute_sql_endpoint(database_id: int, body: IRRequest):
     #    contract the correct SQL must satisfy. Used as the strongest scorer
     #    signal + question-anchored fatal checks. None on failure — everything
     #    below degrades gracefully.
+    _log_layer(2, "CHECKLIST - rules a correct answer must follow")
     try:
         checklist = generate_checklist(body.question, graph, value_hints)
     except Exception as exc:
         print(f"SEMANTIC CHECKLIST ERROR: {exc}", flush=True)
         checklist = None
+    # Schema-linker correction: force exact-named tables, disambiguate
+    #    same-family siblings by question tokens, add ZIP<->tract bridge and
+    #    the real metric/ACS table. Corrects must_use_tables BEFORE any
+    #    candidate generation so the focused schema is not poisoned.
+    try:
+        checklist = correct_checklist_tables(body.question, checklist, graph)
+    except Exception as exc:
+        print(f"SCHEMA LINKER ERROR: {exc}", flush=True)
 
     # -- large-mode IR postprocess (table fallback + partition filter), applied
     #    per LLM candidate. Mirrors the previous single-path behavior.
@@ -1123,6 +1261,7 @@ def execute_sql_endpoint(database_id: int, body: IRRequest):
             return diag
         return _post
 
+    _log_layer(3, "EXTRACTION - turn the question into recipe-based SQL candidates")
     # -- Candidate A: query-family builder (kept behind its confidence gate).
     #    The guard verdict no longer hard-blocks: a guard-rejected family
     #    candidate still competes, but the scorer penalizes it, so selection
@@ -1229,6 +1368,22 @@ def execute_sql_endpoint(database_id: int, body: IRRequest):
             ir_postprocess=_make_ir_postprocess(),
         ))
 
+    # -- Candidate E0: semantic join-path (Phase 4). DISABLED BY DEFAULT
+    #    (made bq023 worse); set ENABLE_SEMANTIC_JOIN_PATH=1 to re-enable.
+    #    Code retained — only skipped in runtime selection while off.
+    if os.getenv("ENABLE_SEMANTIC_JOIN_PATH", "").strip().lower() in ("1", "true", "yes", "on"):
+        try:
+            sjp_sql = build_semantic_join_path_sql(
+                body.question, graph, checklist, value_hints)
+        except Exception as exc:
+            print(f"SEMANTIC JOIN PATH ERROR: {exc}", flush=True)
+            sjp_sql = None
+        if sjp_sql:
+            candidates.append(build_direct_sql_candidate(
+                label="semantic_join_path", sql=sjp_sql, db_path=db_path,
+                source="semantic_join_path"))
+
+    _log_layer(4, "SQL WRITING - Creates SQL directly (plain / grain / variant)")
     # -- Candidate E: direct LLM SQL (Stage 2). One question->SQL call with the
     #    relevant schema, FK edges, and the checklist. Not gated by the IR
     #    pipeline, so it can express shapes the families/IR cannot.
@@ -1239,9 +1394,50 @@ def execute_sql_endpoint(database_id: int, body: IRRequest):
         print(f"DIRECT SQL ERROR: {exc}", flush=True)
         direct_sql = None
     if direct_sql:
-        candidates.append(build_direct_sql_candidate(
-            label="llm_sql_direct", sql=direct_sql, db_path=db_path))
+        _v = direct_sql_violations(direct_sql, body.question, checklist, graph)
+        if _v:
+            print(f"REJECTED direct candidate llm_sql_direct: {_v}", flush=True)
+        else:
+            candidates.append(build_direct_sql_candidate(
+                label="llm_sql_direct", sql=direct_sql, db_path=db_path))
 
+    # -- Candidates F/G: alternate direct-SQL samples (Option B). Two more
+    #    question->SQL calls that diversify the direct-SQL pool so selection
+    #    does not hinge on the single temperature-0 candidate: a grain-aware
+    #    prompt, and a reworded prompt at a mild temperature. Each sample is
+    #    fully isolated in its own try/except — a failed or slow extra sample
+    #    falls back to existing behavior and can never break the endpoint.
+    try:
+        direct_sql_grain = generate_direct_sql_grain(
+            body.question, graph, checklist, value_hints)
+    except Exception as exc:
+        print(f"DIRECT SQL GRAIN ERROR: {exc}", flush=True)
+        direct_sql_grain = None
+    if direct_sql_grain:
+        _v = direct_sql_violations(direct_sql_grain, body.question, checklist, graph)
+        if _v:
+            print(f"REJECTED direct candidate llm_sql_direct_grain: {_v}", flush=True)
+        else:
+            candidates.append(build_direct_sql_candidate(
+                label="llm_sql_direct_grain", sql=direct_sql_grain,
+                db_path=db_path, source="llm_sql_direct_grain"))
+
+    try:
+        direct_sql_variant = generate_direct_sql_variant(
+            body.question, graph, checklist, value_hints)
+    except Exception as exc:
+        print(f"DIRECT SQL VARIANT ERROR: {exc}", flush=True)
+        direct_sql_variant = None
+    if direct_sql_variant:
+        _v = direct_sql_violations(direct_sql_variant, body.question, checklist, graph)
+        if _v:
+            print(f"REJECTED direct candidate llm_sql_direct_variant: {_v}", flush=True)
+        else:
+            candidates.append(build_direct_sql_candidate(
+                label="llm_sql_direct_variant", sql=direct_sql_variant,
+                db_path=db_path, source="llm_sql_direct_variant"))
+
+    _log_layer(5, "CHECKING & SCORING - grade candidates, reject bad ones, pick winner")
     # -- Score + select.
     for cand in candidates:
         try:
@@ -1251,6 +1447,42 @@ def execute_sql_endpoint(database_id: int, body: IRRequest):
             print(f"CANDIDATE SCORER ERROR ({cand.label}): {exc}", flush=True)
             cand.score = 0.0
             cand.reasons = [f"scorer error: {exc}"]
+
+    # -- Option A: execution-guided sanity probes (advisory). Read-only,
+    #    small-timeout checks run AFTER scoring and BEFORE selection: a
+    #    contradiction probe (zero-row query whose relaxed form returns
+    #    rows) and a join-fanout probe (COUNT(*)/SUM over 2+ joins). Each
+    #    only adds a warning + small score penalty to executed candidates
+    #    (never fatal, never rejects an empty result on its own). A probe
+    #    failure/timeout is ignored and normal behavior is preserved. The
+    #    warnings land in candidate.reasons, so the repair prompt gets them.
+    for cand in candidates:
+        annotate_with_probes(cand, db_path)
+
+    # -- Explicit-table enforcement across ALL candidate sources (not just
+    #    the direct ones): when the question NAMES schema tables, any
+    #    candidate whose SQL omits a required table or joins ZIP directly to
+    #    a tract/geo id is REJECTED before selection, so an uncovered path
+    #    (IR / query_family / primary) cannot smuggle in a bad join. If every
+    #    candidate violates, none is kept and the endpoint reports no valid
+    #    SQL rather than returning a wrong answer. Temporary [ENFORCE] debug.
+    try:
+        _named_dbg = required_tables_for(
+            body.question, checklist, se_index_schema(graph))
+    except Exception:
+        _named_dbg = set()
+    if _named_dbg:
+        _kept = []
+        for cand in candidates:
+            _v = direct_sql_violations(cand.sql, body.question, checklist, graph)
+            _first = ((cand.sql or "").strip().splitlines() or ["(no sql)"])[0]
+            print(f"[ENFORCE] {cand.source}/{cand.label} required={sorted(_named_dbg)} "
+                  f"sql0={_first!r} violations={_v} -> "
+                  f"{'REJECT' if _v else 'KEEP'}", flush=True)
+            if not _v:
+                _kept.append(cand)
+        candidates = _kept
+
     selected, selection_meta = select_best(candidates)
 
     # -- One-shot repair ("llm_sql_repair"): when the winner looks unreliable
@@ -1276,6 +1508,12 @@ def execute_sql_endpoint(database_id: int, body: IRRequest):
         repair_meta["repair_triggers"] = repair_triggers
         repair_sql = generate_repair_sql(
             body.question, graph, value_hints, checklist, selected, candidates)
+        if repair_sql and direct_sql_violations(
+                repair_sql, body.question, checklist, graph):
+            print("REJECTED repair candidate: "
+                  f"{direct_sql_violations(repair_sql, body.question, checklist, graph)}",
+                  flush=True)
+            repair_sql = None
         if repair_sql:
             repair_cand = build_direct_sql_candidate(
                 label="llm_sql_repair", sql=repair_sql, db_path=db_path,
@@ -1288,10 +1526,35 @@ def execute_sql_endpoint(database_id: int, body: IRRequest):
                 repair_cand.score = 0.0
                 repair_cand.reasons = [f"scorer error: {exc}"]
             candidates.append(repair_cand)
+            annotate_with_probes(repair_cand, db_path)
             repair_meta["repair_executed"] = repair_cand.executed_ok
             repair_meta["repair_score"] = repair_cand.score
             selected, selection_meta = select_best(candidates)
             repair_meta["repair_selected"] = selected is repair_cand
+
+    # -- FINAL enforcement (post-repair): nothing may bypass the explicit
+    #    table-lock / bridge rules — not repair, not any post-selection path.
+    #    If the final SQL violates, drop it and fall back to the best
+    #    non-violating candidate; if none exists, return NO SQL rather than
+    #    the bad one.
+    if selected is not None:
+        _fv = direct_sql_violations(selected.sql, body.question, checklist, graph)
+        _req = required_tables_for(
+            body.question, checklist, se_index_schema(graph))
+        _first = ((selected.sql or "").strip().splitlines() or ["(no sql)"])[0]
+        print(f"[FINAL ENFORCE] required={sorted(_req)} violations={_fv} "
+              f"sql0={_first!r} -> {'REJECT' if _fv else 'KEEP'}", flush=True)
+        if _fv:
+            _ok = [c for c in candidates if c.sql and not
+                   direct_sql_violations(c.sql, body.question, checklist, graph)]
+            if _ok:
+                selected, selection_meta = select_best(_ok)
+                print(f"[FINAL ENFORCE] replaced with non-violating candidate: "
+                      f"{selected.label if selected else None}", flush=True)
+            else:
+                selected = None
+                print("[FINAL ENFORCE] no non-violating candidate; returning "
+                      "NO SQL", flush=True)
 
     # Value-grounding warning: the WINNER compares a profiled column against a
     # literal that was never seen in that column's sampled values.
@@ -1300,9 +1563,13 @@ def execute_sql_endpoint(database_id: int, body: IRRequest):
             selection_meta["warnings"].append(
                 f"selected SQL uses literal '{v['literal']}' not found in "
                 f"sampled values of '{v['column']}' (known: {v['known_values']})")
+        for w in ((selected.validation or {}).get("probes") or {}).get(
+                "warnings") or []:
+            selection_meta["warnings"].append(f"selected SQL: {w}")
 
     # -- Response: same contract as before, filled from the SELECTED candidate,
     #    plus candidate-selection metadata.
+    _log_layer(6, "RESULT - winner selected; run it and return the answer")
     if selected is None:  # defensive; primary always exists
         return {
             "success": False,
@@ -1354,6 +1621,36 @@ def execute_sql_endpoint(database_id: int, body: IRRequest):
         "relational_algebra": selected.relational_algebra,
         "execution": selected.execution,
     }
+
+
+@app.post("/database/{database_id}/execute_sql")
+def execute_sql_endpoint(database_id: int, body: IRRequest):
+    """Unchanged public contract. Thin wrapper that delegates to the shared
+    run_nl_sql_pipeline helper so /check_containment can reuse the same path."""
+    return run_nl_sql_pipeline(database_id, body.question)
+
+
+@app.post("/database/{database_id}/check_containment")
+def check_containment_endpoint(database_id: int, body: ContainmentRequest):
+    """Step 1 of NL query containment: generate + validate SQL for two natural
+    language questions using the SAME pipeline as /execute_sql, then return both
+    SQLs plus a non-committal verdict ('not_checked_yet' / 'unknown'). The
+    actual containment check (EXCEPT / symbolic) is added in a later step."""
+    if not get_database_meta(database_id):
+        return {"success": False, "message": "Database not found"}
+    return check_containment(database_id, body, run_nl_sql_pipeline)
+
+
+@app.post("/database/{database_id}/check_containment_batch")
+def check_containment_batch_endpoint(database_id: int, body: ContainmentBatchRequest):
+    """Batch NL query containment: generate + validate SQL for N natural-language
+    questions, then compare every safe pair in both directions on the current
+    database. Returns pairwise relationships + per-query rollups. Not a symbolic
+    proof; reuses the same run_nl_sql_pipeline as /execute_sql."""
+    if not get_database_meta(database_id):
+        return {"success": False, "message": "Database not found"}
+    return check_containment_batch(database_id, body, run_nl_sql_pipeline)
+
 
 @app.get("/queries/{user_id}")
 def user_queries(user_id: int):

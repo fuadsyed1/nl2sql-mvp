@@ -14,13 +14,17 @@ Sources:
   * "llm_primary"     normal LLM extractor output (temperature 0)
   * "llm_variant"     LLM extractor with a variant prompt / higher temperature
   * "llm_sql_direct"  direct question->SQL LLM call (no IR pipeline)
+  * "semantic_join_path"  deterministic bridge/mapping join path + constrained SQL
+  * "llm_sql_direct_grain"    direct SQL, grain-aware prompt
+  * "llm_sql_direct_variant"  direct SQL, reworded prompt at mild temp
   * "repair"          reserved for a future execution-guided repair loop
 """
 
 from dataclasses import dataclass, field
 
 SOURCES = ("query_family", "llm_primary", "llm_variant", "llm_sql_direct",
-           "llm_sql_repair", "repair")
+           "llm_sql_direct_grain", "llm_sql_direct_variant",
+           "semantic_join_path", "llm_sql_repair", "repair")
 
 __all__ = ["SOURCES", "SqlCandidate", "to_dict", "to_public_dict"]
 

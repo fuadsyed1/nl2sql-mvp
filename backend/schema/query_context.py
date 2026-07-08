@@ -25,6 +25,35 @@ from retrieval.table_retriever import retrieve_tables, requested_dates_satisfied
 
 __all__ = ["resolve_query_graph"]
 
+import re as _re
+_WORD_SPLIT = _re.compile(r"[^a-z0-9]+")
+
+
+def _name_tokens(s):
+    return [t for t in _WORD_SPLIT.split(str(s or "").lower()) if t]
+
+
+def _explicitly_named_tables(question, all_names):
+    """Real table names that appear in the question, matched
+    separator-INSENSITIVELY (underscores/spaces/hyphens equivalent).
+    Only distinctive names (multi-token / digit / long) can match, so a
+    plain common word cannot force a table. Returns real-cased names."""
+    qn = " " + " ".join(_name_tokens(question)) + " "
+    found = []
+    for name in all_names:
+        toks = _name_tokens(name)
+        if not toks:
+            continue
+        distinctive = (len(toks) >= 2 or any(ch.isdigit() for ch in str(name))
+                       or len(str(name)) >= 8)
+        if not distinctive:
+            continue
+        pat = (r"(?<![a-z0-9])" + r"\s+".join(_re.escape(tk) for tk in toks)
+               + r"(?![a-z0-9])")
+        if _re.search(pat, qn):
+            found.append(name)
+    return found
+
 
 def resolve_query_graph(database_id, question, meta=None):
     """Return (graph, tables_considered, early)."""

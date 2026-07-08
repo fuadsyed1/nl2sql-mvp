@@ -11,6 +11,8 @@ import os
 import sqlite3
 import tempfile
 
+import pytest
+
 from generation.sql_executor import execute_sql
 from generation.execution_result import to_dict
 from generation.sql_types import generated_sql as gen_sql, failed_sql, to_dict as sql_to_dict
@@ -39,6 +41,15 @@ def build_petshop(path):
                   [(1, 10), (2, 11), (3, 12), (2, 13)])
     conn.commit()
     conn.close()
+
+
+@pytest.fixture
+def db(tmp_path):
+    """Temporary PetShop SQLite database; yields its file path. Auto-cleaned by
+    pytest's tmp_path. This restores the `db` fixture the tests below expect."""
+    path = os.path.join(str(tmp_path), "petshop.db")
+    build_petshop(path)
+    yield path
 
 
 def test_success_join(db):

@@ -24,7 +24,7 @@ from semantic.llm_sql_direct import (
 
 __all__ = ["should_repair", "generate_repair_sql", "SCORE_TRIGGER"]
 
-SCORE_TRIGGER = 90.0
+SCORE_TRIGGER = 75.0
 
 
 def _fatal(c):
@@ -39,18 +39,20 @@ def should_repair(selected, candidates, checklist):
     val = selected.validation or {}
     if val.get("fatal"):
         triggers.append("selected candidate failed hard semantic checks")
+    if not selected.executed_ok:
+        triggers.append("selected SQL did not execute")
     if selected.score < SCORE_TRIGGER:
         triggers.append(f"selected score {selected.score} < {SCORE_TRIGGER}")
     cl_checks = val.get("checklist") or {}
     if cl_checks.get("missing_columns") or val.get("missing_concepts"):
         triggers.append("selected SQL is missing required concepts/columns")
+    if val.get("unseen_literals"):
+        triggers.append("selected SQL uses literals not seen in the sampled data")
     if selected.executed_ok and (selected.row_count or 0) == 0:
         triggers.append("selected returned zero rows (weak signal)")
     directs = [c for c in candidates if c.source == "llm_sql_direct"]
     if selected.source == "query_family" and any(not _fatal(c) for c in directs):
         triggers.append("query_family selected while a non-fatal direct SQL exists")
-    if any(c.sql and not c.executed_ok for c in directs):
-        triggers.append("direct SQL failed execution but produced a structural attempt")
     return bool(triggers), triggers
 
 

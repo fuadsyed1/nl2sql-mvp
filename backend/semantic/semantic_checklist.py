@@ -28,7 +28,7 @@ from llm.errors import ProviderError
 from semantic.ai_semantic_extractor import extract_json, _describe_graph
 from query_families import slot_extractor as se
 
-__all__ = ["generate_checklist", "checklist_alignment", "REQUIRED_SHAPES"]
+__all__ = ["generate_checklist", "checklist_alignment", "grain_alignment", "REQUIRED_SHAPES"]
 
 REQUIRED_SHAPES = (
     "plain_select", "group_by_having", "order_by_limit", "not_exists",
@@ -72,6 +72,16 @@ def _checklist_prompt(question, tables_block, rel_block, value_hints=""):
         "  order_by_limit | not_exists | left_join_null | count_distinct |\n"
         "  window_or_cte | comparison_subquery | self_join\n"
         '- "literals": constant values quoted in the question (strings/numbers)\n'
+        '- "row_grain": one short phrase for what ONE output row represents,\n'
+        '  e.g. "one row per customer", "one row per case_gdc_id"\n'
+        '- "universe": for every/all/each questions, the complete set each\n'
+        '  entity must cover, e.g. "all sponsor types", "all data categories";\n'
+        "  else null\n"
+        '- "required_group_keys": ["table.column", ...] the results must be\n'
+        "  grouped by (the row_grain keys), or []\n"
+        '- "forbidden_hardcoded_universe": true if the question says all/every/\n'
+        "  each of some type/category/status (so the universe size must come\n"
+        "  from a subquery, not a hardcoded constant); else false\n"
         "JSON:"
     )
 
@@ -105,6 +115,8 @@ def _clean_checklist(data, idx):
         "target_entity": None, "output_columns": [], "must_use_tables": [],
         "must_use_columns": [], "measure_column": None, "group_by_entity": None,
         "comparison_logic": None, "required_sql_shape": None, "literals": [],
+        "row_grain": None, "universe": None, "required_group_keys": [],
+        "forbidden_hardcoded_universe": False,
     }
     te = str(data.get("target_entity") or "").strip().lower()
     out["target_entity"] = te if te in schema else None
@@ -131,6 +143,21 @@ def _clean_checklist(data, idx):
     for lit in (data.get("literals") or [])[:6]:
         if isinstance(lit, (str, int, float)) and str(lit).strip():
             out["literals"].append(lit)
+    # Option C advisory fields (row grain / universe) --------------------
+    rg = data.get("row_grain")
+    if isinstance(rg, str) and rg.strip():
+        out["row_grain"] = rg.strip()[:120]
+    uni = data.get("universe")
+    if isinstance(uni, str) and uni.strip():
+        out["universe"] = uni.strip()[:160]
+    for c in data.get("required_group_keys") or []:
+        nc = _norm_col(c, idx)
+        if nc:
+            spec = f"{nc[0]}.{nc[1]}" if nc[0] else nc[1]
+            if spec not in out["required_group_keys"]:
+                out["required_group_keys"].append(spec)
+    out["forbidden_hardcoded_universe"] = bool(
+        data.get("forbidden_hardcoded_universe"))
     return out
 
 
@@ -263,3 +290,96 @@ def checklist_alignment(question, checklist, sql, idx, params=None):
             reasons.append(f"literal '{lit}' from the question is missing")
 
     return max(_DELTA_MIN, min(_DELTA_MAX, delta)), reasons, fatal, checks
+
+
+# ---------------------------------------------------------------------------
+# Option C — advisory grain / universe alignment (used by candidate_scorer)
+# ---------------------------------------------------------------------------
+# Penalty-only signals; NEVER fatal, NEVER fired on simple non-aggregate SQL,
+# and a no-op whenever the relevant checklist field is absent/uncertain.
+_GRAIN_MISS = -10          # GROUP BY does not match the stated row_grain
+_GROUP_KEY_MISS = -8       # a required_group_key is absent from GROUP BY
+_HARDCODED_UNIVERSE = -12  # every/all query hardcodes the universe size
+
+_GB_RE = re.compile(r"\bGROUP\s+BY\b", re.IGNORECASE)
+_GB_TAIL_RE = re.compile(r"\b(HAVING|ORDER\s+BY|LIMIT|UNION|WINDOW)\b",
+                         re.IGNORECASE)
+_AGG_RE = re.compile(r"\b(count|sum|avg|min|max)\s*\(", re.IGNORECASE)
+_SUBQUERY_RE = re.compile(r"\(\s*SELECT\b", re.IGNORECASE)
+_COUNT_CMP_INT_RE = re.compile(
+    r"\bCOUNT\s*\(\s*(?:DISTINCT\s+)?[^)]*\)\s*(?:=|>=|<=|>|<)\s*(\d+)",
+    re.IGNORECASE)
+
+
+def _identifier_from_grain(row_grain):
+    """'one row per case_gdc_id' -> 'case_gdc_id' (lowercased), or None."""
+    if not isinstance(row_grain, str):
+        return None
+    m = re.search(r"per\s+([a-z_][a-z0-9_]*)", row_grain.strip().lower())
+    return m.group(1) if m else None
+
+
+def _group_by_text(sql):
+    """The GROUP BY clause text (up to the next clause keyword), or ''."""
+    m = _GB_RE.search(sql)
+    if not m:
+        return ""
+    tail = _GB_TAIL_RE.search(sql, m.end())
+    end = tail.start() if tail else len(sql)
+    return sql[m.end():end]
+
+
+def grain_alignment(checklist, sql, idx=None):
+    """Advisory row-grain / universe checks (Option C).
+
+    Returns (delta, reasons, checks). Penalty-only — the caller must NOT treat
+    any of this as fatal. Every check is gated so it cannot fire on a simple
+    non-aggregate SELECT, and every field is optional: a missing/empty field
+    contributes nothing.
+    """
+    delta, reasons, checks = 0.0, [], {}
+    if not checklist or not sql:
+        return 0.0, reasons, checks
+
+    sql_l = sql.lower()
+    has_group = _GB_RE.search(sql) is not None
+    has_agg = has_group or (_AGG_RE.search(sql) is not None)
+    gb = _group_by_text(sql)
+    gb_l = gb.lower()
+
+    keys = [k for k in (checklist.get("required_group_keys") or [])
+            if isinstance(k, str) and k.strip()]
+
+    # required_group_keys must all appear in GROUP BY (only when grouping) ----
+    if keys and has_group:
+        missing = [k for k in keys if not _word_in(gb_l, _col_name(k).lower())]
+        if missing:
+            delta += _GROUP_KEY_MISS
+            reasons.append(f"required group key(s) {missing} not in GROUP BY")
+            checks["missing_group_keys"] = missing
+
+    # row_grain vs GROUP BY (fuzzy fallback, only when no structured keys) ----
+    grain_id = _identifier_from_grain(checklist.get("row_grain"))
+    if grain_id and len(grain_id) >= 4 and has_group and not keys:
+        if grain_id not in gb_l:
+            delta += _GRAIN_MISS
+            actual = " ".join(gb.split()).strip()[:60]
+            reasons.append(
+                f"expected one row per {grain_id}, but SQL groups by {actual}")
+            checks["grain_mismatch"] = {"expected": grain_id,
+                                        "group_by": actual}
+
+    # forbidden hardcoded universe for every/all questions -------------------
+    if checklist.get("forbidden_hardcoded_universe") and has_agg:
+        m = _COUNT_CMP_INT_RE.search(sql)
+        if m and not _SUBQUERY_RE.search(sql):
+            num = m.group(1)
+            lits = {str(x).strip() for x in (checklist.get("literals") or [])}
+            if num not in lits:
+                delta += _HARDCODED_UNIVERSE
+                reasons.append(
+                    f"every/all query hardcodes a universe count (= {num}) "
+                    "instead of comparing against a universe subquery")
+                checks["hardcoded_universe"] = num
+
+    return delta, reasons, checks

@@ -137,3 +137,58 @@ def test_metadata_shape():
                 "selection_reason", "consensus_group_size", "warnings"):
         assert key in meta
     assert meta["candidate_scores"][0]["score"] == 75
+
+
+# ---------------------------------------------------------------------------
+# Option B: multiple direct-SQL candidates in the pool
+# ---------------------------------------------------------------------------
+def _cand_fatal(label, source, score, execution, fatal_reason, sql="SELECT 1"):
+    c = _cand(label, source, score, execution, sql=sql)
+    c.validation = {"fatal": [fatal_reason]}
+    return c
+
+
+def test_multiple_direct_candidates_highest_scoring_wins():
+    # Three independent direct-SQL samples, each a different (non-agreeing)
+    # result; the selector must pick the highest-scored one.
+    direct = _cand("llm_sql_direct", "llm_sql_direct", 70, _exec([["a"]]))
+    grain = _cand("llm_sql_direct_grain", "llm_sql_direct_grain", 88,
+                  _exec([["b"]]))
+    variant = _cand("llm_sql_direct_variant", "llm_sql_direct_variant", 75,
+                    _exec([["c"]]))
+
+    selected, meta = select_best([direct, grain, variant])
+
+    assert selected is grain
+    assert meta["selected_candidate_source"] == "llm_sql_direct_grain"
+    # every direct source is represented in the debug metadata
+    sources = {row["source"] for row in meta["candidate_scores"]}
+    assert sources == {"llm_sql_direct", "llm_sql_direct_grain",
+                       "llm_sql_direct_variant"}
+
+
+def test_fatal_direct_candidate_loses_even_if_higher_scored():
+    # A direct sample with a fake distinct alias / self-comparison is flagged
+    # fatal by the scorer; it must not win over a clean lower-scored direct.
+    bad = _cand_fatal("llm_sql_direct_grain", "llm_sql_direct_grain", 95,
+                      _exec([["x"]]), "self-comparison: COUNT(a)=COUNT(a)")
+    good = _cand("llm_sql_direct", "llm_sql_direct", 68, _exec([["y"]]))
+
+    selected, meta = select_best([bad, good])
+
+    assert selected is good
+    assert meta["selected_candidate_source"] == "llm_sql_direct"
+
+
+def test_extra_direct_failure_leaves_original_direct_working():
+    # The two extra samples fail to execute; the original direct candidate
+    # still executes and is selected (graceful fallback).
+    direct = _cand("llm_sql_direct", "llm_sql_direct", 72, _exec([["ok"]]))
+    grain = _cand("llm_sql_direct_grain", "llm_sql_direct_grain", 0, _fail())
+    variant = _cand("llm_sql_direct_variant", "llm_sql_direct_variant", 0,
+                    _fail())
+
+    selected, meta = select_best([direct, grain, variant])
+
+    assert selected is direct
+    assert meta["selection_reason"] == "best_scored_executed"
