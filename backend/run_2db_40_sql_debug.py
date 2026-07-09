@@ -266,3 +266,132 @@ def write_outputs(results: List[Dict[str, Any]], timestamp: str) -> None:
         lines.append("```json")
         lines.append(json.dumps(item["flags"], indent=2, sort_keys=True))
         lines.append("```")
+
+        lines.append("")
+        for line in format_candidates(item.get("candidates") or candidate_meta({})):
+            lines.append(line)
+        lines.append("")
+        lines.append(format_repair(item.get("repair")))
+        lines.append("")
+        lines.append(format_gold(item.get("gold")))
+        lines.append("")
+        lines.append("**SQL:**")
+        lines.append("```sql")
+        lines.append(item.get("sql") or "-- NO SQL GENERATED")
+        lines.append("```")
+        lines.append("")
+        if item.get("error"):
+            lines.append("**Error:**")
+            lines.append("```text")
+            lines.append(str(item["error"]))
+            lines.append("```")
+            lines.append("")
+
+    summary = build_summary(results)
+
+    lines.append("## Summary")
+    lines.append("")
+    lines.append("```json")
+    lines.append(json.dumps(summary, indent=2, ensure_ascii=False))
+    lines.append("```")
+    lines.append("")
+
+    md_path.write_text("\n".join(lines), encoding="utf-8")
+
+    print("\n" + "=" * 100)
+    print("Saved:")
+    print(f"  JSON: {json_path}")
+    print(f"  Markdown: {md_path}")
+    print("\nSummary:")
+    print(json.dumps(summary, indent=2, ensure_ascii=False))
+
+
+def build_summary(results: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def is_semantic_ok(item: Dict[str, Any]) -> bool:
+        gold = item.get("gold") or {}
+        return bool(gold.get("semantic_ok"))
+
+    def is_strict_ok(item: Dict[str, Any]) -> bool:
+        gold = item.get("gold") or {}
+        level = gold.get("match_level") or gold.get("level")
+        return level in ("strict", "column_order")
+
+    def repair_attempted(item: Dict[str, Any]) -> bool:
+        repair = item.get("repair") or {}
+        return bool(repair.get("repair_attempted"))
+
+    def repair_selected(item: Dict[str, Any]) -> bool:
+        repair = item.get("repair") or {}
+        return bool(repair.get("repair_selected"))
+
+    def selected_source(item: Dict[str, Any]) -> str:
+        cand = item.get("candidates") or {}
+        return cand.get("selected_candidate_source") or item.get("extraction_source") or "unknown"
+
+    def fatal_won(item: Dict[str, Any]) -> bool:
+        cand = item.get("candidates") or {}
+        selected = cand.get("selected_candidate_source")
+        for candidate in cand.get("candidates") or []:
+            if candidate.get("source") == selected and candidate.get("fatal"):
+                return True
+        warnings = cand.get("warnings") or []
+        return any("failed hard semantic checks" in str(w).lower() for w in warnings)
+
+    selected_breakdown: Dict[str, int] = {}
+    for item in results:
+        src = selected_source(item)
+        selected_breakdown[src] = selected_breakdown.get(src, 0) + 1
+
+    gold_wrong = []
+    fatal_candidate_won = []
+    repair_selected_queries = []
+    for item in results:
+        ident = [item.get("database_name"), item.get("query_number")]
+        if item.get("gold") is not None and not is_semantic_ok(item):
+            gold_wrong.append(ident)
+        if fatal_won(item):
+            fatal_candidate_won.append(ident)
+        if repair_selected(item):
+            repair_selected_queries.append(ident)
+
+    return {
+        "repair_attempted_count": sum(1 for r in results if repair_attempted(r)),
+        "repair_selected_count": sum(1 for r in results if repair_selected(r)),
+        "repair_selected_queries": repair_selected_queries,
+        "total": len(results),
+        "exec_ok_count": sum(1 for r in results if r.get("success")),
+        "exec_fail_count": sum(1 for r in results if not r.get("success")),
+        "query_family_count": sum(1 for r in results if selected_source(r) == "query_family"),
+        "llm_count": sum(1 for r in results if selected_source(r) != "query_family"),
+        "no_sql_count": sum(1 for r in results if not r.get("sql")),
+        "gold_graded": sum(1 for r in results if r.get("gold") is not None),
+        "gold_semantic_ok": sum(1 for r in results if is_semantic_ok(r)),
+        "gold_strict_ok": sum(1 for r in results if is_strict_ok(r)),
+        "gold_wrong": gold_wrong,
+        "selected_source_breakdown": selected_breakdown,
+        "fatal_candidate_won": fatal_candidate_won,
+        "generated_at": datetime.now().isoformat(timespec="seconds"),
+    }
+
+
+def main() -> int:
+    results: List[Dict[str, Any]] = []
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    for db in DATABASES:
+        database_name = db["name"]
+        database_id = db["database_id"]
+        queries = db["queries"]
+
+        for idx, question in enumerate(queries, start=1):
+            response = post_query(database_id, question)
+            item = summarize_response(database_name, database_id, idx, question, response)
+            results.append(item)
+            print_result(item)
+
+    write_outputs(results, timestamp)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
