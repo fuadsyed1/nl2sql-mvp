@@ -1,0 +1,495 @@
+===== QUERY 01 =====
+NL:
+Using indiv20, zipcode_to_census_tracts, census_tracts_new_york, and censustract_2018_5yr, list Kings County census tracts with the average 2020 individual donation amount and 2018 median income.
+
+SQL:
+SELECT c.tract_ce, c.tract_name
+FROM census_tracts_new_york c
+JOIN indiv20 i ON c.tract_ce = i.zip_code
+WHERE i.transaction_dt LIKE '2020%'
+GROUP BY c.tract_ce, c.tract_name
+HAVING AVG(i.transaction_amt) > (
+    SELECT AVG(transaction_amt)
+    FROM indiv20
+    WHERE transaction_dt LIKE '2020%'
+);
+
+===== QUERY 02 =====
+NL:
+For New York donors in indiv20, find the top 10 ZIP codes by total individual contribution amount and show donor count, total amount, and average amount.
+
+SQL:
+SELECT zip_code, COUNT(*) AS donor_count, SUM(transaction_amt) AS total_amount, AVG(transaction_amt) AS average_amount
+FROM indiv20
+WHERE state = 'NY'
+GROUP BY zip_code
+ORDER BY total_amount DESC
+LIMIT 10;
+
+===== QUERY 03 =====
+NL:
+For each New York congressional district in candidate_2020, list the number of candidates and total 2020 individual contributions received through their authorized committees.
+
+SQL:
+SELECT c.cand_office_district, COUNT(c.cand_id) AS num_candidates, SUM(cc.transaction_amt) AS total_contributions
+FROM candidate_2020 c
+JOIN committee_contributions_2020 cc ON c.cand_id = cc.cand_id
+WHERE c.cand_office_st = 'NY' AND c.cand_office = 'H'
+GROUP BY c.cand_office_district
+HAVING COUNT(c.cand_id) > 0;
+
+===== QUERY 04 =====
+NL:
+Find 2020 committees that received individual contributions from New York donors and are linked to more than one candidate in candidate_committee_2020; show committee name, candidate count, and total donations.
+
+SQL:
+SELECT c.cmte_nm, COUNT(DISTINCT cc.cand_id) AS candidate_count, SUM(ct.transaction_amt) AS total_donations
+FROM candidate_committee_2020 cc
+JOIN committee_2020 c ON cc.cmte_id = c.cmte_id
+JOIN committee_contributions_2020 ct ON cc.cmte_id = ct.cmte_id
+WHERE ct.state = 'NY' AND cc.cand_election_yr = 2020
+GROUP BY c.cmte_id, c.cmte_nm
+HAVING COUNT(DISTINCT cc.cand_id) > 1;
+
+===== QUERY 05 =====
+NL:
+For each party in candidate_2020, calculate total 2020 individual contributions from New York donors by joining candidate_2020, candidate_committee_2020, committee_2020, and indiv20.
+
+SQL:
+SELECT c.cand_pty_affiliation, SUM(i.transaction_amt) AS total_contributions
+FROM candidate_2020 c
+JOIN candidate_committee_2020 cc ON c.cand_id = cc.cand_id
+JOIN committee_2020 cm ON cc.cmte_id = cm.cmte_id
+JOIN individuals_ingest_2020 i ON cm.cmte_id = i.cmte_id
+WHERE i.state = 'NY'
+GROUP BY c.cand_pty_affiliation
+HAVING SUM(i.transaction_amt) > 0;
+
+===== QUERY 06 =====
+NL:
+List the top 20 2020 candidates by total donations from Kings County census tracts, using ZIP-to-tract mapping and New York census tract geography.
+
+SQL:
+SELECT tract_ce, tract_name
+FROM census_tracts_new_york
+WHERE county_fips_code = '36047'
+ORDER BY tract_ce
+LIMIT 20;
+
+===== QUERY 07 =====
+NL:
+For every Kings County census tract, compare total 2020 donation amount with median_income and return tracts where donation total is greater than median_income.
+
+SQL:
+SELECT "census_tracts_california"."tract_ce", "census_tracts_california"."tract_name" FROM "census_tracts_california" WHERE 0 > 0;
+
+===== QUERY 08 =====
+NL:
+Find census tracts in Kings County where the average 2020 donation amount is above the countywide average donation amount and median_income is below the countywide median income.
+
+SQL:
+SELECT * FROM "candidate_committee_2020";
+
+===== QUERY 09 =====
+NL:
+List 2020 committees that received donations from every New York borough represented in census_tracts_new_york, using donor ZIP code mapped to census tracts.
+
+SQL:
+SELECT c.cmte_id, c.cmte_nm
+FROM committee_2020 c
+JOIN committee_contributions_2020 cc ON c.cmte_id = cc.cmte_id
+JOIN census_tracts_new_york ct ON cc.zip_code = ct.tract_ce
+WHERE ct.state_fips_code = '36'
+GROUP BY c.cmte_id, c.cmte_nm
+HAVING COUNT(DISTINCT ct.county_fips_code) = (
+    SELECT COUNT(DISTINCT county_fips_code)
+    FROM census_tracts_new_york
+    WHERE state_fips_code = '36'
+);
+
+===== QUERY 10 =====
+NL:
+Find employers in indiv20 with donors in at least 5 different New York census tracts and total donations above 50000; show employer, tract count, donor count, and total amount.
+
+SQL:
+SELECT i.employer, COUNT(DISTINCT c.tract_ce) AS tract_count, COUNT(*) AS donor_count, SUM(i.transaction_amt) AS total_amount
+FROM indiv20 i
+JOIN census_tracts_new_york c ON i.state = 'NY' AND i.zip_code = SUBSTR(c.geo_id, 1, 5)
+GROUP BY i.employer
+HAVING COUNT(DISTINCT c.tract_ce) >= 5 AND SUM(i.transaction_amt) > 50000;
+
+===== QUERY 11 =====
+NL:
+For each occupation in indiv20 among New York donors, show total amount, average donation, distinct donor count, and number of distinct ZIP codes; keep occupations with at least 100 donors.
+
+SQL:
+SELECT occupation, SUM(transaction_amt) AS total_amount, AVG(transaction_amt) AS average_donation, COUNT(DISTINCT tran_id) AS distinct_donor_count, COUNT(DISTINCT zip_code) AS distinct_zip_codes
+FROM indiv20
+WHERE state = 'NY'
+GROUP BY occupation
+HAVING COUNT(DISTINCT tran_id) >= 100;
+
+===== QUERY 12 =====
+NL:
+Find New York ZIP codes where donors contributed to both Democratic and Republican candidates in 2020; show ZIP code and totals by party.
+
+SQL:
+SELECT 'No valid SQL can be generated' AS error_message;
+
+===== QUERY 13 =====
+NL:
+For each census tract in Kings County, count distinct committees receiving donations and return the top 15 tracts by committee diversity.
+
+SQL:
+SELECT tract_ce
+FROM census_tracts_california
+WHERE tract_name LIKE '%Kings County%'
+GROUP BY tract_ce
+ORDER BY COUNT(DISTINCT tract_ce) DESC
+LIMIT 15;
+
+===== QUERY 14 =====
+NL:
+Find 2020 candidates who received donations from donors in every Kings County ZIP code present in indiv20 after mapping ZIPs to census tracts.
+
+SQL:
+SELECT c.cand_id, c.cand_name
+FROM candidate_2020 c
+WHERE NOT EXISTS (
+    SELECT DISTINCT i1.zip_code
+    FROM indiv20 i1
+    WHERE i1.city = 'Kings County'
+    EXCEPT
+    SELECT DISTINCT i2.zip_code
+    FROM indiv20 i2
+    JOIN committee_2020 cm ON i2.cmte_id = cm.cmte_id
+    JOIN candidate_committee_2020 cc ON cm.cmte_id = cc.cmte_id
+    WHERE cc.cand_id = c.cand_id
+      AND i2.city = 'Kings County'
+);
+
+===== QUERY 15 =====
+NL:
+List committees in committee_2020 that have no matching individual contribution rows in indiv20, returning committee id, committee name, and committee type.
+
+SQL:
+SELECT c.cmte_id, c.cmte_nm, c.cmte_tp
+FROM committee_2020 c
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM indiv20 i
+    WHERE i.cmte_id = c.cmte_id
+);
+
+===== QUERY 16 =====
+NL:
+Find individual donors in New York who gave to more than 10 distinct committees in 2020; show donor name, ZIP code, committee count, and total amount.
+
+SQL:
+SELECT name, zip_code, COUNT(DISTINCT cmte_id) AS committee_count, SUM(transaction_amt) AS total_amount
+FROM individuals_ingest_2020
+WHERE state = 'NY' AND transaction_dt LIKE '2020%'
+GROUP BY name, zip_code
+HAVING COUNT(DISTINCT cmte_id) > 10;
+
+===== QUERY 17 =====
+NL:
+For each month in 2020, calculate New York individual contribution totals and the month-over-month percent change in total contribution amount.
+
+SQL:
+WITH monthly_totals AS (
+  SELECT 
+    strftime('%Y-%m', i.transaction_dt) AS month,
+    SUM(i.transaction_amt) AS total_amt
+  FROM individuals_ingest_2020 i
+  JOIN candidate_committee_2020 c ON i.cmte_id = c.cmte_id
+  JOIN census_tracts_new_york ct ON i.state = ct.state_fips_code
+  WHERE i.transaction_dt LIKE '2020%'
+    AND ct.state_fips_code = '36'
+  GROUP BY strftime('%Y-%m', i.transaction_dt)
+)
+SELECT 
+  month,
+  total_amt,
+  CASE 
+    WHEN LAG(total_amt) OVER (ORDER BY month) IS NULL THEN NULL
+    ELSE ((total_amt - LAG(total_amt) OVER (ORDER BY month)) * 100.0 / LAG(total_amt) OVER (ORDER BY month))
+  END AS percent_change
+FROM monthly_totals
+ORDER BY month;
+
+===== QUERY 18 =====
+NL:
+Find the top 5 transaction types in indiv20 for New York donors by total amount and show count, average amount, and maximum transaction amount.
+
+SQL:
+SELECT transaction_tp, COUNT(*) AS count, AVG(transaction_amt) AS avg_amount, MAX(transaction_amt) AS max_amount
+FROM indiv20
+WHERE state = 'NY'
+GROUP BY transaction_tp
+ORDER BY SUM(transaction_amt) DESC
+LIMIT 5;
+
+===== QUERY 19 =====
+NL:
+For each candidate office in candidate_2020, show the total number of New York donors and total contribution amount received through linked committees.
+
+SQL:
+SELECT cand_office
+FROM candidate_2020
+GROUP BY cand_office
+HAVING COUNT(*) > (SELECT COUNT(*) FROM census_tracts_new_york WHERE state_fips_code = '36');
+
+===== QUERY 20 =====
+NL:
+Find census tracts in Kings County that have median_income above 100000 but average donation amount below 100, using indiv20 and ACS 2018 census tract data.
+
+SQL:
+SELECT c.tract_ce, c.tract_name
+FROM census_tracts_california AS c
+JOIN indiv20 AS i ON c.state_fips_code = '06' AND c.county_fips_code = '029'
+WHERE i.state = 'CA'
+GROUP BY c.tract_ce, c.tract_name
+HAVING AVG(i.transaction_amt) < 100;
+
+===== QUERY 21 =====
+NL:
+Compare 2016 and 2020 individual contributions by committee for committees that exist in both committee_2016 and committee_2020; show committee id, 2016 total, 2020 total, and difference.
+
+SQL:
+WITH cte_2016 AS (
+    SELECT cmte_id, SUM(transaction_amt) AS total_2016
+    FROM committee_contributions_2016
+    GROUP BY cmte_id
+),
+cte_2020 AS (
+    SELECT cmte_id, SUM(transaction_amt) AS total_2020
+    FROM committee_contributions_2020
+    GROUP BY cmte_id
+)
+SELECT 
+    cte_2016.cmte_id,
+    cte_2016.total_2016,
+    cte_2020.total_2020,
+    (cte_2016.total_2016 - cte_2020.total_2020) AS difference
+FROM cte_2016
+JOIN cte_2020 ON cte_2016.cmte_id = cte_2020.cmte_id
+JOIN committee_2016 ON cte_2016.cmte_id = committee_2016.cmte_id
+JOIN committee_2020 ON cte_2020.cmte_id = committee_2020.cmte_id;
+
+===== QUERY 22 =====
+NL:
+Find committees whose 2020 New York donor total is higher than their national 2020 individual contribution total from donors outside New York.
+
+SQL:
+SELECT c.cmte_id, c.cmte_nm
+FROM committee_2020 c
+JOIN individuals_ingest_2020 i ON c.cmte_id = i.cmte_id
+GROUP BY c.cmte_id, c.cmte_nm
+HAVING SUM(CASE WHEN i.state = 'NY' THEN i.transaction_amt ELSE 0 END) >
+       SUM(CASE WHEN i.state != 'NY' THEN i.transaction_amt ELSE 0 END);
+
+===== QUERY 23 =====
+NL:
+For each New York county represented in census_tracts_new_york, calculate total 2020 individual donations, average donation amount, and median ACS median_income.
+
+SQL:
+SELECT "census_tracts_new_york"."county_fips_code"
+FROM "census_tracts_new_york"
+WHERE "census_tracts_new_york"."state_fips_code" = '36'
+GROUP BY "census_tracts_new_york"."county_fips_code"
+HAVING COUNT(*) > 0;
+
+===== QUERY 24 =====
+NL:
+Find candidate committees in 2020 where the linked candidate and committee states do not match, then show total New York donations received by those committees.
+
+SQL:
+SELECT cc.cmte_id, SUM(oct.transaction_amt) AS total_ny_donations
+FROM candidate_committee_2020 cc
+JOIN candidate_2020 c ON cc.cand_id = c.cand_id
+JOIN other_committee_tx_2020 oct ON cc.cmte_id = oct.cmte_id
+WHERE c.cand_election_yr = 2020
+  AND oct.state = 'NY'
+  AND c.cand_st != oct.state
+GROUP BY cc.cmte_id
+HAVING SUM(oct.transaction_amt) > 0;
+
+===== QUERY 25 =====
+NL:
+List donors in indiv20 whose single largest contribution is above the average contribution amount for their ZIP code; show donor name, ZIP code, max amount, and ZIP average.
+
+SQL:
+SELECT 
+    i.name,
+    i.zip_code,
+    i.transaction_amt AS max_amount,
+    (SELECT AVG(i2.transaction_amt) FROM indiv20 i2 WHERE i2.zip_code = i.zip_code) AS zip_avg
+FROM indiv20 i
+WHERE i.transaction_amt = (
+    SELECT MAX(i3.transaction_amt) 
+    FROM indiv20 i3 
+    WHERE i3.name = i.name AND i3.zip_code = i.zip_code
+)
+AND i.transaction_amt > (
+    SELECT AVG(i4.transaction_amt) 
+    FROM indiv20 i4 
+    WHERE i4.zip_code = i.zip_code
+);
+
+===== QUERY 26 =====
+NL:
+For each Kings County census tract, rank committees by total donation amount and return the top committee per tract with its total amount.
+
+SQL:
+WITH ranked_committees AS (
+  SELECT 
+    ct.tract_ce,
+    ct.tract_name,
+    'Kings County' AS county_name,
+    ct.tract_geom,
+    ct.area_land_meters,
+    ct.area_water_meters,
+    ct.internal_point_lat,
+    ct.internal_point_lon,
+    ct.internal_point_geo,
+    ct.functional_status,
+    ct.lsad_name,
+    ct.geo_id,
+    ct.state_fips_code,
+    ct.county_fips_code,
+    ct.area_land_meters AS total_amount,
+    ROW_NUMBER() OVER (PARTITION BY ct.tract_ce ORDER BY ct.area_land_meters DESC) AS rn
+  FROM census_tracts_alabama ct
+  WHERE ct.county_fips_code = '06029'
+)
+SELECT 
+  tract_ce,
+  tract_name,
+  county_name,
+  tract_geom,
+  area_land_meters,
+  area_water_meters,
+  internal_point_lat,
+  internal_point_lon,
+  internal_point_geo,
+  functional_status,
+  lsad_name,
+  geo_id,
+  state_fips_code,
+  county_fips_code,
+  total_amount
+FROM ranked_committees
+WHERE rn = 1;
+
+===== QUERY 27 =====
+NL:
+Find pairs of committees that received donations from the same New York donor on the same transaction date, showing committee ids, donor name, date, and combined amount.
+
+SQL:
+SELECT 
+  t1.cmte_id AS cmte_id_1,
+  t2.cmte_id AS cmte_id_2,
+  t1.name,
+  t1.transaction_dt,
+  (t1.transaction_amt + t2.transaction_amt) AS combined_amount
+FROM (
+  SELECT cmte_id, name, transaction_dt, transaction_amt, state
+  FROM other_committee_tx_2016 WHERE state = 'NY'
+  UNION ALL
+  SELECT cmte_id, name, transaction_dt, transaction_amt, state
+  FROM other_committee_tx_2018 WHERE state = 'NY'
+  UNION ALL
+  SELECT cmte_id, name, transaction_dt, transaction_amt, state
+  FROM other_committee_tx_2020 WHERE state = 'NY'
+  UNION ALL
+  SELECT cmte_id, name, transaction_dt, transaction_amt, state
+  FROM committee_contributions_2016 WHERE state = 'NY'
+  UNION ALL
+  SELECT cmte_id, name, transaction_dt, transaction_amt, state
+  FROM committee_contributions_2018 WHERE state = 'NY'
+  UNION ALL
+  SELECT cmte_id, name, transaction_dt, transaction_amt, state
+  FROM committee_contributions_2020 WHERE state = 'NY'
+  UNION ALL
+  SELECT cmte_id, name, transaction_dt, transaction_amt, state
+  FROM indiv20 WHERE state = 'NY'
+) t1
+JOIN (
+  SELECT cmte_id, name, transaction_dt, transaction_amt, state
+  FROM other_committee_tx_2016 WHERE state = 'NY'
+  UNION ALL
+  SELECT cmte_id, name, transaction_dt, transaction_amt, state
+  FROM other_committee_tx_2018 WHERE state = 'NY'
+  UNION ALL
+  SELECT cmte_id, name, transaction_dt, transaction_amt, state
+  FROM other_committee_tx_2020 WHERE state = 'NY'
+  UNION ALL
+  SELECT cmte_id, name, transaction_dt, transaction_amt, state
+  FROM committee_contributions_2016 WHERE state = 'NY'
+  UNION ALL
+  SELECT cmte_id, name, transaction_dt, transaction_amt, state
+  FROM committee_contributions_2018 WHERE state = 'NY'
+  UNION ALL
+  SELECT cmte_id, name, transaction_dt, transaction_amt, state
+  FROM committee_contributions_2020 WHERE state = 'NY'
+  UNION ALL
+  SELECT cmte_id, name, transaction_dt, transaction_amt, state
+  FROM indiv20 WHERE state = 'NY'
+) t2
+ON t1.name = t2.name 
+  AND t1.state = t2.state 
+  AND t1.transaction_dt = t2.transaction_dt
+  AND t1.cmte_id < t2.cmte_id;
+
+===== QUERY 28 =====
+NL:
+Find 2020 candidates whose New York donation total is above the average New York donation total across all candidates running for the same office.
+
+SQL:
+SELECT c.cand_id, c.cand_name, c.cand_office
+FROM candidate_2020 c
+WHERE c.cand_election_yr = 2020
+  AND c.cand_office_st = 'NY'
+  AND c.cand_pty_affiliation IS NOT NULL
+  AND (
+    SELECT SUM(CAST(c2.cand_pcc AS INTEGER))
+    FROM candidate_2020 c2
+    WHERE c2.cand_election_yr = 2020
+      AND c2.cand_office_st = 'NY'
+      AND c2.cand_id = c.cand_id
+  ) > (
+    SELECT AVG(candidate_total)
+    FROM (
+      SELECT SUM(CAST(c3.cand_pcc AS INTEGER)) AS candidate_total
+      FROM candidate_2020 c3
+      WHERE c3.cand_election_yr = 2020
+        AND c3.cand_office_st = 'NY'
+        AND c3.cand_office = c.cand_office
+      GROUP BY c3.cand_id
+    )
+  );
+
+===== QUERY 29 =====
+NL:
+For each ZIP code in New York, compare the number of unique individual donors with the ACS total_pop of its mapped census tracts and show donor-to-population ratio.
+
+SQL:
+SELECT tract_ce
+FROM census_tracts_new_york
+WHERE state_fips_code = '36'
+GROUP BY tract_ce;
+
+===== QUERY 30 =====
+NL:
+Using indiv20, candidate_2020, candidate_committee_2020, and committee_2020, find candidates who received contributions from donors in all income quartiles of Kings County census tracts based on 2018 median_income.
+
+SQL:
+SELECT c.cand_id, c.cand_name
+FROM candidate_2020 c
+JOIN candidate_committee_2020 cc ON c.cand_id = cc.cand_id
+JOIN committee_2020 com ON cc.cmte_id = com.cmte_id
+WHERE com.cmte_city = 'Kings County'
+GROUP BY c.cand_id, c.cand_name
+HAVING COUNT(DISTINCT com.cmte_zip) = 4;
+

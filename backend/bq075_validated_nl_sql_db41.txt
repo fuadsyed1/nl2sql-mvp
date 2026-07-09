@@ -1,0 +1,444 @@
+===== QUERY 01 =====
+NL:
+Using t_1990_q1, find geoid groups whose average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is greater than the overall average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting in t_1990_q1; show geoid, row count, average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and the difference from the overall average.
+
+SQL:
+SELECT 
+    t_1990_q1.geoid,
+    COUNT(*) AS row_count,
+    AVG(t_1990_q1.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting) AS avg_estabs,
+    AVG(t_1990_q1.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting) - (
+        SELECT AVG(qtrly_estabs_11_agriculture_forestry_fishing_and_hunting) 
+        FROM t_1990_q1
+    ) AS diff_from_overall_avg
+FROM 
+    t_1990_q1
+JOIN t_1991_q1 ON t_1990_q1.geoid = t_1991_q1.geoid
+JOIN t_1992_q1 ON t_1990_q1.geoid = t_1992_q1.geoid
+JOIN t_1993_q1 ON t_1990_q1.geoid = t_1993_q1.geoid
+JOIN t_1994_q1 ON t_1990_q1.geoid = t_1994_q1.geoid
+GROUP BY 
+    t_1990_q1.geoid
+HAVING 
+    AVG(t_1990_q1.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting) > (
+        SELECT AVG(qtrly_estabs_11_agriculture_forestry_fishing_and_hunting) 
+        FROM t_1990_q1
+    );
+
+===== QUERY 02 =====
+NL:
+Using t_1990_q1, group rows by geoid; for each group calculate row count, total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and average avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting; return only groups whose total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is above the average group total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, ordered by total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting descending.
+
+SQL:
+SELECT t.geoid,
+       COUNT(*) AS row_count,
+       SUM(t.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting) AS total_estabs,
+       AVG(t.avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting) AS avg_wage
+FROM t_1990_q1 t
+JOIN t_1991_q1 t1 ON t.geoid = t1.geoid
+JOIN t_1992_q1 t2 ON t.geoid = t2.geoid
+JOIN t_1993_q1 t3 ON t.geoid = t3.geoid
+JOIN t_1994_q1 t4 ON t.geoid = t4.geoid
+GROUP BY t.geoid
+HAVING SUM(t.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting) > (
+    SELECT AVG(group_total)
+    FROM (
+        SELECT SUM(qtrly_estabs_11_agriculture_forestry_fishing_and_hunting) AS group_total
+        FROM t_1990_q1
+        GROUP BY geoid
+    )
+)
+ORDER BY total_estabs DESC;
+
+===== QUERY 03 =====
+NL:
+Using t_1990_q1, group rows by the pair (geoid, area_fips); show both columns and the row count, keep only pairs with at least 2 rows, and order by geoid then row count descending.
+
+SQL:
+SELECT t_1990_q1.geoid, t_1990_q1.area_fips, COUNT(*) AS row_count
+FROM t_1990_q1
+GROUP BY t_1990_q1.geoid, t_1990_q1.area_fips
+HAVING COUNT(*) >= 2
+ORDER BY t_1990_q1.geoid, row_count DESC;
+
+===== QUERY 04 =====
+NL:
+Using t_1990_q2, find geoid groups whose average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is greater than the overall average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting in t_1990_q2; show geoid, row count, average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and the difference from the overall average.
+
+SQL:
+WITH overall_avg AS (
+  SELECT AVG(qtrly_estabs_11_agriculture_forestry_fishing_and_hunting) AS avg_val
+  FROM t_1990_q2
+),
+geoid_stats AS (
+  SELECT 
+    t_1990_q2.geoid,
+    COUNT(*) AS row_count,
+    AVG(t_1990_q2.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting) AS avg_estabs
+  FROM t_1990_q2
+  JOIN t_1991_q2 ON t_1990_q2.geoid = t_1991_q2.geoid
+  JOIN t_1992_q2 ON t_1990_q2.geoid = t_1992_q2.geoid
+  JOIN t_1993_q2 ON t_1990_q2.geoid = t_1993_q2.geoid
+  JOIN t_1994_q2 ON t_1990_q2.geoid = t_1994_q2.geoid
+  GROUP BY t_1990_q2.geoid
+)
+SELECT 
+  gs.geoid,
+  gs.row_count,
+  gs.avg_estabs,
+  gs.avg_estabs - oa.avg_val AS diff_from_overall
+FROM geoid_stats gs
+CROSS JOIN overall_avg oa
+WHERE gs.avg_estabs > oa.avg_val;
+
+===== QUERY 05 =====
+NL:
+Using t_1990_q2, group rows by geoid; for each group calculate row count, total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and average avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting; return only groups whose total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is above the average group total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, ordered by total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting descending.
+
+SQL:
+WITH group_stats AS (
+  SELECT 
+    t_1990_q2.geoid,
+    COUNT(*) AS row_count,
+    SUM(t_1990_q2.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting) AS total_estabs,
+    AVG(t_1990_q2.avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting) AS avg_wage
+  FROM t_1990_q2
+  JOIN t_1991_q2 ON t_1990_q2.geoid = t_1991_q2.geoid
+  JOIN t_1992_q2 ON t_1990_q2.geoid = t_1992_q2.geoid
+  JOIN t_1993_q2 ON t_1990_q2.geoid = t_1993_q2.geoid
+  JOIN t_1994_q2 ON t_1990_q2.geoid = t_1994_q2.geoid
+  GROUP BY t_1990_q2.geoid
+),
+avg_threshold AS (
+  SELECT AVG(total_estabs) AS avg_total
+  FROM group_stats
+)
+SELECT 
+  gs.geoid
+FROM group_stats gs
+CROSS JOIN avg_threshold at
+WHERE gs.total_estabs > at.avg_total
+ORDER BY gs.total_estabs DESC;
+
+===== QUERY 06 =====
+NL:
+Using t_1990_q2, group rows by the pair (geoid, area_fips); show both columns and the row count, keep only pairs with at least 2 rows, and order by geoid then row count descending.
+
+SQL:
+SELECT t_1990_q2.geoid, t_1990_q2.area_fips, COUNT(*) AS row_count
+FROM t_1990_q2
+GROUP BY t_1990_q2.geoid, t_1990_q2.area_fips
+HAVING COUNT(*) >= 2
+ORDER BY t_1990_q2.geoid, row_count DESC;
+
+===== QUERY 07 =====
+NL:
+Using t_1990_q3, find geoid groups whose average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is greater than the overall average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting in t_1990_q3; show geoid, row count, average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and the difference from the overall average.
+
+SQL:
+WITH overall_avg AS (
+  SELECT AVG(qtrly_estabs_11_agriculture_forestry_fishing_and_hunting) AS avg_val
+  FROM t_1990_q3
+),
+grouped_stats AS (
+  SELECT 
+    t_1990_q3.geoid,
+    COUNT(*) AS row_count,
+    AVG(t_1990_q3.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting) AS avg_estabs
+  FROM t_1990_q3
+  JOIN t_1991_q3 ON t_1990_q3.geoid = t_1991_q3.geoid
+  JOIN t_1992_q3 ON t_1990_q3.geoid = t_1992_q3.geoid
+  JOIN t_1993_q3 ON t_1990_q3.geoid = t_1993_q3.geoid
+  JOIN t_1994_q3 ON t_1990_q3.geoid = t_1994_q3.geoid
+  GROUP BY t_1990_q3.geoid
+)
+SELECT 
+  gs.geoid,
+  gs.row_count,
+  gs.avg_estabs,
+  gs.avg_estabs - oa.avg_val AS diff_from_overall
+FROM grouped_stats gs
+CROSS JOIN overall_avg oa
+WHERE gs.avg_estabs > oa.avg_val;
+
+===== QUERY 08 =====
+NL:
+Using t_1990_q3, group rows by geoid; for each group calculate row count, total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and average avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting; return only groups whose total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is above the average group total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, ordered by total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting descending.
+
+SQL:
+WITH grouped AS (
+  SELECT
+    t_1990_q3.geoid,
+    COUNT(*) AS row_count,
+    SUM(t_1990_q3.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting) AS total_estabs,
+    AVG(t_1990_q3.avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting) AS avg_wage
+  FROM t_1990_q3
+  JOIN t_1991_q3 ON t_1990_q3.geoid = t_1991_q3.geoid
+  JOIN t_1992_q3 ON t_1990_q3.geoid = t_1992_q3.geoid
+  JOIN t_1993_q3 ON t_1990_q3.geoid = t_1993_q3.geoid
+  JOIN t_1994_q3 ON t_1990_q3.geoid = t_1994_q3.geoid
+  GROUP BY t_1990_q3.geoid
+),
+avg_total AS (
+  SELECT AVG(total_estabs) AS avg_total_estabs
+  FROM grouped
+)
+SELECT
+  geoid
+FROM grouped
+WHERE total_estabs > (SELECT avg_total_estabs FROM avg_total)
+ORDER BY total_estabs DESC;
+
+===== QUERY 09 =====
+NL:
+Using t_1990_q3, group rows by the pair (geoid, area_fips); show both columns and the row count, keep only pairs with at least 2 rows, and order by geoid then row count descending.
+
+SQL:
+SELECT t_1990_q3.geoid, t_1990_q3.area_fips, COUNT(*) AS row_count
+FROM t_1990_q3
+GROUP BY t_1990_q3.geoid, t_1990_q3.area_fips
+HAVING COUNT(*) >= 2
+ORDER BY t_1990_q3.geoid, row_count DESC;
+
+===== QUERY 10 =====
+NL:
+Using t_1990_q4, find geoid groups whose average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is greater than the overall average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting in t_1990_q4; show geoid, row count, average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and the difference from the overall average.
+
+SQL:
+SELECT 
+    t_1990_q4.geoid,
+    COUNT(*) AS row_count,
+    AVG(t_1990_q4.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting) AS avg_estabs,
+    AVG(t_1990_q4.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting) - (
+        SELECT AVG(qtrly_estabs_11_agriculture_forestry_fishing_and_hunting) 
+        FROM t_1990_q4
+    ) AS diff_from_overall_avg
+FROM 
+    t_1990_q4
+JOIN t_1991_q4 ON t_1990_q4.geoid = t_1991_q4.geoid
+JOIN t_1992_q4 ON t_1990_q4.geoid = t_1992_q4.geoid
+JOIN t_1993_q4 ON t_1990_q4.geoid = t_1993_q4.geoid
+JOIN t_1994_q4 ON t_1990_q4.geoid = t_1994_q4.geoid
+GROUP BY 
+    t_1990_q4.geoid
+HAVING 
+    AVG(t_1990_q4.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting) > (
+        SELECT AVG(qtrly_estabs_11_agriculture_forestry_fishing_and_hunting) 
+        FROM t_1990_q4
+    );
+
+===== QUERY 11 =====
+NL:
+Using t_1990_q4, group rows by geoid; for each group calculate row count, total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and average avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting; return only groups whose total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is above the average group total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, ordered by total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting descending.
+
+SQL:
+WITH grouped AS (
+  SELECT
+    t_1990_q4.geoid,
+    COUNT(*) AS row_count,
+    SUM(t_1990_q4.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting) AS total_estabs,
+    AVG(t_1990_q4.avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting) AS avg_wage
+  FROM t_1990_q4
+  JOIN t_1991_q4 ON t_1990_q4.geoid = t_1991_q4.geoid
+  JOIN t_1992_q4 ON t_1990_q4.geoid = t_1992_q4.geoid
+  JOIN t_1993_q4 ON t_1990_q4.geoid = t_1993_q4.geoid
+  JOIN t_1994_q4 ON t_1990_q4.geoid = t_1994_q4.geoid
+  GROUP BY t_1990_q4.geoid
+),
+avg_total AS (
+  SELECT AVG(total_estabs) AS avg_total_estabs
+  FROM grouped
+)
+SELECT
+  geoid,
+  row_count,
+  total_estabs,
+  avg_wage
+FROM grouped, avg_total
+WHERE total_estabs > avg_total_estabs
+ORDER BY total_estabs DESC;
+
+===== QUERY 12 =====
+NL:
+Using t_1990_q4, group rows by the pair (geoid, area_fips); show both columns and the row count, keep only pairs with at least 2 rows, and order by geoid then row count descending.
+
+SQL:
+SELECT geoid, area_fips, COUNT(*) AS row_count
+FROM t_1990_q4
+GROUP BY geoid, area_fips
+HAVING COUNT(*) >= 2
+ORDER BY geoid, row_count DESC;
+
+===== QUERY 13 =====
+NL:
+Using t_1991_q1, find geoid groups whose average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is greater than the overall average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting in t_1991_q1; show geoid, row count, average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and the difference from the overall average.
+
+SQL:
+SELECT t.geoid, COUNT(*) as row_count, AVG(t.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting) as avg_estabs, AVG(t.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting) - (SELECT AVG(qtrly_estabs_11_agriculture_forestry_fishing_and_hunting) FROM t_1991_q1) as diff_from_avg
+FROM t_1991_q1 t
+JOIN t_1990_q1 t0 ON t.geoid = t0.geoid
+JOIN t_1992_q1 t2 ON t.geoid = t2.geoid
+JOIN t_1993_q1 t3 ON t.geoid = t3.geoid
+JOIN t_1994_q1 t4 ON t.geoid = t4.geoid
+GROUP BY t.geoid
+HAVING AVG(t.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting) > (SELECT AVG(qtrly_estabs_11_agriculture_forestry_fishing_and_hunting) FROM t_1991_q1);
+
+===== QUERY 14 =====
+NL:
+Using t_1991_q1, group rows by geoid; for each group calculate row count, total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and average avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting; return only groups whose total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is above the average group total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, ordered by total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting descending.
+
+SQL:
+WITH grouped AS (
+  SELECT
+    t_1991_q1.geoid,
+    COUNT(*) AS row_count,
+    SUM(t_1991_q1.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting) AS total_estabs,
+    AVG(t_1991_q1.avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting) AS avg_wage
+  FROM t_1990_q1
+  JOIN t_1991_q1 ON t_1990_q1.geoid = t_1991_q1.geoid
+  JOIN t_1992_q1 ON t_1991_q1.geoid = t_1992_q1.geoid
+  JOIN t_1993_q1 ON t_1991_q1.geoid = t_1993_q1.geoid
+  JOIN t_1994_q1 ON t_1991_q1.geoid = t_1994_q1.geoid
+  GROUP BY t_1991_q1.geoid
+),
+avg_total AS (
+  SELECT AVG(total_estabs) AS avg_val FROM grouped
+)
+SELECT
+  geoid
+FROM grouped, avg_total
+WHERE total_estabs > avg_val
+ORDER BY total_estabs DESC;
+
+===== QUERY 15 =====
+NL:
+Using t_1991_q1, group rows by the pair (geoid, area_fips); show both columns and the row count, keep only pairs with at least 2 rows, and order by geoid then row count descending.
+
+SQL:
+SELECT geoid, area_fips, COUNT(*) AS row_count
+FROM t_1991_q1
+GROUP BY geoid, area_fips
+HAVING COUNT(*) >= 2
+ORDER BY geoid, row_count DESC;
+
+===== QUERY 16 =====
+NL:
+Using t_1991_q2, find geoid groups whose average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is greater than the overall average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting in t_1991_q2; show geoid, row count, average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and the difference from the overall average.
+
+SQL:
+WITH overall_avg AS (
+  SELECT AVG(qtrly_estabs_11_agriculture_forestry_fishing_and_hunting) AS avg_val
+  FROM t_1991_q2
+),
+group_stats AS (
+  SELECT 
+    t_1991_q2.geoid,
+    COUNT(*) AS row_count,
+    AVG(t_1991_q2.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting) AS avg_estabs
+  FROM t_1991_q2
+  JOIN t_1990_q2 ON t_1991_q2.geoid = t_1990_q2.geoid
+  JOIN t_1992_q2 ON t_1991_q2.geoid = t_1992_q2.geoid
+  JOIN t_1993_q2 ON t_1991_q2.geoid = t_1993_q2.geoid
+  JOIN t_1994_q2 ON t_1991_q2.geoid = t_1994_q2.geoid
+  GROUP BY t_1991_q2.geoid
+)
+SELECT 
+  gs.geoid,
+  gs.row_count,
+  gs.avg_estabs,
+  (gs.avg_estabs - oa.avg_val) AS diff_from_overall
+FROM group_stats gs
+CROSS JOIN overall_avg oa
+WHERE gs.avg_estabs > oa.avg_val;
+
+===== QUERY 17 =====
+NL:
+Using t_1991_q2, group rows by geoid; for each group calculate row count, total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and average avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting; return only groups whose total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is above the average group total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, ordered by total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting descending.
+
+SQL:
+WITH grouped AS (
+  SELECT 
+    t_1991_q2.geoid,
+    COUNT(*) AS row_count,
+    SUM(t_1991_q2.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting) AS total_estabs,
+    AVG(t_1991_q2.avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting) AS avg_wage
+  FROM t_1990_q2
+  JOIN t_1991_q2 ON t_1990_q2.geoid = t_1991_q2.geoid
+  JOIN t_1992_q2 ON t_1991_q2.geoid = t_1992_q2.geoid
+  JOIN t_1993_q2 ON t_1992_q2.geoid = t_1993_q2.geoid
+  JOIN t_1994_q2 ON t_1993_q2.geoid = t_1994_q2.geoid
+  GROUP BY t_1991_q2.geoid
+),
+avg_total AS (
+  SELECT AVG(total_estabs) AS avg_total_estabs
+  FROM grouped
+)
+SELECT 
+  geoid,
+  row_count,
+  total_estabs,
+  avg_wage
+FROM grouped, avg_total
+WHERE total_estabs > avg_total_estabs
+ORDER BY total_estabs DESC;
+
+===== QUERY 18 =====
+NL:
+Using t_1991_q2, group rows by the pair (geoid, area_fips); show both columns and the row count, keep only pairs with at least 2 rows, and order by geoid then row count descending.
+
+SQL:
+SELECT geoid, area_fips, COUNT(*) AS row_count
+FROM t_1991_q2
+GROUP BY geoid, area_fips
+HAVING COUNT(*) >= 2
+ORDER BY geoid, row_count DESC;
+
+===== QUERY 19 =====
+NL:
+Using t_1991_q3, find geoid groups whose average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is greater than the overall average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting in t_1991_q3; show geoid, row count, average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and the difference from the overall average.
+
+SQL:
+SELECT 
+    t_1991_q3.geoid,
+    COUNT(*) AS row_count,
+    AVG(t_1991_q3.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting) AS avg_estabs,
+    AVG(t_1991_q3.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting) - (
+        SELECT AVG(qtrly_estabs_11_agriculture_forestry_fishing_and_hunting) 
+        FROM t_1991_q3
+    ) AS diff_from_overall_avg
+FROM 
+    t_1991_q3
+JOIN t_1990_q3 ON t_1991_q3.geoid = t_1990_q3.geoid
+JOIN t_1992_q3 ON t_1991_q3.geoid = t_1992_q3.geoid
+JOIN t_1993_q3 ON t_1991_q3.geoid = t_1993_q3.geoid
+JOIN t_1994_q3 ON t_1991_q3.geoid = t_1994_q3.geoid
+GROUP BY 
+    t_1991_q3.geoid
+HAVING 
+    AVG(t_1991_q3.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting) > (
+        SELECT AVG(qtrly_estabs_11_agriculture_forestry_fishing_and_hunting) 
+        FROM t_1991_q3
+    );
+
+===== QUERY 20 =====
+NL:
+Using t_1991_q3, group rows by geoid; for each group calculate row count, total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and average avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting; return only groups whose total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is above the average group total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, ordered by total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting descending.
+
+SQL:
+SELECT t1.geoid, COUNT(*) AS row_count, SUM(t1.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting) AS total_estabs, AVG(t1.avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting) AS avg_wage
+FROM t_1991_q3 t1
+JOIN t_1990_q3 t0 ON t1.geoid = t0.geoid
+JOIN t_1992_q3 t2 ON t1.geoid = t2.geoid
+JOIN t_1993_q3 t3 ON t1.geoid = t3.geoid
+JOIN t_1994_q3 t4 ON t1.geoid = t4.geoid
+GROUP BY t1.geoid
+HAVING SUM(t1.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting) > (
+    SELECT AVG(group_total)
+    FROM (
+        SELECT SUM(qtrly_estabs_11_agriculture_forestry_fishing_and_hunting) AS group_total
+        FROM t_1991_q3
+        GROUP BY geoid
+    )
+)
+ORDER BY total_estabs DESC;
+

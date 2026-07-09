@@ -1,0 +1,160 @@
+===== QUERY 01 =====
+Difficulty: hard
+Type: group_by_having_order_limit
+Tables: Biospecimen
+Columns: Biospecimen.sample_barcode, Biospecimen.batch_number, Biospecimen.sample_gdc_id
+NL:
+Using Biospecimen, for each sample_barcode, show the row count, distinct sample_gdc_id count, total batch_number, average batch_number, and maximum batch_number; keep only groups with at least 2 rows and order by total batch_number descending, returning the top 10.
+
+===== QUERY 02 =====
+Difficulty: hard
+Type: above_overall_average
+Tables: Biospecimen
+Columns: Biospecimen.sample_barcode, Biospecimen.batch_number
+NL:
+Using Biospecimen, find sample_barcode values whose average batch_number is greater than the overall average batch_number in the same table; show sample_barcode, row count, average batch_number, and difference from the overall average.
+
+===== QUERY 03 =====
+Difficulty: hard
+Type: two_metric_group_comparison
+Tables: Biospecimen
+Columns: Biospecimen.sample_barcode, Biospecimen.batch_number, Biospecimen.days_to_collection
+NL:
+Using Biospecimen, group by sample_barcode and compare total batch_number with average days_to_collection; return groups where total batch_number is above the table-wide average total per sample_barcode, sorted by total batch_number descending.
+
+===== QUERY 04 =====
+Difficulty: hard
+Type: multi_group_rollup
+Tables: Biospecimen
+Columns: Biospecimen.sample_barcode, Biospecimen.sample_gdc_id, Biospecimen.batch_number
+NL:
+Using Biospecimen, for each pair of sample_barcode and sample_gdc_id, calculate row count, total batch_number, and average batch_number; keep pairs with at least 2 rows and rank them by total batch_number within each sample_barcode.
+
+===== QUERY 05 =====
+Difficulty: hard
+Type: date_trend
+Tables: Biospecimen
+Columns: Biospecimen.days_to_collection, Biospecimen.batch_number
+NL:
+Using Biospecimen, calculate monthly totals of batch_number based on days_to_collection, then show each month, total batch_number, previous-month total, and month-over-month percent change ordered by month.
+
+===== QUERY 06 =====
+Difficulty: medium-hard
+Type: duplicates
+Tables: Biospecimen
+Columns: Biospecimen.sample_barcode, Biospecimen.sample_gdc_id
+NL:
+Using Biospecimen, find duplicate sample_barcode values that are associated with more than one distinct sample_gdc_id; show sample_barcode, distinct sample_gdc_id count, and total row count, ordered by distinct count descending.
+
+===== QUERY 07 =====
+Difficulty: hard
+Type: group_by_having_order_limit
+Tables: Clinical
+Columns: Clinical.program_name, Clinical.program_dbgap_accession_number, Clinical.case_gdc_id
+NL:
+Using Clinical, for each program_name, show the row count, distinct case_gdc_id count, total program_dbgap_accession_number, average program_dbgap_accession_number, and maximum program_dbgap_accession_number; keep only groups with at least 2 rows and order by total program_dbgap_accession_number descending, returning the top 10.
+
+===== QUERY 08 =====
+Difficulty: hard
+Type: above_overall_average
+Tables: Clinical
+Columns: Clinical.program_name, Clinical.program_dbgap_accession_number
+NL:
+Using Clinical, find program_name values whose average program_dbgap_accession_number is greater than the overall average program_dbgap_accession_number in the same table; show program_name, row count, average program_dbgap_accession_number, and difference from the overall average.
+
+===== QUERY 09 =====
+Difficulty: hard
+Type: two_metric_group_comparison
+Tables: Clinical
+Columns: Clinical.program_name, Clinical.program_dbgap_accession_number, Clinical.age_at_diagnosis
+NL:
+Using Clinical, group by program_name and compare total program_dbgap_accession_number with average age_at_diagnosis; return groups where total program_dbgap_accession_number is above the table-wide average total per program_name, sorted by total program_dbgap_accession_number descending.
+
+===== QUERY 10 =====
+Difficulty: hard
+Type: multi_group_rollup
+Tables: Clinical
+Columns: Clinical.program_name, Clinical.case_barcode, Clinical.program_dbgap_accession_number
+NL:
+Using Clinical, for each pair of program_name and case_barcode, calculate row count, total program_dbgap_accession_number, and average program_dbgap_accession_number; keep pairs with at least 2 rows and rank them by total program_dbgap_accession_number within each program_name.
+
+===== QUERY 11 =====
+Difficulty: hard
+Type: date_trend
+Tables: Clinical
+Columns: Clinical.days_to_birth, Clinical.program_dbgap_accession_number
+NL:
+Using Clinical, calculate monthly totals of program_dbgap_accession_number based on days_to_birth, then show each month, total program_dbgap_accession_number, previous-month total, and month-over-month percent change ordered by month.
+
+===== QUERY 12 =====
+Difficulty: medium-hard
+Type: duplicates
+Tables: Clinical
+Columns: Clinical.program_name, Clinical.case_gdc_id
+NL:
+Using Clinical, find duplicate program_name values that are associated with more than one distinct case_gdc_id; show program_name, distinct case_gdc_id count, and total row count, ordered by distinct count descending.
+
+===== QUERY 13 =====
+Difficulty: hard
+Type: group_by_having_order_limit
+Tables: clinical_v1
+Columns: clinical_v1.case_gdc_id, clinical_v1.age_at_diagnosis, clinical_v1.case_gdc_id
+NL:
+Using clinical_v1, for each case_gdc_id, show the row count, distinct case_gdc_id count, total age_at_diagnosis, average age_at_diagnosis, and maximum age_at_diagnosis; keep only groups with at least 2 rows and order by total age_at_diagnosis descending, returning the top 10.
+
+===== QUERY 14 =====
+Difficulty: hard
+Type: above_overall_average
+Tables: clinical_v1
+Columns: clinical_v1.case_gdc_id, clinical_v1.age_at_diagnosis
+NL:
+Using clinical_v1, find case_gdc_id values whose average age_at_diagnosis is greater than the overall average age_at_diagnosis in the same table; show case_gdc_id, row count, average age_at_diagnosis, and difference from the overall average.
+
+===== QUERY 15 =====
+Difficulty: hard
+Type: two_metric_group_comparison
+Tables: clinical_v1
+Columns: clinical_v1.case_gdc_id, clinical_v1.age_at_diagnosis, clinical_v1.batch_number
+NL:
+Using clinical_v1, group by case_gdc_id and compare total age_at_diagnosis with average batch_number; return groups where total age_at_diagnosis is above the table-wide average total per case_gdc_id, sorted by total age_at_diagnosis descending.
+
+===== QUERY 16 =====
+Difficulty: hard
+Type: multi_group_rollup
+Tables: clinical_v1
+Columns: clinical_v1.case_gdc_id, clinical_v1.case_barcode, clinical_v1.age_at_diagnosis
+NL:
+Using clinical_v1, for each pair of case_gdc_id and case_barcode, calculate row count, total age_at_diagnosis, and average age_at_diagnosis; keep pairs with at least 2 rows and rank them by total age_at_diagnosis within each case_gdc_id.
+
+===== QUERY 17 =====
+Difficulty: hard
+Type: date_trend
+Tables: clinical_v1
+Columns: clinical_v1.age_began_smoking_in_years, clinical_v1.age_at_diagnosis
+NL:
+Using clinical_v1, calculate monthly totals of age_at_diagnosis based on age_began_smoking_in_years, then show each month, total age_at_diagnosis, previous-month total, and month-over-month percent change ordered by month.
+
+===== QUERY 18 =====
+Difficulty: medium-hard
+Type: duplicates
+Tables: clinical_v1
+Columns: clinical_v1.case_gdc_id, clinical_v1.case_gdc_id
+NL:
+Using clinical_v1, find duplicate case_gdc_id values that are associated with more than one distinct case_gdc_id; show case_gdc_id, distinct case_gdc_id count, and total row count, ordered by distinct count descending.
+
+===== QUERY 19 =====
+Difficulty: hard
+Type: group_by_having_order_limit
+Tables: clinical_v1_1
+Columns: clinical_v1_1.case_gdc_id, clinical_v1_1.age_at_diagnosis, clinical_v1_1.case_gdc_id
+NL:
+Using clinical_v1_1, for each case_gdc_id, show the row count, distinct case_gdc_id count, total age_at_diagnosis, average age_at_diagnosis, and maximum age_at_diagnosis; keep only groups with at least 2 rows and order by total age_at_diagnosis descending, returning the top 10.
+
+===== QUERY 20 =====
+Difficulty: hard
+Type: above_overall_average
+Tables: clinical_v1_1
+Columns: clinical_v1_1.case_gdc_id, clinical_v1_1.age_at_diagnosis
+NL:
+Using clinical_v1_1, find case_gdc_id values whose average age_at_diagnosis is greater than the overall average age_at_diagnosis in the same table; show case_gdc_id, row count, average age_at_diagnosis, and difference from the overall average.
+

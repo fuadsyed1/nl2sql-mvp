@@ -1,0 +1,160 @@
+===== QUERY 01 =====
+Difficulty: hard
+Type: above_overall_average
+Tables: t_1990_q1
+Columns: t_1990_q1.geoid, t_1990_q1.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting
+NL:
+Using t_1990_q1, find geoid groups whose average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is greater than the overall average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting in t_1990_q1; show geoid, row count, average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and the difference from the overall average.
+
+===== QUERY 02 =====
+Difficulty: hard
+Type: aggregate_subquery_comparison
+Tables: t_1990_q1
+Columns: t_1990_q1.geoid, t_1990_q1.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, t_1990_q1.avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting
+NL:
+Using t_1990_q1, group rows by geoid; for each group calculate row count, total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and average avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting; return only groups whose total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is above the average group total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, ordered by total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting descending.
+
+===== QUERY 03 =====
+Difficulty: medium-hard
+Type: two_column_grouping
+Tables: t_1990_q1
+Columns: t_1990_q1.geoid, t_1990_q1.area_fips
+NL:
+Using t_1990_q1, group rows by the pair (geoid, area_fips); show both columns and the row count, keep only pairs with at least 2 rows, and order by geoid then row count descending.
+
+===== QUERY 04 =====
+Difficulty: hard
+Type: above_overall_average
+Tables: t_1990_q2
+Columns: t_1990_q2.geoid, t_1990_q2.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting
+NL:
+Using t_1990_q2, find geoid groups whose average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is greater than the overall average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting in t_1990_q2; show geoid, row count, average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and the difference from the overall average.
+
+===== QUERY 05 =====
+Difficulty: hard
+Type: aggregate_subquery_comparison
+Tables: t_1990_q2
+Columns: t_1990_q2.geoid, t_1990_q2.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, t_1990_q2.avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting
+NL:
+Using t_1990_q2, group rows by geoid; for each group calculate row count, total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and average avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting; return only groups whose total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is above the average group total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, ordered by total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting descending.
+
+===== QUERY 06 =====
+Difficulty: medium-hard
+Type: two_column_grouping
+Tables: t_1990_q2
+Columns: t_1990_q2.geoid, t_1990_q2.area_fips
+NL:
+Using t_1990_q2, group rows by the pair (geoid, area_fips); show both columns and the row count, keep only pairs with at least 2 rows, and order by geoid then row count descending.
+
+===== QUERY 07 =====
+Difficulty: hard
+Type: above_overall_average
+Tables: t_1990_q3
+Columns: t_1990_q3.geoid, t_1990_q3.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting
+NL:
+Using t_1990_q3, find geoid groups whose average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is greater than the overall average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting in t_1990_q3; show geoid, row count, average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and the difference from the overall average.
+
+===== QUERY 08 =====
+Difficulty: hard
+Type: aggregate_subquery_comparison
+Tables: t_1990_q3
+Columns: t_1990_q3.geoid, t_1990_q3.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, t_1990_q3.avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting
+NL:
+Using t_1990_q3, group rows by geoid; for each group calculate row count, total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and average avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting; return only groups whose total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is above the average group total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, ordered by total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting descending.
+
+===== QUERY 09 =====
+Difficulty: medium-hard
+Type: two_column_grouping
+Tables: t_1990_q3
+Columns: t_1990_q3.geoid, t_1990_q3.area_fips
+NL:
+Using t_1990_q3, group rows by the pair (geoid, area_fips); show both columns and the row count, keep only pairs with at least 2 rows, and order by geoid then row count descending.
+
+===== QUERY 10 =====
+Difficulty: hard
+Type: above_overall_average
+Tables: t_1990_q4
+Columns: t_1990_q4.geoid, t_1990_q4.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting
+NL:
+Using t_1990_q4, find geoid groups whose average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is greater than the overall average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting in t_1990_q4; show geoid, row count, average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and the difference from the overall average.
+
+===== QUERY 11 =====
+Difficulty: hard
+Type: aggregate_subquery_comparison
+Tables: t_1990_q4
+Columns: t_1990_q4.geoid, t_1990_q4.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, t_1990_q4.avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting
+NL:
+Using t_1990_q4, group rows by geoid; for each group calculate row count, total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and average avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting; return only groups whose total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is above the average group total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, ordered by total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting descending.
+
+===== QUERY 12 =====
+Difficulty: medium-hard
+Type: two_column_grouping
+Tables: t_1990_q4
+Columns: t_1990_q4.geoid, t_1990_q4.area_fips
+NL:
+Using t_1990_q4, group rows by the pair (geoid, area_fips); show both columns and the row count, keep only pairs with at least 2 rows, and order by geoid then row count descending.
+
+===== QUERY 13 =====
+Difficulty: hard
+Type: above_overall_average
+Tables: t_1991_q1
+Columns: t_1991_q1.geoid, t_1991_q1.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting
+NL:
+Using t_1991_q1, find geoid groups whose average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is greater than the overall average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting in t_1991_q1; show geoid, row count, average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and the difference from the overall average.
+
+===== QUERY 14 =====
+Difficulty: hard
+Type: aggregate_subquery_comparison
+Tables: t_1991_q1
+Columns: t_1991_q1.geoid, t_1991_q1.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, t_1991_q1.avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting
+NL:
+Using t_1991_q1, group rows by geoid; for each group calculate row count, total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and average avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting; return only groups whose total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is above the average group total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, ordered by total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting descending.
+
+===== QUERY 15 =====
+Difficulty: medium-hard
+Type: two_column_grouping
+Tables: t_1991_q1
+Columns: t_1991_q1.geoid, t_1991_q1.area_fips
+NL:
+Using t_1991_q1, group rows by the pair (geoid, area_fips); show both columns and the row count, keep only pairs with at least 2 rows, and order by geoid then row count descending.
+
+===== QUERY 16 =====
+Difficulty: hard
+Type: above_overall_average
+Tables: t_1991_q2
+Columns: t_1991_q2.geoid, t_1991_q2.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting
+NL:
+Using t_1991_q2, find geoid groups whose average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is greater than the overall average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting in t_1991_q2; show geoid, row count, average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and the difference from the overall average.
+
+===== QUERY 17 =====
+Difficulty: hard
+Type: aggregate_subquery_comparison
+Tables: t_1991_q2
+Columns: t_1991_q2.geoid, t_1991_q2.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, t_1991_q2.avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting
+NL:
+Using t_1991_q2, group rows by geoid; for each group calculate row count, total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and average avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting; return only groups whose total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is above the average group total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, ordered by total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting descending.
+
+===== QUERY 18 =====
+Difficulty: medium-hard
+Type: two_column_grouping
+Tables: t_1991_q2
+Columns: t_1991_q2.geoid, t_1991_q2.area_fips
+NL:
+Using t_1991_q2, group rows by the pair (geoid, area_fips); show both columns and the row count, keep only pairs with at least 2 rows, and order by geoid then row count descending.
+
+===== QUERY 19 =====
+Difficulty: hard
+Type: above_overall_average
+Tables: t_1991_q3
+Columns: t_1991_q3.geoid, t_1991_q3.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting
+NL:
+Using t_1991_q3, find geoid groups whose average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is greater than the overall average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting in t_1991_q3; show geoid, row count, average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and the difference from the overall average.
+
+===== QUERY 20 =====
+Difficulty: hard
+Type: aggregate_subquery_comparison
+Tables: t_1991_q3
+Columns: t_1991_q3.geoid, t_1991_q3.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, t_1991_q3.avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting
+NL:
+Using t_1991_q3, group rows by geoid; for each group calculate row count, total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and average avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting; return only groups whose total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is above the average group total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, ordered by total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting descending.
+

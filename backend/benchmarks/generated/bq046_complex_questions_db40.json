@@ -1,0 +1,292 @@
+[
+  {
+    "id": 1,
+    "difficulty": "hard",
+    "question_type": "group_by_having_order_limit",
+    "tables": [
+      "Biospecimen"
+    ],
+    "columns": [
+      "Biospecimen.sample_barcode",
+      "Biospecimen.batch_number",
+      "Biospecimen.sample_gdc_id"
+    ],
+    "question": "Using Biospecimen, for each sample_barcode, show the row count, distinct sample_gdc_id count, total batch_number, average batch_number, and maximum batch_number; keep only groups with at least 2 rows and order by total batch_number descending, returning the top 10.",
+    "notes": "Uses only actual columns from one table: GROUP BY, aggregates, HAVING, ORDER BY, LIMIT."
+  },
+  {
+    "id": 2,
+    "difficulty": "hard",
+    "question_type": "above_overall_average",
+    "tables": [
+      "Biospecimen"
+    ],
+    "columns": [
+      "Biospecimen.sample_barcode",
+      "Biospecimen.batch_number"
+    ],
+    "question": "Using Biospecimen, find sample_barcode values whose average batch_number is greater than the overall average batch_number in the same table; show sample_barcode, row count, average batch_number, and difference from the overall average.",
+    "notes": "Single-table comparison against scalar subquery."
+  },
+  {
+    "id": 3,
+    "difficulty": "hard",
+    "question_type": "two_metric_group_comparison",
+    "tables": [
+      "Biospecimen"
+    ],
+    "columns": [
+      "Biospecimen.sample_barcode",
+      "Biospecimen.batch_number",
+      "Biospecimen.days_to_collection"
+    ],
+    "question": "Using Biospecimen, group by sample_barcode and compare total batch_number with average days_to_collection; return groups where total batch_number is above the table-wide average total per sample_barcode, sorted by total batch_number descending.",
+    "notes": "Two measures from the same table with aggregate comparison."
+  },
+  {
+    "id": 4,
+    "difficulty": "hard",
+    "question_type": "multi_group_rollup",
+    "tables": [
+      "Biospecimen"
+    ],
+    "columns": [
+      "Biospecimen.sample_barcode",
+      "Biospecimen.sample_gdc_id",
+      "Biospecimen.batch_number"
+    ],
+    "question": "Using Biospecimen, for each pair of sample_barcode and sample_gdc_id, calculate row count, total batch_number, and average batch_number; keep pairs with at least 2 rows and rank them by total batch_number within each sample_barcode.",
+    "notes": "Two-dimensional grouping plus rank-style ordering expectation."
+  },
+  {
+    "id": 5,
+    "difficulty": "hard",
+    "question_type": "date_trend",
+    "tables": [
+      "Biospecimen"
+    ],
+    "columns": [
+      "Biospecimen.days_to_collection",
+      "Biospecimen.batch_number"
+    ],
+    "question": "Using Biospecimen, calculate monthly totals of batch_number based on days_to_collection, then show each month, total batch_number, previous-month total, and month-over-month percent change ordered by month.",
+    "notes": "Date bucketing + window/LAG style question when a date-like column exists."
+  },
+  {
+    "id": 6,
+    "difficulty": "medium-hard",
+    "question_type": "duplicates",
+    "tables": [
+      "Biospecimen"
+    ],
+    "columns": [
+      "Biospecimen.sample_barcode",
+      "Biospecimen.sample_gdc_id"
+    ],
+    "question": "Using Biospecimen, find duplicate sample_barcode values that are associated with more than one distinct sample_gdc_id; show sample_barcode, distinct sample_gdc_id count, and total row count, ordered by distinct count descending.",
+    "notes": "Duplicate/entity consistency check."
+  },
+  {
+    "id": 7,
+    "difficulty": "hard",
+    "question_type": "group_by_having_order_limit",
+    "tables": [
+      "Clinical"
+    ],
+    "columns": [
+      "Clinical.program_name",
+      "Clinical.program_dbgap_accession_number",
+      "Clinical.case_gdc_id"
+    ],
+    "question": "Using Clinical, for each program_name, show the row count, distinct case_gdc_id count, total program_dbgap_accession_number, average program_dbgap_accession_number, and maximum program_dbgap_accession_number; keep only groups with at least 2 rows and order by total program_dbgap_accession_number descending, returning the top 10.",
+    "notes": "Uses only actual columns from one table: GROUP BY, aggregates, HAVING, ORDER BY, LIMIT."
+  },
+  {
+    "id": 8,
+    "difficulty": "hard",
+    "question_type": "above_overall_average",
+    "tables": [
+      "Clinical"
+    ],
+    "columns": [
+      "Clinical.program_name",
+      "Clinical.program_dbgap_accession_number"
+    ],
+    "question": "Using Clinical, find program_name values whose average program_dbgap_accession_number is greater than the overall average program_dbgap_accession_number in the same table; show program_name, row count, average program_dbgap_accession_number, and difference from the overall average.",
+    "notes": "Single-table comparison against scalar subquery."
+  },
+  {
+    "id": 9,
+    "difficulty": "hard",
+    "question_type": "two_metric_group_comparison",
+    "tables": [
+      "Clinical"
+    ],
+    "columns": [
+      "Clinical.program_name",
+      "Clinical.program_dbgap_accession_number",
+      "Clinical.age_at_diagnosis"
+    ],
+    "question": "Using Clinical, group by program_name and compare total program_dbgap_accession_number with average age_at_diagnosis; return groups where total program_dbgap_accession_number is above the table-wide average total per program_name, sorted by total program_dbgap_accession_number descending.",
+    "notes": "Two measures from the same table with aggregate comparison."
+  },
+  {
+    "id": 10,
+    "difficulty": "hard",
+    "question_type": "multi_group_rollup",
+    "tables": [
+      "Clinical"
+    ],
+    "columns": [
+      "Clinical.program_name",
+      "Clinical.case_barcode",
+      "Clinical.program_dbgap_accession_number"
+    ],
+    "question": "Using Clinical, for each pair of program_name and case_barcode, calculate row count, total program_dbgap_accession_number, and average program_dbgap_accession_number; keep pairs with at least 2 rows and rank them by total program_dbgap_accession_number within each program_name.",
+    "notes": "Two-dimensional grouping plus rank-style ordering expectation."
+  },
+  {
+    "id": 11,
+    "difficulty": "hard",
+    "question_type": "date_trend",
+    "tables": [
+      "Clinical"
+    ],
+    "columns": [
+      "Clinical.days_to_birth",
+      "Clinical.program_dbgap_accession_number"
+    ],
+    "question": "Using Clinical, calculate monthly totals of program_dbgap_accession_number based on days_to_birth, then show each month, total program_dbgap_accession_number, previous-month total, and month-over-month percent change ordered by month.",
+    "notes": "Date bucketing + window/LAG style question when a date-like column exists."
+  },
+  {
+    "id": 12,
+    "difficulty": "medium-hard",
+    "question_type": "duplicates",
+    "tables": [
+      "Clinical"
+    ],
+    "columns": [
+      "Clinical.program_name",
+      "Clinical.case_gdc_id"
+    ],
+    "question": "Using Clinical, find duplicate program_name values that are associated with more than one distinct case_gdc_id; show program_name, distinct case_gdc_id count, and total row count, ordered by distinct count descending.",
+    "notes": "Duplicate/entity consistency check."
+  },
+  {
+    "id": 13,
+    "difficulty": "hard",
+    "question_type": "group_by_having_order_limit",
+    "tables": [
+      "clinical_v1"
+    ],
+    "columns": [
+      "clinical_v1.case_gdc_id",
+      "clinical_v1.age_at_diagnosis",
+      "clinical_v1.case_gdc_id"
+    ],
+    "question": "Using clinical_v1, for each case_gdc_id, show the row count, distinct case_gdc_id count, total age_at_diagnosis, average age_at_diagnosis, and maximum age_at_diagnosis; keep only groups with at least 2 rows and order by total age_at_diagnosis descending, returning the top 10.",
+    "notes": "Uses only actual columns from one table: GROUP BY, aggregates, HAVING, ORDER BY, LIMIT."
+  },
+  {
+    "id": 14,
+    "difficulty": "hard",
+    "question_type": "above_overall_average",
+    "tables": [
+      "clinical_v1"
+    ],
+    "columns": [
+      "clinical_v1.case_gdc_id",
+      "clinical_v1.age_at_diagnosis"
+    ],
+    "question": "Using clinical_v1, find case_gdc_id values whose average age_at_diagnosis is greater than the overall average age_at_diagnosis in the same table; show case_gdc_id, row count, average age_at_diagnosis, and difference from the overall average.",
+    "notes": "Single-table comparison against scalar subquery."
+  },
+  {
+    "id": 15,
+    "difficulty": "hard",
+    "question_type": "two_metric_group_comparison",
+    "tables": [
+      "clinical_v1"
+    ],
+    "columns": [
+      "clinical_v1.case_gdc_id",
+      "clinical_v1.age_at_diagnosis",
+      "clinical_v1.batch_number"
+    ],
+    "question": "Using clinical_v1, group by case_gdc_id and compare total age_at_diagnosis with average batch_number; return groups where total age_at_diagnosis is above the table-wide average total per case_gdc_id, sorted by total age_at_diagnosis descending.",
+    "notes": "Two measures from the same table with aggregate comparison."
+  },
+  {
+    "id": 16,
+    "difficulty": "hard",
+    "question_type": "multi_group_rollup",
+    "tables": [
+      "clinical_v1"
+    ],
+    "columns": [
+      "clinical_v1.case_gdc_id",
+      "clinical_v1.case_barcode",
+      "clinical_v1.age_at_diagnosis"
+    ],
+    "question": "Using clinical_v1, for each pair of case_gdc_id and case_barcode, calculate row count, total age_at_diagnosis, and average age_at_diagnosis; keep pairs with at least 2 rows and rank them by total age_at_diagnosis within each case_gdc_id.",
+    "notes": "Two-dimensional grouping plus rank-style ordering expectation."
+  },
+  {
+    "id": 17,
+    "difficulty": "hard",
+    "question_type": "date_trend",
+    "tables": [
+      "clinical_v1"
+    ],
+    "columns": [
+      "clinical_v1.age_began_smoking_in_years",
+      "clinical_v1.age_at_diagnosis"
+    ],
+    "question": "Using clinical_v1, calculate monthly totals of age_at_diagnosis based on age_began_smoking_in_years, then show each month, total age_at_diagnosis, previous-month total, and month-over-month percent change ordered by month.",
+    "notes": "Date bucketing + window/LAG style question when a date-like column exists."
+  },
+  {
+    "id": 18,
+    "difficulty": "medium-hard",
+    "question_type": "duplicates",
+    "tables": [
+      "clinical_v1"
+    ],
+    "columns": [
+      "clinical_v1.case_gdc_id",
+      "clinical_v1.case_gdc_id"
+    ],
+    "question": "Using clinical_v1, find duplicate case_gdc_id values that are associated with more than one distinct case_gdc_id; show case_gdc_id, distinct case_gdc_id count, and total row count, ordered by distinct count descending.",
+    "notes": "Duplicate/entity consistency check."
+  },
+  {
+    "id": 19,
+    "difficulty": "hard",
+    "question_type": "group_by_having_order_limit",
+    "tables": [
+      "clinical_v1_1"
+    ],
+    "columns": [
+      "clinical_v1_1.case_gdc_id",
+      "clinical_v1_1.age_at_diagnosis",
+      "clinical_v1_1.case_gdc_id"
+    ],
+    "question": "Using clinical_v1_1, for each case_gdc_id, show the row count, distinct case_gdc_id count, total age_at_diagnosis, average age_at_diagnosis, and maximum age_at_diagnosis; keep only groups with at least 2 rows and order by total age_at_diagnosis descending, returning the top 10.",
+    "notes": "Uses only actual columns from one table: GROUP BY, aggregates, HAVING, ORDER BY, LIMIT."
+  },
+  {
+    "id": 20,
+    "difficulty": "hard",
+    "question_type": "above_overall_average",
+    "tables": [
+      "clinical_v1_1"
+    ],
+    "columns": [
+      "clinical_v1_1.case_gdc_id",
+      "clinical_v1_1.age_at_diagnosis"
+    ],
+    "question": "Using clinical_v1_1, find case_gdc_id values whose average age_at_diagnosis is greater than the overall average age_at_diagnosis in the same table; show case_gdc_id, row count, average age_at_diagnosis, and difference from the overall average.",
+    "notes": "Single-table comparison against scalar subquery."
+  }
+]

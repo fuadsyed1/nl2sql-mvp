@@ -1,0 +1,289 @@
+[
+  {
+    "id": 1,
+    "difficulty": "hard",
+    "question_type": "above_overall_average",
+    "tables": [
+      "t_1990_q1"
+    ],
+    "columns": [
+      "t_1990_q1.geoid",
+      "t_1990_q1.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting"
+    ],
+    "question": "Using t_1990_q1, find geoid groups whose average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is greater than the overall average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting in t_1990_q1; show geoid, row count, average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and the difference from the overall average.",
+    "validation_notes": "Valid: meaningful numeric metric compared against same-table scalar aggregate."
+  },
+  {
+    "id": 2,
+    "difficulty": "hard",
+    "question_type": "aggregate_subquery_comparison",
+    "tables": [
+      "t_1990_q1"
+    ],
+    "columns": [
+      "t_1990_q1.geoid",
+      "t_1990_q1.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting",
+      "t_1990_q1.avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting"
+    ],
+    "question": "Using t_1990_q1, group rows by geoid; for each group calculate row count, total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and average avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting; return only groups whose total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is above the average group total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, ordered by total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting descending.",
+    "validation_notes": "Valid: two different meaningful numeric metrics from the same table."
+  },
+  {
+    "id": 3,
+    "difficulty": "medium-hard",
+    "question_type": "two_column_grouping",
+    "tables": [
+      "t_1990_q1"
+    ],
+    "columns": [
+      "t_1990_q1.geoid",
+      "t_1990_q1.area_fips"
+    ],
+    "question": "Using t_1990_q1, group rows by the pair (geoid, area_fips); show both columns and the row count, keep only pairs with at least 2 rows, and order by geoid then row count descending.",
+    "validation_notes": "Valid: two real categorical columns from one table."
+  },
+  {
+    "id": 4,
+    "difficulty": "hard",
+    "question_type": "above_overall_average",
+    "tables": [
+      "t_1990_q2"
+    ],
+    "columns": [
+      "t_1990_q2.geoid",
+      "t_1990_q2.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting"
+    ],
+    "question": "Using t_1990_q2, find geoid groups whose average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is greater than the overall average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting in t_1990_q2; show geoid, row count, average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and the difference from the overall average.",
+    "validation_notes": "Valid: meaningful numeric metric compared against same-table scalar aggregate."
+  },
+  {
+    "id": 5,
+    "difficulty": "hard",
+    "question_type": "aggregate_subquery_comparison",
+    "tables": [
+      "t_1990_q2"
+    ],
+    "columns": [
+      "t_1990_q2.geoid",
+      "t_1990_q2.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting",
+      "t_1990_q2.avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting"
+    ],
+    "question": "Using t_1990_q2, group rows by geoid; for each group calculate row count, total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and average avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting; return only groups whose total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is above the average group total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, ordered by total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting descending.",
+    "validation_notes": "Valid: two different meaningful numeric metrics from the same table."
+  },
+  {
+    "id": 6,
+    "difficulty": "medium-hard",
+    "question_type": "two_column_grouping",
+    "tables": [
+      "t_1990_q2"
+    ],
+    "columns": [
+      "t_1990_q2.geoid",
+      "t_1990_q2.area_fips"
+    ],
+    "question": "Using t_1990_q2, group rows by the pair (geoid, area_fips); show both columns and the row count, keep only pairs with at least 2 rows, and order by geoid then row count descending.",
+    "validation_notes": "Valid: two real categorical columns from one table."
+  },
+  {
+    "id": 7,
+    "difficulty": "hard",
+    "question_type": "above_overall_average",
+    "tables": [
+      "t_1990_q3"
+    ],
+    "columns": [
+      "t_1990_q3.geoid",
+      "t_1990_q3.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting"
+    ],
+    "question": "Using t_1990_q3, find geoid groups whose average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is greater than the overall average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting in t_1990_q3; show geoid, row count, average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and the difference from the overall average.",
+    "validation_notes": "Valid: meaningful numeric metric compared against same-table scalar aggregate."
+  },
+  {
+    "id": 8,
+    "difficulty": "hard",
+    "question_type": "aggregate_subquery_comparison",
+    "tables": [
+      "t_1990_q3"
+    ],
+    "columns": [
+      "t_1990_q3.geoid",
+      "t_1990_q3.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting",
+      "t_1990_q3.avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting"
+    ],
+    "question": "Using t_1990_q3, group rows by geoid; for each group calculate row count, total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and average avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting; return only groups whose total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is above the average group total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, ordered by total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting descending.",
+    "validation_notes": "Valid: two different meaningful numeric metrics from the same table."
+  },
+  {
+    "id": 9,
+    "difficulty": "medium-hard",
+    "question_type": "two_column_grouping",
+    "tables": [
+      "t_1990_q3"
+    ],
+    "columns": [
+      "t_1990_q3.geoid",
+      "t_1990_q3.area_fips"
+    ],
+    "question": "Using t_1990_q3, group rows by the pair (geoid, area_fips); show both columns and the row count, keep only pairs with at least 2 rows, and order by geoid then row count descending.",
+    "validation_notes": "Valid: two real categorical columns from one table."
+  },
+  {
+    "id": 10,
+    "difficulty": "hard",
+    "question_type": "above_overall_average",
+    "tables": [
+      "t_1990_q4"
+    ],
+    "columns": [
+      "t_1990_q4.geoid",
+      "t_1990_q4.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting"
+    ],
+    "question": "Using t_1990_q4, find geoid groups whose average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is greater than the overall average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting in t_1990_q4; show geoid, row count, average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and the difference from the overall average.",
+    "validation_notes": "Valid: meaningful numeric metric compared against same-table scalar aggregate."
+  },
+  {
+    "id": 11,
+    "difficulty": "hard",
+    "question_type": "aggregate_subquery_comparison",
+    "tables": [
+      "t_1990_q4"
+    ],
+    "columns": [
+      "t_1990_q4.geoid",
+      "t_1990_q4.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting",
+      "t_1990_q4.avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting"
+    ],
+    "question": "Using t_1990_q4, group rows by geoid; for each group calculate row count, total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and average avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting; return only groups whose total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is above the average group total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, ordered by total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting descending.",
+    "validation_notes": "Valid: two different meaningful numeric metrics from the same table."
+  },
+  {
+    "id": 12,
+    "difficulty": "medium-hard",
+    "question_type": "two_column_grouping",
+    "tables": [
+      "t_1990_q4"
+    ],
+    "columns": [
+      "t_1990_q4.geoid",
+      "t_1990_q4.area_fips"
+    ],
+    "question": "Using t_1990_q4, group rows by the pair (geoid, area_fips); show both columns and the row count, keep only pairs with at least 2 rows, and order by geoid then row count descending.",
+    "validation_notes": "Valid: two real categorical columns from one table."
+  },
+  {
+    "id": 13,
+    "difficulty": "hard",
+    "question_type": "above_overall_average",
+    "tables": [
+      "t_1991_q1"
+    ],
+    "columns": [
+      "t_1991_q1.geoid",
+      "t_1991_q1.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting"
+    ],
+    "question": "Using t_1991_q1, find geoid groups whose average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is greater than the overall average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting in t_1991_q1; show geoid, row count, average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and the difference from the overall average.",
+    "validation_notes": "Valid: meaningful numeric metric compared against same-table scalar aggregate."
+  },
+  {
+    "id": 14,
+    "difficulty": "hard",
+    "question_type": "aggregate_subquery_comparison",
+    "tables": [
+      "t_1991_q1"
+    ],
+    "columns": [
+      "t_1991_q1.geoid",
+      "t_1991_q1.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting",
+      "t_1991_q1.avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting"
+    ],
+    "question": "Using t_1991_q1, group rows by geoid; for each group calculate row count, total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and average avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting; return only groups whose total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is above the average group total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, ordered by total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting descending.",
+    "validation_notes": "Valid: two different meaningful numeric metrics from the same table."
+  },
+  {
+    "id": 15,
+    "difficulty": "medium-hard",
+    "question_type": "two_column_grouping",
+    "tables": [
+      "t_1991_q1"
+    ],
+    "columns": [
+      "t_1991_q1.geoid",
+      "t_1991_q1.area_fips"
+    ],
+    "question": "Using t_1991_q1, group rows by the pair (geoid, area_fips); show both columns and the row count, keep only pairs with at least 2 rows, and order by geoid then row count descending.",
+    "validation_notes": "Valid: two real categorical columns from one table."
+  },
+  {
+    "id": 16,
+    "difficulty": "hard",
+    "question_type": "above_overall_average",
+    "tables": [
+      "t_1991_q2"
+    ],
+    "columns": [
+      "t_1991_q2.geoid",
+      "t_1991_q2.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting"
+    ],
+    "question": "Using t_1991_q2, find geoid groups whose average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is greater than the overall average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting in t_1991_q2; show geoid, row count, average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and the difference from the overall average.",
+    "validation_notes": "Valid: meaningful numeric metric compared against same-table scalar aggregate."
+  },
+  {
+    "id": 17,
+    "difficulty": "hard",
+    "question_type": "aggregate_subquery_comparison",
+    "tables": [
+      "t_1991_q2"
+    ],
+    "columns": [
+      "t_1991_q2.geoid",
+      "t_1991_q2.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting",
+      "t_1991_q2.avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting"
+    ],
+    "question": "Using t_1991_q2, group rows by geoid; for each group calculate row count, total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and average avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting; return only groups whose total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is above the average group total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, ordered by total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting descending.",
+    "validation_notes": "Valid: two different meaningful numeric metrics from the same table."
+  },
+  {
+    "id": 18,
+    "difficulty": "medium-hard",
+    "question_type": "two_column_grouping",
+    "tables": [
+      "t_1991_q2"
+    ],
+    "columns": [
+      "t_1991_q2.geoid",
+      "t_1991_q2.area_fips"
+    ],
+    "question": "Using t_1991_q2, group rows by the pair (geoid, area_fips); show both columns and the row count, keep only pairs with at least 2 rows, and order by geoid then row count descending.",
+    "validation_notes": "Valid: two real categorical columns from one table."
+  },
+  {
+    "id": 19,
+    "difficulty": "hard",
+    "question_type": "above_overall_average",
+    "tables": [
+      "t_1991_q3"
+    ],
+    "columns": [
+      "t_1991_q3.geoid",
+      "t_1991_q3.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting"
+    ],
+    "question": "Using t_1991_q3, find geoid groups whose average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is greater than the overall average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting in t_1991_q3; show geoid, row count, average qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and the difference from the overall average.",
+    "validation_notes": "Valid: meaningful numeric metric compared against same-table scalar aggregate."
+  },
+  {
+    "id": 20,
+    "difficulty": "hard",
+    "question_type": "aggregate_subquery_comparison",
+    "tables": [
+      "t_1991_q3"
+    ],
+    "columns": [
+      "t_1991_q3.geoid",
+      "t_1991_q3.qtrly_estabs_11_agriculture_forestry_fishing_and_hunting",
+      "t_1991_q3.avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting"
+    ],
+    "question": "Using t_1991_q3, group rows by geoid; for each group calculate row count, total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, and average avg_wkly_wage_11_agriculture_forestry_fishing_and_hunting; return only groups whose total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting is above the average group total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting, ordered by total qtrly_estabs_11_agriculture_forestry_fishing_and_hunting descending.",
+    "validation_notes": "Valid: two different meaningful numeric metrics from the same table."
+  }
+]
