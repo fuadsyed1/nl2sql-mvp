@@ -110,8 +110,10 @@ class PairwiseRelationship(BaseModel):
     # Qa EXCEPT Qb (rows in A missing from B) and Qb EXCEPT Qa, capped.
     a_minus_b_rows: list[list] = Field(default_factory=list)
     b_minus_a_rows: list[list] = Field(default_factory=list)
-    # How the pair was compared: "output_columns" (full tuple), or
-    # "canonical_key:<col>" when Step-1 projection normalization was used.
+    # How the pair was compared: "output_columns" (full tuple),
+    # "canonical_key:<col>" (Step 1 projection normalization),
+    # "group_key:<col>" / "group_keys:<c1,c2>" (Step 2 GROUP BY keys), or
+    # "distinct_key:<col>" / "distinct_keys:<c1,c2>" (Step 3 DISTINCT keys).
     # None when the pair could not be compared (unknown).
     compared_on: str | None = None
 
@@ -129,6 +131,51 @@ class QuerySummary(BaseModel):
     empty_result: bool = False
 
 
+# ---------------------------------------------------------------------------
+# Step 5: batch-level hierarchy / main-set analysis (derived from pairwise).
+# ---------------------------------------------------------------------------
+
+
+class MainQuery(BaseModel):
+    """A maximal (broadest) query: not contained by any non-equivalent query.
+    Empty-result queries are never listed here."""
+    index: int
+    equivalent_to: list[int] = Field(default_factory=list)
+    contains: list[int] = Field(default_factory=list)   # transitive subsets
+    contained_by: list[int] = Field(default_factory=list)
+
+
+class ContainmentEdge(BaseModel):
+    superset: int
+    subset: int
+    relationship_source: str = "pairwise"
+
+
+class UnknownPair(BaseModel):
+    left: int
+    right: int
+    reason: str
+
+
+class IncomparablePair(BaseModel):
+    left: int
+    right: int
+
+
+class ContainmentAnalysis(BaseModel):
+    """Batch-level rollup over the pairwise relationships. Derived only from
+    proven pairwise results; unknown pairs never create edges."""
+    query_count: int
+    main_queries: list[MainQuery] = Field(default_factory=list)
+    equivalent_groups: list[list[int]] = Field(default_factory=list)
+    containment_edges: list[ContainmentEdge] = Field(default_factory=list)
+    independent_queries: list[int] = Field(default_factory=list)
+    unknown_pairs: list[UnknownPair] = Field(default_factory=list)
+    incomparable_pairs: list[IncomparablePair] = Field(default_factory=list)
+    empty_queries: list[int] = Field(default_factory=list)
+    summary_text: str = ""
+
+
 class ContainmentBatchResponse(BaseModel):
     """Top-level batch response. Contained/equivalent verdicts hold only on the
     current database; not-contained/incomparable are backed by counterexample
@@ -138,6 +185,7 @@ class ContainmentBatchResponse(BaseModel):
     query_results: list[BatchQueryResult] = Field(default_factory=list)
     pairwise_relationships: list[PairwiseRelationship] = Field(default_factory=list)
     query_summaries: list[QuerySummary] = Field(default_factory=list)
+    analysis: ContainmentAnalysis | None = None
     checked_on_current_database: bool = False
     proof_type: str | None = None
     limitations: str | None = None

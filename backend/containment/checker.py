@@ -33,7 +33,27 @@ __all__ = [
     "unsupported_shape",
     "check_live_containment",
     "build_key_comparison",
+    "is_group_by",
+    "build_group_key_comparison",
+    "is_distinct",
+    "build_distinct_key_comparison",
+    "is_scalar_aggregate",
+    "unsupported_containment_shape",
+    "REASON_SETOP",
+    "REASON_LIMIT",
+    "REASON_SCALAR_AGG",
+    "REASON_NO_COMMON_KEY",
 ]
+
+# ---------------------------------------------------------------------------
+# Step 4: centralized, deterministic refusal reasons for shapes we do NOT
+# normalize yet. Kept as constants so the same wording is reused everywhere and
+# is easy to assert in tests.
+# ---------------------------------------------------------------------------
+REASON_SETOP = "set operations are not supported for containment normalization"
+REASON_LIMIT = "limit/top-k queries are not safe for containment normalization"
+REASON_SCALAR_AGG = "scalar aggregate outputs are not safe for containment comparison"
+REASON_NO_COMMON_KEY = "queries do not expose a common comparable key"
 
 # Cap on counterexample rows returned for display.
 COUNTEREXAMPLE_ROW_LIMIT = 20
@@ -198,6 +218,9 @@ _GROUP_RE = re.compile(r"(?i)\bGROUP\s+BY\b")
 _DISTINCT_RE = re.compile(r"(?i)\bSELECT\s+DISTINCT\b")
 _SETOP_RE = re.compile(r"(?i)\b(UNION|INTERSECT|EXCEPT)\b")
 _JOIN_RE = re.compile(r"(?i)\bJOIN\b")
+_HAVING_RE = re.compile(r"(?i)\bHAVING\b")
+# Top-k markers: LIMIT and its relatives change which rows are in the set.
+_LIMIT_TOPK_RE = re.compile(r"(?i)\b(LIMIT|OFFSET|FETCH)\b")
 
 
 def _connect_ro(db_path):
@@ -346,3 +369,200 @@ def build_key_comparison(database_id: int, sql: str, execution_columns: list) ->
         "comparison_sql": comparison_sql,
         "strategy": "single_table_rewrite",
     }
+
+
+def is_scalar_aggregate(sql: str) -> bool:
+    """True when the SELECT projection contains an aggregate function and there
+    is no GROUP BY — i.e. a scalar aggregate output (SELECT COUNT(*) FROM ...).
+    Aggregates that appear only in WHERE/HAVING subqueries are NOT flagged,
+    because the projection is inspected, not the whole statement."""
+    if not sql or _GROUP_RE.search(sql):
+        return False
+    m = re.search(r"(?is)^\s*SELECT\b(.*?)\bFROM\b", sql)
+    if not m:
+        return False
+    return _AGG_RE.search(m.group(1)) is not None
+
+
+def unsupported_containment_shape(sql: str) -> str | None:
+    """Step 4: single source of truth for the shapes we intentionally refuse to
+    normalize (checked for EITHER query, before any Step 1-3 routing). Returns a
+    deterministic reason string, or None when the shape is potentially
+    normalizable. Unsafe/non-SELECT SQL is left to the caller's safety gate."""
+    clean, err = sanitize(sql)
+    if err:
+        return None
+    if _SETOP_RE.search(clean):
+        return REASON_SETOP
+    if _LIMIT_TOPK_RE.search(clean):
+        return REASON_LIMIT
+    if is_scalar_aggregate(clean):
+        return REASON_SCALAR_AGG
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Step 2: safe GROUP BY containment — compare GROUP KEYS only (never aggregate
+# values). For two grouped queries answering the same grouped entity, the group
+# keys are projected out of each ORIGINAL grouped result (which already applied
+# WHERE / GROUP BY / HAVING), and those key sets are compared with EXCEPT.
+# Refuses (=> unknown) on LIMIT/top-k, set-ops, DISTINCT, complex GROUP BY
+# expressions, or a group key that the query does not expose in its output.
+# ---------------------------------------------------------------------------
+
+
+def is_group_by(sql: str) -> bool:
+    """True when the SQL has a GROUP BY clause (used to route the Step-2 path)."""
+    return bool(sql) and _GROUP_RE.search(sql) is not None
+
+
+def _parse_group_by_columns(sql: str):
+    """Return the list of bare group-by column names when EVERY GROUP BY term is
+    a simple `column` or `table.column` reference, else None (=> refuse)."""
+    m = re.search(
+        r"(?is)\bGROUP\s+BY\b(.+?)(?:\bHAVING\b|\bORDER\s+BY\b|\bLIMIT\b|$)", sql)
+    if not m:
+        return None
+    cols = []
+    for term in m.group(1).split(","):
+        t = term.strip()
+        if not t:
+            return None
+        mm = re.fullmatch(
+            r"""[\'"`\[]?([A-Za-z_]\w*)[\'"`\]]?"""
+            r"""(?:\s*\.\s*[\'"`\[]?([A-Za-z_]\w*)[\'"`\]]?)?""",
+            t,
+        )
+        if not mm:
+            return None
+        cols.append(mm.group(2) or mm.group(1))  # last identifier
+    return cols or None
+
+
+def build_group_key_comparison(database_id: int, sql: str, execution_columns: list) -> dict:
+    """Step 2: identify the group-key columns of a GROUP BY query so containment
+    can be compared on the group keys only. Returns:
+        {"ok": True, "clean_sql": ..., "group_key_cols": [out names],
+         "canonical_key": "club_id"|None, "canonical_col": "club_id"|None}
+        {"ok": False, "reason": "..."}
+    The comparison SQL itself is assembled by the caller by wrapping clean_sql
+    and projecting the chosen key column(s) — the grouped query's own output
+    already reflects WHERE/GROUP BY/HAVING, so wrapping preserves those exactly.
+    """
+    clean, err = sanitize(sql)
+    if err:
+        return {"ok": False, "reason": err}
+    if not _GROUP_RE.search(clean):
+        return {"ok": False, "reason": "not a GROUP BY query"}
+    if _SETOP_RE.search(clean):
+        return {"ok": False, "reason": REASON_SETOP}
+    if _LIMIT_TOPK_RE.search(clean):
+        return {"ok": False, "reason": REASON_LIMIT}
+    if _DISTINCT_RE.search(clean):
+        return {"ok": False, "reason": "SELECT DISTINCT grouped query is not normalized"}
+
+    gb = _parse_group_by_columns(clean)
+    if not gb:
+        return {"ok": False, "reason": "GROUP BY expression is not a simple column reference"}
+
+    out = list(execution_columns or [])
+    out_lower = {c.lower(): c for c in out}  # lower -> original output name
+    exposed = [out_lower[c.lower()] for c in gb if c.lower() in out_lower]
+    if not exposed:
+        return {"ok": False, "reason": "group key not exposed in the query output"}
+
+    db_path = get_database_path(database_id)
+    schema = _schema_pk_map(db_path) if db_path else {}
+    pk_names = {v["pk"].lower() for v in schema.values() if v["pk"]}
+
+    # A single canonical key among the exposed group keys (declared PK preferred,
+    # else exactly one id-like column) lets same-entity groupings that use
+    # different but equivalent key columns still line up.
+    canonical = None
+    pk_hits = [c for c in exposed if c.lower() in pk_names]
+    if pk_hits:
+        canonical = pk_hits[0]
+    else:
+        id_hits = [c for c in exposed if _looks_like_key(c, pk_names)]
+        if len(id_hits) == 1:
+            canonical = id_hits[0]
+
+    # Without a canonical key we must expose the FULL grouping key to compare.
+    if canonical is None and len(exposed) != len(gb):
+        return {"ok": False, "reason": "group key not fully exposed in the query output"}
+
+    return {
+        "ok": True,
+        "clean_sql": clean,
+        "group_key_cols": exposed,
+        "canonical_key": canonical.lower() if canonical else None,
+        "canonical_col": canonical,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Step 3: safe DISTINCT containment — compare the DISTINCT key set only.
+# A SELECT DISTINCT query already returns a set of distinct tuples over its
+# selected columns. When two DISTINCT queries answer the same entity, compare
+# their key sets (a shared canonical key, or the exact same selected columns).
+# WHERE/JOIN semantics are preserved by wrapping the ORIGINAL DISTINCT SQL.
+# Refuses (=> unknown) on GROUP BY / aggregate / HAVING / LIMIT / set-ops.
+# ---------------------------------------------------------------------------
+
+
+def is_distinct(sql: str) -> bool:
+    """True when the SQL is a SELECT DISTINCT query (routes the Step-3 path)."""
+    return bool(sql) and _DISTINCT_RE.search(sql) is not None
+
+
+def build_distinct_key_comparison(database_id: int, sql: str, execution_columns: list) -> dict:
+    """Step 3: identify the DISTINCT key columns so containment can be compared
+    on the distinct key set. Returns:
+        {"ok": True, "clean_sql": ..., "distinct_key_cols": [out names],
+         "canonical_key": "club_id"|None, "canonical_col": "club_id"|None}
+        {"ok": False, "reason": "..."}
+    The DISTINCT output columns ARE the key; the caller wraps clean_sql and
+    projects the chosen key column(s). WHERE/JOIN are preserved by the wrap.
+    """
+    clean, err = sanitize(sql)
+    if err:
+        return {"ok": False, "reason": err}
+    if not _DISTINCT_RE.search(clean):
+        return {"ok": False, "reason": "not a SELECT DISTINCT query"}
+    if _GROUP_RE.search(clean):
+        return {"ok": False, "reason": "DISTINCT with GROUP BY is not normalized"}
+    if _AGG_RE.search(clean):
+        return {"ok": False, "reason": "DISTINCT with an aggregate function is not normalized"}
+    if _HAVING_RE.search(clean):
+        return {"ok": False, "reason": "DISTINCT with HAVING is not normalized"}
+    if _SETOP_RE.search(clean):
+        return {"ok": False, "reason": REASON_SETOP}
+    if _LIMIT_TOPK_RE.search(clean):
+        return {"ok": False, "reason": REASON_LIMIT}
+
+    out = list(execution_columns or [])
+    if not out:
+        return {"ok": False, "reason": "DISTINCT query exposes no columns"}
+
+    db_path = get_database_path(database_id)
+    schema = _schema_pk_map(db_path) if db_path else {}
+    pk_names = {v["pk"].lower() for v in schema.values() if v["pk"]}
+
+    canonical = None
+    pk_hits = [c for c in out if c.lower() in pk_names]
+    if pk_hits:
+        canonical = pk_hits[0]
+    else:
+        id_hits = [c for c in out if _looks_like_key(c, pk_names)]
+        if len(id_hits) == 1:
+            canonical = id_hits[0]
+
+    return {
+        "ok": True,
+        "clean_sql": clean,
+        "distinct_key_cols": out,
+        "canonical_key": canonical.lower() if canonical else None,
+        "canonical_col": canonical,
+    }
+
+# End of containment checker (Step 1 canonical-key, Step 2 GROUP BY, Step 3 DISTINCT).

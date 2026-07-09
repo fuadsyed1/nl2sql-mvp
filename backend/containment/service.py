@@ -23,6 +23,11 @@ from .models import (
     PairwiseRelationship,
     QuerySummary,
     ContainmentBatchResponse,
+    ContainmentAnalysis,
+    MainQuery,
+    ContainmentEdge,
+    UnknownPair,
+    IncomparablePair,
 )
 from . import checker
 
@@ -273,6 +278,14 @@ def _verdict_from_live(a, b, live, compared_on):
     suffix = ""
     if compared_on and compared_on.startswith("canonical_key:"):
         suffix = f" (compared on canonical key {compared_on.split(':', 1)[1]})"
+    elif compared_on and compared_on.startswith("group_key:"):
+        suffix = f" (compared on group key {compared_on.split(':', 1)[1]})"
+    elif compared_on and compared_on.startswith("group_keys:"):
+        suffix = f" (compared on group keys {compared_on.split(':', 1)[1]})"
+    elif compared_on and compared_on.startswith("distinct_key:"):
+        suffix = f" (compared on distinct key {compared_on.split(':', 1)[1]})"
+    elif compared_on and compared_on.startswith("distinct_keys:"):
+        suffix = f" (compared on distinct keys {compared_on.split(':', 1)[1]})"
 
     if a_in_b and b_in_a:
         return ("equivalent_on_current_database",
@@ -292,6 +305,101 @@ def _verdict_from_live(a, b, live, compared_on):
             a_minus_b, b_minus_a, compared_on)
 
 
+def _classify_grouped(database_id, qa: BatchQueryResult, qb: BatchQueryResult):
+    """Step 2: compare two GROUP BY queries on their group keys only. Returns the
+    same 5-tuple shape as _classify_pair. Aggregate values are never compared."""
+    a, b = qa.query_id, qb.query_id
+    ga = checker.build_group_key_comparison(database_id, qa.sql, qa.execution_columns)
+    gb = checker.build_group_key_comparison(database_id, qb.sql, qb.execution_columns)
+
+    if not ga.get("ok") or not gb.get("ok"):
+        reasons = []
+        if not ga.get("ok"):
+            reasons.append(f"Query {a} ({ga.get('reason')})")
+        if not gb.get("ok"):
+            reasons.append(f"Query {b} ({gb.get('reason')})")
+        return "unknown", f"Cannot compare grouped queries: {'; '.join(reasons)}.", [], [], None
+
+    # Choose the comparison basis: a shared canonical key if both grouped on one,
+    # otherwise the full group-key column set (which must match between queries).
+    if ga["canonical_key"] and gb["canonical_key"] and ga["canonical_key"] == gb["canonical_key"]:
+        cols_a = [ga["canonical_col"]]
+        cols_b = [gb["canonical_col"]]
+        label = f"group_key:{ga['canonical_key']}"
+    else:
+        set_a = sorted(c.lower() for c in ga["group_key_cols"])
+        set_b = sorted(c.lower() for c in gb["group_key_cols"])
+        if set_a != set_b:
+            return ("unknown",
+                    f"Cannot compare grouped queries: different group keys "
+                    f"({ga['group_key_cols']} vs {gb['group_key_cols']}).",
+                    [], [], None)
+        # Align projection order (by lowercased name) so EXCEPT lines up columns.
+        order = sorted(ga["group_key_cols"], key=lambda c: c.lower())
+        b_by_lower = {c.lower(): c for c in gb["group_key_cols"]}
+        cols_a = order
+        cols_b = [b_by_lower[c.lower()] for c in order]
+        label = f"group_keys:{','.join(c.lower() for c in order)}"
+
+    comp_a = f"SELECT {', '.join(cols_a)} FROM (\n{ga['clean_sql']}\n) AS __g"
+    comp_b = f"SELECT {', '.join(cols_b)} FROM (\n{gb['clean_sql']}\n) AS __g"
+    live = checker.check_live_containment(
+        database_id, comp_a, qa.params, comp_b, qb.params
+    )
+    if not live.get("ran"):
+        return ("unknown",
+                f"Cannot compare: grouped-key comparison could not run ({live.get('error')}).",
+                [], [], None)
+    return _verdict_from_live(a, b, live, label)
+
+
+def _classify_distinct(database_id, qa: BatchQueryResult, qb: BatchQueryResult):
+    """Step 3: compare two SELECT DISTINCT queries on their distinct key set.
+    Returns the same 5-tuple shape as _classify_pair."""
+    a, b = qa.query_id, qb.query_id
+    da = checker.build_distinct_key_comparison(database_id, qa.sql, qa.execution_columns)
+    dbb = checker.build_distinct_key_comparison(database_id, qb.sql, qb.execution_columns)
+
+    if not da.get("ok") or not dbb.get("ok"):
+        reasons = []
+        if not da.get("ok"):
+            reasons.append(f"Query {a} ({da.get('reason')})")
+        if not dbb.get("ok"):
+            reasons.append(f"Query {b} ({dbb.get('reason')})")
+        return "unknown", f"Cannot compare DISTINCT queries: {'; '.join(reasons)}.", [], [], None
+
+    # Prefer a shared canonical key; otherwise require the exact same selected
+    # (distinct) column set so different-entity DISTINCTs are not compared.
+    if da["canonical_key"] and dbb["canonical_key"] and da["canonical_key"] == dbb["canonical_key"]:
+        cols_a = [da["canonical_col"]]
+        cols_b = [dbb["canonical_col"]]
+        label = f"distinct_key:{da['canonical_key']}"
+    else:
+        set_a = sorted(c.lower() for c in da["distinct_key_cols"])
+        set_b = sorted(c.lower() for c in dbb["distinct_key_cols"])
+        if set_a != set_b:
+            return ("unknown",
+                    f"Cannot compare DISTINCT queries: different selected columns "
+                    f"({da['distinct_key_cols']} vs {dbb['distinct_key_cols']}).",
+                    [], [], None)
+        order = sorted(da["distinct_key_cols"], key=lambda c: c.lower())
+        b_by_lower = {c.lower(): c for c in dbb["distinct_key_cols"]}
+        cols_a = order
+        cols_b = [b_by_lower[c.lower()] for c in order]
+        label = f"distinct_keys:{','.join(c.lower() for c in order)}"
+
+    comp_a = f"SELECT {', '.join(cols_a)} FROM (\n{da['clean_sql']}\n) AS __d"
+    comp_b = f"SELECT {', '.join(cols_b)} FROM (\n{dbb['clean_sql']}\n) AS __d"
+    live = checker.check_live_containment(
+        database_id, comp_a, qa.params, comp_b, qb.params
+    )
+    if not live.get("ran"):
+        return ("unknown",
+                f"Cannot compare: DISTINCT-key comparison could not run ({live.get('error')}).",
+                [], [], None)
+    return _verdict_from_live(a, b, live, label)
+
+
 def _classify_pair(database_id, qa: BatchQueryResult, qb: BatchQueryResult):
     """Compare two queries both ways. Returns 5-tuple
     (relationship, explanation, a_minus_b_rows, b_minus_a_rows, compared_on)."""
@@ -304,6 +412,27 @@ def _classify_pair(database_id, qa: BatchQueryResult, qb: BatchQueryResult):
         if not qb.safe:
             why.append(f"Query {b} ({qb.safety_reason})")
         return "unknown", f"Cannot compare: {'; '.join(why)}.", [], [], None
+
+    # Step 4: centralized safe refusals (set operations, LIMIT/top-k, scalar
+    # aggregate outputs) for EITHER query — deterministic reasons, checked
+    # before any Step 1-3 normalization is attempted.
+    for qid, q in ((a, qa), (b, qb)):
+        shape = checker.unsupported_containment_shape(q.sql)
+        if shape:
+            return "unknown", f"Cannot compare: Query {qid} ({shape}).", [], [], None
+
+    # Step 2: both queries are GROUP BY / aggregate — compare on GROUP KEYS only
+    # (never aggregate values). This must run before the column checks below so
+    # that grouped queries with identical columns still compare keys, not counts.
+    if checker.is_group_by(qa.sql) and checker.is_group_by(qb.sql):
+        return _classify_grouped(database_id, qa, qb)
+
+    # Step 3: both queries are SELECT DISTINCT — compare the distinct key set
+    # only (a shared canonical key, or the exact same selected columns). Runs
+    # before the column checks so canonical-key DISTINCTs with different
+    # descriptive columns still line up.
+    if checker.is_distinct(qa.sql) and checker.is_distinct(qb.sql):
+        return _classify_distinct(database_id, qa, qb)
 
     # Matching output columns: compare full tuples exactly as before (unchanged).
     if qa.execution_columns == qb.execution_columns:
@@ -340,10 +469,143 @@ def _classify_pair(database_id, qa: BatchQueryResult, qb: BatchQueryResult):
         reasons.append(f"Query {b} ({cb.get('reason')})")
     if ca.get("ok") and cb.get("ok") and ca["key"] != cb["key"]:
         reasons.append(
-            f"different answer entities (key {ca['key']} vs {cb['key']})")
+            f"{checker.REASON_NO_COMMON_KEY} (key {ca['key']} vs {cb['key']})")
     detail = "; ".join(reasons) if reasons else (
         f"different output columns ({qa.execution_columns} vs {qb.execution_columns})")
     return "unknown", f"Cannot compare: {detail}.", [], [], None
+
+
+def _build_analysis(results, pairwise) -> ContainmentAnalysis:
+    """Step 5: derive a batch-level hierarchy from the pairwise relationships.
+    Only proven relationships create edges/groups; unknown pairs never do.
+    Empty-result queries are tracked but never promoted to a 'main' query."""
+    ids = [q.query_id for q in results]
+    empty = {q.query_id for q in results if q.empty_result}
+
+    # Union-find over equivalence edges.
+    parent = {i: i for i in ids}
+
+    def find(x):
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    def union(x, y):
+        parent[find(x)] = find(y)
+
+    edges = []          # (superset, subset)
+    incomparable = []   # (a, b)
+    unknown = []        # (a, b, reason)
+    for p in pairwise:
+        a, b, rel = p.query_a, p.query_b, p.relationship
+        if rel == "equivalent_on_current_database":
+            union(a, b)
+        elif rel == "query_a_contained_in_query_b":
+            edges.append((b, a))   # b is superset, a is subset
+        elif rel == "query_b_contained_in_query_a":
+            edges.append((a, b))
+        elif rel == "incomparable_on_current_database":
+            incomparable.append((a, b))
+        else:  # unknown
+            unknown.append((a, b, p.explanation))
+
+    groups = defaultdict(list)
+    for i in ids:
+        groups[find(i)].append(i)
+    equivalent_groups = sorted(
+        (sorted(g) for g in groups.values() if len(g) > 1), key=lambda g: g[0])
+
+    succ = defaultdict(set)          # superset -> direct subsets
+    contained_by = defaultdict(set)  # subset -> supersets
+    for sup, sub in edges:
+        succ[sup].add(sub)
+        contained_by[sub].add(sup)
+
+    def reachable(x):
+        seen, stack = set(), list(succ[x])
+        while stack:
+            y = stack.pop()
+            if y not in seen:
+                seen.add(y)
+                stack.extend(succ[y])
+        return seen
+
+    def is_maximal(i):
+        # Not contained by any query outside its own equivalence class.
+        return all(find(sup) == find(i) for sup in contained_by[i])
+
+    main_queries = []
+    seen_groups = set()
+    for i in sorted(ids):
+        if i in empty or not is_maximal(i):
+            continue
+        g = find(i)
+        if g in seen_groups:
+            continue
+        seen_groups.add(g)
+        main_queries.append({
+            "index": i,
+            "equivalent_to": sorted(j for j in ids if j != i and find(j) == g),
+            "contains": sorted(reachable(i)),
+            "contained_by": sorted(contained_by[i]),
+        })
+
+    in_edge = {x for e in edges for x in e}
+    in_equiv = {i for g in equivalent_groups for i in g}
+    independent = sorted(i for i in ids if i not in in_edge and i not in in_equiv)
+
+    unknown_pairs = [{"left": a, "right": b, "reason": r} for a, b, r in unknown]
+    incomparable_pairs = [{"left": a, "right": b} for a, b in incomparable]
+    containment_edges = [
+        {"superset": s, "subset": b, "relationship_source": "pairwise"}
+        for s, b in edges
+    ]
+    empty_queries = sorted(empty)
+    summary_text = _analysis_summary(
+        main_queries, equivalent_groups, independent, empty_queries,
+        incomparable_pairs, unknown_pairs)
+
+    return ContainmentAnalysis(
+        query_count=len(ids),
+        main_queries=[MainQuery(**m) for m in main_queries],
+        equivalent_groups=equivalent_groups,
+        containment_edges=[ContainmentEdge(**e) for e in containment_edges],
+        independent_queries=independent,
+        unknown_pairs=[UnknownPair(**u) for u in unknown_pairs],
+        incomparable_pairs=[IncomparablePair(**p) for p in incomparable_pairs],
+        empty_queries=empty_queries,
+        summary_text=summary_text,
+    )
+
+
+def _analysis_summary(main_queries, equivalent_groups, independent,
+                      empty_queries, incomparable_pairs, unknown_pairs) -> str:
+    qlist = lambda xs: ", ".join(f"Query {i}" for i in xs)
+    parts = []
+    if main_queries:
+        for m in main_queries:
+            s = f"Query {m['index']} is a main (broadest) query"
+            if m["contains"]:
+                s += f"; it contains {qlist(m['contains'])}"
+            if m["equivalent_to"]:
+                s += f" (equivalent to {qlist(m['equivalent_to'])})"
+            parts.append(s + ".")
+    else:
+        parts.append("No main query could be identified.")
+    for g in equivalent_groups:
+        parts.append(f"{qlist(g)} are equivalent on the current database.")
+    if independent:
+        parts.append(f"Independent (no proven containment): {qlist(independent)}.")
+    if empty_queries:
+        parts.append(f"Empty-result queries: {qlist(empty_queries)}.")
+    if incomparable_pairs:
+        pairs = "; ".join(
+            f"Query {p['left']} vs Query {p['right']}" for p in incomparable_pairs)
+        parts.append(f"Incomparable: {pairs}.")
+    if unknown_pairs:
+        parts.append(f"{len(unknown_pairs)} pair(s) could not be compared (unknown).")
+    return " ".join(parts)
 
 
 def _summary_status(q, contained_in, contains, equivalent_to, incomparable_with) -> str:
@@ -450,12 +712,15 @@ def check_containment_batch(
             )
         )
 
+    analysis = _build_analysis(results, pairwise)
+
     return ContainmentBatchResponse(
         success=True,
         database_id=database_id,
         query_results=results,
         pairwise_relationships=pairwise,
         query_summaries=summaries,
+        analysis=analysis,
         checked_on_current_database=True,
         proof_type="live_database_except_pairwise",
         limitations=_BATCH_LIMITATIONS,
