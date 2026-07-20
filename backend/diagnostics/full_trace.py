@@ -1,0 +1,578 @@
+"""
+diagnostics/full_trace.py
+Full per-request pipeline trace for benchmark debugging. INSTRUMENTATION
+ONLY: nothing here changes generation, validation, scoring, selection, or
+endpoint behavior. Every public function is a no-op unless the environment
+enables tracing, and every internal step is exception-shielded so a trace
+bug can never affect a request.
+Enable:
+    SPIDERSQL_FULL_TRACE=true
+    SPIDERSQL_TRACE_RUN_ID=northstar_500        (optional; default "trace")
+    SPIDERSQL_TRACE_DEBUG=true                  (optional; stage/thread/task
+                                                 diagnostic logging)
+Per-request benchmark metadata arrives via optional HTTP headers
+(X-SpiderSQL-Test-ID / -Category / -Difficulty / X-SpiderSQL-Trace-Run) and
+is attached by the endpoint through set_request_meta(); normal requests
+without headers still trace with "(not provided)" metadata.
+Output: ONE UTF-8 file per run id + database id,
+    benchmarks/results/<run_id>_full_trace_db<ID>_<timestamp>.txt
+appended (never overwritten), flushed after every section, guarded by a
+process-wide lock so concurrent requests cannot interleave sections.
+No table data is dumped (schema metadata only); execution previews are
+capped at 10 rows; raw model responses are truncated; no headers, API keys,
+or secrets are ever written.
+"""
+import asyncio
+import datetime
+import json
+import os
+import threading
+import time
+from contextvars import ContextVar
+_LOCK = threading.Lock()
+# Request-scoped state. ContextVar (not threading.local): anyio runs sync
+# endpoints in a threadpool with a COPY of the caller's context, and async
+# hops would lose thread-local state entirely - ContextVar survives both
+# for the duration of one request.
+_META_VAR: ContextVar = ContextVar("spidersql_trace_meta", default=None)
+_RECORD_VAR: ContextVar = ContextVar("spidersql_trace_record", default=None)
+_FILES = {}                     # (run_id, database_id) -> path
+_RAW_LIMIT = 4000               # chars kept of any raw model response
+_ROW_LIMIT = 10                 # execution preview rows
+_VAL_LIMIT = 8000               # chars kept of any single dumped structure
+_BASE = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+_OUT_DIR = os.path.join(_BASE, "benchmarks", "results")
+# ---------------------------------------------------------------------------
+# gating + per-request context
+# ---------------------------------------------------------------------------
+def enabled() -> bool:
+    return str(os.environ.get("SPIDERSQL_FULL_TRACE", "")).strip().lower() \
+        in ("1", "true", "yes", "on")
+def trace_debug_enabled() -> bool:
+    return str(os.environ.get("SPIDERSQL_TRACE_DEBUG", "")).strip().lower() \
+        in ("1", "true", "yes", "on")
+def _debug(stage, record=None):
+    if not trace_debug_enabled():
+        return
+    try:
+        task = asyncio.current_task()
+        task_id = id(task) if task else None
+    except RuntimeError:
+        task_id = None
+    print(
+        "[FULL TRACE DEBUG]",
+        f"stage={stage}",
+        f"thread={threading.get_ident()}",
+        f"task={task_id}",
+        f"record_present={record is not None}",
+        f"test_id={(record or {}).get('meta', {}).get('test_id')}",
+        flush=True,
+    )
+# Canonical -> accepted header spellings. The benchmark contract documents
+# X-SpiderSQL-Test-ID / -Category / -Difficulty / -Trace-Run; earlier wiring
+# also emitted the -Test-Category / -Test-Difficulty variants. Accept both so
+# metadata is captured regardless of which spelling a runner sends (optional).
+_TRACE_HEADER_MAP = (
+    ("trace_run",  ("x-spidersql-trace-run",)),
+    ("test_id",    ("x-spidersql-test-id",)),
+    ("category",   ("x-spidersql-category", "x-spidersql-test-category")),
+    ("difficulty", ("x-spidersql-difficulty", "x-spidersql-test-difficulty")),
+)
+
+
+def request_meta_from_headers(headers) -> dict:
+    """Pure, header-name-agnostic extraction of the optional X-SpiderSQL-*
+    benchmark metadata. `headers` is any mapping exposing .items() (a Starlette
+    Headers object, a plain dict, etc.). Case-insensitive; only non-empty values
+    are kept; authorization/other headers are never read. Returns {} when no
+    trace headers are present (the trace then renders "(not provided)")."""
+    if not headers:
+        return {}
+    try:
+        items = list(headers.items())
+    except AttributeError:
+        return {}
+    low = {str(k).lower(): v for k, v in items}
+    meta = {}
+    for field, names in _TRACE_HEADER_MAP:
+        for name in names:
+            val = low.get(name)
+            if val:
+                meta[field] = val
+                break
+    return meta
+
+
+def set_request_meta(meta: dict) -> None:
+    """Called by the endpoint with benchmark headers (already filtered to the
+    X-SpiderSQL-* values only - never authorization material)."""
+    if not enabled():
+        return
+    try:
+        _META_VAR.set(dict(meta or {}))
+        _debug("set_request_meta", {"meta": dict(meta or {})})
+    except Exception as exc:
+        print(f"[FULL TRACE ERROR] stage=set_request_meta "
+              f"{type(exc).__name__}: {exc}", flush=True)
+def begin(database_id, question) -> None:
+    if not enabled():
+        return
+    try:
+        record = {
+            "database_id": database_id,
+            "question": question,
+            "started_at": datetime.datetime.now().isoformat(timespec="seconds"),
+            "t0": time.time(),
+            "notes": {},
+            "finished": False,
+            "meta": dict(_META_VAR.get() or {}),
+        }
+        _RECORD_VAR.set(record)
+        _META_VAR.set(None)
+        _debug("begin", record)
+    except Exception as exc:
+        print(f"[FULL TRACE ERROR] stage=begin "
+              f"{type(exc).__name__}: {exc}", flush=True)
+def note(layer: str, key: str, value) -> None:
+    """Attach one captured value to the current request's record."""
+    if not enabled():
+        return
+    try:
+        rec = _RECORD_VAR.get()
+        _debug(f"note:{layer}/{key}", rec)
+        if rec is None or rec.get("finished"):
+            return
+        rec["notes"].setdefault(layer, {})[key] = _shrink(value)
+    except Exception as exc:
+        print(f"[FULL TRACE ERROR] stage=note:{layer}/{key} "
+              f"{type(exc).__name__}: {exc}", flush=True)
+def note_list(layer: str, key: str, value) -> None:
+    """Append one captured value to a list-valued note (for repeated events
+    such as multiple raw model responses)."""
+    if not enabled():
+        return
+    try:
+        rec = _RECORD_VAR.get()
+        _debug(f"note_list:{layer}/{key}", rec)
+        if rec is None or rec.get("finished"):
+            return
+        rec["notes"].setdefault(layer, {}).setdefault(key, []).append(
+            _shrink(value))
+    except Exception as exc:
+        print(f"[FULL TRACE ERROR] stage=note_list:{layer}/{key} "
+              f"{type(exc).__name__}: {exc}", flush=True)
+def _shrink(value):
+    if isinstance(value, str) and len(value) > _RAW_LIMIT:
+        return value[:_RAW_LIMIT] + f"... [truncated, {len(value)} chars]"
+    return value
+# ---------------------------------------------------------------------------
+# output file
+# ---------------------------------------------------------------------------
+def _path_for(run_id, database_id):
+    key = (run_id, database_id)
+    with _LOCK:
+        if key not in _FILES:
+            os.makedirs(_OUT_DIR, exist_ok=True)
+            stamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            _FILES[key] = os.path.join(
+                _OUT_DIR,
+                f"{run_id}_full_trace_db{database_id}_{stamp}.txt")
+        return _FILES[key]
+def _emit(run_id, database_id, text):
+    path = _path_for(run_id, database_id)
+    with _LOCK:
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(text)
+            f.flush()
+# ---------------------------------------------------------------------------
+# read-only SQL feature extraction (layer 6 detected_*)
+# ---------------------------------------------------------------------------
+def _sql_features(sql):
+    out = {"parse_success": False, "parser_error": None,
+           "referenced_tables": [], "referenced_columns": [],
+           "detected_join_conditions": [], "detected_output_columns": [],
+           "detected_aggregation": [], "detected_group_by": [],
+           "detected_having": False, "detected_order_by": False,
+           "detected_limit": None, "detected_distinct": False,
+           "detected_subquery_or_cte": False,
+           "detected_set_operation": False}
+    if not sql:
+        out["parser_error"] = "no SQL"
+        return out
+    try:
+        import sqlglot
+        from sqlglot import exp
+        tree = sqlglot.parse_one(sql, read="sqlite")
+        out["parse_success"] = True
+        out["referenced_tables"] = sorted(
+            {t.name for t in tree.find_all(exp.Table)})
+        out["referenced_columns"] = sorted(
+            {(f"{c.table}." if c.table else "") + c.name
+             for c in tree.find_all(exp.Column)})[:80]
+        joins = []
+        for eq in tree.find_all(exp.EQ):
+            l, r = eq.this, eq.expression
+            if isinstance(l, exp.Column) and isinstance(r, exp.Column):
+                joins.append(f"{l.sql()} = {r.sql()}")
+        out["detected_join_conditions"] = joins[:20]
+        sel = tree if isinstance(tree, exp.Select) else \
+            next(iter(tree.find_all(exp.Select)), None)
+        if sel is not None:
+            out["detected_output_columns"] = [
+                s.sql()[:80] for s in sel.selects][:20]
+            out["detected_distinct"] = bool(sel.args.get("distinct"))
+            out["detected_group_by"] = [
+                g.sql() for g in (sel.args.get("group").expressions
+                                  if sel.args.get("group") else [])]
+            out["detected_having"] = sel.args.get("having") is not None
+            out["detected_order_by"] = sel.args.get("order") is not None
+            lim = sel.args.get("limit")
+            out["detected_limit"] = lim.sql() if lim is not None else None
+        out["detected_aggregation"] = sorted(
+            {a.key.upper() for a in tree.find_all(exp.AggFunc)})
+        out["detected_subquery_or_cte"] = bool(
+            list(tree.find_all(exp.Subquery))
+            or list(tree.find_all(exp.CTE)))
+        out["detected_set_operation"] = bool(
+            list(tree.find_all(exp.Union)) or list(tree.find_all(exp.Except))
+            or list(tree.find_all(exp.Intersect)))
+    except Exception as exc:
+        out["parser_error"] = f"{type(exc).__name__}: {exc}"
+    return out
+# ---------------------------------------------------------------------------
+# derived scoring breakdown (layer 8) - computed from the scorer's stored
+# checks + its public constants; components + residual sum to the raw total
+# ---------------------------------------------------------------------------
+def _score_components(cand):
+    try:
+        from sql_candidates import candidate_scorer as cs
+        v = cand.validation or {}
+        comp = {}
+        execution = cand.execution or {}
+        if not (cand.sql or ""):
+            comp["execution"] = cs._NO_SQL
+        elif v.get("executed"):
+            comp["execution"] = cs._EXEC_OK
+            if not (execution.get("columns") or []):
+                comp["execution"] += cs._NO_OUTPUT_COLUMNS
+            if execution.get("row_count", 0) == 0:
+                comp["execution"] += cs._EMPTY_RESULT
+        else:
+            comp["execution"] = cs._EXEC_FAIL
+        comp["illegal_joins"] = \
+            len((v.get("illegal_joins") or [])[:2]) * cs._ILLEGAL_JOIN
+        comp["unknown_columns"] = \
+            len((v.get("unknown_columns") or [])[:3]) * cs._UNKNOWN_COLUMN
+        comp["missing_tables"] = \
+            len((v.get("missing_tables") or [])[:3]) * cs._MISSING_TABLE
+        comp["missing_concepts"] = \
+            len((v.get("missing_concepts") or [])[:3]) * cs._MISSING_CONCEPT
+        shape_delta = 0.0
+        for shape, present in (v.get("required_shapes") or {}).items():
+            pen, bonus = cs._SHAPE.get(shape, (0, 0))
+            shape_delta += bonus if present else pen
+        comp["intent_shapes"] = shape_delta
+        comp["aliases"] = (cs._DUP_ALIAS if v.get("duplicate_aliases") else 0) \
+            + (cs._UNDEF_ALIAS if v.get("undefined_aliases") else 0)
+        comp["family_guard"] = cs._GUARD_INVALID \
+            if v.get("guard_valid") is False else 0
+        comp["checklist_alignment"] = \
+            (v.get("checklist") or {}).get("delta", 0)
+        comp["grain_alignment"] = (v.get("grain") or {}).get("delta", 0)
+        comp["outside_tables"] = \
+            len((v.get("outside_tables") or [])[:3]) * cs._OUTSIDE_TABLE
+        comp["value_grounding"] = \
+            len((v.get("unseen_literals") or [])[:2]) * cs._UNSEEN_LITERAL
+        comp["semantic_guards"] = \
+            len(v.get("semantic_guards") or []) * cs._SEMANTIC_GUARD
+        comp["literal_groups"] = \
+            len(v.get("literal_groups") or []) * cs._SEMANTIC_GUARD
+        comp["fanout_contract"] = \
+            len((v.get("fanout") or {}).get("fatal") or []) \
+            * cs._GRAIN_VIOLATION
+        comp["grain_contract"] = \
+            len((v.get("grain_contract") or {}).get("fatal") or []) \
+            * cs._GRAIN_VIOLATION
+        comp["temporal_contract"] = \
+            len((v.get("temporal_contract") or {}).get("fatal") or []) \
+            * cs._GRAIN_VIOLATION
+        known = sum(comp.values())
+        comp["base_score"] = cs.BASE_SCORE
+        # everything not exactly derivable (advisory relationship/join/table-
+        # lock deltas, shape-verifier delta, bare-CTE, probes) as one residual
+        # so that components sum to the recorded total exactly
+        comp["advisory_and_other_residual"] = round(
+            (cand.score or 0) - cs.BASE_SCORE - known, 1)
+        comp["total_recorded_score"] = cand.score
+        return comp
+    except Exception as exc:
+        return {"error": f"{type(exc).__name__}: {exc}",
+                "total_recorded_score": getattr(cand, "score", None)}
+# ---------------------------------------------------------------------------
+# section rendering
+# ---------------------------------------------------------------------------
+def _dump(value, indent=2):
+    try:
+        s = json.dumps(value, indent=indent, ensure_ascii=False, default=str)
+    except Exception:
+        s = repr(value)
+    if len(s) > _VAL_LIMIT:
+        s = s[:_VAL_LIMIT] + f"\n... [truncated, {len(s)} chars]"
+    return s
+def _graph_summary(graph):
+    tables = {}
+    for t in (graph or {}).get("tables") or []:
+        name = t.get("table_name")
+        if name:
+            tables[name] = [c.get("column_name")
+                            for c in (t.get("columns") or [])]
+    rels = [f"{r.get('from_table')}.{r.get('from_column')} -> "
+            f"{r.get('to_table')}.{r.get('to_column')} "
+            f"(type={r.get('relationship_type')}, "
+            f"confidence={r.get('confidence')}, "
+            f"confirmed={r.get('confirmed')})"
+            for r in (graph or {}).get("relationships") or []]
+    return tables, rels
+def _candidate_section(i, cand, notes):
+    lines = [f"CANDIDATE {i}",
+             f"generation_source: {cand.source} (label: {cand.label})"]
+    raw_map = (notes.get("layer5") or {})
+    raw = raw_map.get(f"raw::{cand.label}") or raw_map.get(
+        f"raw::{cand.source}")
+    lines.append(f"raw_model_response: "
+                 f"{raw if raw is not None else '(not captured for this source)'}")
+    lines.append(f"extracted_sql:\n{cand.sql or '<NO SQL>'}")
+    lines.append(f"normalized_sql:\n{cand.sql or '<NO SQL>'}")
+    v = cand.validation or {}
+    feats = _sql_features(cand.sql)
+    lines.append("-- validation ------------------------------------------")
+    lines.append(_dump({
+        **feats,
+        "grain_validation": v.get("grain_contract"),
+        "temporal_validation": v.get("temporal_contract"),
+        "fanout_validation": v.get("fanout"),
+        "semantic_validation": {
+            "semantic_guards": v.get("semantic_guards"),
+            "literal_groups": v.get("literal_groups"),
+            "shape": v.get("shape"),
+            "checklist": v.get("checklist"),
+        },
+        "relationship_validation": {
+            "illegal_joins": v.get("illegal_joins"),
+            "semantic_rel": v.get("semantic_rel"),
+            "semantic_join": v.get("semantic_join"),
+            "outside_tables": v.get("outside_tables"),
+        },
+        "value_grounding_validation": v.get("unseen_literals"),
+        "candidate_fatal_reasons": v.get("fatal") or [],
+        "candidate_warnings": cand.reasons or [],
+    }))
+    execution = cand.execution or {}
+    attempted = bool(execution)
+    lines.append("-- execution -------------------------------------------")
+    lines.append(_dump({
+        "execution_attempted": attempted,
+        "skipped_reason": None if attempted else
+        "candidate was rejected before build/execution",
+        "execution_success": bool(execution.get("executed")),
+        "execution_error": execution.get("error")
+        or execution.get("reason"),
+        "returned_columns": execution.get("columns"),
+        "row_count": execution.get("row_count"),
+        f"first_{_ROW_LIMIT}_rows": (execution.get("rows") or [])[:_ROW_LIMIT],
+    }))
+    lines.append("-- scoring ---------------------------------------------")
+    lines.append(_dump(_score_components(cand)))
+    return "\n".join(lines)
+def _no_sql_stage(candidates, controlled, enforcement_rejected):
+    if not candidates:
+        return "no_candidate_generated"
+    if enforcement_rejected:
+        return "final_enforcement_rejected_selected_candidate"
+    if all(not (c.sql or "") for c in candidates):
+        return "all_candidates_parse_failed"
+    if not any(c.executed_ok for c in candidates):
+        return "all_candidates_execution_failed"
+    if all((c.validation or {}).get("fatal") for c in candidates
+           if c.executed_ok):
+        return "all_candidates_received_fatal_validation"
+    return "controlled_failure" if controlled else "unknown"
+def finish(response=None, graph=None, checklist=None, contract_dict=None,
+           candidates=None, selected=None, selection_meta=None,
+           repair_meta=None, tables_considered=None, controlled=False,
+           enforcement_rejected=False):
+    """Render + append the complete trace section for the current request.
+    Write-once; later calls for the same request are ignored.
+    Retrieves the record from the ContextVar, renders + emits it, marks it
+    finished, and clears _RECORD_VAR only after _emit() has succeeded."""
+    if not enabled():
+        return
+    try:
+        rec = _RECORD_VAR.get()
+        _debug("finish_entry", rec)
+        if rec is None or rec.get("finished"):
+            return
+        _debug("before_emit", rec)
+        _render_and_emit(rec, response or {}, graph, checklist,
+                         contract_dict, list(candidates or []), selected,
+                         selection_meta or {}, repair_meta or {},
+                         tables_considered, controlled,
+                         enforcement_rejected)
+        _debug("after_emit", rec)
+        rec["finished"] = True
+        _RECORD_VAR.set(None)        # cleared only after _emit() succeeded
+    except Exception as exc:                     # never break the request
+        try:
+            print(f"[FULL TRACE ERROR] stage=finish "
+                  f"{type(exc).__name__}: {exc}",
+                  flush=True)
+        except Exception:
+            pass
+def ensure_finished(response) -> None:
+    """Endpoint-level fallback: if a request began a trace but never reached
+    a finish() hook (unexpected error path), emit a minimal section. Reads
+    the same ContextVar record and only emits when it is still unfinished."""
+    if not enabled():
+        return
+    try:
+        rec = _RECORD_VAR.get()
+        _debug("ensure_finished", rec)
+        if rec is None or rec.get("finished"):
+            return
+        finish(response=response or {},
+               controlled=bool((response or {}).get("error")
+                               == "no_semantically_valid_sql"))
+    except Exception as exc:                     # never break the request
+        try:
+            print(f"[FULL TRACE ERROR] stage=ensure_finished "
+                  f"{type(exc).__name__}: {exc}", flush=True)
+        except Exception:
+            pass
+def _render_and_emit(rec, response, graph, checklist, contract_dict,
+                     candidates, selected, selection_meta, repair_meta,
+                     tables_considered, controlled, enforcement_rejected):
+    meta = rec.get("meta") or {}
+    notes = rec.get("notes") or {}
+    run_id = meta.get("trace_run") \
+        or os.environ.get("SPIDERSQL_TRACE_RUN_ID", "trace")
+    dbid = rec["database_id"]
+    elapsed = round(time.time() - rec["t0"], 2)
+    ended = datetime.datetime.now().isoformat(timespec="seconds")
+    sep = "=" * 100
+    L = [sep,
+         f"TEST ID: {meta.get('test_id', '(not provided)')}",
+         f"CATEGORY: {meta.get('category', '(not provided)')}",
+         f"DIFFICULTY: {meta.get('difficulty', '(not provided)')}",
+         f"DATABASE ID: {dbid}",
+         f"QUESTION: {rec['question']}",
+         f"REQUEST START: {rec['started_at']}",
+         f"REQUEST END: {ended}",
+         f"TOTAL LATENCY: {elapsed}s",
+         sep]
+    # Layer 1 - request and schema context ---------------------------------
+    tables, rels = _graph_summary(graph)
+    L += ["", "LAYER 1 — REQUEST AND SCHEMA CONTEXT",
+          f"active_database: {dbid}",
+          f"database_dialect: sqlite",
+          f"available_tables ({len(tables)}): {sorted(tables)}",
+          "available_columns:", _dump(tables),
+          f"declared_or_inferred_relationships ({len(rels)}):",
+          _dump(rels)]
+    # Layer 2 - natural-language analysis ----------------------------------
+    cl = checklist or {}
+    L += ["", "LAYER 2 — NATURAL-LANGUAGE ANALYSIS",
+          "raw_checklist_model_response:",
+          _dump((notes.get("layer2") or {}).get("checklist_raw",
+                                                "(not captured)")),
+          "normalized_checklist_fields:",
+          _dump({
+              "extracted_entities": cl.get("target_entity"),
+              "requested_output_columns": cl.get("output_columns"),
+              "filters_and_literals": cl.get("literals"),
+              "aggregations": cl.get("measure_aggregation")
+              or [r.get("aggregation") for r in
+                  cl.get("grain_requirements") or []],
+              "group_by": cl.get("group_by_entity"),
+              "required_group_keys": cl.get("required_group_keys"),
+              "comparison_logic": cl.get("comparison_logic"),
+              "distinct_requirement": [r.get("distinct") for r in
+                                       cl.get("grain_requirements") or []],
+              "set_operation_requirement":
+                  cl.get("required_sql_shape") == "set_operation"
+                  or None,
+              "subquery_requirement": cl.get("required_sql_shape"),
+              "requested_grain": cl.get("row_grain"),
+              "derived_metric_formula": [
+                  r.get("measure_expression") for r in
+                  cl.get("grain_requirements") or []],
+              "temporal_requirements": cl.get("temporal_requirements"),
+              "grain_normalization_log": cl.get("grain_normalization"),
+          }),
+          "raw_ir_model_responses:",
+          _dump({k: v for k, v in (notes.get("layer2") or {}).items()
+                 if k.startswith("ir_raw")}) ]
+    # Layer 3 - table and relationship selection ---------------------------
+    l3 = notes.get("layer3") or {}
+    L += ["", "LAYER 3 — TABLE AND RELATIONSHIP SELECTION",
+          f"initially_matched_tables (tables_considered): "
+          f"{tables_considered}",
+          "table_scores:",
+          _dump(l3.get("table_scores",
+                       "(small-mode database: full graph, no retrieval "
+                       "scoring)")),
+          "graph_force (locked/named/final subgraph):",
+          _dump(l3.get("graph_force", "(not captured)")),
+          "considered_relationship_edges: see LAYER 1 relationship list "
+          "(the in-memory graph the validators/scorer consult)",
+          "per-candidate selected/rejected join usage: see each "
+          "candidate's detected_join_conditions + "
+          "relationship_validation (illegal_joins = rejected edges)"]
+    # Layer 4 - semantic checklist / contract ------------------------------
+    L += ["", "LAYER 4 — SEMANTIC CHECKLIST / CONTRACT",
+          "semantic_checklist (complete):", _dump(checklist),
+          "semantic_contract (complete):", _dump(contract_dict)]
+    # Layer 5/6/7/8 - candidates -------------------------------------------
+    L += ["", "LAYERS 5-8 — CANDIDATES (generation, validation, execution, "
+          "scoring)",
+          f"candidate_count: {len(candidates)}"]
+    for i, cand in enumerate(candidates, start=1):
+        L += ["", _candidate_section(i, cand, notes)]
+    dropped = (notes.get("layer5") or {})
+    drops = {k: v for k, v in dropped.items() if k.startswith("rejected::")}
+    if drops:
+        L += ["", "CANDIDATES REJECTED BEFORE SCORING "
+              "(direct-SQL enforcement):", _dump(drops)]
+    # Layer 9 - final decision ---------------------------------------------
+    sel_idx = None
+    if selected is not None:
+        for i, c in enumerate(candidates, start=1):
+            if c is selected:
+                sel_idx = i
+                break
+    no_sql = selected is None or controlled
+    L += ["", "LAYER 9 — FINAL DECISION",
+          f"selected_candidate_number: {sel_idx}",
+          f"selected_candidate_label: "
+          f"{getattr(selected, 'label', None)}",
+          "selected_sql:",
+          (getattr(selected, "sql", None) or "<NO SQL RETURNED>"),
+          f"exact_selection_reason: "
+          f"{selection_meta.get('selection_reason')}",
+          "rejected_candidate_reasons:",
+          _dump({c.get('label'): c.get('fatal_reasons')
+                 for c in selection_meta.get('candidate_scores') or []}),
+          f"repair_meta: {_dump(repair_meta, indent=None)}",
+          f"final_enforcement_result: "
+          f"{'rejected selected candidate' if enforcement_rejected else 'kept'}",
+          "final_fatal_reasons:",
+          _dump((getattr(selected, 'validation', None) or {}).get('fatal')
+                if selected is not None else
+                response.get("debug_rejected_fatal_reasons")),
+          f"controlled_failure: {controlled}",
+          f"endpoint_success: {response.get('success')}",
+          f"endpoint_error: {response.get('error')}"]
+    if no_sql:
+        L.append(f"no_sql_stage: "
+                 f"{_no_sql_stage(candidates, controlled, enforcement_rejected)}")
+    L += ["", ""]
+    _emit(run_id, dbid, "\n".join(str(x) for x in L))

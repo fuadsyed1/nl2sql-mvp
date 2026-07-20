@@ -1,0 +1,71 @@
+{
+  "failed_queries": 394,
+  "executed_semantically_wrong": 379,
+  "no_selected_sql": 15,
+  "selected_candidate_coverage": {
+    "executed_wrong_total": 379,
+    "executed_wrong_with_selected": 379,
+    "coverage_pct": 100.0
+  },
+  "select_match_methods": {
+    "selected_number": 379
+  },
+  "query_dispositions": {
+    "only_selected_candidate_available": 1,
+    "plausible_clean_alternative_available": 358,
+    "no_clean_different_alternative": 20,
+    "unresolved_manual_review": 0
+  },
+  "no_selected_sql_bucket": {
+    "count": 15,
+    "test_ids_by_db": {
+      "54": [
+        44,
+        81,
+        379,
+        398
+      ],
+      "55": [
+        88,
+        237,
+        491,
+        500
+      ],
+      "56": [
+        147,
+        194,
+        395,
+        432,
+        437,
+        499,
+        500
+      ]
+    }
+  },
+  "by_database": {
+    "54": {
+      "executed_semantically_wrong": 57,
+      "no_selected_sql": 4,
+      "candidate_rows": 353
+    },
+    "55": {
+      "executed_semantically_wrong": 89,
+      "no_selected_sql": 4,
+      "candidate_rows": 535
+    },
+    "56": {
+      "executed_semantically_wrong": 125,
+      "no_selected_sql": 7,
+      "candidate_rows": 761
+    },
+    "57": {
+      "executed_semantically_wrong": 108,
+      "no_selected_sql": 0,
+      "candidate_rows": 616
+    }
+  },
+  "candidate_rows": 2265,
+  "manual_review_rows": 1102,
+  "disposition_note": "query_dispositions is a HEURISTIC partition of the executed-wrong failures from execution/fatal/SQL-difference signals, not a per-candidate semantic oracle. The manual-review CSV lists the plausible alternatives to confirm; correctness is never asserted automatically.",
+  "generated_at": "2026-07-19T22:16:51"
+}

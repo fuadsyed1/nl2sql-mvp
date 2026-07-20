@@ -1,0 +1,4295 @@
+{
+  "generated": "20260710_005258",
+  "database_id": 49,
+  "base_url": "http://127.0.0.1:8000",
+  "sqlite_path": "C:\\Projects\\nl2sql-mvp\\backend\\local_benchmarks\\relational_sample_dbs\\sqlite\\lahman.sqlite",
+  "test_count": 100,
+  "summary": {
+    "overall": {
+      "total": 100,
+      "passed": 39,
+      "failed": 61,
+      "accuracy_percent": 39.0
+    },
+    "by_category": {
+      "aggregation": {
+        "total": 10,
+        "passed": 6,
+        "failed": 4,
+        "accuracy_percent": 60.0
+      },
+      "derived_metric": {
+        "total": 10,
+        "passed": 1,
+        "failed": 9,
+        "accuracy_percent": 10.0
+      },
+      "distinct_count": {
+        "total": 10,
+        "passed": 3,
+        "failed": 7,
+        "accuracy_percent": 30.0
+      },
+      "group_by": {
+        "total": 10,
+        "passed": 5,
+        "failed": 5,
+        "accuracy_percent": 50.0
+      },
+      "having": {
+        "total": 10,
+        "passed": 5,
+        "failed": 5,
+        "accuracy_percent": 50.0
+      },
+      "join": {
+        "total": 10,
+        "passed": 3,
+        "failed": 7,
+        "accuracy_percent": 30.0
+      },
+      "multi_join": {
+        "total": 10,
+        "passed": 5,
+        "failed": 5,
+        "accuracy_percent": 50.0
+      },
+      "order_limit_topk": {
+        "total": 10,
+        "passed": 2,
+        "failed": 8,
+        "accuracy_percent": 20.0
+      },
+      "set_operation": {
+        "total": 10,
+        "passed": 6,
+        "failed": 4,
+        "accuracy_percent": 60.0
+      },
+      "subquery": {
+        "total": 10,
+        "passed": 3,
+        "failed": 7,
+        "accuracy_percent": 30.0
+      }
+    },
+    "by_category_mode": {
+      "aggregation:structured": {
+        "category": "aggregation",
+        "mode": "structured",
+        "total": 5,
+        "passed": 1,
+        "failed": 4,
+        "accuracy_percent": 20.0
+      },
+      "aggregation:sql": {
+        "category": "aggregation",
+        "mode": "sql",
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "accuracy_percent": 100.0
+      },
+      "derived_metric:structured": {
+        "category": "derived_metric",
+        "mode": "structured",
+        "total": 5,
+        "passed": 0,
+        "failed": 5,
+        "accuracy_percent": 0.0
+      },
+      "derived_metric:sql": {
+        "category": "derived_metric",
+        "mode": "sql",
+        "total": 5,
+        "passed": 1,
+        "failed": 4,
+        "accuracy_percent": 20.0
+      },
+      "distinct_count:structured": {
+        "category": "distinct_count",
+        "mode": "structured",
+        "total": 5,
+        "passed": 0,
+        "failed": 5,
+        "accuracy_percent": 0.0
+      },
+      "distinct_count:sql": {
+        "category": "distinct_count",
+        "mode": "sql",
+        "total": 5,
+        "passed": 3,
+        "failed": 2,
+        "accuracy_percent": 60.0
+      },
+      "group_by:structured": {
+        "category": "group_by",
+        "mode": "structured",
+        "total": 5,
+        "passed": 3,
+        "failed": 2,
+        "accuracy_percent": 60.0
+      },
+      "group_by:sql": {
+        "category": "group_by",
+        "mode": "sql",
+        "total": 5,
+        "passed": 2,
+        "failed": 3,
+        "accuracy_percent": 40.0
+      },
+      "having:structured": {
+        "category": "having",
+        "mode": "structured",
+        "total": 5,
+        "passed": 1,
+        "failed": 4,
+        "accuracy_percent": 20.0
+      },
+      "having:sql": {
+        "category": "having",
+        "mode": "sql",
+        "total": 5,
+        "passed": 4,
+        "failed": 1,
+        "accuracy_percent": 80.0
+      },
+      "join:structured": {
+        "category": "join",
+        "mode": "structured",
+        "total": 5,
+        "passed": 0,
+        "failed": 5,
+        "accuracy_percent": 0.0
+      },
+      "join:sql": {
+        "category": "join",
+        "mode": "sql",
+        "total": 5,
+        "passed": 3,
+        "failed": 2,
+        "accuracy_percent": 60.0
+      },
+      "multi_join:structured": {
+        "category": "multi_join",
+        "mode": "structured",
+        "total": 5,
+        "passed": 0,
+        "failed": 5,
+        "accuracy_percent": 0.0
+      },
+      "multi_join:sql": {
+        "category": "multi_join",
+        "mode": "sql",
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "accuracy_percent": 100.0
+      },
+      "order_limit_topk:structured": {
+        "category": "order_limit_topk",
+        "mode": "structured",
+        "total": 5,
+        "passed": 2,
+        "failed": 3,
+        "accuracy_percent": 40.0
+      },
+      "order_limit_topk:sql": {
+        "category": "order_limit_topk",
+        "mode": "sql",
+        "total": 5,
+        "passed": 0,
+        "failed": 5,
+        "accuracy_percent": 0.0
+      },
+      "set_operation:structured": {
+        "category": "set_operation",
+        "mode": "structured",
+        "total": 5,
+        "passed": 3,
+        "failed": 2,
+        "accuracy_percent": 60.0
+      },
+      "set_operation:sql": {
+        "category": "set_operation",
+        "mode": "sql",
+        "total": 5,
+        "passed": 3,
+        "failed": 2,
+        "accuracy_percent": 60.0
+      },
+      "subquery:structured": {
+        "category": "subquery",
+        "mode": "structured",
+        "total": 5,
+        "passed": 0,
+        "failed": 5,
+        "accuracy_percent": 0.0
+      },
+      "subquery:sql": {
+        "category": "subquery",
+        "mode": "sql",
+        "total": 5,
+        "passed": 3,
+        "failed": 2,
+        "accuracy_percent": 60.0
+      }
+    },
+    "graph_rows": [
+      {
+        "category": "aggregation",
+        "mode": "combined",
+        "total": 10,
+        "passed": 6,
+        "failed": 4,
+        "accuracy_percent": 60.0
+      },
+      {
+        "category": "aggregation",
+        "mode": "structured",
+        "total": 5,
+        "passed": 1,
+        "failed": 4,
+        "accuracy_percent": 20.0
+      },
+      {
+        "category": "aggregation",
+        "mode": "sql",
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "accuracy_percent": 100.0
+      },
+      {
+        "category": "derived_metric",
+        "mode": "combined",
+        "total": 10,
+        "passed": 1,
+        "failed": 9,
+        "accuracy_percent": 10.0
+      },
+      {
+        "category": "derived_metric",
+        "mode": "structured",
+        "total": 5,
+        "passed": 0,
+        "failed": 5,
+        "accuracy_percent": 0.0
+      },
+      {
+        "category": "derived_metric",
+        "mode": "sql",
+        "total": 5,
+        "passed": 1,
+        "failed": 4,
+        "accuracy_percent": 20.0
+      },
+      {
+        "category": "distinct_count",
+        "mode": "combined",
+        "total": 10,
+        "passed": 3,
+        "failed": 7,
+        "accuracy_percent": 30.0
+      },
+      {
+        "category": "distinct_count",
+        "mode": "structured",
+        "total": 5,
+        "passed": 0,
+        "failed": 5,
+        "accuracy_percent": 0.0
+      },
+      {
+        "category": "distinct_count",
+        "mode": "sql",
+        "total": 5,
+        "passed": 3,
+        "failed": 2,
+        "accuracy_percent": 60.0
+      },
+      {
+        "category": "group_by",
+        "mode": "combined",
+        "total": 10,
+        "passed": 5,
+        "failed": 5,
+        "accuracy_percent": 50.0
+      },
+      {
+        "category": "group_by",
+        "mode": "structured",
+        "total": 5,
+        "passed": 3,
+        "failed": 2,
+        "accuracy_percent": 60.0
+      },
+      {
+        "category": "group_by",
+        "mode": "sql",
+        "total": 5,
+        "passed": 2,
+        "failed": 3,
+        "accuracy_percent": 40.0
+      },
+      {
+        "category": "having",
+        "mode": "combined",
+        "total": 10,
+        "passed": 5,
+        "failed": 5,
+        "accuracy_percent": 50.0
+      },
+      {
+        "category": "having",
+        "mode": "structured",
+        "total": 5,
+        "passed": 1,
+        "failed": 4,
+        "accuracy_percent": 20.0
+      },
+      {
+        "category": "having",
+        "mode": "sql",
+        "total": 5,
+        "passed": 4,
+        "failed": 1,
+        "accuracy_percent": 80.0
+      },
+      {
+        "category": "join",
+        "mode": "combined",
+        "total": 10,
+        "passed": 3,
+        "failed": 7,
+        "accuracy_percent": 30.0
+      },
+      {
+        "category": "join",
+        "mode": "structured",
+        "total": 5,
+        "passed": 0,
+        "failed": 5,
+        "accuracy_percent": 0.0
+      },
+      {
+        "category": "join",
+        "mode": "sql",
+        "total": 5,
+        "passed": 3,
+        "failed": 2,
+        "accuracy_percent": 60.0
+      },
+      {
+        "category": "multi_join",
+        "mode": "combined",
+        "total": 10,
+        "passed": 5,
+        "failed": 5,
+        "accuracy_percent": 50.0
+      },
+      {
+        "category": "multi_join",
+        "mode": "structured",
+        "total": 5,
+        "passed": 0,
+        "failed": 5,
+        "accuracy_percent": 0.0
+      },
+      {
+        "category": "multi_join",
+        "mode": "sql",
+        "total": 5,
+        "passed": 5,
+        "failed": 0,
+        "accuracy_percent": 100.0
+      },
+      {
+        "category": "order_limit_topk",
+        "mode": "combined",
+        "total": 10,
+        "passed": 2,
+        "failed": 8,
+        "accuracy_percent": 20.0
+      },
+      {
+        "category": "order_limit_topk",
+        "mode": "structured",
+        "total": 5,
+        "passed": 2,
+        "failed": 3,
+        "accuracy_percent": 40.0
+      },
+      {
+        "category": "order_limit_topk",
+        "mode": "sql",
+        "total": 5,
+        "passed": 0,
+        "failed": 5,
+        "accuracy_percent": 0.0
+      },
+      {
+        "category": "set_operation",
+        "mode": "combined",
+        "total": 10,
+        "passed": 6,
+        "failed": 4,
+        "accuracy_percent": 60.0
+      },
+      {
+        "category": "set_operation",
+        "mode": "structured",
+        "total": 5,
+        "passed": 3,
+        "failed": 2,
+        "accuracy_percent": 60.0
+      },
+      {
+        "category": "set_operation",
+        "mode": "sql",
+        "total": 5,
+        "passed": 3,
+        "failed": 2,
+        "accuracy_percent": 60.0
+      },
+      {
+        "category": "subquery",
+        "mode": "combined",
+        "total": 10,
+        "passed": 3,
+        "failed": 7,
+        "accuracy_percent": 30.0
+      },
+      {
+        "category": "subquery",
+        "mode": "structured",
+        "total": 5,
+        "passed": 0,
+        "failed": 5,
+        "accuracy_percent": 0.0
+      },
+      {
+        "category": "subquery",
+        "mode": "sql",
+        "total": 5,
+        "passed": 3,
+        "failed": 2,
+        "accuracy_percent": 60.0
+      }
+    ]
+  },
+  "results": [
+    {
+      "id": "JOIN-S01",
+      "category": "join",
+      "mode": "structured",
+      "passed": false,
+      "reason": "ordered row mismatch: expected 12 rows, got 12 rows",
+      "elapsed_seconds": 27.129,
+      "http_status": 200,
+      "question": "For the 2001 season, list players who hit more than 40 home runs with their team name and team wins. Show first name, last name, year, team, wins, and home runs.",
+      "gold_sql": "SELECT p.nameFirst, p.nameLast, b.yearID, t.name, t.W, b.HR FROM Batting b JOIN People p ON b.playerID = p.playerID JOIN Teams t ON b.yearID = t.yearID AND b.teamID = t.teamID AND b.lgID = t.lgID WHERE b.yearID = 2001 AND b.HR > 40 ORDER BY b.HR DESC, p.nameLast, p.nameFirst",
+      "generated_sql": "SELECT p.nameFirst, p.nameLast, b.yearID, t.name, t.W, b.HR\nFROM batting b\nJOIN people p ON b.playerID = p.playerID\nJOIN teams t ON b.yearID = t.yearID AND b.teamID = t.teamID AND b.lgID = t.lgID\nWHERE b.yearID = 2001 AND b.HR > 40",
+      "generated_params": [],
+      "expected_row_count": 12,
+      "actual_row_count": 12,
+      "expected_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "name",
+        "W",
+        "HR"
+      ],
+      "actual_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "name",
+        "W",
+        "HR"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 12,
+        "columns": [
+          "nameFirst",
+          "nameLast",
+          "yearID",
+          "name",
+          "W",
+          "HR"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "JOIN-S02",
+      "category": "join",
+      "mode": "structured",
+      "passed": false,
+      "reason": "ordered row mismatch: expected 33 rows, got 33 rows",
+      "elapsed_seconds": 30.493,
+      "http_status": 200,
+      "question": "List pitching seasons after 2010 where the pitcher won more than 18 games. Include pitcher name, year, team name, wins, losses, and strikeouts.",
+      "gold_sql": "SELECT p.nameFirst, p.nameLast, pi.yearID, t.name, pi.W, pi.L, pi.SO FROM Pitching pi JOIN People p ON pi.playerID = p.playerID JOIN Teams t ON pi.yearID = t.yearID AND pi.teamID = t.teamID AND pi.lgID = t.lgID WHERE pi.yearID > 2010 AND pi.W > 18 ORDER BY pi.yearID, pi.W DESC, pi.SO DESC",
+      "generated_sql": "SELECT p.nameFirst, p.nameLast, pi.yearID, t.name, pi.W, pi.L, pi.SO\nFROM pitching pi\nJOIN people p ON pi.playerID = p.playerID\nJOIN teams t ON pi.yearID = t.yearID AND pi.teamID = t.teamID AND pi.lgID = t.lgID\nWHERE pi.yearID > 2010 AND pi.W > 18",
+      "generated_params": [],
+      "expected_row_count": 33,
+      "actual_row_count": 33,
+      "expected_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "name",
+        "W",
+        "L",
+        "SO"
+      ],
+      "actual_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "name",
+        "W",
+        "L",
+        "SO"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 33,
+        "columns": [
+          "nameFirst",
+          "nameLast",
+          "yearID",
+          "name",
+          "W",
+          "L",
+          "SO"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "JOIN-S03",
+      "category": "join",
+      "mode": "structured",
+      "passed": false,
+      "reason": "ordered row mismatch: expected 100 rows, got 495 rows",
+      "elapsed_seconds": 22.788,
+      "http_status": 200,
+      "question": "Show players who attended California schools after 2000. Include player name, school name, state, and college year.",
+      "gold_sql": "SELECT p.nameFirst, p.nameLast, s.name_full, s.state, cp.yearID FROM CollegePlaying cp JOIN People p ON cp.playerID = p.playerID JOIN Schools s ON cp.schoolID = s.schoolID WHERE s.state = 'CA' AND cp.yearID > 2000 ORDER BY cp.yearID, s.name_full, p.nameLast, p.nameFirst LIMIT 100",
+      "generated_sql": "SELECT p.nameFirst, p.nameLast, s.name_full, s.state, cp.yearID\nFROM collegeplaying cp\nJOIN people p ON cp.playerID = p.playerID\nJOIN schools s ON cp.schoolID = s.schoolID\nWHERE cp.yearID > 2000 AND s.state = 'CA'",
+      "generated_params": [],
+      "expected_row_count": 100,
+      "actual_row_count": 495,
+      "expected_columns": [
+        "nameFirst",
+        "nameLast",
+        "name_full",
+        "state",
+        "yearID"
+      ],
+      "actual_columns": [
+        "nameFirst",
+        "nameLast",
+        "name_full",
+        "state",
+        "yearID"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 495,
+        "columns": [
+          "nameFirst",
+          "nameLast",
+          "name_full",
+          "state",
+          "yearID"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "JOIN-S04",
+      "category": "join",
+      "mode": "structured",
+      "passed": false,
+      "reason": "ordered row mismatch: expected 34 rows, got 34 rows",
+      "elapsed_seconds": 34.518,
+      "http_status": 200,
+      "question": "List salary records after 2015 where the player earned more than 20 million dollars. Show player name, year, team, league, and salary.",
+      "gold_sql": "SELECT p.nameFirst, p.nameLast, s.yearID, s.teamID, s.lgID, s.salary FROM Salaries s JOIN People p ON s.playerID = p.playerID WHERE s.yearID > 2015 AND s.salary > 20000000 ORDER BY s.salary DESC, s.yearID DESC",
+      "generated_sql": "SELECT p.nameFirst, p.nameLast, s.yearID, s.teamID, s.lgID, s.salary\nFROM salaries s\nJOIN people p ON s.playerID = p.playerID\nWHERE s.yearID > 2015 AND s.salary > 20000000",
+      "generated_params": [],
+      "expected_row_count": 34,
+      "actual_row_count": 34,
+      "expected_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "teamID",
+        "lgID",
+        "salary"
+      ],
+      "actual_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "teamID",
+        "lgID",
+        "salary"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 34,
+        "columns": [
+          "nameFirst",
+          "nameLast",
+          "yearID",
+          "teamID",
+          "lgID",
+          "salary"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "JOIN-S05",
+      "category": "join",
+      "mode": "structured",
+      "passed": false,
+      "reason": "ordered row mismatch: expected 24 rows, got 24 rows",
+      "elapsed_seconds": 20.863,
+      "http_status": 200,
+      "question": "List Hall of Fame inducted players born after 1960. Show first name, last name, birth year, and induction year.",
+      "gold_sql": "SELECT p.nameFirst, p.nameLast, p.birthYear, h.yearid FROM HallOfFame h JOIN People p ON h.playerID = p.playerID WHERE h.inducted = 'Y' AND h.category = 'Player' AND p.birthYear > 1960 ORDER BY h.yearid, p.nameLast, p.nameFirst",
+      "generated_sql": "SELECT p.nameFirst, p.nameLast, p.birthYear, h.yearid\nFROM HallOfFame h\nJOIN People p ON h.playerID = p.playerID\nWHERE h.inducted = 'Y' AND p.birthYear > 1960",
+      "generated_params": [],
+      "expected_row_count": 24,
+      "actual_row_count": 24,
+      "expected_columns": [
+        "nameFirst",
+        "nameLast",
+        "birthYear",
+        "yearid"
+      ],
+      "actual_columns": [
+        "nameFirst",
+        "nameLast",
+        "birthYear",
+        "yearid"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 24,
+        "columns": [
+          "nameFirst",
+          "nameLast",
+          "birthYear",
+          "yearid"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "JOIN-Q01",
+      "category": "join",
+      "mode": "sql",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 57.464,
+      "http_status": 200,
+      "question": "SELECT p.nameFirst, p.nameLast, b.yearID, t.name, t.W, b.HR\n    FROM Batting b\n    JOIN People p ON b.playerID = p.playerID\n    JOIN Teams t ON b.yearID = t.yearID AND b.teamID = t.teamID AND b.lgID = t.lgID\n    WHERE b.yearID = 1998 AND b.HR > 45\n    ORDER BY b.HR DESC, p.nameLast",
+      "gold_sql": "SELECT p.nameFirst, p.nameLast, b.yearID, t.name, t.W, b.HR FROM Batting b JOIN People p ON b.playerID = p.playerID JOIN Teams t ON b.yearID = t.yearID AND b.teamID = t.teamID AND b.lgID = t.lgID WHERE b.yearID = 1998 AND b.HR > 45 ORDER BY b.HR DESC, p.nameLast",
+      "generated_sql": "SELECT p.nameFirst, p.nameLast, b.yearID, t.name, t.W, b.HR\nFROM Batting b\nJOIN People p ON b.playerID = p.playerID\nJOIN Teams t ON b.yearID = t.yearID AND b.teamID = t.teamID AND b.lgID = t.lgID\nWHERE b.yearID = 1998 AND b.HR > 45\nORDER BY b.HR DESC, p.nameLast",
+      "generated_params": [],
+      "expected_row_count": 7,
+      "actual_row_count": 7,
+      "expected_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "name",
+        "W",
+        "HR"
+      ],
+      "actual_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "name",
+        "W",
+        "HR"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 7,
+        "columns": [
+          "nameFirst",
+          "nameLast",
+          "yearID",
+          "name",
+          "W",
+          "HR"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": true,
+        "safety_reason": null,
+        "warnings": []
+      }
+    },
+    {
+      "id": "JOIN-Q02",
+      "category": "join",
+      "mode": "sql",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 58.84,
+      "http_status": 200,
+      "question": "SELECT p.nameFirst, p.nameLast, pi.yearID, t.name, pi.W, pi.SO\n    FROM Pitching pi\n    JOIN People p ON pi.playerID = p.playerID\n    JOIN Teams t ON pi.yearID = t.yearID AND pi.teamID = t.teamID AND pi.lgID = t.lgID\n    WHERE pi.yearID BETWEEN 2015 AND 2022 AND pi.SO > 250\n    ORDER BY pi.SO DESC",
+      "gold_sql": "SELECT p.nameFirst, p.nameLast, pi.yearID, t.name, pi.W, pi.SO FROM Pitching pi JOIN People p ON pi.playerID = p.playerID JOIN Teams t ON pi.yearID = t.yearID AND pi.teamID = t.teamID AND pi.lgID = t.lgID WHERE pi.yearID BETWEEN 2015 AND 2022 AND pi.SO > 250 ORDER BY pi.SO DESC",
+      "generated_sql": "SELECT p.nameFirst, p.nameLast, pi.yearID, t.name, pi.W, pi.SO\nFROM Pitching pi\nJOIN People p ON pi.playerID = p.playerID\nJOIN Teams t ON pi.yearID = t.yearID AND pi.teamID = t.teamID AND pi.lgID = t.lgID\nWHERE pi.yearID BETWEEN 2015 AND 2022 AND pi.SO > 250\nORDER BY pi.SO DESC",
+      "generated_params": [],
+      "expected_row_count": 21,
+      "actual_row_count": 21,
+      "expected_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "name",
+        "W",
+        "SO"
+      ],
+      "actual_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "name",
+        "W",
+        "SO"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 21,
+        "columns": [
+          "nameFirst",
+          "nameLast",
+          "yearID",
+          "name",
+          "W",
+          "SO"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": true,
+        "safety_reason": null,
+        "warnings": []
+      }
+    },
+    {
+      "id": "JOIN-Q03",
+      "category": "join",
+      "mode": "sql",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 43.897,
+      "http_status": 200,
+      "question": "SELECT p.nameFirst, p.nameLast, h.yearid, h.votedBy\n    FROM HallOfFame h\n    JOIN People p ON h.playerID = p.playerID\n    WHERE h.inducted = 'Y' AND h.category = 'Player' AND h.yearid >= 2000\n    ORDER BY h.yearid, p.nameLast",
+      "gold_sql": "SELECT p.nameFirst, p.nameLast, h.yearid, h.votedBy FROM HallOfFame h JOIN People p ON h.playerID = p.playerID WHERE h.inducted = 'Y' AND h.category = 'Player' AND h.yearid >= 2000 ORDER BY h.yearid, p.nameLast",
+      "generated_sql": "SELECT p.nameFirst, p.nameLast, h.yearid, h.votedBy\nFROM HallOfFame h\nJOIN People p ON h.playerID = p.playerID\nWHERE h.inducted = 'Y' AND h.category = 'Player' AND h.yearid >= 2000\nORDER BY h.yearid, p.nameLast",
+      "generated_params": [],
+      "expected_row_count": 72,
+      "actual_row_count": 72,
+      "expected_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearid",
+        "votedBy"
+      ],
+      "actual_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearid",
+        "votedBy"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 72,
+        "columns": [
+          "nameFirst",
+          "nameLast",
+          "yearid",
+          "votedBy"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": true,
+        "safety_reason": null,
+        "warnings": []
+      }
+    },
+    {
+      "id": "JOIN-Q04",
+      "category": "join",
+      "mode": "sql",
+      "passed": false,
+      "reason": "unsafe/low confidence: low=False fatal=False safe=False reason=SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment",
+      "elapsed_seconds": 33.444,
+      "http_status": 200,
+      "question": "SELECT p.nameFirst, p.nameLast, s.yearID, s.teamID, s.salary\n    FROM Salaries s\n    JOIN People p ON s.playerID = p.playerID\n    WHERE s.salary > 25000000\n    ORDER BY s.salary DESC, s.yearID DESC\n    LIMIT 50",
+      "gold_sql": "SELECT p.nameFirst, p.nameLast, s.yearID, s.teamID, s.salary FROM Salaries s JOIN People p ON s.playerID = p.playerID WHERE s.salary > 25000000 ORDER BY s.salary DESC, s.yearID DESC LIMIT 50",
+      "generated_sql": "SELECT p.nameFirst, p.nameLast, s.yearID, s.teamID, s.salary\nFROM Salaries s\nJOIN People p ON s.playerID = p.playerID\nWHERE s.salary > 25000000\nORDER BY s.salary DESC, s.yearID DESC\nLIMIT 50",
+      "generated_params": [],
+      "expected_row_count": 18,
+      "actual_row_count": 0,
+      "expected_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "teamID",
+        "salary"
+      ],
+      "actual_columns": [],
+      "backend_meta": {
+        "success": true,
+        "row_count": 18,
+        "columns": [
+          "nameFirst",
+          "nameLast",
+          "yearID",
+          "teamID",
+          "salary"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": false,
+        "safety_reason": "SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment",
+        "warnings": []
+      }
+    },
+    {
+      "id": "JOIN-Q05",
+      "category": "join",
+      "mode": "sql",
+      "passed": false,
+      "reason": "unsafe/low confidence: low=False fatal=False safe=False reason=SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment",
+      "elapsed_seconds": 51.078,
+      "http_status": 200,
+      "question": "SELECT p.nameFirst, p.nameLast, sc.name_full, sc.state, cp.yearID\n    FROM CollegePlaying cp\n    JOIN People p ON cp.playerID = p.playerID\n    JOIN Schools sc ON cp.schoolID = sc.schoolID\n    WHERE sc.country = 'USA' AND sc.state = 'TX' AND cp.yearID >= 1995\n    ORDER BY cp.yearID, sc.name_full, p.nameLast\n    LIMIT 100",
+      "gold_sql": "SELECT p.nameFirst, p.nameLast, sc.name_full, sc.state, cp.yearID FROM CollegePlaying cp JOIN People p ON cp.playerID = p.playerID JOIN Schools sc ON cp.schoolID = sc.schoolID WHERE sc.country = 'USA' AND sc.state = 'TX' AND cp.yearID >= 1995 ORDER BY cp.yearID, sc.name_full, p.nameLast LIMIT 100",
+      "generated_sql": "SELECT p.nameFirst, p.nameLast, sc.name_full, sc.state, cp.yearID\nFROM CollegePlaying cp\nJOIN People p ON cp.playerID = p.playerID\nJOIN Schools sc ON cp.schoolID = sc.schoolID\nWHERE sc.country = 'USA' AND sc.state = 'TX' AND cp.yearID >= 1995\nORDER BY cp.yearID, sc.name_full, p.nameLast\nLIMIT 100",
+      "generated_params": [],
+      "expected_row_count": 100,
+      "actual_row_count": 0,
+      "expected_columns": [
+        "nameFirst",
+        "nameLast",
+        "name_full",
+        "state",
+        "yearID"
+      ],
+      "actual_columns": [],
+      "backend_meta": {
+        "success": true,
+        "row_count": 100,
+        "columns": [
+          "nameFirst",
+          "nameLast",
+          "name_full",
+          "state",
+          "yearID"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": false,
+        "safety_reason": "SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment",
+        "warnings": []
+      }
+    },
+    {
+      "id": "MJ-S01",
+      "category": "multi_join",
+      "mode": "structured",
+      "passed": false,
+      "reason": "ordered row mismatch: expected 26 rows, got 26 rows",
+      "elapsed_seconds": 23.186,
+      "http_status": 200,
+      "question": "For player seasons after 2000, list players who made more than 20 million dollars and hit more than 30 home runs in the same year and team. Show name, year, team, salary, and home runs.",
+      "gold_sql": "SELECT p.nameFirst, p.nameLast, s.yearID, t.name, s.salary, b.HR FROM Salaries s JOIN People p ON s.playerID = p.playerID JOIN Batting b ON s.playerID = b.playerID AND s.yearID = b.yearID AND s.teamID = b.teamID AND s.lgID = b.lgID JOIN Teams t ON s.yearID = t.yearID AND s.teamID = t.teamID AND s.lgID = t.lgID WHERE s.yearID > 2000 AND s.salary > 20000000 AND b.HR > 30 ORDER BY s.yearID, s.salary DESC",
+      "generated_sql": "SELECT p.nameFirst, p.nameLast, b.yearID, t.name, s.salary, b.HR\nFROM batting b\nJOIN people p ON b.playerID = p.playerID\nJOIN salaries s ON b.playerID = s.playerID AND b.yearID = s.yearID AND b.teamID = s.teamID AND b.lgID = s.lgID\nJOIN teams t ON b.yearID = t.yearID AND b.teamID = t.teamID AND b.lgID = t.lgID\nWHERE b.yearID > 2000\n  AND s.salary > 20000000\n  AND b.HR > 30",
+      "generated_params": [],
+      "expected_row_count": 26,
+      "actual_row_count": 26,
+      "expected_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "name",
+        "salary",
+        "HR"
+      ],
+      "actual_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "name",
+        "salary",
+        "HR"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 26,
+        "columns": [
+          "nameFirst",
+          "nameLast",
+          "yearID",
+          "name",
+          "salary",
+          "HR"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "MJ-S02",
+      "category": "multi_join",
+      "mode": "structured",
+      "passed": false,
+      "reason": "ordered row mismatch: expected 22 rows, got 58 rows",
+      "elapsed_seconds": 22.775,
+      "http_status": 200,
+      "question": "List players who attended a California school and later hit more than 40 home runs in a season. Show player, school, batting year, team, and home runs.",
+      "gold_sql": "SELECT DISTINCT p.nameFirst, p.nameLast, sc.name_full, b.yearID, b.teamID, b.HR FROM People p JOIN CollegePlaying cp ON p.playerID = cp.playerID JOIN Schools sc ON cp.schoolID = sc.schoolID JOIN Batting b ON p.playerID = b.playerID WHERE sc.state = 'CA' AND b.HR > 40 AND b.yearID > cp.yearID ORDER BY b.HR DESC, b.yearID, p.nameLast",
+      "generated_sql": "SELECT p.nameFirst, p.nameLast, s.name_full, b.yearID, b.teamID, b.HR\nFROM people p\nJOIN collegeplaying cp ON p.playerID = cp.playerID\nJOIN schools s ON cp.schoolID = s.schoolID\nJOIN batting b ON p.playerID = b.playerID\nWHERE s.state = 'CA'\n  AND b.HR > 40",
+      "generated_params": [],
+      "expected_row_count": 22,
+      "actual_row_count": 58,
+      "expected_columns": [
+        "nameFirst",
+        "nameLast",
+        "name_full",
+        "yearID",
+        "teamID",
+        "HR"
+      ],
+      "actual_columns": [
+        "nameFirst",
+        "nameLast",
+        "name_full",
+        "yearID",
+        "teamID",
+        "HR"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 58,
+        "columns": [
+          "nameFirst",
+          "nameLast",
+          "name_full",
+          "yearID",
+          "teamID",
+          "HR"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "MJ-S03",
+      "category": "multi_join",
+      "mode": "structured",
+      "passed": false,
+      "reason": "column mismatch: expected ['nameFirst', 'nameLast', 'induction_year', 'yearID', 'name', 'HR'], got ['nameFirst', 'nameLast', 'yearid', 'yearID', 'name', 'HR']",
+      "elapsed_seconds": 21.28,
+      "http_status": 200,
+      "question": "List Hall of Fame inducted players who had a season with more than 40 home runs. Show player, induction year, batting year, team name, and home runs.",
+      "gold_sql": "SELECT DISTINCT p.nameFirst, p.nameLast, h.yearid AS induction_year, b.yearID, t.name, b.HR FROM HallOfFame h JOIN People p ON h.playerID = p.playerID JOIN Batting b ON h.playerID = b.playerID JOIN Teams t ON b.yearID = t.yearID AND b.teamID = t.teamID AND b.lgID = t.lgID WHERE h.inducted = 'Y' AND h.category = 'Player' AND b.HR > 40 ORDER BY b.HR DESC, p.nameLast",
+      "generated_sql": "SELECT p.nameFirst, p.nameLast, h.yearid, b.yearID, t.name, b.HR\nFROM halloffame h\nJOIN people p ON h.playerID = p.playerID\nJOIN batting b ON p.playerID = b.playerID\nJOIN teams t ON b.yearID = t.yearID AND b.teamID = t.teamID AND b.lgID = t.lgID\nWHERE h.inducted = 'Y' AND b.HR > 40",
+      "generated_params": [],
+      "expected_row_count": 109,
+      "actual_row_count": 109,
+      "expected_columns": [
+        "nameFirst",
+        "nameLast",
+        "induction_year",
+        "yearID",
+        "name",
+        "HR"
+      ],
+      "actual_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearid",
+        "yearID",
+        "name",
+        "HR"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 109,
+        "columns": [
+          "nameFirst",
+          "nameLast",
+          "yearid",
+          "yearID",
+          "name",
+          "HR"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "MJ-S04",
+      "category": "multi_join",
+      "mode": "structured",
+      "passed": false,
+      "reason": "ordered row mismatch: expected 223 rows, got 501 rows",
+      "elapsed_seconds": 19.509,
+      "http_status": 200,
+      "question": "Find award-winning player seasons where a player won a Silver Slugger award and hit more than 35 home runs in that same year. Show player, year, team, award, and home runs.",
+      "gold_sql": "SELECT p.nameFirst, p.nameLast, ap.yearID, b.teamID, ap.awardID, b.HR FROM AwardsPlayers ap JOIN People p ON ap.playerID = p.playerID JOIN Batting b ON ap.playerID = b.playerID AND ap.yearID = b.yearID WHERE ap.awardID = 'Silver Slugger' AND b.HR > 35 ORDER BY ap.yearID, b.HR DESC, p.nameLast",
+      "generated_sql": "SELECT p.nameFirst, p.nameLast, asp.yearID, b.teamID, asp.awardID, b.HR\nFROM AwardsSharePlayers asp\nJOIN People p ON asp.playerID = p.playerID\nJOIN Batting b ON asp.playerID = b.playerID AND asp.yearID = b.yearID\nWHERE asp.awardID = 'MVP'\n  AND b.HR > 35",
+      "generated_params": [],
+      "expected_row_count": 223,
+      "actual_row_count": 501,
+      "expected_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "teamID",
+        "awardID",
+        "HR"
+      ],
+      "actual_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "teamID",
+        "awardID",
+        "HR"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 501,
+        "columns": [
+          "nameFirst",
+          "nameLast",
+          "yearID",
+          "teamID",
+          "awardID",
+          "HR"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "MJ-S05",
+      "category": "multi_join",
+      "mode": "structured",
+      "passed": false,
+      "reason": "ordered row mismatch: expected 69 rows, got 69 rows",
+      "elapsed_seconds": 20.613,
+      "http_status": 200,
+      "question": "Show pitchers after 2010 who had more than 200 strikeouts and whose team won more than 90 games. Include pitcher, year, team, pitcher strikeouts, and team wins.",
+      "gold_sql": "SELECT p.nameFirst, p.nameLast, pi.yearID, t.name, pi.SO, t.W FROM Pitching pi JOIN People p ON pi.playerID = p.playerID JOIN Teams t ON pi.yearID = t.yearID AND pi.teamID = t.teamID AND pi.lgID = t.lgID WHERE pi.yearID > 2010 AND pi.SO > 200 AND t.W > 90 ORDER BY pi.yearID, pi.SO DESC",
+      "generated_sql": "SELECT p.nameFirst, p.nameLast, pi.yearID, t.name, pi.SO, t.W\nFROM people p\nJOIN pitching pi ON p.playerID = pi.playerID\nJOIN teams t ON pi.yearID = t.yearID AND pi.teamID = t.teamID AND pi.lgID = t.lgID\nWHERE pi.yearID > 2010\n  AND pi.SO > 200\n  AND t.W > 90",
+      "generated_params": [],
+      "expected_row_count": 69,
+      "actual_row_count": 69,
+      "expected_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "name",
+        "SO",
+        "W"
+      ],
+      "actual_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "name",
+        "SO",
+        "W"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 69,
+        "columns": [
+          "nameFirst",
+          "nameLast",
+          "yearID",
+          "name",
+          "SO",
+          "W"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "MJ-Q01",
+      "category": "multi_join",
+      "mode": "sql",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 51.384,
+      "http_status": 200,
+      "question": "SELECT p.nameFirst, p.nameLast, s.yearID, t.name, s.salary, b.HR\n        FROM Salaries s\n        JOIN People p ON s.playerID = p.playerID\n        JOIN Batting b ON s.playerID = b.playerID AND s.yearID = b.yearID AND s.teamID = b.teamID AND s.lgID = b.lgID\n        JOIN Teams t ON s.yearID = t.yearID AND s.teamID = t.teamID AND s.lgID = t.lgID\n        WHERE s.yearID BETWEEN 2010 AND 2016 AND s.salary > 15000000 AND b.HR > 25\n        ORDER BY s.salary DESC",
+      "gold_sql": "SELECT p.nameFirst, p.nameLast, s.yearID, t.name, s.salary, b.HR FROM Salaries s JOIN People p ON s.playerID = p.playerID JOIN Batting b ON s.playerID = b.playerID AND s.yearID = b.yearID AND s.teamID = b.teamID AND s.lgID = b.lgID JOIN Teams t ON s.yearID = t.yearID AND s.teamID = t.teamID AND s.lgID = t.lgID WHERE s.yearID BETWEEN 2010 AND 2016 AND s.salary > 15000000 AND b.HR > 25 ORDER BY s.salary DESC",
+      "generated_sql": "SELECT p.nameFirst, p.nameLast, s.yearID, t.name, s.salary, b.HR\nFROM Salaries s\nJOIN People p ON s.playerID = p.playerID\nJOIN Batting b ON s.playerID = b.playerID AND s.yearID = b.yearID AND s.teamID = b.teamID AND s.lgID = b.lgID\nJOIN Teams t ON s.yearID = t.yearID AND s.teamID = t.teamID AND s.lgID = t.lgID\nWHERE s.yearID BETWEEN 2010 AND 2016 AND s.salary > 15000000 AND b.HR > 25\nORDER BY s.salary DESC",
+      "generated_params": [],
+      "expected_row_count": 43,
+      "actual_row_count": 43,
+      "expected_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "name",
+        "salary",
+        "HR"
+      ],
+      "actual_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "name",
+        "salary",
+        "HR"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 43,
+        "columns": [
+          "nameFirst",
+          "nameLast",
+          "yearID",
+          "name",
+          "salary",
+          "HR"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": true,
+        "safety_reason": null,
+        "warnings": []
+      }
+    },
+    {
+      "id": "MJ-Q02",
+      "category": "multi_join",
+      "mode": "sql",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 39.88,
+      "http_status": 200,
+      "question": "SELECT DISTINCT p.nameFirst, p.nameLast, sc.name_full, b.yearID, b.HR\n        FROM People p\n        JOIN CollegePlaying cp ON p.playerID = cp.playerID\n        JOIN Schools sc ON cp.schoolID = sc.schoolID\n        JOIN Batting b ON p.playerID = b.playerID\n        WHERE sc.state = 'FL' AND b.HR > 30 AND b.yearID > cp.yearID\n        ORDER BY b.HR DESC",
+      "gold_sql": "SELECT DISTINCT p.nameFirst, p.nameLast, sc.name_full, b.yearID, b.HR FROM People p JOIN CollegePlaying cp ON p.playerID = cp.playerID JOIN Schools sc ON cp.schoolID = sc.schoolID JOIN Batting b ON p.playerID = b.playerID WHERE sc.state = 'FL' AND b.HR > 30 AND b.yearID > cp.yearID ORDER BY b.HR DESC",
+      "generated_sql": "SELECT DISTINCT p.nameFirst, p.nameLast, sc.name_full, b.yearID, b.HR\nFROM People p\nJOIN CollegePlaying cp ON p.playerID = cp.playerID\nJOIN Schools sc ON cp.schoolID = sc.schoolID\nJOIN Batting b ON p.playerID = b.playerID\nWHERE sc.state = 'FL' AND b.HR > 30 AND b.yearID > cp.yearID\nORDER BY b.HR DESC",
+      "generated_params": [],
+      "expected_row_count": 59,
+      "actual_row_count": 59,
+      "expected_columns": [
+        "nameFirst",
+        "nameLast",
+        "name_full",
+        "yearID",
+        "HR"
+      ],
+      "actual_columns": [
+        "nameFirst",
+        "nameLast",
+        "name_full",
+        "yearID",
+        "HR"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 59,
+        "columns": [
+          "nameFirst",
+          "nameLast",
+          "name_full",
+          "yearID",
+          "HR"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": true,
+        "safety_reason": null,
+        "warnings": []
+      }
+    },
+    {
+      "id": "MJ-Q03",
+      "category": "multi_join",
+      "mode": "sql",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 47.792,
+      "http_status": 200,
+      "question": "SELECT p.nameFirst, p.nameLast, h.yearid, b.yearID, b.HR\n        FROM HallOfFame h\n        JOIN People p ON h.playerID = p.playerID\n        JOIN Batting b ON h.playerID = b.playerID\n        WHERE h.inducted = 'Y' AND b.HR > 45\n        ORDER BY b.HR DESC, h.yearid",
+      "gold_sql": "SELECT p.nameFirst, p.nameLast, h.yearid, b.yearID, b.HR FROM HallOfFame h JOIN People p ON h.playerID = p.playerID JOIN Batting b ON h.playerID = b.playerID WHERE h.inducted = 'Y' AND b.HR > 45 ORDER BY b.HR DESC, h.yearid",
+      "generated_sql": "SELECT p.nameFirst, p.nameLast, h.yearid, b.yearID, b.HR\nFROM HallOfFame h\nJOIN People p ON h.playerID = p.playerID\nJOIN Batting b ON h.playerID = b.playerID\nWHERE h.inducted = 'Y' AND b.HR > 45\nORDER BY b.HR DESC, h.yearid",
+      "generated_params": [],
+      "expected_row_count": 55,
+      "actual_row_count": 55,
+      "expected_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearid",
+        "yearID",
+        "HR"
+      ],
+      "actual_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearid",
+        "yearID",
+        "HR"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 55,
+        "columns": [
+          "nameFirst",
+          "nameLast",
+          "yearid",
+          "yearID",
+          "HR"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": true,
+        "safety_reason": null,
+        "warnings": []
+      }
+    },
+    {
+      "id": "MJ-Q04",
+      "category": "multi_join",
+      "mode": "sql",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 42.311,
+      "http_status": 200,
+      "question": "SELECT p.nameFirst, p.nameLast, ap.yearID, ap.awardID, b.HR\n        FROM AwardsPlayers ap\n        JOIN People p ON ap.playerID = p.playerID\n        JOIN Batting b ON ap.playerID = b.playerID AND ap.yearID = b.yearID\n        WHERE ap.awardID = 'Gold Glove' AND b.HR > 25\n        ORDER BY ap.yearID DESC, b.HR DESC",
+      "gold_sql": "SELECT p.nameFirst, p.nameLast, ap.yearID, ap.awardID, b.HR FROM AwardsPlayers ap JOIN People p ON ap.playerID = p.playerID JOIN Batting b ON ap.playerID = b.playerID AND ap.yearID = b.yearID WHERE ap.awardID = 'Gold Glove' AND b.HR > 25 ORDER BY ap.yearID DESC, b.HR DESC",
+      "generated_sql": "SELECT p.nameFirst, p.nameLast, ap.yearID, ap.awardID, b.HR\nFROM AwardsPlayers ap\nJOIN People p ON ap.playerID = p.playerID\nJOIN Batting b ON ap.playerID = b.playerID AND ap.yearID = b.yearID\nWHERE ap.awardID = 'Gold Glove' AND b.HR > 25\nORDER BY ap.yearID DESC, b.HR DESC",
+      "generated_params": [],
+      "expected_row_count": 282,
+      "actual_row_count": 282,
+      "expected_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "awardID",
+        "HR"
+      ],
+      "actual_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "awardID",
+        "HR"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 282,
+        "columns": [
+          "nameFirst",
+          "nameLast",
+          "yearID",
+          "awardID",
+          "HR"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": true,
+        "safety_reason": null,
+        "warnings": [
+          "selected SQL uses literal 'Gold Glove' not found in sampled values of 'awardid' (known: ['BBWAA Manager of the Year', 'TSN Manager of the Year'])"
+        ]
+      }
+    },
+    {
+      "id": "MJ-Q05",
+      "category": "multi_join",
+      "mode": "sql",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 55.123,
+      "http_status": 200,
+      "question": "SELECT p.nameFirst, p.nameLast, pi.yearID, t.name, pi.W, pi.SO, t.W AS team_wins\n        FROM Pitching pi\n        JOIN People p ON pi.playerID = p.playerID\n        JOIN Teams t ON pi.yearID = t.yearID AND pi.teamID = t.teamID AND pi.lgID = t.lgID\n        WHERE pi.yearID >= 2000 AND pi.W > 18 AND pi.SO > 180 AND t.W > 90\n        ORDER BY pi.yearID DESC, pi.SO DESC",
+      "gold_sql": "SELECT p.nameFirst, p.nameLast, pi.yearID, t.name, pi.W, pi.SO, t.W AS team_wins FROM Pitching pi JOIN People p ON pi.playerID = p.playerID JOIN Teams t ON pi.yearID = t.yearID AND pi.teamID = t.teamID AND pi.lgID = t.lgID WHERE pi.yearID >= 2000 AND pi.W > 18 AND pi.SO > 180 AND t.W > 90 ORDER BY pi.yearID DESC, pi.SO DESC",
+      "generated_sql": "SELECT p.nameFirst, p.nameLast, pi.yearID, t.name, pi.W, pi.SO, t.W AS team_wins\nFROM Pitching pi\nJOIN People p ON pi.playerID = p.playerID\nJOIN Teams t ON pi.yearID = t.yearID AND pi.teamID = t.teamID AND pi.lgID = t.lgID\nWHERE pi.yearID >= 2000 AND pi.W > 18 AND pi.SO > 180 AND t.W > 90\nORDER BY pi.yearID DESC, pi.SO DESC",
+      "generated_params": [],
+      "expected_row_count": 41,
+      "actual_row_count": 41,
+      "expected_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "name",
+        "W",
+        "SO",
+        "team_wins"
+      ],
+      "actual_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "name",
+        "W",
+        "SO",
+        "team_wins"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 41,
+        "columns": [
+          "nameFirst",
+          "nameLast",
+          "yearID",
+          "name",
+          "W",
+          "SO",
+          "team_wins"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": true,
+        "safety_reason": null,
+        "warnings": []
+      }
+    },
+    {
+      "id": "GB-S01",
+      "category": "group_by",
+      "mode": "structured",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 16.351,
+      "http_status": 200,
+      "question": "For every year after 2000, show total home runs and total RBIs from Batting. Order by year.",
+      "gold_sql": "SELECT yearID, SUM(HR) AS total_hr, SUM(RBI) AS total_rbi FROM Batting WHERE yearID > 2000 GROUP BY yearID ORDER BY yearID",
+      "generated_sql": "SELECT batting.yearid, SUM(batting.HR) AS total_hr, SUM(batting.RBI) AS total_rbi\nFROM batting\nWHERE batting.yearid > 2000\nGROUP BY batting.yearid\nORDER BY batting.yearid",
+      "generated_params": [],
+      "expected_row_count": 22,
+      "actual_row_count": 22,
+      "expected_columns": [
+        "yearID",
+        "total_hr",
+        "total_rbi"
+      ],
+      "actual_columns": [
+        "yearID",
+        "total_hr",
+        "total_rbi"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 22,
+        "columns": [
+          "yearID",
+          "total_hr",
+          "total_rbi"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "GB-S02",
+      "category": "group_by",
+      "mode": "structured",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 16.673,
+      "http_status": 200,
+      "question": "Show each franchise's total wins and total losses after 1990, ordered by total wins descending.",
+      "gold_sql": "SELECT franchID, SUM(W) AS total_wins, SUM(L) AS total_losses FROM Teams WHERE yearID > 1990 GROUP BY franchID ORDER BY total_wins DESC, franchID",
+      "generated_sql": "SELECT teams.franchid, SUM(teams.w) AS total_wins, SUM(teams.l) AS total_losses\nFROM teams\nWHERE teams.yearid > 1990\nGROUP BY teams.franchid\nORDER BY total_wins DESC",
+      "generated_params": [],
+      "expected_row_count": 30,
+      "actual_row_count": 30,
+      "expected_columns": [
+        "franchID",
+        "total_wins",
+        "total_losses"
+      ],
+      "actual_columns": [
+        "franchID",
+        "total_wins",
+        "total_losses"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 30,
+        "columns": [
+          "franchID",
+          "total_wins",
+          "total_losses"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "GB-S03",
+      "category": "group_by",
+      "mode": "structured",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 18.168,
+      "http_status": 200,
+      "question": "For each player, calculate career home runs and RBIs, and show only players with at least one home run. Order by career home runs descending and limit to 50.",
+      "gold_sql": "SELECT playerID, SUM(HR) AS career_hr, SUM(RBI) AS career_rbi FROM Batting GROUP BY playerID HAVING SUM(HR) > 0 ORDER BY career_hr DESC, playerID LIMIT 50",
+      "generated_sql": "SELECT batting.playerid, SUM(batting.hr) AS career_hr, SUM(batting.rbi) AS career_rbi\nFROM batting\nGROUP BY batting.playerid\nHAVING SUM(batting.hr) > 0\nORDER BY career_hr DESC\nLIMIT 50",
+      "generated_params": [],
+      "expected_row_count": 50,
+      "actual_row_count": 50,
+      "expected_columns": [
+        "playerID",
+        "career_hr",
+        "career_rbi"
+      ],
+      "actual_columns": [
+        "playerID",
+        "career_hr",
+        "career_rbi"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 50,
+        "columns": [
+          "playerID",
+          "career_hr",
+          "career_rbi"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "GB-S04",
+      "category": "group_by",
+      "mode": "structured",
+      "passed": false,
+      "reason": "column mismatch: expected ['yearID', 'avg_salary', 'max_salary', 'salary_records'], got ['yearID', 'avg_salary', 'max_salary', 'num_records']",
+      "elapsed_seconds": 15.145,
+      "http_status": 200,
+      "question": "For each salary year after 2000, show average salary, maximum salary, and number of salary records. Order by year.",
+      "gold_sql": "SELECT yearID, AVG(salary) AS avg_salary, MAX(salary) AS max_salary, COUNT(*) AS salary_records FROM Salaries WHERE yearID > 2000 GROUP BY yearID ORDER BY yearID",
+      "generated_sql": "SELECT yearid, AVG(salary) AS avg_salary, MAX(salary) AS max_salary, COUNT(*) AS num_records\nFROM salaries\nWHERE yearid > 2000\nGROUP BY yearid\nORDER BY yearid",
+      "generated_params": [],
+      "expected_row_count": 16,
+      "actual_row_count": 16,
+      "expected_columns": [
+        "yearID",
+        "avg_salary",
+        "max_salary",
+        "salary_records"
+      ],
+      "actual_columns": [
+        "yearID",
+        "avg_salary",
+        "max_salary",
+        "num_records"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 16,
+        "columns": [
+          "yearID",
+          "avg_salary",
+          "max_salary",
+          "num_records"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "GB-S05",
+      "category": "group_by",
+      "mode": "structured",
+      "passed": false,
+      "reason": "ordered row mismatch: expected 25 rows, got 25 rows",
+      "elapsed_seconds": 14.77,
+      "http_status": 200,
+      "question": "For each school state in the United States, show how many distinct players attended schools there. Order by player count descending and show top 25.",
+      "gold_sql": "SELECT sc.state, COUNT(DISTINCT cp.playerID) AS player_count FROM CollegePlaying cp JOIN Schools sc ON cp.schoolID = sc.schoolID WHERE sc.country = 'USA' AND sc.state IS NOT NULL GROUP BY sc.state ORDER BY player_count DESC, sc.state LIMIT 25",
+      "generated_sql": "SELECT \"schools\".\"state\", COUNT(DISTINCT \"collegeplaying\".\"playerid\") AS \"player_count\" FROM \"collegeplaying\" INNER JOIN \"schools\" ON \"collegeplaying\".\"schoolid\" = \"schools\".\"schoolid\" WHERE \"schools\".\"country\" = ? GROUP BY \"schools\".\"state\" ORDER BY \"player_count\" DESC LIMIT 25",
+      "generated_params": [
+        "USA"
+      ],
+      "expected_row_count": 25,
+      "actual_row_count": 25,
+      "expected_columns": [
+        "state",
+        "player_count"
+      ],
+      "actual_columns": [
+        "state",
+        "player_count"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 25,
+        "columns": [
+          "state",
+          "player_count"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "GB-Q01",
+      "category": "group_by",
+      "mode": "sql",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 35.149,
+      "http_status": 200,
+      "question": "SELECT yearID, SUM(HR) AS total_hr, SUM(RBI) AS total_rbi FROM Batting WHERE yearID BETWEEN 1990 AND 2010 GROUP BY yearID ORDER BY total_hr DESC",
+      "gold_sql": "SELECT yearID, SUM(HR) AS total_hr, SUM(RBI) AS total_rbi FROM Batting WHERE yearID BETWEEN 1990 AND 2010 GROUP BY yearID ORDER BY total_hr DESC",
+      "generated_sql": "SELECT yearID, SUM(HR) AS total_hr, SUM(RBI) AS total_rbi FROM Batting WHERE yearID BETWEEN 1990 AND 2010 GROUP BY yearID ORDER BY total_hr DESC",
+      "generated_params": [],
+      "expected_row_count": 21,
+      "actual_row_count": 21,
+      "expected_columns": [
+        "yearID",
+        "total_hr",
+        "total_rbi"
+      ],
+      "actual_columns": [
+        "yearID",
+        "total_hr",
+        "total_rbi"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 21,
+        "columns": [
+          "yearID",
+          "total_hr",
+          "total_rbi"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": true,
+        "safety_reason": null,
+        "warnings": []
+      }
+    },
+    {
+      "id": "GB-Q02",
+      "category": "group_by",
+      "mode": "sql",
+      "passed": false,
+      "reason": "unsafe/low confidence: low=False fatal=False safe=False reason=SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment",
+      "elapsed_seconds": 33.564,
+      "http_status": 200,
+      "question": "SELECT teamID, lgID, COUNT(*) AS seasons, SUM(W) AS total_wins FROM Teams WHERE yearID >= 2000 GROUP BY teamID, lgID ORDER BY total_wins DESC LIMIT 30",
+      "gold_sql": "SELECT teamID, lgID, COUNT(*) AS seasons, SUM(W) AS total_wins FROM Teams WHERE yearID >= 2000 GROUP BY teamID, lgID ORDER BY total_wins DESC LIMIT 30",
+      "generated_sql": "SELECT teamID, lgID, COUNT(*) AS seasons, SUM(W) AS total_wins FROM Teams WHERE yearID >= 2000 GROUP BY teamID, lgID ORDER BY total_wins DESC LIMIT 30",
+      "generated_params": [],
+      "expected_row_count": 30,
+      "actual_row_count": 0,
+      "expected_columns": [
+        "teamID",
+        "lgID",
+        "seasons",
+        "total_wins"
+      ],
+      "actual_columns": [],
+      "backend_meta": {
+        "success": true,
+        "row_count": 30,
+        "columns": [
+          "teamID",
+          "lgID",
+          "seasons",
+          "total_wins"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": false,
+        "safety_reason": "SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment",
+        "warnings": []
+      }
+    },
+    {
+      "id": "GB-Q03",
+      "category": "group_by",
+      "mode": "sql",
+      "passed": false,
+      "reason": "unsafe/low confidence: low=False fatal=False safe=False reason=SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment",
+      "elapsed_seconds": 36.174,
+      "http_status": 200,
+      "question": "SELECT playerID, SUM(SO) AS career_so, SUM(W) AS career_wins FROM Pitching GROUP BY playerID HAVING SUM(SO) > 1000 ORDER BY career_so DESC LIMIT 50",
+      "gold_sql": "SELECT playerID, SUM(SO) AS career_so, SUM(W) AS career_wins FROM Pitching GROUP BY playerID HAVING SUM(SO) > 1000 ORDER BY career_so DESC LIMIT 50",
+      "generated_sql": "SELECT playerID, SUM(SO) AS career_so, SUM(W) AS career_wins FROM Pitching GROUP BY playerID HAVING SUM(SO) > 1000 ORDER BY career_so DESC LIMIT 50",
+      "generated_params": [],
+      "expected_row_count": 50,
+      "actual_row_count": 0,
+      "expected_columns": [
+        "playerID",
+        "career_so",
+        "career_wins"
+      ],
+      "actual_columns": [],
+      "backend_meta": {
+        "success": true,
+        "row_count": 50,
+        "columns": [
+          "playerID",
+          "career_so",
+          "career_wins"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": false,
+        "safety_reason": "SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment",
+        "warnings": []
+      }
+    },
+    {
+      "id": "GB-Q04",
+      "category": "group_by",
+      "mode": "sql",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 35.668,
+      "http_status": 200,
+      "question": "SELECT yearID, COUNT(*) AS salary_count, AVG(salary) AS avg_salary FROM Salaries WHERE salary > 1000000 GROUP BY yearID ORDER BY yearID",
+      "gold_sql": "SELECT yearID, COUNT(*) AS salary_count, AVG(salary) AS avg_salary FROM Salaries WHERE salary > 1000000 GROUP BY yearID ORDER BY yearID",
+      "generated_sql": "SELECT yearID, COUNT(*) AS salary_count, AVG(salary) AS avg_salary FROM Salaries WHERE salary > 1000000 GROUP BY yearID ORDER BY yearID",
+      "generated_params": [],
+      "expected_row_count": 32,
+      "actual_row_count": 32,
+      "expected_columns": [
+        "yearID",
+        "salary_count",
+        "avg_salary"
+      ],
+      "actual_columns": [
+        "yearID",
+        "salary_count",
+        "avg_salary"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 32,
+        "columns": [
+          "yearID",
+          "salary_count",
+          "avg_salary"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": true,
+        "safety_reason": null,
+        "warnings": []
+      }
+    },
+    {
+      "id": "GB-Q05",
+      "category": "group_by",
+      "mode": "sql",
+      "passed": false,
+      "reason": "unsafe/low confidence: low=False fatal=False safe=False reason=SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment",
+      "elapsed_seconds": 27.58,
+      "http_status": 200,
+      "question": "SELECT sc.country, COUNT(DISTINCT cp.playerID) AS players FROM CollegePlaying cp JOIN Schools sc ON cp.schoolID = sc.schoolID GROUP BY sc.country ORDER BY players DESC LIMIT 20",
+      "gold_sql": "SELECT sc.country, COUNT(DISTINCT cp.playerID) AS players FROM CollegePlaying cp JOIN Schools sc ON cp.schoolID = sc.schoolID GROUP BY sc.country ORDER BY players DESC LIMIT 20",
+      "generated_sql": "SELECT sc.country, COUNT(DISTINCT cp.playerID) AS players FROM CollegePlaying cp JOIN Schools sc ON cp.schoolID = sc.schoolID GROUP BY sc.country ORDER BY players DESC LIMIT 20",
+      "generated_params": [],
+      "expected_row_count": 1,
+      "actual_row_count": 0,
+      "expected_columns": [
+        "country",
+        "players"
+      ],
+      "actual_columns": [],
+      "backend_meta": {
+        "success": true,
+        "row_count": 1,
+        "columns": [
+          "country",
+          "players"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": false,
+        "safety_reason": "SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment",
+        "warnings": []
+      }
+    },
+    {
+      "id": "HV-S01",
+      "category": "having",
+      "mode": "structured",
+      "passed": false,
+      "reason": "ordered row mismatch: expected 141 rows, got 141 rows",
+      "elapsed_seconds": 17.461,
+      "http_status": 200,
+      "question": "Find players with more than 300 career home runs and more than 1000 career RBIs. Show playerID, career home runs, and career RBIs.",
+      "gold_sql": "SELECT playerID, SUM(HR) AS career_hr, SUM(RBI) AS career_rbi FROM Batting GROUP BY playerID HAVING SUM(HR) > 300 AND SUM(RBI) > 1000 ORDER BY career_hr DESC",
+      "generated_sql": "SELECT playerID, SUM(HR) AS career_hr, SUM(RBI) AS career_rbi\nFROM batting\nGROUP BY playerID\nHAVING SUM(HR) > 300 AND SUM(RBI) > 1000",
+      "generated_params": [],
+      "expected_row_count": 141,
+      "actual_row_count": 141,
+      "expected_columns": [
+        "playerID",
+        "career_hr",
+        "career_rbi"
+      ],
+      "actual_columns": [
+        "playerID",
+        "career_hr",
+        "career_rbi"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 141,
+        "columns": [
+          "playerID",
+          "career_hr",
+          "career_rbi"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "HV-S02",
+      "category": "having",
+      "mode": "structured",
+      "passed": false,
+      "reason": "column mismatch: expected ['franchID', 'total_wins', 'total_losses', 'seasons'], got ['franchName', 'total_wins', 'total_losses', 'seasons']",
+      "elapsed_seconds": 19.309,
+      "http_status": 200,
+      "question": "Find franchises after 1990 with more than 2500 total wins. Show franchise, total wins, total losses, and seasons.",
+      "gold_sql": "SELECT franchID, SUM(W) AS total_wins, SUM(L) AS total_losses, COUNT(*) AS seasons FROM Teams WHERE yearID > 1990 GROUP BY franchID HAVING SUM(W) > 2500 ORDER BY total_wins DESC",
+      "generated_sql": "SELECT tf.franchName, SUM(t.W) AS total_wins, SUM(t.L) AS total_losses, COUNT(t.yearID) AS seasons\nFROM Teams t\nJOIN TeamsFranchises tf ON t.franchID = tf.franchID\nWHERE t.yearID > 1990\nGROUP BY tf.franchID\nHAVING SUM(t.W) > 2500",
+      "generated_params": [],
+      "expected_row_count": 12,
+      "actual_row_count": 12,
+      "expected_columns": [
+        "franchID",
+        "total_wins",
+        "total_losses",
+        "seasons"
+      ],
+      "actual_columns": [
+        "franchName",
+        "total_wins",
+        "total_losses",
+        "seasons"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 12,
+        "columns": [
+          "franchName",
+          "total_wins",
+          "total_losses",
+          "seasons"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "HV-S03",
+      "category": "having",
+      "mode": "structured",
+      "passed": false,
+      "reason": "ordered row mismatch: expected 23 rows, got 23 rows",
+      "elapsed_seconds": 15.424,
+      "http_status": 200,
+      "question": "Find schools that produced more than 50 distinct major league players. Show school name and player count.",
+      "gold_sql": "SELECT sc.name_full, COUNT(DISTINCT cp.playerID) AS player_count FROM CollegePlaying cp JOIN Schools sc ON cp.schoolID = sc.schoolID GROUP BY sc.schoolID, sc.name_full HAVING COUNT(DISTINCT cp.playerID) > 50 ORDER BY player_count DESC, sc.name_full",
+      "generated_sql": "SELECT s.name_full, COUNT(DISTINCT cp.playerID) AS player_count\nFROM CollegePlaying cp\nJOIN Schools s ON cp.schoolID = s.schoolID\nGROUP BY s.schoolID, s.name_full\nHAVING COUNT(DISTINCT cp.playerID) > 50",
+      "generated_params": [],
+      "expected_row_count": 23,
+      "actual_row_count": 23,
+      "expected_columns": [
+        "name_full",
+        "player_count"
+      ],
+      "actual_columns": [
+        "name_full",
+        "player_count"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 23,
+        "columns": [
+          "name_full",
+          "player_count"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "HV-S04",
+      "category": "having",
+      "mode": "structured",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 19.414,
+      "http_status": 200,
+      "question": "Find seasons after 1990 where all batting records combined had more than 5000 home runs and more than 20000 RBIs. Show year and totals.",
+      "gold_sql": "SELECT yearID, SUM(HR) AS total_hr, SUM(RBI) AS total_rbi FROM Batting WHERE yearID > 1990 GROUP BY yearID HAVING SUM(HR) > 5000 AND SUM(RBI) > 20000 ORDER BY yearID",
+      "generated_sql": "SELECT batting.yearid, SUM(batting.hr) AS total_hr, SUM(batting.rbi) AS total_rbi\nFROM batting\nWHERE batting.yearid > 1990\nGROUP BY batting.yearid\nHAVING SUM(batting.hr) > 5000 AND SUM(batting.rbi) > 20000",
+      "generated_params": [],
+      "expected_row_count": 15,
+      "actual_row_count": 15,
+      "expected_columns": [
+        "yearID",
+        "total_hr",
+        "total_rbi"
+      ],
+      "actual_columns": [
+        "yearID",
+        "total_hr",
+        "total_rbi"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 15,
+        "columns": [
+          "yearID",
+          "total_hr",
+          "total_rbi"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "HV-S05",
+      "category": "having",
+      "mode": "structured",
+      "passed": false,
+      "reason": "column mismatch: expected ['playerID', 'career_so', 'career_wins'], got ['playerID', 'career_strikeouts', 'career_wins']",
+      "elapsed_seconds": 17.494,
+      "http_status": 200,
+      "question": "Find pitchers with more than 2000 career strikeouts and more than 150 career wins. Show playerID, career strikeouts, and career wins.",
+      "gold_sql": "SELECT playerID, SUM(SO) AS career_so, SUM(W) AS career_wins FROM Pitching GROUP BY playerID HAVING SUM(SO) > 2000 AND SUM(W) > 150 ORDER BY career_so DESC",
+      "generated_sql": "SELECT playerid, SUM(so) AS career_strikeouts, SUM(w) AS career_wins\nFROM pitching\nGROUP BY playerid\nHAVING SUM(so) > 2000 AND SUM(w) > 150",
+      "generated_params": [],
+      "expected_row_count": 80,
+      "actual_row_count": 80,
+      "expected_columns": [
+        "playerID",
+        "career_so",
+        "career_wins"
+      ],
+      "actual_columns": [
+        "playerID",
+        "career_strikeouts",
+        "career_wins"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 80,
+        "columns": [
+          "playerID",
+          "career_strikeouts",
+          "career_wins"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "HV-Q01",
+      "category": "having",
+      "mode": "sql",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 30.523,
+      "http_status": 200,
+      "question": "SELECT playerID, SUM(HR) AS career_hr FROM Batting GROUP BY playerID HAVING SUM(HR) > 500 ORDER BY career_hr DESC",
+      "gold_sql": "SELECT playerID, SUM(HR) AS career_hr FROM Batting GROUP BY playerID HAVING SUM(HR) > 500 ORDER BY career_hr DESC",
+      "generated_sql": "SELECT playerID, SUM(HR) AS career_hr FROM Batting GROUP BY playerID HAVING SUM(HR) > 500 ORDER BY career_hr DESC",
+      "generated_params": [],
+      "expected_row_count": 28,
+      "actual_row_count": 28,
+      "expected_columns": [
+        "playerID",
+        "career_hr"
+      ],
+      "actual_columns": [
+        "playerID",
+        "career_hr"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 28,
+        "columns": [
+          "playerID",
+          "career_hr"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": true,
+        "safety_reason": null,
+        "warnings": []
+      }
+    },
+    {
+      "id": "HV-Q02",
+      "category": "having",
+      "mode": "sql",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 28.768,
+      "http_status": 200,
+      "question": "SELECT yearID, SUM(W) AS total_wins FROM Teams GROUP BY yearID HAVING SUM(W) > 2400 ORDER BY yearID",
+      "gold_sql": "SELECT yearID, SUM(W) AS total_wins FROM Teams GROUP BY yearID HAVING SUM(W) > 2400 ORDER BY yearID",
+      "generated_sql": "SELECT yearID, SUM(W) AS total_wins FROM Teams GROUP BY yearID HAVING SUM(W) > 2400 ORDER BY yearID",
+      "generated_params": [],
+      "expected_row_count": 24,
+      "actual_row_count": 24,
+      "expected_columns": [
+        "yearID",
+        "total_wins"
+      ],
+      "actual_columns": [
+        "yearID",
+        "total_wins"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 24,
+        "columns": [
+          "yearID",
+          "total_wins"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": true,
+        "safety_reason": null,
+        "warnings": []
+      }
+    },
+    {
+      "id": "HV-Q03",
+      "category": "having",
+      "mode": "sql",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 33.932,
+      "http_status": 200,
+      "question": "SELECT teamID, COUNT(*) AS seasons_over_90 FROM Teams WHERE W > 90 GROUP BY teamID HAVING COUNT(*) >= 10 ORDER BY seasons_over_90 DESC",
+      "gold_sql": "SELECT teamID, COUNT(*) AS seasons_over_90 FROM Teams WHERE W > 90 GROUP BY teamID HAVING COUNT(*) >= 10 ORDER BY seasons_over_90 DESC",
+      "generated_sql": "SELECT teamID, COUNT(*) AS seasons_over_90 FROM Teams WHERE W > 90 GROUP BY teamID HAVING COUNT(*) >= 10 ORDER BY seasons_over_90 DESC",
+      "generated_params": [],
+      "expected_row_count": 21,
+      "actual_row_count": 21,
+      "expected_columns": [
+        "teamID",
+        "seasons_over_90"
+      ],
+      "actual_columns": [
+        "teamID",
+        "seasons_over_90"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 21,
+        "columns": [
+          "teamID",
+          "seasons_over_90"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": true,
+        "safety_reason": null,
+        "warnings": []
+      }
+    },
+    {
+      "id": "HV-Q04",
+      "category": "having",
+      "mode": "sql",
+      "passed": false,
+      "reason": "unsafe/low confidence: low=False fatal=False safe=False reason=SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment",
+      "elapsed_seconds": 34.813,
+      "http_status": 200,
+      "question": "SELECT playerID, AVG(salary) AS avg_salary, MAX(salary) AS max_salary FROM Salaries GROUP BY playerID HAVING AVG(salary) > 10000000 ORDER BY avg_salary DESC LIMIT 50",
+      "gold_sql": "SELECT playerID, AVG(salary) AS avg_salary, MAX(salary) AS max_salary FROM Salaries GROUP BY playerID HAVING AVG(salary) > 10000000 ORDER BY avg_salary DESC LIMIT 50",
+      "generated_sql": "SELECT playerID, AVG(salary) AS avg_salary, MAX(salary) AS max_salary FROM Salaries GROUP BY playerID HAVING AVG(salary) > 10000000 ORDER BY avg_salary DESC LIMIT 50",
+      "generated_params": [],
+      "expected_row_count": 37,
+      "actual_row_count": 0,
+      "expected_columns": [
+        "playerID",
+        "avg_salary",
+        "max_salary"
+      ],
+      "actual_columns": [],
+      "backend_meta": {
+        "success": true,
+        "row_count": 37,
+        "columns": [
+          "playerID",
+          "avg_salary",
+          "max_salary"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": false,
+        "safety_reason": "SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment",
+        "warnings": []
+      }
+    },
+    {
+      "id": "HV-Q05",
+      "category": "having",
+      "mode": "sql",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 33.925,
+      "http_status": 200,
+      "question": "SELECT sc.state, COUNT(DISTINCT cp.playerID) AS players FROM CollegePlaying cp JOIN Schools sc ON cp.schoolID = sc.schoolID WHERE sc.country = 'USA' GROUP BY sc.state HAVING COUNT(DISTINCT cp.playerID) > 200 ORDER BY players DESC",
+      "gold_sql": "SELECT sc.state, COUNT(DISTINCT cp.playerID) AS players FROM CollegePlaying cp JOIN Schools sc ON cp.schoolID = sc.schoolID WHERE sc.country = 'USA' GROUP BY sc.state HAVING COUNT(DISTINCT cp.playerID) > 200 ORDER BY players DESC",
+      "generated_sql": "SELECT sc.state, COUNT(DISTINCT cp.playerID) AS players FROM CollegePlaying cp JOIN Schools sc ON cp.schoolID = sc.schoolID WHERE sc.country = 'USA' GROUP BY sc.state HAVING COUNT(DISTINCT cp.playerID) > 200 ORDER BY players DESC",
+      "generated_params": [],
+      "expected_row_count": 9,
+      "actual_row_count": 9,
+      "expected_columns": [
+        "state",
+        "players"
+      ],
+      "actual_columns": [
+        "state",
+        "players"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 9,
+        "columns": [
+          "state",
+          "players"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": true,
+        "safety_reason": null,
+        "warnings": []
+      }
+    },
+    {
+      "id": "SUB-S01",
+      "category": "subquery",
+      "mode": "structured",
+      "passed": false,
+      "reason": "ordered row mismatch: expected 167 rows, got 167 rows",
+      "elapsed_seconds": 51.389,
+      "http_status": 200,
+      "question": "List 2001 batting rows where the player's home runs were above the average home runs for all 2001 batting rows with at least 100 at-bats. Show playerID, team, home runs, and at-bats.",
+      "gold_sql": "SELECT playerID, teamID, HR, AB FROM Batting WHERE yearID = 2001 AND AB >= 100 AND HR > (SELECT AVG(HR) FROM Batting WHERE yearID = 2001 AND AB >= 100) ORDER BY HR DESC, playerID",
+      "generated_sql": "SELECT batting.playerID, batting.teamID, batting.HR, batting.AB\nFROM batting\nWHERE batting.yearID = 2001\n  AND batting.AB >= 100\n  AND batting.HR > (\n    SELECT AVG(batting_sub.HR)\n    FROM batting AS batting_sub\n    WHERE batting_sub.yearID = 2001\n      AND batting_sub.AB >= 100\n  )",
+      "generated_params": [],
+      "expected_row_count": 167,
+      "actual_row_count": 167,
+      "expected_columns": [
+        "playerID",
+        "teamID",
+        "HR",
+        "AB"
+      ],
+      "actual_columns": [
+        "playerID",
+        "teamID",
+        "HR",
+        "AB"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 167,
+        "columns": [
+          "playerID",
+          "teamID",
+          "HR",
+          "AB"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "SUB-S02",
+      "category": "subquery",
+      "mode": "structured",
+      "passed": false,
+      "reason": "ordered row mismatch: expected 16 rows, got 16 rows",
+      "elapsed_seconds": 16.68,
+      "http_status": 200,
+      "question": "Find teams in 2019 whose wins were above the average wins for all 2019 teams. Show team name, league, wins, and losses.",
+      "gold_sql": "SELECT name, lgID, W, L FROM Teams WHERE yearID = 2019 AND W > (SELECT AVG(W) FROM Teams WHERE yearID = 2019) ORDER BY W DESC, name",
+      "generated_sql": "SELECT t.name, t.lgid, t.W, t.L\nFROM teams t\nWHERE t.yearID = 2019\n  AND t.W > (\n    SELECT AVG(t2.W)\n    FROM teams t2\n    WHERE t2.yearID = 2019\n  )",
+      "generated_params": [],
+      "expected_row_count": 16,
+      "actual_row_count": 16,
+      "expected_columns": [
+        "name",
+        "lgID",
+        "W",
+        "L"
+      ],
+      "actual_columns": [
+        "name",
+        "lgID",
+        "W",
+        "L"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 16,
+        "columns": [
+          "name",
+          "lgID",
+          "W",
+          "L"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "SUB-S03",
+      "category": "subquery",
+      "mode": "structured",
+      "passed": false,
+      "reason": "ordered row mismatch: expected 262 rows, got 262 rows",
+      "elapsed_seconds": 13.308,
+      "http_status": 200,
+      "question": "Show salary records in 2016 where salary was above the 2016 average salary. Include playerID, team, and salary.",
+      "gold_sql": "SELECT playerID, teamID, salary FROM Salaries WHERE yearID = 2016 AND salary > (SELECT AVG(salary) FROM Salaries WHERE yearID = 2016) ORDER BY salary DESC, playerID",
+      "generated_sql": "SELECT s.playerID, s.teamID, s.salary\nFROM Salaries s\nWHERE s.yearID = 2016\n  AND s.salary > (\n    SELECT AVG(s2.salary)\n    FROM Salaries s2\n    WHERE s2.yearID = 2016\n  )",
+      "generated_params": [],
+      "expected_row_count": 262,
+      "actual_row_count": 262,
+      "expected_columns": [
+        "playerID",
+        "teamID",
+        "salary"
+      ],
+      "actual_columns": [
+        "playerID",
+        "teamID",
+        "salary"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 262,
+        "columns": [
+          "playerID",
+          "teamID",
+          "salary"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "SUB-S04",
+      "category": "subquery",
+      "mode": "structured",
+      "passed": false,
+      "reason": "ordered row mismatch: expected 32 rows, got 32 rows",
+      "elapsed_seconds": 27.436,
+      "http_status": 200,
+      "question": "Find players who have at least one Hall of Fame inducted record and more than 400 career home runs. Show playerID and career home runs.",
+      "gold_sql": "SELECT b.playerID, SUM(b.HR) AS career_hr FROM Batting b WHERE b.playerID IN (SELECT playerID FROM HallOfFame WHERE inducted = 'Y' AND category = 'Player') GROUP BY b.playerID HAVING SUM(b.HR) > 400 ORDER BY career_hr DESC",
+      "generated_sql": "SELECT p.playerID, SUM(b.HR) AS career_hr\nFROM people p\nJOIN HallOfFame h ON p.playerID = h.playerID\nJOIN Batting b ON p.playerID = b.playerID\nWHERE h.inducted = 'Y'\nGROUP BY p.playerID\nHAVING SUM(b.HR) > 400",
+      "generated_params": [],
+      "expected_row_count": 32,
+      "actual_row_count": 32,
+      "expected_columns": [
+        "playerID",
+        "career_hr"
+      ],
+      "actual_columns": [
+        "playerID",
+        "career_hr"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 32,
+        "columns": [
+          "playerID",
+          "career_hr"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": [
+          "selected SQL: possible join fanout aggregate inflation"
+        ]
+      }
+    },
+    {
+      "id": "SUB-S05",
+      "category": "subquery",
+      "mode": "structured",
+      "passed": false,
+      "reason": "ordered row mismatch: expected 136 rows, got 136 rows",
+      "elapsed_seconds": 14.197,
+      "http_status": 200,
+      "question": "Find schools in states that have more than 100 schools in the Schools table. Show schoolID, school name, and state.",
+      "gold_sql": "SELECT schoolID, name_full, state FROM Schools WHERE state IN ( SELECT state FROM Schools WHERE country = 'USA' AND state IS NOT NULL GROUP BY state HAVING COUNT(*) > 100 ) ORDER BY state, name_full LIMIT 200",
+      "generated_sql": "SELECT s.schoolID, s.name_full, s.state\nFROM Schools s\nWHERE s.state IN (\n    SELECT state\n    FROM Schools\n    GROUP BY state\n    HAVING COUNT(*) > 100\n)",
+      "generated_params": [],
+      "expected_row_count": 136,
+      "actual_row_count": 136,
+      "expected_columns": [
+        "schoolID",
+        "name_full",
+        "state"
+      ],
+      "actual_columns": [
+        "schoolID",
+        "name_full",
+        "state"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 136,
+        "columns": [
+          "schoolID",
+          "name_full",
+          "state"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "SUB-Q01",
+      "category": "subquery",
+      "mode": "sql",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 38.59,
+      "http_status": 200,
+      "question": "SELECT playerID, yearID, teamID, HR FROM Batting WHERE yearID = 1998 AND HR > (SELECT AVG(HR) FROM Batting WHERE yearID = 1998 AND AB >= 100) ORDER BY HR DESC",
+      "gold_sql": "SELECT playerID, yearID, teamID, HR FROM Batting WHERE yearID = 1998 AND HR > (SELECT AVG(HR) FROM Batting WHERE yearID = 1998 AND AB >= 100) ORDER BY HR DESC",
+      "generated_sql": "SELECT batting.playerID, batting.yearID, batting.teamID, batting.HR\nFROM batting\nWHERE batting.yearID = 1998\n  AND batting.HR > (\n    SELECT AVG(batting.HR)\n    FROM batting\n    WHERE batting.yearID = 1998\n      AND batting.AB >= 100\n  )\nORDER BY batting.HR DESC",
+      "generated_params": [],
+      "expected_row_count": 152,
+      "actual_row_count": 152,
+      "expected_columns": [
+        "playerID",
+        "yearID",
+        "teamID",
+        "HR"
+      ],
+      "actual_columns": [
+        "playerID",
+        "yearID",
+        "teamID",
+        "HR"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 152,
+        "columns": [
+          "playerID",
+          "yearID",
+          "teamID",
+          "HR"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": true,
+        "safety_reason": null,
+        "warnings": []
+      }
+    },
+    {
+      "id": "SUB-Q02",
+      "category": "subquery",
+      "mode": "sql",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 39.96,
+      "http_status": 200,
+      "question": "SELECT name, yearID, W, L FROM Teams t WHERE yearID = 2021 AND W > (SELECT AVG(W) FROM Teams WHERE yearID = t.yearID) ORDER BY W DESC",
+      "gold_sql": "SELECT name, yearID, W, L FROM Teams t WHERE yearID = 2021 AND W > (SELECT AVG(W) FROM Teams WHERE yearID = t.yearID) ORDER BY W DESC",
+      "generated_sql": "SELECT name, yearID, W, L FROM Teams t WHERE yearID = 2021 AND W > (SELECT AVG(W) FROM Teams WHERE yearID = t.yearID) ORDER BY W DESC",
+      "generated_params": [],
+      "expected_row_count": 15,
+      "actual_row_count": 15,
+      "expected_columns": [
+        "name",
+        "yearID",
+        "W",
+        "L"
+      ],
+      "actual_columns": [
+        "name",
+        "yearID",
+        "W",
+        "L"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 15,
+        "columns": [
+          "name",
+          "yearID",
+          "W",
+          "L"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": true,
+        "safety_reason": null,
+        "warnings": []
+      }
+    },
+    {
+      "id": "SUB-Q03",
+      "category": "subquery",
+      "mode": "sql",
+      "passed": false,
+      "reason": "unsafe/low confidence: low=False fatal=False safe=False reason=SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment",
+      "elapsed_seconds": 37.577,
+      "http_status": 200,
+      "question": "SELECT playerID, yearID, salary FROM Salaries s WHERE salary > (SELECT AVG(salary) FROM Salaries WHERE yearID = s.yearID) AND yearID >= 2015 ORDER BY yearID, salary DESC LIMIT 100",
+      "gold_sql": "SELECT playerID, yearID, salary FROM Salaries s WHERE salary > (SELECT AVG(salary) FROM Salaries WHERE yearID = s.yearID) AND yearID >= 2015 ORDER BY yearID, salary DESC LIMIT 100",
+      "generated_sql": "SELECT s.playerID, s.yearID, s.salary FROM Salaries s WHERE s.salary > (SELECT AVG(salary) FROM Salaries WHERE yearID = s.yearID) AND s.yearID >= 2015 ORDER BY s.yearID, s.salary DESC LIMIT 100",
+      "generated_params": [],
+      "expected_row_count": 100,
+      "actual_row_count": 0,
+      "expected_columns": [
+        "playerID",
+        "yearID",
+        "salary"
+      ],
+      "actual_columns": [],
+      "backend_meta": {
+        "success": true,
+        "row_count": 100,
+        "columns": [
+          "playerID",
+          "yearID",
+          "salary"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": false,
+        "safety_reason": "SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment",
+        "warnings": []
+      }
+    },
+    {
+      "id": "SUB-Q04",
+      "category": "subquery",
+      "mode": "sql",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 43.792,
+      "http_status": 200,
+      "question": "SELECT playerID, SUM(HR) AS career_hr FROM Batting WHERE playerID IN (SELECT playerID FROM HallOfFame WHERE inducted = 'Y') GROUP BY playerID HAVING SUM(HR) > 300 ORDER BY career_hr DESC",
+      "gold_sql": "SELECT playerID, SUM(HR) AS career_hr FROM Batting WHERE playerID IN (SELECT playerID FROM HallOfFame WHERE inducted = 'Y') GROUP BY playerID HAVING SUM(HR) > 300 ORDER BY career_hr DESC",
+      "generated_sql": "SELECT batting.playerID, SUM(batting.HR) AS career_hr\nFROM batting\nJOIN halloffame ON batting.playerID = halloffame.playerID\nWHERE halloffame.inducted = 'Y'\nGROUP BY batting.playerID\nHAVING SUM(batting.HR) > 300\nORDER BY career_hr DESC",
+      "generated_params": [],
+      "expected_row_count": 53,
+      "actual_row_count": 53,
+      "expected_columns": [
+        "playerID",
+        "career_hr"
+      ],
+      "actual_columns": [
+        "playerID",
+        "career_hr"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 53,
+        "columns": [
+          "playerID",
+          "career_hr"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": true,
+        "safety_reason": null,
+        "warnings": []
+      }
+    },
+    {
+      "id": "SUB-Q05",
+      "category": "subquery",
+      "mode": "sql",
+      "passed": false,
+      "reason": "unsafe/low confidence: low=False fatal=False safe=False reason=SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment",
+      "elapsed_seconds": 36.819,
+      "http_status": 200,
+      "question": "SELECT schoolID, name_full, country, state FROM Schools WHERE country = 'USA' AND state IN (SELECT state FROM Schools GROUP BY state HAVING COUNT(*) > 75) ORDER BY state, name_full LIMIT 100",
+      "gold_sql": "SELECT schoolID, name_full, country, state FROM Schools WHERE country = 'USA' AND state IN (SELECT state FROM Schools GROUP BY state HAVING COUNT(*) > 75) ORDER BY state, name_full LIMIT 100",
+      "generated_sql": "SELECT schools.schoolid, schools.name_full, schools.country, schools.state FROM schools WHERE schools.country = 'USA' AND schools.state IN (SELECT schools.state FROM schools GROUP BY schools.state HAVING COUNT(*) > 75) ORDER BY schools.state, schools.name_full LIMIT 100",
+      "generated_params": [],
+      "expected_row_count": 100,
+      "actual_row_count": 0,
+      "expected_columns": [
+        "schoolID",
+        "name_full",
+        "country",
+        "state"
+      ],
+      "actual_columns": [],
+      "backend_meta": {
+        "success": true,
+        "row_count": 100,
+        "columns": [
+          "schoolID",
+          "name_full",
+          "country",
+          "state"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": false,
+        "safety_reason": "SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment",
+        "warnings": []
+      }
+    },
+    {
+      "id": "SET-S01",
+      "category": "set_operation",
+      "mode": "structured",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 73.698,
+      "http_status": 200,
+      "question": "Find playerIDs who had both a batting record and a pitching record in 2001. Use a set intersection and order the playerIDs.",
+      "gold_sql": "SELECT playerID FROM Batting WHERE yearID = 2001 INTERSECT SELECT playerID FROM Pitching WHERE yearID = 2001 ORDER BY playerID",
+      "generated_sql": "SELECT playerID FROM Batting WHERE yearID = 2001\nINTERSECT\nSELECT playerID FROM Pitching WHERE yearID = 2001\nORDER BY playerID",
+      "generated_params": [],
+      "expected_row_count": 591,
+      "actual_row_count": 591,
+      "expected_columns": [
+        "playerID"
+      ],
+      "actual_columns": [
+        "playerID"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 591,
+        "columns": [
+          "playerID"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "SET-S02",
+      "category": "set_operation",
+      "mode": "structured",
+      "passed": false,
+      "reason": "request error: timed out",
+      "elapsed_seconds": 420.022,
+      "http_status": null,
+      "question": "Find playerIDs who had a salary record in 2016 but no batting record in 2016. Use EXCEPT and order the playerIDs.",
+      "gold_sql": "SELECT playerID FROM Salaries WHERE yearID = 2016 EXCEPT SELECT playerID FROM Batting WHERE yearID = 2016 ORDER BY playerID",
+      "generated_sql": null,
+      "generated_params": [],
+      "expected_row_count": 40,
+      "actual_row_count": 0,
+      "expected_columns": [
+        "playerID"
+      ],
+      "actual_columns": [],
+      "backend_meta": {
+        "success": false,
+        "row_count": null,
+        "columns": null,
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "SET-S03",
+      "category": "set_operation",
+      "mode": "structured",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 58.962,
+      "http_status": 200,
+      "question": "Create one list of playerIDs who either hit more than 60 home runs in any season or struck out more than 350 batters in any pitching season. Use UNION and order the result.",
+      "gold_sql": "SELECT playerID FROM Batting WHERE HR > 60 UNION SELECT playerID FROM Pitching WHERE SO > 350 ORDER BY playerID",
+      "generated_sql": "SELECT playerID FROM batting WHERE HR > 60\nUNION\nSELECT playerID FROM pitching WHERE SO > 350\nORDER BY playerID",
+      "generated_params": [],
+      "expected_row_count": 18,
+      "actual_row_count": 18,
+      "expected_columns": [
+        "playerID"
+      ],
+      "actual_columns": [
+        "playerID"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 18,
+        "columns": [
+          "playerID"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "SET-S04",
+      "category": "set_operation",
+      "mode": "structured",
+      "passed": false,
+      "reason": "ordered row mismatch: expected 0 rows, got 33 rows",
+      "elapsed_seconds": 15.955,
+      "http_status": 200,
+      "question": "Find teamIDs that appear in Teams after 2000 but do not appear in Salaries after 2000. Use EXCEPT.",
+      "gold_sql": "SELECT DISTINCT teamID FROM Teams WHERE yearID > 2000 EXCEPT SELECT DISTINCT teamID FROM Salaries WHERE yearID > 2000 ORDER BY teamID",
+      "generated_sql": "SELECT DISTINCT \"teams\".\"teamid\" FROM \"teams\" INNER JOIN \"salaries\" ON \"teams\".\"lgid\" = \"salaries\".\"lgid\" WHERE \"teams\".\"yearid\" > ? AND NOT EXISTS (SELECT 1 FROM \"salaries\" WHERE \"teams\".\"teamid\" = \"salaries\".\"teamid\" AND \"salaries\".\"yearid\" > \"teams\".\"yearid\")",
+      "generated_params": [
+        2000
+      ],
+      "expected_row_count": 0,
+      "actual_row_count": 33,
+      "expected_columns": [
+        "teamID"
+      ],
+      "actual_columns": [
+        "teamID"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 33,
+        "columns": [
+          "teamID"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "SET-S05",
+      "category": "set_operation",
+      "mode": "structured",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 11.861,
+      "http_status": 200,
+      "question": "Find playerIDs who attended college and also appear in the Hall of Fame table. Use INTERSECT.",
+      "gold_sql": "SELECT DISTINCT playerID FROM CollegePlaying INTERSECT SELECT DISTINCT playerID FROM HallOfFame ORDER BY playerID",
+      "generated_sql": "SELECT playerID FROM CollegePlaying INTERSECT SELECT playerID FROM HallOfFame",
+      "generated_params": [],
+      "expected_row_count": 421,
+      "actual_row_count": 421,
+      "expected_columns": [
+        "playerID"
+      ],
+      "actual_columns": [
+        "playerID"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 421,
+        "columns": [
+          "playerID"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "SET-Q01",
+      "category": "set_operation",
+      "mode": "sql",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 31.236,
+      "http_status": 200,
+      "question": "SELECT playerID FROM Batting WHERE yearID = 2019 INTERSECT SELECT playerID FROM Salaries WHERE yearID = 2019 ORDER BY playerID",
+      "gold_sql": "SELECT playerID FROM Batting WHERE yearID = 2019 INTERSECT SELECT playerID FROM Salaries WHERE yearID = 2019 ORDER BY playerID",
+      "generated_sql": "SELECT playerID FROM batting WHERE yearID = 2019 INTERSECT SELECT playerID FROM salaries WHERE yearID = 2019 ORDER BY playerID",
+      "generated_params": [],
+      "expected_row_count": 0,
+      "actual_row_count": 0,
+      "expected_columns": [
+        "playerID"
+      ],
+      "actual_columns": [
+        "playerID"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 0,
+        "columns": [
+          "playerID"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": true,
+        "safety_reason": null,
+        "warnings": []
+      }
+    },
+    {
+      "id": "SET-Q02",
+      "category": "set_operation",
+      "mode": "sql",
+      "passed": false,
+      "reason": "request error: timed out",
+      "elapsed_seconds": 420.008,
+      "http_status": null,
+      "question": "SELECT playerID FROM Salaries WHERE yearID = 2015 EXCEPT SELECT playerID FROM Pitching WHERE yearID = 2015 ORDER BY playerID LIMIT 200",
+      "gold_sql": "SELECT playerID FROM Salaries WHERE yearID = 2015 EXCEPT SELECT playerID FROM Pitching WHERE yearID = 2015 ORDER BY playerID LIMIT 200",
+      "generated_sql": null,
+      "generated_params": [],
+      "expected_row_count": 200,
+      "actual_row_count": 0,
+      "expected_columns": [
+        "playerID"
+      ],
+      "actual_columns": [],
+      "backend_meta": {
+        "success": false,
+        "row_count": null,
+        "columns": null,
+        "low_confidence": false,
+        "fatal": false,
+        "safe": true,
+        "safety_reason": null,
+        "warnings": []
+      }
+    },
+    {
+      "id": "SET-Q03",
+      "category": "set_operation",
+      "mode": "sql",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 35.947,
+      "http_status": 200,
+      "question": "SELECT playerID FROM Batting WHERE HR > 55 UNION SELECT playerID FROM Pitching WHERE SO > 300 ORDER BY playerID",
+      "gold_sql": "SELECT playerID FROM Batting WHERE HR > 55 UNION SELECT playerID FROM Pitching WHERE SO > 300 ORDER BY playerID",
+      "generated_sql": "SELECT playerID FROM Batting WHERE HR > 55 UNION SELECT playerID FROM Pitching WHERE SO > 300 ORDER BY playerID",
+      "generated_params": [],
+      "expected_row_count": 52,
+      "actual_row_count": 52,
+      "expected_columns": [
+        "playerID"
+      ],
+      "actual_columns": [
+        "playerID"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 52,
+        "columns": [
+          "playerID"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": true,
+        "safety_reason": null,
+        "warnings": []
+      }
+    },
+    {
+      "id": "SET-Q04",
+      "category": "set_operation",
+      "mode": "sql",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 44.936,
+      "http_status": 200,
+      "question": "SELECT DISTINCT teamID FROM Batting WHERE yearID = 2020 EXCEPT SELECT DISTINCT teamID FROM Teams WHERE yearID = 2020 ORDER BY teamID",
+      "gold_sql": "SELECT DISTINCT teamID FROM Batting WHERE yearID = 2020 EXCEPT SELECT DISTINCT teamID FROM Teams WHERE yearID = 2020 ORDER BY teamID",
+      "generated_sql": "SELECT DISTINCT batting.teamid\nFROM batting\nJOIN teams ON batting.yearid = teams.yearid AND batting.teamid = teams.teamid AND batting.lgid = teams.lgid\nWHERE batting.yearid = 2020\nAND NOT EXISTS (\n    SELECT 1\n    FROM teams t2\n    WHERE t2.yearid = 2020\n    AND t2.teamid = batting.teamid\n)\nORDER BY batting.teamid",
+      "generated_params": [],
+      "expected_row_count": 0,
+      "actual_row_count": 0,
+      "expected_columns": [
+        "teamID"
+      ],
+      "actual_columns": [
+        "teamID"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 0,
+        "columns": [
+          "teamID"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": true,
+        "safety_reason": null,
+        "warnings": [
+          "selected SQL: possible contradictory constraint"
+        ]
+      }
+    },
+    {
+      "id": "SET-Q05",
+      "category": "set_operation",
+      "mode": "sql",
+      "passed": false,
+      "reason": "unsafe/low confidence: low=False fatal=False safe=False reason=SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment",
+      "elapsed_seconds": 29.446,
+      "http_status": 200,
+      "question": "SELECT DISTINCT playerID FROM AwardsPlayers INTERSECT SELECT DISTINCT playerID FROM HallOfFame ORDER BY playerID LIMIT 200",
+      "gold_sql": "SELECT DISTINCT playerID FROM AwardsPlayers INTERSECT SELECT DISTINCT playerID FROM HallOfFame ORDER BY playerID LIMIT 200",
+      "generated_sql": "SELECT DISTINCT ap.playerID, hf.playerID\nFROM AwardsPlayers ap\nJOIN HallOfFame hf ON ap.playerID = hf.playerID\nORDER BY ap.playerID\nLIMIT 200",
+      "generated_params": [],
+      "expected_row_count": 200,
+      "actual_row_count": 0,
+      "expected_columns": [
+        "playerID"
+      ],
+      "actual_columns": [],
+      "backend_meta": {
+        "success": true,
+        "row_count": 200,
+        "columns": [
+          "playerID",
+          "playerID"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": false,
+        "safety_reason": "SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment",
+        "warnings": []
+      }
+    },
+    {
+      "id": "TOP-S01",
+      "category": "order_limit_topk",
+      "mode": "structured",
+      "passed": false,
+      "reason": "column mismatch: expected ['nameFirst', 'nameLast', 'career_hr'], got ['nameFirst', 'nameLast', 'career_home_runs']",
+      "elapsed_seconds": 22.4,
+      "http_status": 200,
+      "question": "Show the top 10 players by career home runs. Include player name and career home runs.",
+      "gold_sql": "SELECT p.nameFirst, p.nameLast, SUM(b.HR) AS career_hr FROM Batting b JOIN People p ON b.playerID = p.playerID GROUP BY b.playerID ORDER BY career_hr DESC, p.nameLast LIMIT 10",
+      "generated_sql": "SELECT p.nameFirst, p.nameLast, SUM(b.HR) AS career_home_runs\nFROM batting b\nJOIN people p ON b.playerID = p.playerID\nGROUP BY p.playerID\nORDER BY career_home_runs DESC\nLIMIT 10",
+      "generated_params": [],
+      "expected_row_count": 10,
+      "actual_row_count": 10,
+      "expected_columns": [
+        "nameFirst",
+        "nameLast",
+        "career_hr"
+      ],
+      "actual_columns": [
+        "nameFirst",
+        "nameLast",
+        "career_home_runs"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 10,
+        "columns": [
+          "nameFirst",
+          "nameLast",
+          "career_home_runs"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "TOP-S02",
+      "category": "order_limit_topk",
+      "mode": "structured",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 16.086,
+      "http_status": 200,
+      "question": "Show the top 15 team seasons by wins after 1990. Include year, team name, league, wins, and losses.",
+      "gold_sql": "SELECT yearID, name, lgID, W, L FROM Teams WHERE yearID > 1990 ORDER BY W DESC, yearID, name LIMIT 15",
+      "generated_sql": "SELECT teams.yearid, teams.name, teams.lgid, teams.w, teams.l\nFROM teams\nWHERE teams.yearid > 1990\nORDER BY teams.w DESC\nLIMIT 15",
+      "generated_params": [],
+      "expected_row_count": 15,
+      "actual_row_count": 15,
+      "expected_columns": [
+        "yearID",
+        "name",
+        "lgID",
+        "W",
+        "L"
+      ],
+      "actual_columns": [
+        "yearID",
+        "name",
+        "lgID",
+        "W",
+        "L"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 15,
+        "columns": [
+          "yearID",
+          "name",
+          "lgID",
+          "W",
+          "L"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "TOP-S03",
+      "category": "order_limit_topk",
+      "mode": "structured",
+      "passed": false,
+      "reason": "column mismatch: expected ['nameFirst', 'nameLast', 'yearID', 'teamID', 'salary'], got ['nameFirst', 'nameLast', 'yearID', 'name', 'salary']",
+      "elapsed_seconds": 22.988,
+      "http_status": 200,
+      "question": "Show the top 20 salaries after 2010 with player name, year, team, and salary.",
+      "gold_sql": "SELECT p.nameFirst, p.nameLast, s.yearID, s.teamID, s.salary FROM Salaries s JOIN People p ON s.playerID = p.playerID WHERE s.yearID > 2010 ORDER BY s.salary DESC, s.yearID DESC LIMIT 20",
+      "generated_sql": "SELECT p.nameFirst, p.nameLast, s.yearID, t.name, s.salary\nFROM salaries s\nJOIN people p ON s.playerID = p.playerID\nJOIN teams t ON s.yearID = t.yearID AND s.teamID = t.teamID AND s.lgID = t.lgID\nWHERE s.yearID > 2010\nORDER BY s.salary DESC\nLIMIT 20",
+      "generated_params": [],
+      "expected_row_count": 20,
+      "actual_row_count": 20,
+      "expected_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "teamID",
+        "salary"
+      ],
+      "actual_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "name",
+        "salary"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 20,
+        "columns": [
+          "nameFirst",
+          "nameLast",
+          "yearID",
+          "name",
+          "salary"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "TOP-S04",
+      "category": "order_limit_topk",
+      "mode": "structured",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 21.276,
+      "http_status": 200,
+      "question": "Show the top 10 schools by distinct players. Include school name, state, country, and player count.",
+      "gold_sql": "SELECT sc.name_full, sc.state, sc.country, COUNT(DISTINCT cp.playerID) AS player_count FROM CollegePlaying cp JOIN Schools sc ON cp.schoolID = sc.schoolID GROUP BY sc.schoolID, sc.name_full, sc.state, sc.country ORDER BY player_count DESC, sc.name_full LIMIT 10",
+      "generated_sql": "SELECT s.name_full, s.state, s.country, COUNT(DISTINCT cp.playerID) AS player_count\nFROM schools s\nJOIN collegeplaying cp ON s.schoolID = cp.schoolID\nGROUP BY s.schoolID, s.name_full, s.state, s.country\nORDER BY player_count DESC\nLIMIT 10",
+      "generated_params": [],
+      "expected_row_count": 10,
+      "actual_row_count": 10,
+      "expected_columns": [
+        "name_full",
+        "state",
+        "country",
+        "player_count"
+      ],
+      "actual_columns": [
+        "name_full",
+        "state",
+        "country",
+        "player_count"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 10,
+        "columns": [
+          "name_full",
+          "state",
+          "country",
+          "player_count"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "TOP-S05",
+      "category": "order_limit_topk",
+      "mode": "structured",
+      "passed": false,
+      "reason": "column mismatch: expected ['nameFirst', 'nameLast', 'career_so'], got ['nameFirst', 'nameLast', 'career_strikeouts']",
+      "elapsed_seconds": 19.437,
+      "http_status": 200,
+      "question": "Show the top 10 pitchers by career strikeouts with player name and career strikeouts.",
+      "gold_sql": "SELECT p.nameFirst, p.nameLast, SUM(pi.SO) AS career_so FROM Pitching pi JOIN People p ON pi.playerID = p.playerID GROUP BY pi.playerID ORDER BY career_so DESC, p.nameLast LIMIT 10",
+      "generated_sql": "SELECT p.nameFirst, p.nameLast, SUM(pitching.SO) AS career_strikeouts\nFROM people p\nJOIN pitching ON p.playerID = pitching.playerID\nGROUP BY p.playerID, p.nameFirst, p.nameLast\nORDER BY career_strikeouts DESC\nLIMIT 10",
+      "generated_params": [],
+      "expected_row_count": 10,
+      "actual_row_count": 10,
+      "expected_columns": [
+        "nameFirst",
+        "nameLast",
+        "career_so"
+      ],
+      "actual_columns": [
+        "nameFirst",
+        "nameLast",
+        "career_strikeouts"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 10,
+        "columns": [
+          "nameFirst",
+          "nameLast",
+          "career_strikeouts"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "TOP-Q01",
+      "category": "order_limit_topk",
+      "mode": "sql",
+      "passed": false,
+      "reason": "unsafe/low confidence: low=False fatal=False safe=False reason=SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment",
+      "elapsed_seconds": 27.391,
+      "http_status": 200,
+      "question": "SELECT playerID, SUM(HR) AS career_hr FROM Batting GROUP BY playerID ORDER BY career_hr DESC, playerID LIMIT 25",
+      "gold_sql": "SELECT playerID, SUM(HR) AS career_hr FROM Batting GROUP BY playerID ORDER BY career_hr DESC, playerID LIMIT 25",
+      "generated_sql": "SELECT batting.playerID, SUM(batting.HR) AS career_hr FROM Batting GROUP BY batting.playerID ORDER BY career_hr DESC, batting.playerID LIMIT 25",
+      "generated_params": [],
+      "expected_row_count": 25,
+      "actual_row_count": 0,
+      "expected_columns": [
+        "playerID",
+        "career_hr"
+      ],
+      "actual_columns": [],
+      "backend_meta": {
+        "success": true,
+        "row_count": 25,
+        "columns": [
+          "playerID",
+          "career_hr"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": false,
+        "safety_reason": "SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment",
+        "warnings": []
+      }
+    },
+    {
+      "id": "TOP-Q02",
+      "category": "order_limit_topk",
+      "mode": "sql",
+      "passed": false,
+      "reason": "unsafe/low confidence: low=False fatal=False safe=False reason=SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment",
+      "elapsed_seconds": 26.751,
+      "http_status": 200,
+      "question": "SELECT yearID, name, W, L FROM Teams ORDER BY W DESC, yearID LIMIT 20",
+      "gold_sql": "SELECT yearID, name, W, L FROM Teams ORDER BY W DESC, yearID LIMIT 20",
+      "generated_sql": "SELECT teams.yearid, teams.name, teams.w, teams.l FROM teams ORDER BY teams.w DESC, teams.yearid LIMIT 20",
+      "generated_params": [],
+      "expected_row_count": 20,
+      "actual_row_count": 0,
+      "expected_columns": [
+        "yearID",
+        "name",
+        "W",
+        "L"
+      ],
+      "actual_columns": [],
+      "backend_meta": {
+        "success": true,
+        "row_count": 20,
+        "columns": [
+          "yearID",
+          "name",
+          "W",
+          "L"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": false,
+        "safety_reason": "SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment",
+        "warnings": []
+      }
+    },
+    {
+      "id": "TOP-Q03",
+      "category": "order_limit_topk",
+      "mode": "sql",
+      "passed": false,
+      "reason": "unsafe/low confidence: low=False fatal=False safe=False reason=SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment",
+      "elapsed_seconds": 26.015,
+      "http_status": 200,
+      "question": "SELECT playerID, yearID, salary FROM Salaries ORDER BY salary DESC, yearID DESC LIMIT 30",
+      "gold_sql": "SELECT playerID, yearID, salary FROM Salaries ORDER BY salary DESC, yearID DESC LIMIT 30",
+      "generated_sql": "SELECT playerID, yearID, salary FROM Salaries ORDER BY salary DESC, yearID DESC LIMIT 30",
+      "generated_params": [],
+      "expected_row_count": 30,
+      "actual_row_count": 0,
+      "expected_columns": [
+        "playerID",
+        "yearID",
+        "salary"
+      ],
+      "actual_columns": [],
+      "backend_meta": {
+        "success": true,
+        "row_count": 30,
+        "columns": [
+          "playerID",
+          "yearID",
+          "salary"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": false,
+        "safety_reason": "SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment",
+        "warnings": []
+      }
+    },
+    {
+      "id": "TOP-Q04",
+      "category": "order_limit_topk",
+      "mode": "sql",
+      "passed": false,
+      "reason": "unsafe/low confidence: low=False fatal=False safe=False reason=SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment",
+      "elapsed_seconds": 24.599,
+      "http_status": 200,
+      "question": "SELECT playerID, SUM(SO) AS career_so FROM Pitching GROUP BY playerID ORDER BY career_so DESC LIMIT 15",
+      "gold_sql": "SELECT playerID, SUM(SO) AS career_so FROM Pitching GROUP BY playerID ORDER BY career_so DESC LIMIT 15",
+      "generated_sql": "SELECT playerID, SUM(SO) AS career_so FROM Pitching GROUP BY playerID ORDER BY career_so DESC LIMIT 15",
+      "generated_params": [],
+      "expected_row_count": 15,
+      "actual_row_count": 0,
+      "expected_columns": [
+        "playerID",
+        "career_so"
+      ],
+      "actual_columns": [],
+      "backend_meta": {
+        "success": true,
+        "row_count": 15,
+        "columns": [
+          "playerID",
+          "career_so"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": false,
+        "safety_reason": "SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment",
+        "warnings": []
+      }
+    },
+    {
+      "id": "TOP-Q05",
+      "category": "order_limit_topk",
+      "mode": "sql",
+      "passed": false,
+      "reason": "unsafe/low confidence: low=False fatal=False safe=False reason=SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment",
+      "elapsed_seconds": 29.501,
+      "http_status": 200,
+      "question": "SELECT sc.name_full, COUNT(DISTINCT cp.playerID) AS players FROM CollegePlaying cp JOIN Schools sc ON cp.schoolID = sc.schoolID GROUP BY sc.schoolID, sc.name_full ORDER BY players DESC LIMIT 15",
+      "gold_sql": "SELECT sc.name_full, COUNT(DISTINCT cp.playerID) AS players FROM CollegePlaying cp JOIN Schools sc ON cp.schoolID = sc.schoolID GROUP BY sc.schoolID, sc.name_full ORDER BY players DESC LIMIT 15",
+      "generated_sql": "SELECT sc.name_full, COUNT(DISTINCT cp.playerID) AS players FROM CollegePlaying cp JOIN Schools sc ON cp.schoolID = sc.schoolID GROUP BY sc.schoolID, sc.name_full ORDER BY players DESC LIMIT 15",
+      "generated_params": [],
+      "expected_row_count": 15,
+      "actual_row_count": 0,
+      "expected_columns": [
+        "name_full",
+        "players"
+      ],
+      "actual_columns": [],
+      "backend_meta": {
+        "success": true,
+        "row_count": 15,
+        "columns": [
+          "name_full",
+          "players"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": false,
+        "safety_reason": "SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment",
+        "warnings": []
+      }
+    },
+    {
+      "id": "AGG-S01",
+      "category": "aggregation",
+      "mode": "structured",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 15.396,
+      "http_status": 200,
+      "question": "For batting records in 2001, show total home runs, total RBIs, and average home runs.",
+      "gold_sql": "SELECT SUM(HR) AS total_hr, SUM(RBI) AS total_rbi, AVG(HR) AS avg_hr FROM Batting WHERE yearID = 2001",
+      "generated_sql": "SELECT SUM(hr) AS total_hr, SUM(rbi) AS total_rbi, AVG(hr) AS avg_hr\nFROM batting\nWHERE yearid = 2001",
+      "generated_params": [],
+      "expected_row_count": 1,
+      "actual_row_count": 1,
+      "expected_columns": [
+        "total_hr",
+        "total_rbi",
+        "avg_hr"
+      ],
+      "actual_columns": [
+        "total_hr",
+        "total_rbi",
+        "avg_hr"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 1,
+        "columns": [
+          "total_hr",
+          "total_rbi",
+          "avg_hr"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "AGG-S02",
+      "category": "aggregation",
+      "mode": "structured",
+      "passed": false,
+      "reason": "column mismatch: expected ['salary_count', 'avg_salary', 'min_salary', 'max_salary'], got ['num_salaries', 'avg_salary', 'min_salary', 'max_salary']",
+      "elapsed_seconds": 15.578,
+      "http_status": 200,
+      "question": "For salary records in 2016, show number of salaries, average salary, minimum salary, and maximum salary.",
+      "gold_sql": "SELECT COUNT(*) AS salary_count, AVG(salary) AS avg_salary, MIN(salary) AS min_salary, MAX(salary) AS max_salary FROM Salaries WHERE yearID = 2016",
+      "generated_sql": "SELECT COUNT(*) AS num_salaries, AVG(salary) AS avg_salary, MIN(salary) AS min_salary, MAX(salary) AS max_salary FROM salaries WHERE yearID = 2016",
+      "generated_params": [],
+      "expected_row_count": 1,
+      "actual_row_count": 1,
+      "expected_columns": [
+        "salary_count",
+        "avg_salary",
+        "min_salary",
+        "max_salary"
+      ],
+      "actual_columns": [
+        "num_salaries",
+        "avg_salary",
+        "min_salary",
+        "max_salary"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 1,
+        "columns": [
+          "num_salaries",
+          "avg_salary",
+          "min_salary",
+          "max_salary"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "AGG-S03",
+      "category": "aggregation",
+      "mode": "structured",
+      "passed": false,
+      "reason": "column mismatch: expected ['player_count'], got ['COUNT(*)']",
+      "elapsed_seconds": 12.852,
+      "http_status": 200,
+      "question": "Count players born after 1980 who have a non-null debut date.",
+      "gold_sql": "SELECT COUNT(*) AS player_count FROM People WHERE birthYear > 1980 AND debut IS NOT NULL",
+      "generated_sql": "SELECT COUNT(*) FROM people WHERE birthYear > 1980 AND debut IS NOT NULL",
+      "generated_params": [],
+      "expected_row_count": 1,
+      "actual_row_count": 1,
+      "expected_columns": [
+        "player_count"
+      ],
+      "actual_columns": [
+        "COUNT(*)"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 1,
+        "columns": [
+          "COUNT(*)"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "AGG-S04",
+      "category": "aggregation",
+      "mode": "structured",
+      "passed": false,
+      "reason": "column mismatch: expected ['total_wins', 'total_losses', 'avg_attendance'], got ['yearID', 'teamID', 'total_wins', 'total_losses', 'avg_attendance']",
+      "elapsed_seconds": 17.895,
+      "http_status": 200,
+      "question": "For team seasons after 2000 with attendance above 3 million, show total wins, total losses, and average attendance.",
+      "gold_sql": "SELECT SUM(W) AS total_wins, SUM(L) AS total_losses, AVG(attendance) AS avg_attendance FROM Teams WHERE yearID > 2000 AND attendance > 3000000",
+      "generated_sql": "SELECT teams.yearid, teams.teamid, SUM(teams.w) AS total_wins, SUM(teams.l) AS total_losses, AVG(teams.attendance) AS avg_attendance\nFROM teams\nWHERE teams.yearid > 2000 AND teams.attendance > 3000000\nGROUP BY teams.yearid, teams.teamid",
+      "generated_params": [],
+      "expected_row_count": 1,
+      "actual_row_count": 146,
+      "expected_columns": [
+        "total_wins",
+        "total_losses",
+        "avg_attendance"
+      ],
+      "actual_columns": [
+        "yearID",
+        "teamID",
+        "total_wins",
+        "total_losses",
+        "avg_attendance"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 146,
+        "columns": [
+          "yearID",
+          "teamID",
+          "total_wins",
+          "total_losses",
+          "avg_attendance"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "AGG-S05",
+      "category": "aggregation",
+      "mode": "structured",
+      "passed": false,
+      "reason": "column mismatch: expected ['total_so', 'max_wins', 'avg_era'], got ['total_strikeouts', 'max_wins', 'avg_era']",
+      "elapsed_seconds": 16.727,
+      "http_status": 200,
+      "question": "For pitching seasons after 2010, show total strikeouts, maximum wins, and average ERA for rows with ERA not null.",
+      "gold_sql": "SELECT SUM(SO) AS total_so, MAX(W) AS max_wins, AVG(ERA) AS avg_era FROM Pitching WHERE yearID > 2010 AND ERA IS NOT NULL",
+      "generated_sql": "SELECT SUM(pitching.so) AS total_strikeouts, MAX(pitching.w) AS max_wins, AVG(pitching.era) AS avg_era\nFROM pitching\nWHERE pitching.yearid > 2010 AND pitching.era IS NOT NULL",
+      "generated_params": [],
+      "expected_row_count": 1,
+      "actual_row_count": 1,
+      "expected_columns": [
+        "total_so",
+        "max_wins",
+        "avg_era"
+      ],
+      "actual_columns": [
+        "total_strikeouts",
+        "max_wins",
+        "avg_era"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 1,
+        "columns": [
+          "total_strikeouts",
+          "max_wins",
+          "avg_era"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "AGG-Q01",
+      "category": "aggregation",
+      "mode": "sql",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 30.489,
+      "http_status": 200,
+      "question": "SELECT COUNT(*) AS batting_rows, SUM(HR) AS total_hr, SUM(RBI) AS total_rbi FROM Batting WHERE yearID BETWEEN 1995 AND 2005",
+      "gold_sql": "SELECT COUNT(*) AS batting_rows, SUM(HR) AS total_hr, SUM(RBI) AS total_rbi FROM Batting WHERE yearID BETWEEN 1995 AND 2005",
+      "generated_sql": "SELECT COUNT(*) AS batting_rows, SUM(HR) AS total_hr, SUM(RBI) AS total_rbi FROM Batting WHERE yearID BETWEEN 1995 AND 2005",
+      "generated_params": [],
+      "expected_row_count": 1,
+      "actual_row_count": 1,
+      "expected_columns": [
+        "batting_rows",
+        "total_hr",
+        "total_rbi"
+      ],
+      "actual_columns": [
+        "batting_rows",
+        "total_hr",
+        "total_rbi"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 1,
+        "columns": [
+          "batting_rows",
+          "total_hr",
+          "total_rbi"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": true,
+        "safety_reason": null,
+        "warnings": []
+      }
+    },
+    {
+      "id": "AGG-Q02",
+      "category": "aggregation",
+      "mode": "sql",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 27.007,
+      "http_status": 200,
+      "question": "SELECT COUNT(*) AS people_count, MIN(birthYear) AS min_birth, MAX(birthYear) AS max_birth FROM People WHERE birthYear IS NOT NULL",
+      "gold_sql": "SELECT COUNT(*) AS people_count, MIN(birthYear) AS min_birth, MAX(birthYear) AS max_birth FROM People WHERE birthYear IS NOT NULL",
+      "generated_sql": "SELECT COUNT(*) AS people_count, MIN(birthYear) AS min_birth, MAX(birthYear) AS max_birth FROM People WHERE birthYear IS NOT NULL",
+      "generated_params": [],
+      "expected_row_count": 1,
+      "actual_row_count": 1,
+      "expected_columns": [
+        "people_count",
+        "min_birth",
+        "max_birth"
+      ],
+      "actual_columns": [
+        "people_count",
+        "min_birth",
+        "max_birth"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 1,
+        "columns": [
+          "people_count",
+          "min_birth",
+          "max_birth"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": true,
+        "safety_reason": null,
+        "warnings": []
+      }
+    },
+    {
+      "id": "AGG-Q03",
+      "category": "aggregation",
+      "mode": "sql",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 27.92,
+      "http_status": 200,
+      "question": "SELECT AVG(W) AS avg_wins, AVG(L) AS avg_losses, SUM(attendance) AS total_attendance FROM Teams WHERE yearID = 2019",
+      "gold_sql": "SELECT AVG(W) AS avg_wins, AVG(L) AS avg_losses, SUM(attendance) AS total_attendance FROM Teams WHERE yearID = 2019",
+      "generated_sql": "SELECT AVG(W) AS avg_wins, AVG(L) AS avg_losses, SUM(attendance) AS total_attendance FROM Teams WHERE yearID = 2019",
+      "generated_params": [],
+      "expected_row_count": 1,
+      "actual_row_count": 1,
+      "expected_columns": [
+        "avg_wins",
+        "avg_losses",
+        "total_attendance"
+      ],
+      "actual_columns": [
+        "avg_wins",
+        "avg_losses",
+        "total_attendance"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 1,
+        "columns": [
+          "avg_wins",
+          "avg_losses",
+          "total_attendance"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": true,
+        "safety_reason": null,
+        "warnings": []
+      }
+    },
+    {
+      "id": "AGG-Q04",
+      "category": "aggregation",
+      "mode": "sql",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 26.873,
+      "http_status": 200,
+      "question": "SELECT COUNT(*) AS hof_inducted FROM HallOfFame WHERE inducted = 'Y' AND category = 'Player'",
+      "gold_sql": "SELECT COUNT(*) AS hof_inducted FROM HallOfFame WHERE inducted = 'Y' AND category = 'Player'",
+      "generated_sql": "SELECT COUNT(*) AS hof_inducted FROM HallOfFame WHERE inducted = 'Y' AND category = 'Player'",
+      "generated_params": [],
+      "expected_row_count": 1,
+      "actual_row_count": 1,
+      "expected_columns": [
+        "hof_inducted"
+      ],
+      "actual_columns": [
+        "hof_inducted"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 1,
+        "columns": [
+          "hof_inducted"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": true,
+        "safety_reason": null,
+        "warnings": []
+      }
+    },
+    {
+      "id": "AGG-Q05",
+      "category": "aggregation",
+      "mode": "sql",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 37.897,
+      "http_status": 200,
+      "question": "SELECT SUM(salary) AS total_salary, AVG(salary) AS avg_salary FROM Salaries WHERE yearID >= 2010 AND salary > 10000000",
+      "gold_sql": "SELECT SUM(salary) AS total_salary, AVG(salary) AS avg_salary FROM Salaries WHERE yearID >= 2010 AND salary > 10000000",
+      "generated_sql": "SELECT SUM(salary) AS total_salary, AVG(salary) AS avg_salary FROM Salaries WHERE yearID >= 2010 AND salary > 10000000",
+      "generated_params": [],
+      "expected_row_count": 1,
+      "actual_row_count": 1,
+      "expected_columns": [
+        "total_salary",
+        "avg_salary"
+      ],
+      "actual_columns": [
+        "total_salary",
+        "avg_salary"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 1,
+        "columns": [
+          "total_salary",
+          "avg_salary"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": true,
+        "safety_reason": null,
+        "warnings": []
+      }
+    },
+    {
+      "id": "DST-S01",
+      "category": "distinct_count",
+      "mode": "structured",
+      "passed": false,
+      "reason": "column mismatch: expected ['player_count'], got ['COUNT(DISTINCT batting.playerid)']",
+      "elapsed_seconds": 13.301,
+      "http_status": 200,
+      "question": "Count distinct players who hit more than 40 home runs in any season after 1990.",
+      "gold_sql": "SELECT COUNT(DISTINCT playerID) AS player_count FROM Batting WHERE yearID > 1990 AND HR > 40",
+      "generated_sql": "SELECT COUNT(DISTINCT batting.playerid)\nFROM batting\nJOIN people ON batting.playerid = people.playerid\nWHERE batting.hr > 40 AND batting.yearid > 1990",
+      "generated_params": [],
+      "expected_row_count": 1,
+      "actual_row_count": 1,
+      "expected_columns": [
+        "player_count"
+      ],
+      "actual_columns": [
+        "COUNT(DISTINCT batting.playerid)"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 1,
+        "columns": [
+          "COUNT(DISTINCT batting.playerid)"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "DST-S02",
+      "category": "distinct_count",
+      "mode": "structured",
+      "passed": false,
+      "reason": "column mismatch: expected ['team_count'], got ['COUNT(DISTINCT teamID)']",
+      "elapsed_seconds": 13.213,
+      "http_status": 200,
+      "question": "Count distinct teams with more than 90 wins after 2000.",
+      "gold_sql": "SELECT COUNT(DISTINCT teamID) AS team_count FROM Teams WHERE yearID > 2000 AND W > 90",
+      "generated_sql": "SELECT COUNT(DISTINCT teamID) FROM teams WHERE W > 90 AND yearID > 2000",
+      "generated_params": [],
+      "expected_row_count": 1,
+      "actual_row_count": 1,
+      "expected_columns": [
+        "team_count"
+      ],
+      "actual_columns": [
+        "COUNT(DISTINCT teamID)"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 1,
+        "columns": [
+          "COUNT(DISTINCT teamID)"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "DST-S03",
+      "category": "distinct_count",
+      "mode": "structured",
+      "passed": false,
+      "reason": "ordered row mismatch: expected 49 rows, got 0 rows",
+      "elapsed_seconds": 14.864,
+      "http_status": 200,
+      "question": "List distinct school states in the United States that have college playing records. Order alphabetically.",
+      "gold_sql": "SELECT DISTINCT sc.state FROM CollegePlaying cp JOIN Schools sc ON cp.schoolID = sc.schoolID WHERE sc.country = 'USA' AND sc.state IS NOT NULL ORDER BY sc.state",
+      "generated_sql": "SELECT \"schools\".\"state\" FROM \"collegeplaying\" INNER JOIN \"schools\" ON \"collegeplaying\".\"schoolid\" = \"schools\".\"schoolid\" WHERE \"schools\".\"country\" = 'US' GROUP BY \"schools\".\"state\" HAVING COUNT(*) > 0 ORDER BY \"schools\".\"state\" ASC",
+      "generated_params": [],
+      "expected_row_count": 49,
+      "actual_row_count": 0,
+      "expected_columns": [
+        "state"
+      ],
+      "actual_columns": [
+        "state"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 0,
+        "columns": [
+          "state"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "DST-S04",
+      "category": "distinct_count",
+      "mode": "structured",
+      "passed": false,
+      "reason": "column mismatch: expected ['award_player_count'], got ['COUNT(DISTINCT ap.playerID)']",
+      "elapsed_seconds": 14.904,
+      "http_status": 200,
+      "question": "Count distinct players who received any award after 2000.",
+      "gold_sql": "SELECT COUNT(DISTINCT playerID) AS award_player_count FROM AwardsPlayers WHERE yearID > 2000",
+      "generated_sql": "SELECT COUNT(DISTINCT ap.playerID)\nFROM AwardsPlayers ap\nJOIN AwardsSharePlayers asp ON ap.playerID = asp.playerID\nWHERE ap.yearID > 2000",
+      "generated_params": [],
+      "expected_row_count": 1,
+      "actual_row_count": 1,
+      "expected_columns": [
+        "award_player_count"
+      ],
+      "actual_columns": [
+        "COUNT(DISTINCT ap.playerID)"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 1,
+        "columns": [
+          "COUNT(DISTINCT ap.playerID)"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "DST-S05",
+      "category": "distinct_count",
+      "mode": "structured",
+      "passed": false,
+      "reason": "column mismatch: expected ['yearID', 'player_count', 'team_count'], got ['yearID', 'distinct_players', 'distinct_teams']",
+      "elapsed_seconds": 14.049,
+      "http_status": 200,
+      "question": "For each year after 2010, count distinct salaried players and distinct teams paying salaries.",
+      "gold_sql": "SELECT yearID, COUNT(DISTINCT playerID) AS player_count, COUNT(DISTINCT teamID) AS team_count FROM Salaries WHERE yearID > 2010 GROUP BY yearID ORDER BY yearID",
+      "generated_sql": "SELECT yearid, COUNT(DISTINCT playerid) AS distinct_players, COUNT(DISTINCT teamid) AS distinct_teams\nFROM salaries\nWHERE yearid > 2010\nGROUP BY yearid",
+      "generated_params": [],
+      "expected_row_count": 6,
+      "actual_row_count": 6,
+      "expected_columns": [
+        "yearID",
+        "player_count",
+        "team_count"
+      ],
+      "actual_columns": [
+        "yearID",
+        "distinct_players",
+        "distinct_teams"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 6,
+        "columns": [
+          "yearID",
+          "distinct_players",
+          "distinct_teams"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "DST-Q01",
+      "category": "distinct_count",
+      "mode": "sql",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 28.951,
+      "http_status": 200,
+      "question": "SELECT COUNT(DISTINCT playerID) AS players FROM Pitching WHERE yearID >= 2000 AND SO > 200",
+      "gold_sql": "SELECT COUNT(DISTINCT playerID) AS players FROM Pitching WHERE yearID >= 2000 AND SO > 200",
+      "generated_sql": "SELECT COUNT(DISTINCT playerID) AS players FROM Pitching WHERE yearID >= 2000 AND SO > 200",
+      "generated_params": [],
+      "expected_row_count": 1,
+      "actual_row_count": 1,
+      "expected_columns": [
+        "players"
+      ],
+      "actual_columns": [
+        "players"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 1,
+        "columns": [
+          "players"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": true,
+        "safety_reason": null,
+        "warnings": []
+      }
+    },
+    {
+      "id": "DST-Q02",
+      "category": "distinct_count",
+      "mode": "sql",
+      "passed": false,
+      "reason": "unsafe/low confidence: low=False fatal=False safe=False reason=SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment",
+      "elapsed_seconds": 27.034,
+      "http_status": 200,
+      "question": "SELECT DISTINCT lgID FROM Teams WHERE yearID >= 1900 ORDER BY lgID",
+      "gold_sql": "SELECT DISTINCT lgID FROM Teams WHERE yearID >= 1900 ORDER BY lgID",
+      "generated_sql": "SELECT DISTINCT teams.lgid\nFROM teams\nWHERE teams.yearid >= 1900\nORDER BY teams.lgid\nLIMIT 100",
+      "generated_params": [],
+      "expected_row_count": 3,
+      "actual_row_count": 0,
+      "expected_columns": [
+        "lgID"
+      ],
+      "actual_columns": [],
+      "backend_meta": {
+        "success": true,
+        "row_count": 3,
+        "columns": [
+          "lgID"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": false,
+        "safety_reason": "SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment",
+        "warnings": []
+      }
+    },
+    {
+      "id": "DST-Q03",
+      "category": "distinct_count",
+      "mode": "sql",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 28.645,
+      "http_status": 200,
+      "question": "SELECT yearID, COUNT(DISTINCT teamID) AS teams FROM Teams WHERE yearID >= 2000 GROUP BY yearID ORDER BY yearID",
+      "gold_sql": "SELECT yearID, COUNT(DISTINCT teamID) AS teams FROM Teams WHERE yearID >= 2000 GROUP BY yearID ORDER BY yearID",
+      "generated_sql": "SELECT yearID, COUNT(DISTINCT teamID) AS teams FROM Teams WHERE yearID >= 2000 GROUP BY yearID ORDER BY yearID",
+      "generated_params": [],
+      "expected_row_count": 23,
+      "actual_row_count": 23,
+      "expected_columns": [
+        "yearID",
+        "teams"
+      ],
+      "actual_columns": [
+        "yearID",
+        "teams"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 23,
+        "columns": [
+          "yearID",
+          "teams"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": true,
+        "safety_reason": null,
+        "warnings": []
+      }
+    },
+    {
+      "id": "DST-Q04",
+      "category": "distinct_count",
+      "mode": "sql",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 25.146,
+      "http_status": 200,
+      "question": "SELECT COUNT(DISTINCT schoolID) AS schools FROM CollegePlaying WHERE yearID >= 2000",
+      "gold_sql": "SELECT COUNT(DISTINCT schoolID) AS schools FROM CollegePlaying WHERE yearID >= 2000",
+      "generated_sql": "SELECT COUNT(DISTINCT schoolID) AS schools FROM CollegePlaying WHERE yearID >= 2000",
+      "generated_params": [],
+      "expected_row_count": 1,
+      "actual_row_count": 1,
+      "expected_columns": [
+        "schools"
+      ],
+      "actual_columns": [
+        "schools"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 1,
+        "columns": [
+          "schools"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": true,
+        "safety_reason": null,
+        "warnings": []
+      }
+    },
+    {
+      "id": "DST-Q05",
+      "category": "distinct_count",
+      "mode": "sql",
+      "passed": false,
+      "reason": "unsafe/low confidence: low=False fatal=False safe=False reason=SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment",
+      "elapsed_seconds": 27.759,
+      "http_status": 200,
+      "question": "SELECT DISTINCT awardID FROM AwardsPlayers WHERE yearID >= 2010 ORDER BY awardID",
+      "gold_sql": "SELECT DISTINCT awardID FROM AwardsPlayers WHERE yearID >= 2010 ORDER BY awardID",
+      "generated_sql": "SELECT DISTINCT awardID FROM AwardsPlayers WHERE yearID >= 2010 ORDER BY awardID LIMIT 1",
+      "generated_params": [],
+      "expected_row_count": 26,
+      "actual_row_count": 0,
+      "expected_columns": [
+        "awardID"
+      ],
+      "actual_columns": [],
+      "backend_meta": {
+        "success": true,
+        "row_count": 1,
+        "columns": [
+          "awardID"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": false,
+        "safety_reason": "SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment",
+        "warnings": []
+      }
+    },
+    {
+      "id": "DRV-S01",
+      "category": "derived_metric",
+      "mode": "structured",
+      "passed": false,
+      "reason": "column mismatch: expected ['playerID', 'yearID', 'H', 'AB', 'batting_avg'], got ['playerID', 'yearID', 'H', 'AB', 'batting_average']",
+      "elapsed_seconds": 16.763,
+      "http_status": 200,
+      "question": "For batting seasons after 2010 with at least 500 at-bats, show playerID, year, hits, at-bats, and batting average. Order by batting average descending and limit to 25.",
+      "gold_sql": "SELECT playerID, yearID, H, AB, 1.0 * H / NULLIF(AB, 0) AS batting_avg FROM Batting WHERE yearID > 2010 AND AB >= 500 ORDER BY batting_avg DESC, playerID LIMIT 25",
+      "generated_sql": "SELECT batting.playerID, batting.yearID, batting.H, batting.AB, CAST(batting.H AS REAL) / batting.AB AS batting_average\nFROM batting\nWHERE batting.yearID > 2010 AND batting.AB >= 500\nORDER BY batting_average DESC\nLIMIT 25",
+      "generated_params": [],
+      "expected_row_count": 25,
+      "actual_row_count": 25,
+      "expected_columns": [
+        "playerID",
+        "yearID",
+        "H",
+        "AB",
+        "batting_avg"
+      ],
+      "actual_columns": [
+        "playerID",
+        "yearID",
+        "H",
+        "AB",
+        "batting_average"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 25,
+        "columns": [
+          "playerID",
+          "yearID",
+          "H",
+          "AB",
+          "batting_average"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "DRV-S02",
+      "category": "derived_metric",
+      "mode": "structured",
+      "passed": false,
+      "reason": "column mismatch: expected ['yearID', 'name', 'W', 'L', 'win_pct'], got ['yearID', 'name', 'W', 'L', 'winning_percentage']",
+      "elapsed_seconds": 16.936,
+      "http_status": 200,
+      "question": "For team seasons after 2000, show year, team name, wins, losses, and winning percentage for teams with more than 95 wins. Order by winning percentage descending.",
+      "gold_sql": "SELECT yearID, name, W, L, 1.0 * W / NULLIF(W + L, 0) AS win_pct FROM Teams WHERE yearID > 2000 AND W > 95 ORDER BY win_pct DESC, yearID, name",
+      "generated_sql": "SELECT teams.yearid, teams.name, teams.w, teams.l, CAST(teams.w AS REAL) / (teams.w + teams.l) AS winning_percentage\nFROM teams\nWHERE teams.yearid > 2000 AND teams.w > 95\nORDER BY winning_percentage DESC",
+      "generated_params": [],
+      "expected_row_count": 71,
+      "actual_row_count": 71,
+      "expected_columns": [
+        "yearID",
+        "name",
+        "W",
+        "L",
+        "win_pct"
+      ],
+      "actual_columns": [
+        "yearID",
+        "name",
+        "W",
+        "L",
+        "winning_percentage"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 71,
+        "columns": [
+          "yearID",
+          "name",
+          "W",
+          "L",
+          "winning_percentage"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "DRV-S03",
+      "category": "derived_metric",
+      "mode": "structured",
+      "passed": false,
+      "reason": "request error: timed out",
+      "elapsed_seconds": 420.008,
+      "http_status": null,
+      "question": "For player salary and batting seasons after 2010, show playerID, year, salary, home runs, and salary per home run for seasons with more than 20 home runs and salary above 10 million.",
+      "gold_sql": "SELECT s.playerID, s.yearID, s.salary, b.HR, 1.0 * s.salary / NULLIF(b.HR, 0) AS salary_per_hr FROM Salaries s JOIN Batting b ON s.playerID = b.playerID AND s.yearID = b.yearID AND s.teamID = b.teamID AND s.lgID = b.lgID WHERE s.yearID > 2010 AND s.salary > 10000000 AND b.HR > 20 ORDER BY salary_per_hr DESC, s.yearID",
+      "generated_sql": null,
+      "generated_params": [],
+      "expected_row_count": 122,
+      "actual_row_count": 0,
+      "expected_columns": [
+        "playerID",
+        "yearID",
+        "salary",
+        "HR",
+        "salary_per_hr"
+      ],
+      "actual_columns": [],
+      "backend_meta": {
+        "success": false,
+        "row_count": null,
+        "columns": null,
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "DRV-S04",
+      "category": "derived_metric",
+      "mode": "structured",
+      "passed": false,
+      "reason": "column mismatch: expected ['playerID', 'yearID', 'SO', 'BB', 'so_bb_ratio'], got ['playerID', 'yearID', 'SO', 'BB', 'ratio']",
+      "elapsed_seconds": 18.029,
+      "http_status": 200,
+      "question": "For pitchers after 2015 with at least 150 strikeouts, show playerID, year, strikeouts, walks, and strikeout-to-walk ratio. Order by the ratio descending.",
+      "gold_sql": "SELECT playerID, yearID, SO, BB, 1.0 * SO / NULLIF(BB, 0) AS so_bb_ratio FROM Pitching WHERE yearID > 2015 AND SO >= 150 AND BB IS NOT NULL ORDER BY so_bb_ratio DESC, playerID LIMIT 50",
+      "generated_sql": "SELECT playerID, yearID, so, bb, CAST(so AS REAL) / bb AS ratio\nFROM pitching\nWHERE yearID > 2015 AND so >= 150\nORDER BY ratio DESC",
+      "generated_params": [],
+      "expected_row_count": 50,
+      "actual_row_count": 295,
+      "expected_columns": [
+        "playerID",
+        "yearID",
+        "SO",
+        "BB",
+        "so_bb_ratio"
+      ],
+      "actual_columns": [
+        "playerID",
+        "yearID",
+        "SO",
+        "BB",
+        "ratio"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 295,
+        "columns": [
+          "playerID",
+          "yearID",
+          "SO",
+          "BB",
+          "ratio"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "DRV-S05",
+      "category": "derived_metric",
+      "mode": "structured",
+      "passed": false,
+      "reason": "column mismatch: expected ['yearID', 'name', 'attendance', 'Ghome', 'attendance_per_home_game'], got ['yearID', 'name', 'attendance', 'G', 'attendance_per_game']",
+      "elapsed_seconds": 18.367,
+      "http_status": 200,
+      "question": "For teams after 2010 with attendance above 2 million, show year, team, attendance, games, and attendance per home game. Order by attendance per game descending.",
+      "gold_sql": "SELECT yearID, name, attendance, Ghome, 1.0 * attendance / NULLIF(Ghome, 0) AS attendance_per_home_game FROM Teams WHERE yearID > 2010 AND attendance > 2000000 AND Ghome IS NOT NULL ORDER BY attendance_per_home_game DESC, yearID LIMIT 50",
+      "generated_sql": "SELECT teams.yearid, teams.name, teams.attendance, teams.g, CAST(teams.attendance AS REAL) / teams.g AS attendance_per_game\nFROM teams\nWHERE teams.yearid > 2010 AND teams.attendance > 2000000\nORDER BY attendance_per_game DESC",
+      "generated_params": [],
+      "expected_row_count": 50,
+      "actual_row_count": 220,
+      "expected_columns": [
+        "yearID",
+        "name",
+        "attendance",
+        "Ghome",
+        "attendance_per_home_game"
+      ],
+      "actual_columns": [
+        "yearID",
+        "name",
+        "attendance",
+        "G",
+        "attendance_per_game"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 220,
+        "columns": [
+          "yearID",
+          "name",
+          "attendance",
+          "G",
+          "attendance_per_game"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "warnings": []
+      }
+    },
+    {
+      "id": "DRV-Q01",
+      "category": "derived_metric",
+      "mode": "sql",
+      "passed": false,
+      "reason": "unsafe/low confidence: low=False fatal=False safe=False reason=SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment",
+      "elapsed_seconds": 32.174,
+      "http_status": 200,
+      "question": "SELECT playerID, yearID, H, AB, 1.0 * H / NULLIF(AB, 0) AS batting_avg FROM Batting WHERE yearID = 2019 AND AB >= 400 ORDER BY batting_avg DESC LIMIT 30",
+      "gold_sql": "SELECT playerID, yearID, H, AB, 1.0 * H / NULLIF(AB, 0) AS batting_avg FROM Batting WHERE yearID = 2019 AND AB >= 400 ORDER BY batting_avg DESC LIMIT 30",
+      "generated_sql": "SELECT playerID, yearID, H, AB FROM Batting WHERE yearID = 2019 AND AB >= 400 ORDER BY CAST(H AS REAL) / AB DESC LIMIT 30",
+      "generated_params": [],
+      "expected_row_count": 30,
+      "actual_row_count": 0,
+      "expected_columns": [
+        "playerID",
+        "yearID",
+        "H",
+        "AB",
+        "batting_avg"
+      ],
+      "actual_columns": [],
+      "backend_meta": {
+        "success": true,
+        "row_count": 30,
+        "columns": [
+          "playerID",
+          "yearID",
+          "H",
+          "AB"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": false,
+        "safety_reason": "SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment",
+        "warnings": []
+      }
+    },
+    {
+      "id": "DRV-Q02",
+      "category": "derived_metric",
+      "mode": "sql",
+      "passed": false,
+      "reason": "column mismatch: expected ['yearID', 'name', 'W', 'L', 'win_pct'], got ['yearID', 'name', 'W', 'L']",
+      "elapsed_seconds": 31.596,
+      "http_status": 200,
+      "question": "SELECT yearID, name, W, L, 1.0 * W / NULLIF(W + L, 0) AS win_pct FROM Teams WHERE yearID = 2021 ORDER BY win_pct DESC, name",
+      "gold_sql": "SELECT yearID, name, W, L, 1.0 * W / NULLIF(W + L, 0) AS win_pct FROM Teams WHERE yearID = 2021 ORDER BY win_pct DESC, name",
+      "generated_sql": "SELECT yearID, name, W, L FROM Teams WHERE yearID = 2021 ORDER BY 1.0 * W / NULLIF(W + L, 0) DESC, name",
+      "generated_params": [],
+      "expected_row_count": 30,
+      "actual_row_count": 30,
+      "expected_columns": [
+        "yearID",
+        "name",
+        "W",
+        "L",
+        "win_pct"
+      ],
+      "actual_columns": [
+        "yearID",
+        "name",
+        "W",
+        "L"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 30,
+        "columns": [
+          "yearID",
+          "name",
+          "W",
+          "L"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": true,
+        "safety_reason": null,
+        "warnings": []
+      }
+    },
+    {
+      "id": "DRV-Q03",
+      "category": "derived_metric",
+      "mode": "sql",
+      "passed": false,
+      "reason": "unsafe/low confidence: low=False fatal=False safe=False reason=SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment",
+      "elapsed_seconds": 70.774,
+      "http_status": 200,
+      "question": "SELECT s.playerID, s.yearID, s.salary, b.HR, 1.0 * s.salary / NULLIF(b.HR, 0) AS salary_per_hr FROM Salaries s JOIN Batting b ON s.playerID = b.playerID AND s.yearID = b.yearID AND s.teamID = b.teamID AND s.lgID = b.lgID WHERE s.yearID = 2016 AND b.HR > 10 ORDER BY salary_per_hr DESC LIMIT 50",
+      "gold_sql": "SELECT s.playerID, s.yearID, s.salary, b.HR, 1.0 * s.salary / NULLIF(b.HR, 0) AS salary_per_hr FROM Salaries s JOIN Batting b ON s.playerID = b.playerID AND s.yearID = b.yearID AND s.teamID = b.teamID AND s.lgID = b.lgID WHERE s.yearID = 2016 AND b.HR > 10 ORDER BY salary_per_hr DESC LIMIT 50",
+      "generated_sql": "SELECT s.playerID, s.yearID, s.salary, b.HR, 1.0 * s.salary / NULLIF(b.HR, 0) AS salary_per_hr FROM Salaries s JOIN Batting b ON s.playerID = b.playerID AND s.yearID = b.yearID AND s.teamID = b.teamID AND s.lgID = b.lgID WHERE s.yearID = 2016 AND b.HR > 10 ORDER BY salary_per_hr DESC LIMIT 50",
+      "generated_params": [],
+      "expected_row_count": 50,
+      "actual_row_count": 0,
+      "expected_columns": [
+        "playerID",
+        "yearID",
+        "salary",
+        "HR",
+        "salary_per_hr"
+      ],
+      "actual_columns": [],
+      "backend_meta": {
+        "success": true,
+        "row_count": 50,
+        "columns": [
+          "playerID",
+          "yearID",
+          "salary",
+          "HR",
+          "salary_per_hr"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": false,
+        "safety_reason": "SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment",
+        "warnings": []
+      }
+    },
+    {
+      "id": "DRV-Q04",
+      "category": "derived_metric",
+      "mode": "sql",
+      "passed": true,
+      "reason": "rows match",
+      "elapsed_seconds": 33.944,
+      "http_status": 200,
+      "question": "SELECT playerID, yearID, SO, BB, 1.0 * SO / NULLIF(BB, 0) AS so_bb_ratio FROM Pitching WHERE yearID = 2022 AND SO >= 150 ORDER BY so_bb_ratio DESC",
+      "gold_sql": "SELECT playerID, yearID, SO, BB, 1.0 * SO / NULLIF(BB, 0) AS so_bb_ratio FROM Pitching WHERE yearID = 2022 AND SO >= 150 ORDER BY so_bb_ratio DESC",
+      "generated_sql": "SELECT playerID, yearID, SO, BB, 1.0 * SO / NULLIF(BB, 0) AS so_bb_ratio FROM Pitching WHERE yearID = 2022 AND SO >= 150 ORDER BY so_bb_ratio DESC",
+      "generated_params": [],
+      "expected_row_count": 50,
+      "actual_row_count": 50,
+      "expected_columns": [
+        "playerID",
+        "yearID",
+        "SO",
+        "BB",
+        "so_bb_ratio"
+      ],
+      "actual_columns": [
+        "playerID",
+        "yearID",
+        "SO",
+        "BB",
+        "so_bb_ratio"
+      ],
+      "backend_meta": {
+        "success": true,
+        "row_count": 50,
+        "columns": [
+          "playerID",
+          "yearID",
+          "SO",
+          "BB",
+          "so_bb_ratio"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": true,
+        "safety_reason": null,
+        "warnings": []
+      }
+    },
+    {
+      "id": "DRV-Q05",
+      "category": "derived_metric",
+      "mode": "sql",
+      "passed": false,
+      "reason": "unsafe/low confidence: low=False fatal=False safe=False reason=SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment",
+      "elapsed_seconds": 42.63,
+      "http_status": 200,
+      "question": "SELECT yearID, name, attendance, Ghome, 1.0 * attendance / NULLIF(Ghome, 0) AS attendance_per_home_game FROM Teams WHERE yearID >= 2015 AND attendance > 2500000 AND Ghome IS NOT NULL ORDER BY attendance_per_home_game DESC LIMIT 25",
+      "gold_sql": "SELECT yearID, name, attendance, Ghome, 1.0 * attendance / NULLIF(Ghome, 0) AS attendance_per_home_game FROM Teams WHERE yearID >= 2015 AND attendance > 2500000 AND Ghome IS NOT NULL ORDER BY attendance_per_home_game DESC LIMIT 25",
+      "generated_sql": "SELECT yearID, name, attendance, Ghome, 1.0 * attendance / NULLIF(Ghome, 0) AS attendance_per_home_game FROM Teams WHERE yearID >= 2015 AND attendance > 2500000 AND Ghome IS NOT NULL ORDER BY attendance_per_home_game DESC LIMIT 25",
+      "generated_params": [],
+      "expected_row_count": 25,
+      "actual_row_count": 0,
+      "expected_columns": [
+        "yearID",
+        "name",
+        "attendance",
+        "Ghome",
+        "attendance_per_home_game"
+      ],
+      "actual_columns": [],
+      "backend_meta": {
+        "success": true,
+        "row_count": 25,
+        "columns": [
+          "yearID",
+          "name",
+          "attendance",
+          "Ghome",
+          "attendance_per_home_game"
+        ],
+        "low_confidence": false,
+        "fatal": false,
+        "safe": false,
+        "safety_reason": "SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment",
+        "warnings": []
+      }
+    }
+  ]
+}

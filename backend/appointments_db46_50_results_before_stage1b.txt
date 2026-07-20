@@ -1,0 +1,6080 @@
+SpiderSQL Appointments Database #46 - 50 Query Results
+
+====================================================================================================
+QUERY 01
+QUESTION: Find doctors who treated patients from a different city and whose average invoice total is higher than the average invoice total for doctors in the same specialty.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 27.27
+ROW COUNT: 3
+
+SQL:
+SELECT d.doctor_id, d.doctor_name
+FROM doctors d
+JOIN appointments a ON d.doctor_id = a.doctor_id
+JOIN invoices i ON a.appointment_id = i.appointment_id
+JOIN patients p ON a.patient_id = p.patient_id
+WHERE p.city != d.clinic_city
+GROUP BY d.doctor_id, d.doctor_name
+HAVING AVG(i.total_amount) > (
+    SELECT AVG(i2.total_amount)
+    FROM doctors d2
+    JOIN appointments a2 ON d2.doctor_id = a2.doctor_id
+    JOIN invoices i2 ON a2.appointment_id = i2.appointment_id
+    WHERE d2.specialty = d.specialty
+)
+
+RESULT:
+{
+  "columns": [
+    "doctor_id",
+    "doctor_name"
+  ],
+  "rows": [
+    [
+      1,
+      "Dr. 1"
+    ],
+    [
+      10,
+      "Dr. 10"
+    ],
+    [
+      13,
+      "Dr. 13"
+    ]
+  ],
+  "row_count": 3
+}
+
+====================================================================================================
+QUERY 02
+QUESTION: Find patients who were seen by doctors from more than one specialty and whose total invoiced amount is above the average total for patients with the same insurance provider.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 18.23
+ROW COUNT: 14
+
+SQL:
+SELECT p.patient_id, p.patient_name
+FROM patients p
+JOIN appointments a ON p.patient_id = a.patient_id
+JOIN doctors d ON a.doctor_id = d.doctor_id
+JOIN invoices i ON a.appointment_id = i.appointment_id
+WHERE p.patient_id IN (
+    SELECT a2.patient_id
+    FROM appointments a2
+    JOIN doctors d2 ON a2.doctor_id = d2.doctor_id
+    GROUP BY a2.patient_id
+    HAVING COUNT(DISTINCT d2.specialty) > 1
+)
+AND i.total_amount > (
+    SELECT AVG(i2.total_amount)
+    FROM invoices i2
+    JOIN appointments a2 ON i2.appointment_id = a2.appointment_id
+    JOIN patients p2 ON a2.patient_id = p2.patient_id
+    WHERE p2.insurance_provider = p.insurance_provider
+)
+GROUP BY p.patient_id, p.patient_name
+
+RESULT:
+{
+  "columns": [
+    "patient_id",
+    "patient_name"
+  ],
+  "rows": [
+    [
+      1,
+      "Patient 1"
+    ],
+    [
+      6,
+      "Patient 6"
+    ],
+    [
+      11,
+      "Patient 11"
+    ],
+    [
+      16,
+      "Patient 16"
+    ],
+    [
+      21,
+      "Patient 21"
+    ],
+    [
+      26,
+      "Patient 26"
+    ],
+    [
+      31,
+      "Patient 31"
+    ],
+    [
+      36,
+      "Patient 36"
+    ],
+    [
+      41,
+      "Patient 41"
+    ],
+    [
+      46,
+      "Patient 46"
+    ],
+    [
+      51,
+      "Patient 51"
+    ],
+    [
+      56,
+      "Patient 56"
+    ],
+    [
+      61,
+      "Patient 61"
+    ],
+    [
+      66,
+      "Patient 66"
+    ]
+  ],
+  "row_count": 14
+}
+
+====================================================================================================
+QUERY 03
+QUESTION: Find doctors who handled at least five urgent appointments and whose average base fee for those visits is above the average urgent-visit fee across all doctors.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 17.52
+ROW COUNT: 20
+
+SQL:
+WITH "doctors_totals" AS (SELECT "doctors"."doctor_id" AS "entity_id", "appointments"."visit_type" AS "group_col", AVG("appointments"."base_fee") AS "agg_value" FROM "doctors" INNER JOIN "appointments" ON "doctors"."doctor_id" = "appointments"."doctor_id" GROUP BY "doctors"."doctor_id", "appointments"."visit_type") SELECT * FROM "doctors_totals" WHERE NOT EXISTS (SELECT 1 FROM "doctors_totals" AS "doctors_totals__g0" WHERE "doctors_totals__g0"."group_col" = "doctors_totals"."group_col" AND "doctors_totals__g0"."agg_value" < "doctors_totals"."agg_value")
+
+RESULT:
+{
+  "columns": [
+    "entity_id",
+    "group_col",
+    "agg_value"
+  ],
+  "rows": [
+    [
+      1,
+      "checkup",
+      150.0
+    ],
+    [
+      1,
+      "followup",
+      150.0
+    ],
+    [
+      1,
+      "screening",
+      150.0
+    ],
+    [
+      1,
+      "urgent",
+      150.0
+    ],
+    [
+      4,
+      "checkup",
+      150.0
+    ],
+    [
+      4,
+      "followup",
+      150.0
+    ],
+    [
+      4,
+      "screening",
+      150.0
+    ],
+    [
+      4,
+      "urgent",
+      150.0
+    ],
+    [
+      7,
+      "checkup",
+      150.0
+    ],
+    [
+      7,
+      "followup",
+      150.0
+    ],
+    [
+      7,
+      "screening",
+      150.0
+    ],
+    [
+      7,
+      "urgent",
+      150.0
+    ],
+    [
+      10,
+      "checkup",
+      150.0
+    ],
+    [
+      10,
+      "followup",
+      150.0
+    ],
+    [
+      10,
+      "screening",
+      150.0
+    ],
+    [
+      10,
+      "urgent",
+      150.0
+    ],
+    [
+      13,
+      "checkup",
+      150.0
+    ],
+    [
+      13,
+      "followup",
+      150.0
+    ],
+    [
+      13,
+      "screening",
+      150.0
+    ],
+    [
+      13,
+      "urgent",
+      150.0
+    ]
+  ],
+  "row_count": 20
+}
+
+====================================================================================================
+QUERY 04
+QUESTION: Find patients whose unpaid or partially paid balance is higher than the average outstanding balance for patients with the same insurance provider.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 50.96
+ROW COUNT: 47
+
+SQL:
+SELECT p.patient_id, p.patient_name, p.insurance_provider
+FROM patients p
+JOIN appointments a ON p.patient_id = a.patient_id
+JOIN invoices i ON a.appointment_id = i.appointment_id
+WHERE i.payment_status IN ('unpaid', 'partial')
+  AND (i.total_amount - i.insurance_paid) > (
+    SELECT AVG(i2.total_amount - i2.insurance_paid)
+    FROM invoices i2
+    JOIN appointments a2 ON i2.appointment_id = a2.appointment_id
+    JOIN patients p2 ON a2.patient_id = p2.patient_id
+    WHERE p2.insurance_provider = p.insurance_provider
+      AND i2.payment_status IN ('unpaid', 'partial')
+  )
+
+RESULT:
+{
+  "columns": [
+    "patient_id",
+    "patient_name",
+    "insurance_provider"
+  ],
+  "rows": [
+    [
+      36,
+      "Patient 36",
+      "Aetna"
+    ],
+    [
+      41,
+      "Patient 41",
+      "BlueCross"
+    ],
+    [
+      51,
+      "Patient 51",
+      "None"
+    ],
+    [
+      56,
+      "Patient 56",
+      "Aetna"
+    ],
+    [
+      31,
+      "Patient 31",
+      "None"
+    ],
+    [
+      41,
+      "Patient 41",
+      "BlueCross"
+    ],
+    [
+      46,
+      "Patient 46",
+      "Medicaid"
+    ],
+    [
+      56,
+      "Patient 56",
+      "Aetna"
+    ],
+    [
+      21,
+      "Patient 21",
+      "BlueCross"
+    ],
+    [
+      31,
+      "Patient 31",
+      "None"
+    ],
+    [
+      36,
+      "Patient 36",
+      "Aetna"
+    ],
+    [
+      46,
+      "Patient 46",
+      "Medicaid"
+    ],
+    [
+      51,
+      "Patient 51",
+      "None"
+    ],
+    [
+      21,
+      "Patient 21",
+      "BlueCross"
+    ],
+    [
+      26,
+      "Patient 26",
+      "Medicaid"
+    ],
+    [
+      36,
+      "Patient 36",
+      "Aetna"
+    ],
+    [
+      41,
+      "Patient 41",
+      "BlueCross"
+    ],
+    [
+      26,
+      "Patient 26",
+      "Medicaid"
+    ],
+    [
+      31,
+      "Patient 31",
+      "None"
+    ],
+    [
+      41,
+      "Patient 41",
+      "BlueCross"
+    ],
+    [
+      6,
+      "Patient 6",
+      "Medicaid"
+    ],
+    [
+      16,
+      "Patient 16",
+      "Aetna"
+    ],
+    [
+      21,
+      "Patient 21",
+      "BlueCross"
+    ],
+    [
+      31,
+      "Patient 31",
+      "None"
+    ],
+    [
+      36,
+      "Patient 36",
+      "Aetna"
+    ],
+    [
+      6,
+      "Patient 6",
+      "Medicaid"
+    ],
+    [
+      11,
+      "Patient 11",
+      "None"
+    ],
+    [
+      21,
+      "Patient 21",
+      "BlueCross"
+    ],
+    [
+      26,
+      "Patient 26",
+      "Medicaid"
+    ],
+    [
+      66,
+      "Patient 66",
+      "Medicaid"
+    ],
+    [
+      1,
+      "Patient 1",
+      "BlueCross"
+    ],
+    [
+      11,
+      "Patient 11",
+      "None"
+    ],
+    [
+      16,
+      "Patient 16",
+      "Aetna"
+    ],
+    [
+      26,
+      "Patient 26",
+      "Medicaid"
+    ],
+    [
+      61,
+      "Patient 61",
+      "BlueCross"
+    ],
+    [
+      1,
+      "Patient 1",
+      "BlueCross"
+    ],
+    [
+      6,
+      "Patient 6",
+      "Medicaid"
+    ],
+    [
+      16,
+      "Patient 16",
+      "Aetna"
+    ],
+    [
+      21,
+      "Patient 21",
+      "BlueCross"
+    ],
+    [
+      61,
+      "Patient 61",
+      "BlueCross"
+    ],
+    [
+      66,
+      "Patient 66",
+      "Medicaid"
+    ],
+    [
+      6,
+      "Patient 6",
+      "Medicaid"
+    ],
+    [
+      11,
+      "Patient 11",
+      "None"
+    ],
+    [
+      51,
+      "Patient 51",
+      "None"
+    ],
+    [
+      56,
+      "Patient 56",
+      "Aetna"
+    ],
+    [
+      66,
+      "Patient 66",
+      "Medicaid"
+    ],
+    [
+      1,
+      "Patient 1",
+      "BlueCross"
+    ]
+  ],
+  "row_count": 47
+}
+
+====================================================================================================
+QUERY 05
+QUESTION: Find doctors whose no-show rate is higher than the average no-show rate of doctors in the same specialty and who have handled at least five appointments.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 26.16
+ROW COUNT: 0
+
+SQL:
+WITH doctor_stats AS (
+    SELECT 
+        d.doctor_id,
+        d.doctor_name,
+        d.specialty,
+        COUNT(*) AS total_appointments,
+        SUM(CASE WHEN a.status = 'no_show' THEN 1 ELSE 0 END) * 1.0 / COUNT(*) AS no_show_rate
+    FROM doctors d
+    JOIN appointments a ON d.doctor_id = a.doctor_id
+    GROUP BY d.doctor_id, d.doctor_name, d.specialty
+    HAVING COUNT(*) >= 5
+),
+specialty_avg AS (
+    SELECT 
+        specialty,
+        AVG(no_show_rate) AS avg_no_show_rate
+    FROM doctor_stats
+    GROUP BY specialty
+)
+SELECT 
+    ds.doctor_id,
+    ds.doctor_name,
+    ds.specialty
+FROM doctor_stats ds
+JOIN specialty_avg sa ON ds.specialty = sa.specialty
+WHERE ds.no_show_rate > sa.avg_no_show_rate
+
+RESULT:
+{
+  "columns": [
+    "doctor_id",
+    "doctor_name",
+    "specialty"
+  ],
+  "rows": [],
+  "row_count": 0
+}
+
+====================================================================================================
+QUERY 06
+QUESTION: Find patients with a chronic condition whose number of completed appointments is higher than the average among patients with a chronic condition.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 24.91
+ROW COUNT: 1
+
+SQL:
+SELECT p.patient_id, p.patient_name
+FROM patients p
+JOIN appointments a ON p.patient_id = a.patient_id
+WHERE p.chronic_condition = 'yes'
+GROUP BY p.patient_id, p.patient_name
+HAVING COUNT(a.appointment_id) > (
+    SELECT AVG(completed_count)
+    FROM (
+        SELECT p2.patient_id, COUNT(a2.appointment_id) AS completed_count
+        FROM patients p2
+        JOIN appointments a2 ON p2.patient_id = a2.patient_id
+        WHERE p2.chronic_condition = 'yes' AND a2.status = 'completed'
+        GROUP BY p2.patient_id
+    )
+)
+
+RESULT:
+{
+  "columns": [
+    "patient_id",
+    "patient_name"
+  ],
+  "rows": [
+    [
+      36,
+      "Patient 36"
+    ]
+  ],
+  "row_count": 1
+}
+
+====================================================================================================
+QUERY 07
+QUESTION: Find medications that were prescribed to patients in both Idaho and Washington and whose average days supplied is above the average for medications in the same class.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 19.42
+ROW COUNT: 0
+
+SQL:
+SELECT m.medication_id, m.medication_name
+FROM medications m
+JOIN prescriptions p ON m.medication_id = p.medication_id
+JOIN appointments a ON p.appointment_id = a.appointment_id
+JOIN patients pt ON a.patient_id = pt.patient_id
+WHERE pt.state IN ('ID', 'WA')
+GROUP BY m.medication_id, m.medication_name, m.medication_class, m.unit_cost
+HAVING AVG(p.days_supply) > (
+    SELECT AVG(p2.days_supply)
+    FROM prescriptions p2
+    JOIN medications m2 ON p2.medication_id = m2.medication_id
+    WHERE m2.medication_class = m.medication_class
+)
+
+RESULT:
+{
+  "columns": [
+    "medication_id",
+    "medication_name"
+  ],
+  "rows": [],
+  "row_count": 0
+}
+
+====================================================================================================
+QUERY 08
+QUESTION: Find doctors who prescribed controlled substances more often than the average doctor in the same specialty.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 32.86
+ROW COUNT: 0
+
+SQL:
+WITH doctor_counts AS (
+    SELECT 
+        d.doctor_id,
+        d.doctor_name,
+        d.specialty,
+        COUNT(p.prescription_id) AS controlled_count
+    FROM doctors d
+    JOIN appointments a ON d.doctor_id = a.doctor_id
+    JOIN prescriptions p ON a.appointment_id = p.appointment_id
+    JOIN medications m ON p.medication_id = m.medication_id
+    WHERE m.controlled_substance = 'yes'
+    GROUP BY d.doctor_id, d.doctor_name, d.specialty
+),
+specialty_avg AS (
+    SELECT 
+        specialty,
+        AVG(controlled_count) AS avg_count
+    FROM doctor_counts
+    GROUP BY specialty
+)
+SELECT 
+    dc.doctor_id,
+    dc.doctor_name,
+    dc.specialty
+FROM doctor_counts dc
+JOIN specialty_avg sa ON dc.specialty = sa.specialty
+WHERE dc.controlled_count > sa.avg_count
+
+RESULT:
+{
+  "columns": [
+    "doctor_id",
+    "doctor_name",
+    "specialty"
+  ],
+  "rows": [],
+  "row_count": 0
+}
+
+====================================================================================================
+QUERY 09
+QUESTION: Find patients who had an abnormal lab result and an unpaid or partially paid invoice for the same appointment.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 15.34
+ROW COUNT: 7
+
+SQL:
+SELECT DISTINCT p.patient_id, p.patient_name
+FROM patients p
+JOIN appointments a ON p.patient_id = a.patient_id
+JOIN lab_results l ON a.appointment_id = l.appointment_id
+JOIN invoices i ON a.appointment_id = i.appointment_id
+WHERE l.result_flag IN ('high', 'low', 'critical')
+  AND i.payment_status IN ('unpaid', 'partial')
+
+RESULT:
+{
+  "columns": [
+    "patient_id",
+    "patient_name"
+  ],
+  "rows": [
+    [
+      26,
+      "Patient 26"
+    ],
+    [
+      66,
+      "Patient 66"
+    ],
+    [
+      56,
+      "Patient 56"
+    ],
+    [
+      6,
+      "Patient 6"
+    ],
+    [
+      46,
+      "Patient 46"
+    ],
+    [
+      16,
+      "Patient 16"
+    ],
+    [
+      36,
+      "Patient 36"
+    ]
+  ],
+  "row_count": 7
+}
+
+====================================================================================================
+QUERY 10
+QUESTION: Find appointments whose invoice total is above the average invoice total for the same doctor and that also have a high or critical lab result.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 23.13
+ROW COUNT: 28
+
+SQL:
+SELECT a.appointment_id
+FROM appointments a
+JOIN doctors d ON a.doctor_id = d.doctor_id
+JOIN invoices i ON a.appointment_id = i.appointment_id
+JOIN lab_results l ON a.appointment_id = l.appointment_id
+WHERE l.result_flag IN ('high', 'critical')
+  AND i.total_amount > (
+    SELECT AVG(i2.total_amount)
+    FROM invoices i2
+    JOIN appointments a2 ON i2.appointment_id = a2.appointment_id
+    WHERE a2.doctor_id = a.doctor_id
+  )
+
+RESULT:
+{
+  "columns": [
+    "appointment_id"
+  ],
+  "rows": [
+    [
+      21
+    ],
+    [
+      37
+    ],
+    [
+      61
+    ],
+    [
+      77
+    ],
+    [
+      85
+    ],
+    [
+      101
+    ],
+    [
+      125
+    ],
+    [
+      9
+    ],
+    [
+      25
+    ],
+    [
+      33
+    ],
+    [
+      49
+    ],
+    [
+      73
+    ],
+    [
+      89
+    ],
+    [
+      97
+    ],
+    [
+      113
+    ],
+    [
+      129
+    ],
+    [
+      137
+    ],
+    [
+      21
+    ],
+    [
+      37
+    ],
+    [
+      61
+    ],
+    [
+      77
+    ],
+    [
+      85
+    ],
+    [
+      101
+    ],
+    [
+      125
+    ],
+    [
+      9
+    ],
+    [
+      25
+    ],
+    [
+      33
+    ],
+    [
+      49
+    ]
+  ],
+  "row_count": 28
+}
+
+====================================================================================================
+QUERY 11
+QUESTION: Find doctors whose average insurance coverage percentage is lower than the average for doctors in the same specialty.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 22.41
+ROW COUNT: 0
+
+SQL:
+WITH doctor_stats AS (
+    SELECT 
+        d.doctor_id,
+        d.doctor_name,
+        d.specialty,
+        AVG(CAST(i.insurance_paid AS REAL) / i.total_amount * 100) AS avg_coverage_pct
+    FROM doctors d
+    JOIN appointments a ON d.doctor_id = a.doctor_id
+    JOIN invoices i ON a.appointment_id = i.appointment_id
+    GROUP BY d.doctor_id, d.doctor_name, d.specialty
+)
+SELECT 
+    ds.doctor_id,
+    ds.doctor_name,
+    ds.specialty
+FROM doctor_stats ds
+WHERE ds.avg_coverage_pct < (
+    SELECT AVG(avg_coverage_pct)
+    FROM doctor_stats ds2
+    WHERE ds2.specialty = ds.specialty
+)
+
+RESULT:
+{
+  "columns": [
+    "doctor_id",
+    "doctor_name",
+    "specialty"
+  ],
+  "rows": [],
+  "row_count": 0
+}
+
+====================================================================================================
+QUERY 12
+QUESTION: Find patient cities where both the average invoice total and the no-show rate are above the corresponding averages across all cities.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 20.07
+ROW COUNT: 1
+
+SQL:
+WITH city_stats AS (
+    SELECT 
+        p.city,
+        AVG(i.total_amount) AS avg_invoice_total,
+        SUM(CASE WHEN a.status = 'no_show' THEN 1 ELSE 0 END) * 1.0 / COUNT(*) AS no_show_rate
+    FROM patients p
+    JOIN appointments a ON p.patient_id = a.patient_id
+    JOIN invoices i ON a.appointment_id = i.appointment_id
+    GROUP BY p.city
+),
+global_stats AS (
+    SELECT 
+        AVG(total_amount) AS global_avg_invoice,
+        SUM(CASE WHEN status = 'no_show' THEN 1 ELSE 0 END) * 1.0 / COUNT(*) AS global_no_show_rate
+    FROM appointments a
+    JOIN invoices i ON a.appointment_id = i.appointment_id
+)
+SELECT cs.city
+FROM city_stats cs
+CROSS JOIN global_stats gs
+WHERE cs.avg_invoice_total > gs.global_avg_invoice
+  AND cs.no_show_rate > gs.global_no_show_rate
+
+RESULT:
+{
+  "columns": [
+    "city"
+  ],
+  "rows": [
+    [
+      "Moscow"
+    ]
+  ],
+  "row_count": 1
+}
+
+====================================================================================================
+QUERY 13
+QUESTION: Find patients whose most recent appointment was completed and whose lifetime invoiced amount is above the average for patients with the same insurance provider.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 19.34
+ROW COUNT: 4
+
+SQL:
+SELECT p.patient_id, p.patient_name
+FROM patients p
+JOIN appointments a ON p.patient_id = a.patient_id
+JOIN invoices i ON a.appointment_id = i.appointment_id
+WHERE a.status = 'completed'
+  AND a.appointment_date = (
+    SELECT MAX(a2.appointment_date)
+    FROM appointments a2
+    WHERE a2.patient_id = p.patient_id
+  )
+  AND i.total_amount > (
+    SELECT AVG(i2.total_amount)
+    FROM invoices i2
+    JOIN appointments a2 ON i2.appointment_id = a2.appointment_id
+    JOIN patients p2 ON a2.patient_id = p2.patient_id
+    WHERE p2.insurance_provider = p.insurance_provider
+  )
+GROUP BY p.patient_id, p.patient_name
+
+RESULT:
+{
+  "columns": [
+    "patient_id",
+    "patient_name"
+  ],
+  "rows": [
+    [
+      1,
+      "Patient 1"
+    ],
+    [
+      11,
+      "Patient 11"
+    ],
+    [
+      16,
+      "Patient 16"
+    ],
+    [
+      56,
+      "Patient 56"
+    ]
+  ],
+  "row_count": 4
+}
+
+====================================================================================================
+QUERY 14
+QUESTION: Find the three doctors with the highest total invoiced amount within each specialty.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 18.63
+ROW COUNT: 5
+
+SQL:
+WITH doctor_totals AS (
+    SELECT 
+        d.doctor_id,
+        d.doctor_name,
+        d.specialty,
+        SUM(i.total_amount) AS total_invoiced
+    FROM doctors d
+    JOIN appointments a ON d.doctor_id = a.doctor_id
+    JOIN invoices i ON a.appointment_id = i.appointment_id
+    GROUP BY d.doctor_id, d.doctor_name, d.specialty
+),
+ranked_doctors AS (
+    SELECT 
+        doctor_id,
+        doctor_name,
+        specialty,
+        total_invoiced,
+        ROW_NUMBER() OVER (PARTITION BY specialty ORDER BY total_invoiced DESC) AS rn
+    FROM doctor_totals
+)
+SELECT 
+    doctor_id,
+    doctor_name,
+    specialty
+FROM ranked_doctors
+WHERE rn <= 3
+
+RESULT:
+{
+  "columns": [
+    "doctor_id",
+    "doctor_name",
+    "specialty"
+  ],
+  "rows": [
+    [
+      10,
+      "Dr. 10",
+      "cardiology"
+    ],
+    [
+      7,
+      "Dr. 7",
+      "dermatology"
+    ],
+    [
+      4,
+      "Dr. 4",
+      "orthopedics"
+    ],
+    [
+      13,
+      "Dr. 13",
+      "pediatrics"
+    ],
+    [
+      1,
+      "Dr. 1",
+      "primary"
+    ]
+  ],
+  "row_count": 5
+}
+
+====================================================================================================
+QUERY 15
+QUESTION: Find the appointment with the highest invoice total for each patient, including the doctor and appointment date.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 16.91
+ROW COUNT: 14
+
+SQL:
+WITH ranked_appointments AS (
+    SELECT 
+        a.appointment_id,
+        p.patient_id,
+        d.doctor_name,
+        a.appointment_date,
+        i.total_amount,
+        ROW_NUMBER() OVER (PARTITION BY p.patient_id ORDER BY i.total_amount DESC) AS rn
+    FROM appointments a
+    JOIN doctors d ON a.doctor_id = d.doctor_id
+    JOIN invoices i ON a.appointment_id = i.appointment_id
+    JOIN patients p ON a.patient_id = p.patient_id
+)
+SELECT 
+    appointment_id,
+    patient_id,
+    doctor_name,
+    appointment_date,
+    total_amount
+FROM ranked_appointments
+WHERE rn = 1
+
+RESULT:
+{
+  "columns": [
+    "appointment_id",
+    "patient_id",
+    "doctor_name",
+    "appointment_date",
+    "total_amount"
+  ],
+  "rows": [
+    [
+      140,
+      1,
+      "Dr. 1",
+      "2025-10-12",
+      440.0
+    ],
+    [
+      127,
+      6,
+      "Dr. 7",
+      "2025-09-16",
+      440.0
+    ],
+    [
+      128,
+      11,
+      "Dr. 10",
+      "2025-09-18",
+      474.5
+    ],
+    [
+      129,
+      16,
+      "Dr. 13",
+      "2025-09-20",
+      509.0
+    ],
+    [
+      116,
+      21,
+      "Dr. 4",
+      "2025-08-25",
+      509.0
+    ],
+    [
+      103,
+      26,
+      "Dr. 10",
+      "2025-07-30",
+      509.0
+    ],
+    [
+      90,
+      31,
+      "Dr. 1",
+      "2025-07-04",
+      509.0
+    ],
+    [
+      77,
+      36,
+      "Dr. 7",
+      "2025-06-08",
+      509.0
+    ],
+    [
+      64,
+      41,
+      "Dr. 13",
+      "2025-05-13",
+      509.0
+    ],
+    [
+      51,
+      46,
+      "Dr. 4",
+      "2025-04-17",
+      509.0
+    ],
+    [
+      38,
+      51,
+      "Dr. 10",
+      "2025-03-22",
+      509.0
+    ],
+    [
+      25,
+      56,
+      "Dr. 1",
+      "2025-02-24",
+      509.0
+    ],
+    [
+      12,
+      61,
+      "Dr. 7",
+      "2025-01-29",
+      509.0
+    ],
+    [
+      139,
+      66,
+      "Dr. 13",
+      "2025-10-10",
+      405.5
+    ]
+  ],
+  "row_count": 14
+}
+
+====================================================================================================
+QUERY 16
+QUESTION: Find the medication with the greatest total prescribed days within each medication class.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 18.75
+ROW COUNT: 10
+
+SQL:
+WITH class_med_totals AS (
+  SELECT 
+    m.medication_class,
+    m.medication_name,
+    SUM(p.days_supply) AS total_days_supply
+  FROM medications m
+  JOIN prescriptions p ON m.medication_id = p.medication_id
+  GROUP BY m.medication_class, m.medication_name
+),
+ranked AS (
+  SELECT 
+    medication_class,
+    medication_name,
+    total_days_supply,
+    RANK() OVER (PARTITION BY medication_class ORDER BY total_days_supply DESC) AS rnk
+  FROM class_med_totals
+)
+SELECT 
+  medication_class,
+  medication_name
+FROM ranked
+WHERE rnk = 1
+
+RESULT:
+{
+  "columns": [
+    "medication_class",
+    "medication_name"
+  ],
+  "rows": [
+    [
+      "allergy",
+      "Med 29"
+    ],
+    [
+      "allergy",
+      "Med 4"
+    ],
+    [
+      "antibiotic",
+      "Med 15"
+    ],
+    [
+      "antibiotic",
+      "Med 20"
+    ],
+    [
+      "inhaler",
+      "Med 13"
+    ],
+    [
+      "inhaler",
+      "Med 8"
+    ],
+    [
+      "painkiller",
+      "Med 11"
+    ],
+    [
+      "painkiller",
+      "Med 6"
+    ],
+    [
+      "statin",
+      "Med 22"
+    ],
+    [
+      "statin",
+      "Med 27"
+    ]
+  ],
+  "row_count": 10
+}
+
+====================================================================================================
+QUERY 17
+QUESTION: Find the latest abnormal lab result for each patient, including the test name, result value, and result date.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 21.85
+ROW COUNT: 7
+
+SQL:
+WITH abnormal_labs AS (
+    SELECT 
+        p.patient_id,
+        l.test_name,
+        l.test_value,
+        l.result_date,
+        ROW_NUMBER() OVER (PARTITION BY p.patient_id ORDER BY l.result_date DESC) AS rn
+    FROM lab_results l
+    JOIN appointments a ON l.appointment_id = a.appointment_id
+    JOIN patients p ON a.patient_id = p.patient_id
+    WHERE l.result_flag IN ('critical', 'high', 'low')
+)
+SELECT 
+    patient_id,
+    test_name,
+    test_value,
+    result_date
+FROM abnormal_labs
+WHERE rn = 1
+
+RESULT:
+{
+  "columns": [
+    "patient_id",
+    "test_name",
+    "test_value",
+    "result_date"
+  ],
+  "rows": [
+    [
+      6,
+      "vitamin_d",
+      119.8,
+      "2026-01-02"
+    ],
+    [
+      16,
+      "glucose",
+      96.8,
+      "2025-12-03"
+    ],
+    [
+      26,
+      "glucose",
+      106.0,
+      "2025-12-15"
+    ],
+    [
+      36,
+      "glucose",
+      115.2,
+      "2025-12-27"
+    ],
+    [
+      46,
+      "blood_pressure",
+      108.3,
+      "2025-12-18"
+    ],
+    [
+      56,
+      "blood_pressure",
+      117.5,
+      "2025-12-30"
+    ],
+    [
+      66,
+      "vitamin_d",
+      110.6,
+      "2025-12-21"
+    ]
+  ],
+  "row_count": 7
+}
+
+====================================================================================================
+QUERY 18
+QUESTION: Find the patient with the largest unpaid balance in each city.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 20.69
+ROW COUNT: 4
+
+SQL:
+WITH patient_unpaid AS (
+  SELECT
+    p.city,
+    p.patient_id,
+    p.patient_name,
+    SUM(i.total_amount - i.insurance_paid) AS unpaid_balance
+  FROM patients p
+  JOIN appointments a ON p.patient_id = a.patient_id
+  JOIN invoices i ON a.appointment_id = i.appointment_id
+  WHERE i.payment_status = 'unpaid'
+  GROUP BY p.city, p.patient_id, p.patient_name
+),
+ranked_patients AS (
+  SELECT
+    city,
+    patient_id,
+    patient_name,
+    unpaid_balance,
+    ROW_NUMBER() OVER (PARTITION BY city ORDER BY unpaid_balance DESC) AS rn
+  FROM patient_unpaid
+)
+SELECT
+  city,
+  patient_id,
+  patient_name
+FROM ranked_patients
+WHERE rn = 1
+
+RESULT:
+{
+  "columns": [
+    "city",
+    "patient_id",
+    "patient_name"
+  ],
+  "rows": [
+    [
+      "Boise",
+      21,
+      "Patient 21"
+    ],
+    [
+      "Moscow",
+      16,
+      "Patient 16"
+    ],
+    [
+      "Pullman",
+      26,
+      "Patient 26"
+    ],
+    [
+      "Spokane",
+      51,
+      "Patient 51"
+    ]
+  ],
+  "row_count": 4
+}
+
+====================================================================================================
+QUERY 19
+QUESTION: Find doctors whose total invoiced amount from completed appointments is above the average doctor total in the same clinic city.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 20.99
+ROW COUNT: 2
+
+SQL:
+SELECT d.doctor_id, d.doctor_name, d.clinic_city
+FROM doctors d
+JOIN appointments a ON d.doctor_id = a.doctor_id
+JOIN invoices i ON a.appointment_id = i.appointment_id
+WHERE a.status = 'completed'
+GROUP BY d.doctor_id, d.doctor_name, d.clinic_city
+HAVING SUM(i.total_amount) > (
+    SELECT AVG(city_doctor_total)
+    FROM (
+        SELECT SUM(i2.total_amount) AS city_doctor_total
+        FROM doctors d2
+        JOIN appointments a2 ON d2.doctor_id = a2.doctor_id
+        JOIN invoices i2 ON a2.appointment_id = i2.appointment_id
+        WHERE a2.status = 'completed'
+        GROUP BY d2.doctor_id
+        HAVING d2.clinic_city = d.clinic_city
+    )
+)
+
+RESULT:
+{
+  "columns": [
+    "doctor_id",
+    "doctor_name",
+    "clinic_city"
+  ],
+  "rows": [
+    [
+      4,
+      "Dr. 4",
+      "Boise"
+    ],
+    [
+      13,
+      "Dr. 13",
+      "Boise"
+    ]
+  ],
+  "row_count": 2
+}
+
+====================================================================================================
+QUERY 20
+QUESTION: Find patients who visited doctors in more than one clinic city and received at least one prescription.
+SUCCESS: False
+HTTP STATUS: 200
+ELAPSED SECONDS: 16.3
+ROW COUNT: None
+
+SQL:
+-- NO SQL GENERATED
+
+RESULT:
+{
+  "columns": null,
+  "rows": null,
+  "row_count": null
+}
+
+ERROR:
+no_semantically_valid_sql
+
+====================================================================================================
+QUERY 21
+QUESTION: Find doctors who treated patients from a different state and whose average invoice total is above the average for doctors in the same specialty.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 19.3
+ROW COUNT: 0
+
+SQL:
+SELECT d.doctor_id, d.doctor_name
+FROM doctors d
+JOIN appointments a ON d.doctor_id = a.doctor_id
+JOIN patients p ON a.patient_id = p.patient_id
+JOIN invoices i ON a.appointment_id = i.appointment_id
+WHERE p.state != d.clinic_city
+GROUP BY d.doctor_id, d.doctor_name, d.specialty
+HAVING AVG(i.total_amount) > (
+    SELECT AVG(i2.total_amount)
+    FROM doctors d2
+    JOIN appointments a2 ON d2.doctor_id = a2.doctor_id
+    JOIN invoices i2 ON a2.appointment_id = i2.appointment_id
+    WHERE d2.specialty = d.specialty
+)
+
+RESULT:
+{
+  "columns": [
+    "doctor_id",
+    "doctor_name"
+  ],
+  "rows": [],
+  "row_count": 0
+}
+
+====================================================================================================
+QUERY 22
+QUESTION: Find medications that were prescribed during completed appointments but were never prescribed during cancelled appointments.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 15.07
+ROW COUNT: 15
+
+SQL:
+SELECT m.medication_id, m.medication_name
+FROM medications m
+JOIN prescriptions p ON m.medication_id = p.medication_id
+JOIN appointments a ON p.appointment_id = a.appointment_id
+WHERE a.status = 'completed'
+AND NOT EXISTS (
+    SELECT 1
+    FROM prescriptions p2
+    JOIN appointments a2 ON p2.appointment_id = a2.appointment_id
+    WHERE p2.medication_id = m.medication_id
+    AND a2.status = 'cancelled'
+)
+GROUP BY m.medication_id, m.medication_name
+
+RESULT:
+{
+  "columns": [
+    "medication_id",
+    "medication_name"
+  ],
+  "rows": [
+    [
+      1,
+      "Med 1"
+    ],
+    [
+      3,
+      "Med 3"
+    ],
+    [
+      5,
+      "Med 5"
+    ],
+    [
+      7,
+      "Med 7"
+    ],
+    [
+      9,
+      "Med 9"
+    ],
+    [
+      11,
+      "Med 11"
+    ],
+    [
+      13,
+      "Med 13"
+    ],
+    [
+      15,
+      "Med 15"
+    ],
+    [
+      17,
+      "Med 17"
+    ],
+    [
+      19,
+      "Med 19"
+    ],
+    [
+      21,
+      "Med 21"
+    ],
+    [
+      23,
+      "Med 23"
+    ],
+    [
+      25,
+      "Med 25"
+    ],
+    [
+      27,
+      "Med 27"
+    ],
+    [
+      29,
+      "Med 29"
+    ]
+  ],
+  "row_count": 15
+}
+
+====================================================================================================
+QUERY 23
+QUESTION: Find patients who had at least one appointment with a lab result but no prescription for that same appointment.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 22.04
+ROW COUNT: 7
+
+SQL:
+SELECT p.patient_id, p.patient_name
+FROM patients p
+JOIN appointments a ON p.patient_id = a.patient_id
+JOIN lab_results lr ON a.appointment_id = lr.appointment_id
+JOIN prescriptions pr ON a.appointment_id = pr.appointment_id
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM appointments a2
+    JOIN lab_results lr2 ON a2.appointment_id = lr2.appointment_id
+    LEFT JOIN prescriptions pr2 ON a2.appointment_id = pr2.appointment_id
+    WHERE a2.patient_id = p.patient_id
+    AND pr2.prescription_id IS NULL
+)
+GROUP BY p.patient_id, p.patient_name
+
+RESULT:
+{
+  "columns": [
+    "patient_id",
+    "patient_name"
+  ],
+  "rows": [
+    [
+      6,
+      "Patient 6"
+    ],
+    [
+      16,
+      "Patient 16"
+    ],
+    [
+      26,
+      "Patient 26"
+    ],
+    [
+      36,
+      "Patient 36"
+    ],
+    [
+      46,
+      "Patient 46"
+    ],
+    [
+      56,
+      "Patient 56"
+    ],
+    [
+      66,
+      "Patient 66"
+    ]
+  ],
+  "row_count": 7
+}
+
+====================================================================================================
+QUERY 24
+QUESTION: Find appointments that have at least one prescription but no lab result.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 16.2
+ROW COUNT: 50
+
+SQL:
+SELECT a.appointment_id
+FROM appointments a
+JOIN prescriptions p ON a.appointment_id = p.appointment_id
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM lab_results l
+    WHERE l.appointment_id = a.appointment_id
+)
+
+RESULT:
+{
+  "columns": [
+    "appointment_id"
+  ],
+  "rows": [
+    [
+      3
+    ],
+    [
+      3
+    ],
+    [
+      7
+    ],
+    [
+      7
+    ],
+    [
+      11
+    ],
+    [
+      11
+    ],
+    [
+      15
+    ],
+    [
+      15
+    ],
+    [
+      19
+    ],
+    [
+      19
+    ],
+    [
+      23
+    ],
+    [
+      23
+    ],
+    [
+      27
+    ],
+    [
+      27
+    ],
+    [
+      31
+    ],
+    [
+      31
+    ],
+    [
+      35
+    ],
+    [
+      35
+    ],
+    [
+      39
+    ],
+    [
+      39
+    ],
+    [
+      43
+    ],
+    [
+      43
+    ],
+    [
+      47
+    ],
+    [
+      47
+    ],
+    [
+      51
+    ],
+    [
+      51
+    ],
+    [
+      55
+    ],
+    [
+      55
+    ],
+    [
+      59
+    ],
+    [
+      59
+    ],
+    [
+      63
+    ],
+    [
+      67
+    ],
+    [
+      71
+    ],
+    [
+      75
+    ],
+    [
+      79
+    ],
+    [
+      83
+    ],
+    [
+      87
+    ],
+    [
+      91
+    ],
+    [
+      95
+    ],
+    [
+      99
+    ],
+    [
+      103
+    ],
+    [
+      107
+    ],
+    [
+      111
+    ],
+    [
+      115
+    ],
+    [
+      119
+    ],
+    [
+      123
+    ],
+    [
+      127
+    ],
+    [
+      131
+    ],
+    [
+      135
+    ],
+    [
+      139
+    ]
+  ],
+  "row_count": 50
+}
+
+====================================================================================================
+QUERY 25
+QUESTION: Find doctors who have handled appointments but none of their appointments has a lab result.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 19.17
+ROW COUNT: 0
+
+SQL:
+SELECT d.doctor_id, d.doctor_name
+FROM doctors d
+JOIN appointments a ON d.doctor_id = a.doctor_id
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM appointments a2
+    JOIN lab_results lr ON a2.appointment_id = lr.appointment_id
+    WHERE a2.doctor_id = d.doctor_id
+)
+GROUP BY d.doctor_id, d.doctor_name
+
+RESULT:
+{
+  "columns": [
+    "doctor_id",
+    "doctor_name"
+  ],
+  "rows": [],
+  "row_count": 0
+}
+
+====================================================================================================
+QUERY 26
+QUESTION: Find medications that have never been prescribed.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 10.95
+ROW COUNT: 0
+
+SQL:
+SELECT m.medication_id, m.medication_name
+FROM medications m
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM prescriptions p
+    WHERE p.medication_id = m.medication_id
+)
+
+RESULT:
+{
+  "columns": [
+    "medication_id",
+    "medication_name"
+  ],
+  "rows": [],
+  "row_count": 0
+}
+
+====================================================================================================
+QUERY 27
+QUESTION: Find patients who have completed appointments but have never received a prescription during any completed appointment.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 16.12
+ROW COUNT: 7
+
+SQL:
+SELECT DISTINCT p.patient_id, p.patient_name
+FROM patients p
+JOIN appointments a ON p.patient_id = a.patient_id
+WHERE a.status = 'completed'
+AND NOT EXISTS (
+    SELECT 1
+    FROM appointments a2
+    JOIN prescriptions pr ON a2.appointment_id = pr.appointment_id
+    WHERE a2.patient_id = p.patient_id
+    AND a2.status = 'completed'
+    AND pr.prescription_id IS NOT NULL
+)
+
+RESULT:
+{
+  "columns": [
+    "patient_id",
+    "patient_name"
+  ],
+  "rows": [
+    [
+      21,
+      "Patient 21"
+    ],
+    [
+      41,
+      "Patient 41"
+    ],
+    [
+      61,
+      "Patient 61"
+    ],
+    [
+      11,
+      "Patient 11"
+    ],
+    [
+      31,
+      "Patient 31"
+    ],
+    [
+      51,
+      "Patient 51"
+    ],
+    [
+      1,
+      "Patient 1"
+    ]
+  ],
+  "row_count": 7
+}
+
+====================================================================================================
+QUERY 28
+QUESTION: Find doctors for whom every completed appointment has a fully paid invoice.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 15.51
+ROW COUNT: 10
+
+SQL:
+SELECT d.doctor_id, d.doctor_name
+FROM doctors d
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM appointments a
+    JOIN invoices i ON a.appointment_id = i.appointment_id
+    WHERE a.doctor_id = d.doctor_id
+      AND a.status = 'completed'
+      AND i.payment_status != 'paid'
+)
+
+RESULT:
+{
+  "columns": [
+    "doctor_id",
+    "doctor_name"
+  ],
+  "rows": [
+    [
+      2,
+      "Dr. 2"
+    ],
+    [
+      3,
+      "Dr. 3"
+    ],
+    [
+      5,
+      "Dr. 5"
+    ],
+    [
+      6,
+      "Dr. 6"
+    ],
+    [
+      8,
+      "Dr. 8"
+    ],
+    [
+      9,
+      "Dr. 9"
+    ],
+    [
+      11,
+      "Dr. 11"
+    ],
+    [
+      12,
+      "Dr. 12"
+    ],
+    [
+      14,
+      "Dr. 14"
+    ],
+    [
+      15,
+      "Dr. 15"
+    ]
+  ],
+  "row_count": 10
+}
+
+====================================================================================================
+QUERY 29
+QUESTION: Find patients for whom every urgent appointment has at least one lab result.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 17.2
+ROW COUNT: 0
+
+SQL:
+SELECT p.patient_id, p.patient_name
+FROM patients p
+JOIN appointments a ON p.patient_id = a.patient_id
+JOIN lab_results l ON a.appointment_id = l.appointment_id
+WHERE a.visit_type = 'urgent'
+GROUP BY p.patient_id, p.patient_name
+HAVING COUNT(a.appointment_id) = (
+    SELECT COUNT(*)
+    FROM appointments a2
+    WHERE a2.patient_id = p.patient_id
+      AND a2.visit_type = 'urgent'
+)
+
+RESULT:
+{
+  "columns": [
+    "patient_id",
+    "patient_name"
+  ],
+  "rows": [],
+  "row_count": 0
+}
+
+====================================================================================================
+QUERY 30
+QUESTION: Find medications for which every prescription allows a refill.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 17.8
+ROW COUNT: 30
+
+SQL:
+SELECT "medications"."medication_id", "medications"."medication_name", COUNT(*) AS "total_prescriptions", COUNT("prescriptions"."refill_allowed") AS "refill_prescriptions" FROM "medications" LEFT JOIN "prescriptions" ON "medications"."medication_id" = "prescriptions"."medication_id" GROUP BY "medications"."medication_id", "medications"."medication_name" HAVING "total_prescriptions" = "refill_prescriptions"
+
+RESULT:
+{
+  "columns": [
+    "medication_id",
+    "medication_name",
+    "total_prescriptions",
+    "refill_prescriptions"
+  ],
+  "rows": [
+    [
+      1,
+      "Med 1",
+      3,
+      3
+    ],
+    [
+      2,
+      "Med 2",
+      3,
+      3
+    ],
+    [
+      3,
+      "Med 3",
+      3,
+      3
+    ],
+    [
+      4,
+      "Med 4",
+      4,
+      4
+    ],
+    [
+      5,
+      "Med 5",
+      3,
+      3
+    ],
+    [
+      6,
+      "Med 6",
+      4,
+      4
+    ],
+    [
+      7,
+      "Med 7",
+      3,
+      3
+    ],
+    [
+      8,
+      "Med 8",
+      4,
+      4
+    ],
+    [
+      9,
+      "Med 9",
+      3,
+      3
+    ],
+    [
+      10,
+      "Med 10",
+      3,
+      3
+    ],
+    [
+      11,
+      "Med 11",
+      4,
+      4
+    ],
+    [
+      12,
+      "Med 12",
+      3,
+      3
+    ],
+    [
+      13,
+      "Med 13",
+      4,
+      4
+    ],
+    [
+      14,
+      "Med 14",
+      3,
+      3
+    ],
+    [
+      15,
+      "Med 15",
+      4,
+      4
+    ],
+    [
+      16,
+      "Med 16",
+      3,
+      3
+    ],
+    [
+      17,
+      "Med 17",
+      3,
+      3
+    ],
+    [
+      18,
+      "Med 18",
+      3,
+      3
+    ],
+    [
+      19,
+      "Med 19",
+      3,
+      3
+    ],
+    [
+      20,
+      "Med 20",
+      4,
+      4
+    ],
+    [
+      21,
+      "Med 21",
+      3,
+      3
+    ],
+    [
+      22,
+      "Med 22",
+      4,
+      4
+    ],
+    [
+      23,
+      "Med 23",
+      3,
+      3
+    ],
+    [
+      24,
+      "Med 24",
+      3,
+      3
+    ],
+    [
+      25,
+      "Med 25",
+      3,
+      3
+    ],
+    [
+      26,
+      "Med 26",
+      3,
+      3
+    ],
+    [
+      27,
+      "Med 27",
+      4,
+      4
+    ],
+    [
+      28,
+      "Med 28",
+      3,
+      3
+    ],
+    [
+      29,
+      "Med 29",
+      4,
+      4
+    ],
+    [
+      30,
+      "Med 30",
+      3,
+      3
+    ]
+  ],
+  "row_count": 30
+}
+
+====================================================================================================
+QUERY 31
+QUESTION: Find doctors whose patients with chronic conditions make up a larger share of their appointments than the average doctor in the same specialty.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 35.55
+ROW COUNT: 0
+
+SQL:
+WITH doctor_stats AS (
+    SELECT 
+        d.doctor_id,
+        d.doctor_name,
+        d.specialty,
+        CAST(SUM(CASE WHEN p.chronic_condition = 'yes' THEN 1 ELSE 0 END) AS REAL) * 1.0 / COUNT(a.appointment_id) AS chronic_ratio
+    FROM doctors d
+    JOIN appointments a ON d.doctor_id = a.doctor_id
+    JOIN patients p ON a.patient_id = p.patient_id
+    GROUP BY d.doctor_id, d.doctor_name, d.specialty
+),
+specialty_avg AS (
+    SELECT 
+        specialty,
+        AVG(chronic_ratio) AS avg_chronic_ratio
+    FROM doctor_stats
+    GROUP BY specialty
+)
+SELECT 
+    ds.doctor_id,
+    ds.doctor_name,
+    ds.specialty
+FROM doctor_stats ds
+JOIN specialty_avg sa ON ds.specialty = sa.specialty
+WHERE ds.chronic_ratio > sa.avg_chronic_ratio
+
+RESULT:
+{
+  "columns": [
+    "doctor_id",
+    "doctor_name",
+    "specialty"
+  ],
+  "rows": [],
+  "row_count": 0
+}
+
+====================================================================================================
+QUERY 32
+QUESTION: Find patients who have had at least one appointment of every visit type represented in the appointment records.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 19.36
+ROW COUNT: 0
+
+SQL:
+SELECT p.patient_id, p.patient_name
+FROM patients p
+JOIN appointments a ON p.patient_id = a.patient_id
+GROUP BY p.patient_id, p.patient_name
+HAVING COUNT(DISTINCT a.visit_type) = (SELECT COUNT(DISTINCT visit_type) FROM appointments)
+
+RESULT:
+{
+  "columns": [
+    "patient_id",
+    "patient_name"
+  ],
+  "rows": [],
+  "row_count": 0
+}
+
+====================================================================================================
+QUERY 33
+QUESTION: Show each doctor's monthly completed-appointment count together with the previous month's count and the change from the previous month.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 20.65
+ROW COUNT: 47
+
+SQL:
+WITH monthly_counts AS (
+    SELECT 
+        d.doctor_id,
+        d.doctor_name,
+        strftime('%Y-%m', a.appointment_date) AS month,
+        COUNT(a.appointment_id) AS current_count
+    FROM appointments a
+    JOIN doctors d ON a.doctor_id = d.doctor_id
+    WHERE a.status = 'completed'
+    GROUP BY d.doctor_id, d.doctor_name, strftime('%Y-%m', a.appointment_date)
+)
+SELECT 
+    doctor_id,
+    doctor_name,
+    month,
+    current_count,
+    LAG(current_count) OVER (PARTITION BY doctor_id ORDER BY month) AS previous_count,
+    current_count - LAG(current_count) OVER (PARTITION BY doctor_id ORDER BY month) AS change
+FROM monthly_counts
+ORDER BY doctor_id, month
+
+RESULT:
+{
+  "columns": [
+    "doctor_id",
+    "doctor_name",
+    "month",
+    "current_count",
+    "previous_count",
+    "change"
+  ],
+  "rows": [
+    [
+      1,
+      "Dr. 1",
+      "2025-01",
+      1,
+      null,
+      null
+    ],
+    [
+      1,
+      "Dr. 1",
+      "2025-02",
+      2,
+      1,
+      1
+    ],
+    [
+      1,
+      "Dr. 1",
+      "2025-03",
+      1,
+      2,
+      -1
+    ],
+    [
+      1,
+      "Dr. 1",
+      "2025-04",
+      1,
+      1,
+      0
+    ],
+    [
+      1,
+      "Dr. 1",
+      "2025-05",
+      2,
+      1,
+      1
+    ],
+    [
+      1,
+      "Dr. 1",
+      "2025-06",
+      2,
+      2,
+      0
+    ],
+    [
+      1,
+      "Dr. 1",
+      "2025-07",
+      1,
+      2,
+      -1
+    ],
+    [
+      1,
+      "Dr. 1",
+      "2025-08",
+      1,
+      1,
+      0
+    ],
+    [
+      1,
+      "Dr. 1",
+      "2025-09",
+      2,
+      1,
+      1
+    ],
+    [
+      1,
+      "Dr. 1",
+      "2025-10",
+      1,
+      2,
+      -1
+    ],
+    [
+      4,
+      "Dr. 4",
+      "2025-01",
+      1,
+      null,
+      null
+    ],
+    [
+      4,
+      "Dr. 4",
+      "2025-02",
+      2,
+      1,
+      1
+    ],
+    [
+      4,
+      "Dr. 4",
+      "2025-03",
+      2,
+      2,
+      0
+    ],
+    [
+      4,
+      "Dr. 4",
+      "2025-04",
+      1,
+      2,
+      -1
+    ],
+    [
+      4,
+      "Dr. 4",
+      "2025-05",
+      1,
+      1,
+      0
+    ],
+    [
+      4,
+      "Dr. 4",
+      "2025-06",
+      2,
+      1,
+      1
+    ],
+    [
+      4,
+      "Dr. 4",
+      "2025-07",
+      2,
+      2,
+      0
+    ],
+    [
+      4,
+      "Dr. 4",
+      "2025-08",
+      1,
+      2,
+      -1
+    ],
+    [
+      4,
+      "Dr. 4",
+      "2025-09",
+      1,
+      1,
+      0
+    ],
+    [
+      4,
+      "Dr. 4",
+      "2025-10",
+      1,
+      1,
+      0
+    ],
+    [
+      7,
+      "Dr. 7",
+      "2025-01",
+      1,
+      null,
+      null
+    ],
+    [
+      7,
+      "Dr. 7",
+      "2025-02",
+      1,
+      1,
+      0
+    ],
+    [
+      7,
+      "Dr. 7",
+      "2025-03",
+      2,
+      1,
+      1
+    ],
+    [
+      7,
+      "Dr. 7",
+      "2025-04",
+      2,
+      2,
+      0
+    ],
+    [
+      7,
+      "Dr. 7",
+      "2025-05",
+      1,
+      2,
+      -1
+    ],
+    [
+      7,
+      "Dr. 7",
+      "2025-06",
+      1,
+      1,
+      0
+    ],
+    [
+      7,
+      "Dr. 7",
+      "2025-07",
+      2,
+      1,
+      1
+    ],
+    [
+      7,
+      "Dr. 7",
+      "2025-08",
+      2,
+      2,
+      0
+    ],
+    [
+      7,
+      "Dr. 7",
+      "2025-09",
+      1,
+      2,
+      -1
+    ],
+    [
+      7,
+      "Dr. 7",
+      "2025-10",
+      1,
+      1,
+      0
+    ],
+    [
+      10,
+      "Dr. 10",
+      "2025-01",
+      2,
+      null,
+      null
+    ],
+    [
+      10,
+      "Dr. 10",
+      "2025-03",
+      2,
+      2,
+      0
+    ],
+    [
+      10,
+      "Dr. 10",
+      "2025-04",
+      2,
+      2,
+      0
+    ],
+    [
+      10,
+      "Dr. 10",
+      "2025-05",
+      2,
+      2,
+      0
+    ],
+    [
+      10,
+      "Dr. 10",
+      "2025-06",
+      1,
+      2,
+      -1
+    ],
+    [
+      10,
+      "Dr. 10",
+      "2025-07",
+      1,
+      1,
+      0
+    ],
+    [
+      10,
+      "Dr. 10",
+      "2025-08",
+      2,
+      1,
+      1
+    ],
+    [
+      10,
+      "Dr. 10",
+      "2025-09",
+      2,
+      2,
+      0
+    ],
+    [
+      13,
+      "Dr. 13",
+      "2025-01",
+      2,
+      null,
+      null
+    ],
+    [
+      13,
+      "Dr. 13",
+      "2025-02",
+      1,
+      2,
+      -1
+    ],
+    [
+      13,
+      "Dr. 13",
+      "2025-03",
+      1,
+      1,
+      0
+    ],
+    [
+      13,
+      "Dr. 13",
+      "2025-04",
+      2,
+      1,
+      1
+    ],
+    [
+      13,
+      "Dr. 13",
+      "2025-05",
+      2,
+      2,
+      0
+    ],
+    [
+      13,
+      "Dr. 13",
+      "2025-06",
+      1,
+      2,
+      -1
+    ],
+    [
+      13,
+      "Dr. 13",
+      "2025-07",
+      1,
+      1,
+      0
+    ],
+    [
+      13,
+      "Dr. 13",
+      "2025-08",
+      2,
+      1,
+      1
+    ],
+    [
+      13,
+      "Dr. 13",
+      "2025-09",
+      2,
+      2,
+      0
+    ]
+  ],
+  "row_count": 47
+}
+
+====================================================================================================
+QUERY 34
+QUESTION: Show a running total of invoiced amount for each patient ordered by invoice date.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 12.79
+ROW COUNT: 140
+
+SQL:
+WITH patient_invoices AS (
+    SELECT 
+        p.patient_id,
+        p.patient_name,
+        i.invoice_date,
+        i.total_amount
+    FROM patients p
+    JOIN appointments a ON p.patient_id = a.patient_id
+    JOIN invoices i ON a.appointment_id = i.appointment_id
+)
+SELECT 
+    patient_id,
+    patient_name,
+    invoice_date,
+    SUM(total_amount) OVER (
+        PARTITION BY patient_id 
+        ORDER BY invoice_date
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+    ) AS running_total
+FROM patient_invoices
+ORDER BY patient_id, invoice_date
+
+RESULT:
+{
+  "columns": [
+    "patient_id",
+    "patient_name",
+    "invoice_date",
+    "running_total"
+  ],
+  "rows": [
+    [
+      1,
+      "Patient 1",
+      "2025-03-01",
+      129.5
+    ],
+    [
+      1,
+      "Patient 1",
+      "2025-03-29",
+      293.5
+    ],
+    [
+      1,
+      "Patient 1",
+      "2025-04-26",
+      492.0
+    ],
+    [
+      1,
+      "Patient 1",
+      "2025-05-24",
+      725.0
+    ],
+    [
+      1,
+      "Patient 1",
+      "2025-06-21",
+      992.5
+    ],
+    [
+      1,
+      "Patient 1",
+      "2025-07-19",
+      1294.5
+    ],
+    [
+      1,
+      "Patient 1",
+      "2025-08-16",
+      1631.0
+    ],
+    [
+      1,
+      "Patient 1",
+      "2025-09-13",
+      2002.0
+    ],
+    [
+      1,
+      "Patient 1",
+      "2025-10-11",
+      2407.5
+    ],
+    [
+      1,
+      "Patient 1",
+      "2025-11-08",
+      2847.5
+    ],
+    [
+      6,
+      "Patient 6",
+      "2025-02-03",
+      129.5
+    ],
+    [
+      6,
+      "Patient 6",
+      "2025-03-03",
+      293.5
+    ],
+    [
+      6,
+      "Patient 6",
+      "2025-03-31",
+      492.0
+    ],
+    [
+      6,
+      "Patient 6",
+      "2025-04-28",
+      725.0
+    ],
+    [
+      6,
+      "Patient 6",
+      "2025-05-26",
+      992.5
+    ],
+    [
+      6,
+      "Patient 6",
+      "2025-06-23",
+      1294.5
+    ],
+    [
+      6,
+      "Patient 6",
+      "2025-07-21",
+      1631.0
+    ],
+    [
+      6,
+      "Patient 6",
+      "2025-08-18",
+      2002.0
+    ],
+    [
+      6,
+      "Patient 6",
+      "2025-09-15",
+      2407.5
+    ],
+    [
+      6,
+      "Patient 6",
+      "2025-10-13",
+      2847.5
+    ],
+    [
+      11,
+      "Patient 11",
+      "2025-02-05",
+      164.0
+    ],
+    [
+      11,
+      "Patient 11",
+      "2025-03-05",
+      362.5
+    ],
+    [
+      11,
+      "Patient 11",
+      "2025-04-02",
+      595.5
+    ],
+    [
+      11,
+      "Patient 11",
+      "2025-04-30",
+      863.0
+    ],
+    [
+      11,
+      "Patient 11",
+      "2025-05-28",
+      1165.0
+    ],
+    [
+      11,
+      "Patient 11",
+      "2025-06-25",
+      1501.5
+    ],
+    [
+      11,
+      "Patient 11",
+      "2025-07-23",
+      1872.5
+    ],
+    [
+      11,
+      "Patient 11",
+      "2025-08-20",
+      2278.0
+    ],
+    [
+      11,
+      "Patient 11",
+      "2025-09-17",
+      2718.0
+    ],
+    [
+      11,
+      "Patient 11",
+      "2025-10-15",
+      3192.5
+    ],
+    [
+      16,
+      "Patient 16",
+      "2025-02-07",
+      198.5
+    ],
+    [
+      16,
+      "Patient 16",
+      "2025-03-07",
+      431.5
+    ],
+    [
+      16,
+      "Patient 16",
+      "2025-04-04",
+      699.0
+    ],
+    [
+      16,
+      "Patient 16",
+      "2025-05-02",
+      1001.0
+    ],
+    [
+      16,
+      "Patient 16",
+      "2025-05-30",
+      1337.5
+    ],
+    [
+      16,
+      "Patient 16",
+      "2025-06-27",
+      1708.5
+    ],
+    [
+      16,
+      "Patient 16",
+      "2025-07-25",
+      2114.0
+    ],
+    [
+      16,
+      "Patient 16",
+      "2025-08-22",
+      2554.0
+    ],
+    [
+      16,
+      "Patient 16",
+      "2025-09-19",
+      3028.5
+    ],
+    [
+      16,
+      "Patient 16",
+      "2025-10-17",
+      3537.5
+    ],
+    [
+      21,
+      "Patient 21",
+      "2025-02-09",
+      233.0
+    ],
+    [
+      21,
+      "Patient 21",
+      "2025-03-09",
+      500.5
+    ],
+    [
+      21,
+      "Patient 21",
+      "2025-04-06",
+      802.5
+    ],
+    [
+      21,
+      "Patient 21",
+      "2025-05-04",
+      1139.0
+    ],
+    [
+      21,
+      "Patient 21",
+      "2025-06-01",
+      1510.0
+    ],
+    [
+      21,
+      "Patient 21",
+      "2025-06-29",
+      1915.5
+    ],
+    [
+      21,
+      "Patient 21",
+      "2025-07-27",
+      2355.5
+    ],
+    [
+      21,
+      "Patient 21",
+      "2025-08-24",
+      2830.0
+    ],
+    [
+      21,
+      "Patient 21",
+      "2025-09-21",
+      3339.0
+    ],
+    [
+      21,
+      "Patient 21",
+      "2025-10-19",
+      3434.0
+    ],
+    [
+      26,
+      "Patient 26",
+      "2025-02-11",
+      267.5
+    ],
+    [
+      26,
+      "Patient 26",
+      "2025-03-11",
+      569.5
+    ],
+    [
+      26,
+      "Patient 26",
+      "2025-04-08",
+      906.0
+    ],
+    [
+      26,
+      "Patient 26",
+      "2025-05-06",
+      1277.0
+    ],
+    [
+      26,
+      "Patient 26",
+      "2025-06-03",
+      1682.5
+    ],
+    [
+      26,
+      "Patient 26",
+      "2025-07-01",
+      2122.5
+    ],
+    [
+      26,
+      "Patient 26",
+      "2025-07-29",
+      2597.0
+    ],
+    [
+      26,
+      "Patient 26",
+      "2025-08-26",
+      3106.0
+    ],
+    [
+      26,
+      "Patient 26",
+      "2025-09-23",
+      3201.0
+    ],
+    [
+      26,
+      "Patient 26",
+      "2025-10-21",
+      3330.5
+    ],
+    [
+      31,
+      "Patient 31",
+      "2025-02-13",
+      302.0
+    ],
+    [
+      31,
+      "Patient 31",
+      "2025-03-13",
+      638.5
+    ],
+    [
+      31,
+      "Patient 31",
+      "2025-04-10",
+      1009.5
+    ],
+    [
+      31,
+      "Patient 31",
+      "2025-05-08",
+      1415.0
+    ],
+    [
+      31,
+      "Patient 31",
+      "2025-06-05",
+      1855.0
+    ],
+    [
+      31,
+      "Patient 31",
+      "2025-07-03",
+      2329.5
+    ],
+    [
+      31,
+      "Patient 31",
+      "2025-07-31",
+      2838.5
+    ],
+    [
+      31,
+      "Patient 31",
+      "2025-08-28",
+      2933.5
+    ],
+    [
+      31,
+      "Patient 31",
+      "2025-09-25",
+      3063.0
+    ],
+    [
+      31,
+      "Patient 31",
+      "2025-10-23",
+      3227.0
+    ],
+    [
+      36,
+      "Patient 36",
+      "2025-02-15",
+      336.5
+    ],
+    [
+      36,
+      "Patient 36",
+      "2025-03-15",
+      707.5
+    ],
+    [
+      36,
+      "Patient 36",
+      "2025-04-12",
+      1113.0
+    ],
+    [
+      36,
+      "Patient 36",
+      "2025-05-10",
+      1553.0
+    ],
+    [
+      36,
+      "Patient 36",
+      "2025-06-07",
+      2027.5
+    ],
+    [
+      36,
+      "Patient 36",
+      "2025-07-05",
+      2536.5
+    ],
+    [
+      36,
+      "Patient 36",
+      "2025-08-02",
+      2631.5
+    ],
+    [
+      36,
+      "Patient 36",
+      "2025-08-30",
+      2761.0
+    ],
+    [
+      36,
+      "Patient 36",
+      "2025-09-27",
+      2925.0
+    ],
+    [
+      36,
+      "Patient 36",
+      "2025-10-25",
+      3123.5
+    ],
+    [
+      41,
+      "Patient 41",
+      "2025-02-17",
+      371.0
+    ],
+    [
+      41,
+      "Patient 41",
+      "2025-03-17",
+      776.5
+    ],
+    [
+      41,
+      "Patient 41",
+      "2025-04-14",
+      1216.5
+    ],
+    [
+      41,
+      "Patient 41",
+      "2025-05-12",
+      1691.0
+    ],
+    [
+      41,
+      "Patient 41",
+      "2025-06-09",
+      2200.0
+    ],
+    [
+      41,
+      "Patient 41",
+      "2025-07-07",
+      2295.0
+    ],
+    [
+      41,
+      "Patient 41",
+      "2025-08-04",
+      2424.5
+    ],
+    [
+      41,
+      "Patient 41",
+      "2025-09-01",
+      2588.5
+    ],
+    [
+      41,
+      "Patient 41",
+      "2025-09-29",
+      2787.0
+    ],
+    [
+      41,
+      "Patient 41",
+      "2025-10-27",
+      3020.0
+    ],
+    [
+      46,
+      "Patient 46",
+      "2025-02-19",
+      405.5
+    ],
+    [
+      46,
+      "Patient 46",
+      "2025-03-19",
+      845.5
+    ],
+    [
+      46,
+      "Patient 46",
+      "2025-04-16",
+      1320.0
+    ],
+    [
+      46,
+      "Patient 46",
+      "2025-05-14",
+      1829.0
+    ],
+    [
+      46,
+      "Patient 46",
+      "2025-06-11",
+      1924.0
+    ],
+    [
+      46,
+      "Patient 46",
+      "2025-07-09",
+      2053.5
+    ],
+    [
+      46,
+      "Patient 46",
+      "2025-08-06",
+      2217.5
+    ],
+    [
+      46,
+      "Patient 46",
+      "2025-09-03",
+      2416.0
+    ],
+    [
+      46,
+      "Patient 46",
+      "2025-10-01",
+      2649.0
+    ],
+    [
+      46,
+      "Patient 46",
+      "2025-10-29",
+      2916.5
+    ],
+    [
+      51,
+      "Patient 51",
+      "2025-02-21",
+      440.0
+    ],
+    [
+      51,
+      "Patient 51",
+      "2025-03-21",
+      914.5
+    ],
+    [
+      51,
+      "Patient 51",
+      "2025-04-18",
+      1423.5
+    ],
+    [
+      51,
+      "Patient 51",
+      "2025-05-16",
+      1518.5
+    ],
+    [
+      51,
+      "Patient 51",
+      "2025-06-13",
+      1648.0
+    ],
+    [
+      51,
+      "Patient 51",
+      "2025-07-11",
+      1812.0
+    ],
+    [
+      51,
+      "Patient 51",
+      "2025-08-08",
+      2010.5
+    ],
+    [
+      51,
+      "Patient 51",
+      "2025-09-05",
+      2243.5
+    ],
+    [
+      51,
+      "Patient 51",
+      "2025-10-03",
+      2511.0
+    ],
+    [
+      51,
+      "Patient 51",
+      "2025-10-31",
+      2813.0
+    ],
+    [
+      56,
+      "Patient 56",
+      "2025-02-23",
+      474.5
+    ],
+    [
+      56,
+      "Patient 56",
+      "2025-03-23",
+      983.5
+    ],
+    [
+      56,
+      "Patient 56",
+      "2025-04-20",
+      1078.5
+    ],
+    [
+      56,
+      "Patient 56",
+      "2025-05-18",
+      1208.0
+    ],
+    [
+      56,
+      "Patient 56",
+      "2025-06-15",
+      1372.0
+    ],
+    [
+      56,
+      "Patient 56",
+      "2025-07-13",
+      1570.5
+    ],
+    [
+      56,
+      "Patient 56",
+      "2025-08-10",
+      1803.5
+    ],
+    [
+      56,
+      "Patient 56",
+      "2025-09-07",
+      2071.0
+    ],
+    [
+      56,
+      "Patient 56",
+      "2025-10-05",
+      2373.0
+    ],
+    [
+      56,
+      "Patient 56",
+      "2025-11-02",
+      2709.5
+    ],
+    [
+      61,
+      "Patient 61",
+      "2025-02-25",
+      509.0
+    ],
+    [
+      61,
+      "Patient 61",
+      "2025-03-25",
+      604.0
+    ],
+    [
+      61,
+      "Patient 61",
+      "2025-04-22",
+      733.5
+    ],
+    [
+      61,
+      "Patient 61",
+      "2025-05-20",
+      897.5
+    ],
+    [
+      61,
+      "Patient 61",
+      "2025-06-17",
+      1096.0
+    ],
+    [
+      61,
+      "Patient 61",
+      "2025-07-15",
+      1329.0
+    ],
+    [
+      61,
+      "Patient 61",
+      "2025-08-12",
+      1596.5
+    ],
+    [
+      61,
+      "Patient 61",
+      "2025-09-09",
+      1898.5
+    ],
+    [
+      61,
+      "Patient 61",
+      "2025-10-07",
+      2235.0
+    ],
+    [
+      61,
+      "Patient 61",
+      "2025-11-04",
+      2606.0
+    ],
+    [
+      66,
+      "Patient 66",
+      "2025-02-27",
+      95.0
+    ],
+    [
+      66,
+      "Patient 66",
+      "2025-03-27",
+      224.5
+    ],
+    [
+      66,
+      "Patient 66",
+      "2025-04-24",
+      388.5
+    ],
+    [
+      66,
+      "Patient 66",
+      "2025-05-22",
+      587.0
+    ],
+    [
+      66,
+      "Patient 66",
+      "2025-06-19",
+      820.0
+    ],
+    [
+      66,
+      "Patient 66",
+      "2025-07-17",
+      1087.5
+    ],
+    [
+      66,
+      "Patient 66",
+      "2025-08-14",
+      1389.5
+    ],
+    [
+      66,
+      "Patient 66",
+      "2025-09-11",
+      1726.0
+    ],
+    [
+      66,
+      "Patient 66",
+      "2025-10-09",
+      2097.0
+    ],
+    [
+      66,
+      "Patient 66",
+      "2025-11-06",
+      2502.5
+    ]
+  ],
+  "row_count": 140
+}
+
+====================================================================================================
+QUERY 35
+QUESTION: Show monthly invoiced totals for each specialty together with the previous month's total and percentage change.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 18.28
+ROW COUNT: 50
+
+SQL:
+WITH monthly_data AS (
+    SELECT 
+        d.specialty,
+        strftime('%Y-%m', a.appointment_date) AS month,
+        SUM(i.total_amount) AS current_month_total
+    FROM appointments a
+    JOIN doctors d ON a.doctor_id = d.doctor_id
+    JOIN invoices i ON a.appointment_id = i.appointment_id
+    GROUP BY d.specialty, strftime('%Y-%m', a.appointment_date)
+),
+with_prev AS (
+    SELECT 
+        specialty,
+        month,
+        current_month_total,
+        LAG(current_month_total) OVER (PARTITION BY specialty ORDER BY month) AS prev_month_total
+    FROM monthly_data
+)
+SELECT 
+    specialty,
+    month,
+    current_month_total,
+    prev_month_total,
+    CASE 
+        WHEN prev_month_total IS NULL OR prev_month_total = 0 THEN NULL
+        ELSE (current_month_total - prev_month_total) * 100.0 / prev_month_total
+    END AS percentage_change
+FROM with_prev
+ORDER BY specialty, month
+
+RESULT:
+{
+  "columns": [
+    "specialty",
+    "month",
+    "current_month_total",
+    "prev_month_total",
+    "percentage_change"
+  ],
+  "rows": [
+    [
+      "cardiology",
+      "2025-01",
+      664.5,
+      null,
+      null
+    ],
+    [
+      "cardiology",
+      "2025-02",
+      707.5,
+      664.5,
+      6.471030850263356
+    ],
+    [
+      "cardiology",
+      "2025-03",
+      1009.5,
+      707.5,
+      42.685512367491164
+    ],
+    [
+      "cardiology",
+      "2025-04",
+      768.0,
+      1009.5,
+      -23.922734026745914
+    ],
+    [
+      "cardiology",
+      "2025-05",
+      1346.0,
+      768.0,
+      75.26041666666667
+    ],
+    [
+      "cardiology",
+      "2025-06",
+      802.5,
+      1346.0,
+      -40.37890044576523
+    ],
+    [
+      "cardiology",
+      "2025-07",
+      1009.5,
+      802.5,
+      25.794392523364486
+    ],
+    [
+      "cardiology",
+      "2025-08",
+      768.0,
+      1009.5,
+      -23.922734026745914
+    ],
+    [
+      "cardiology",
+      "2025-09",
+      975.0,
+      768.0,
+      26.953125
+    ],
+    [
+      "cardiology",
+      "2025-10",
+      371.0,
+      975.0,
+      -61.94871794871795
+    ],
+    [
+      "dermatology",
+      "2025-01",
+      1009.5,
+      null,
+      null
+    ],
+    [
+      "dermatology",
+      "2025-02",
+      768.0,
+      1009.5,
+      -23.922734026745914
+    ],
+    [
+      "dermatology",
+      "2025-03",
+      975.0,
+      768.0,
+      26.953125
+    ],
+    [
+      "dermatology",
+      "2025-04",
+      733.5,
+      975.0,
+      -24.76923076923077
+    ],
+    [
+      "dermatology",
+      "2025-05",
+      940.5,
+      733.5,
+      28.220858895705522
+    ],
+    [
+      "dermatology",
+      "2025-06",
+      1147.5,
+      940.5,
+      22.00956937799043
+    ],
+    [
+      "dermatology",
+      "2025-07",
+      906.0,
+      1147.5,
+      -21.045751633986928
+    ],
+    [
+      "dermatology",
+      "2025-08",
+      664.5,
+      906.0,
+      -26.655629139072847
+    ],
+    [
+      "dermatology",
+      "2025-09",
+      871.5,
+      664.5,
+      31.151241534988714
+    ],
+    [
+      "dermatology",
+      "2025-10",
+      336.5,
+      871.5,
+      -61.388410786001145
+    ],
+    [
+      "orthopedics",
+      "2025-01",
+      906.0,
+      null,
+      null
+    ],
+    [
+      "orthopedics",
+      "2025-02",
+      664.5,
+      906.0,
+      -26.655629139072847
+    ],
+    [
+      "orthopedics",
+      "2025-03",
+      871.5,
+      664.5,
+      31.151241534988714
+    ],
+    [
+      "orthopedics",
+      "2025-04",
+      1078.5,
+      871.5,
+      23.752151462994835
+    ],
+    [
+      "orthopedics",
+      "2025-05",
+      837.0,
+      1078.5,
+      -22.39221140472879
+    ],
+    [
+      "orthopedics",
+      "2025-06",
+      1044.0,
+      837.0,
+      24.731182795698924
+    ],
+    [
+      "orthopedics",
+      "2025-07",
+      802.5,
+      1044.0,
+      -23.132183908045977
+    ],
+    [
+      "orthopedics",
+      "2025-08",
+      1009.5,
+      802.5,
+      25.794392523364486
+    ],
+    [
+      "orthopedics",
+      "2025-09",
+      768.0,
+      1009.5,
+      -23.922734026745914
+    ],
+    [
+      "orthopedics",
+      "2025-10",
+      302.0,
+      768.0,
+      -60.677083333333336
+    ],
+    [
+      "pediatrics",
+      "2025-01",
+      638.5,
+      null,
+      null
+    ],
+    [
+      "pediatrics",
+      "2025-02",
+      906.0,
+      638.5,
+      41.89506656225529
+    ],
+    [
+      "pediatrics",
+      "2025-03",
+      664.5,
+      906.0,
+      -26.655629139072847
+    ],
+    [
+      "pediatrics",
+      "2025-04",
+      871.5,
+      664.5,
+      31.151241534988714
+    ],
+    [
+      "pediatrics",
+      "2025-05",
+      1078.5,
+      871.5,
+      23.752151462994835
+    ],
+    [
+      "pediatrics",
+      "2025-06",
+      837.0,
+      1078.5,
+      -22.39221140472879
+    ],
+    [
+      "pediatrics",
+      "2025-07",
+      1044.0,
+      837.0,
+      24.731182795698924
+    ],
+    [
+      "pediatrics",
+      "2025-08",
+      966.5,
+      1044.0,
+      -7.423371647509579
+    ],
+    [
+      "pediatrics",
+      "2025-09",
+      1078.5,
+      966.5,
+      11.588204862907398
+    ],
+    [
+      "pediatrics",
+      "2025-10",
+      405.5,
+      1078.5,
+      -62.40148354195642
+    ],
+    [
+      "primary",
+      "2025-01",
+      707.5,
+      null,
+      null
+    ],
+    [
+      "primary",
+      "2025-02",
+      1009.5,
+      707.5,
+      42.685512367491164
+    ],
+    [
+      "primary",
+      "2025-03",
+      768.0,
+      1009.5,
+      -23.922734026745914
+    ],
+    [
+      "primary",
+      "2025-04",
+      975.0,
+      768.0,
+      26.953125
+    ],
+    [
+      "primary",
+      "2025-05",
+      733.5,
+      975.0,
+      -24.76923076923077
+    ],
+    [
+      "primary",
+      "2025-06",
+      940.5,
+      733.5,
+      28.220858895705522
+    ],
+    [
+      "primary",
+      "2025-07",
+      1147.5,
+      940.5,
+      22.00956937799043
+    ],
+    [
+      "primary",
+      "2025-08",
+      906.0,
+      1147.5,
+      -21.045751633986928
+    ],
+    [
+      "primary",
+      "2025-09",
+      664.5,
+      906.0,
+      -26.655629139072847
+    ],
+    [
+      "primary",
+      "2025-10",
+      707.5,
+      664.5,
+      6.471030850263356
+    ]
+  ],
+  "row_count": 50
+}
+
+====================================================================================================
+QUERY 36
+QUESTION: Show the cumulative prescribed days for each medication over time using the related appointment dates.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 19.61
+ROW COUNT: 100
+
+SQL:
+SELECT "medications"."medication_name", "appointments"."appointment_date", SUM("prescriptions"."days_supply") AS "cumulative_days" FROM "prescriptions" INNER JOIN "appointments" ON "prescriptions"."appointment_id" = "appointments"."appointment_id" INNER JOIN "medications" ON "prescriptions"."medication_id" = "medications"."medication_id" GROUP BY "medications"."medication_name", "appointments"."appointment_date" ORDER BY "medications"."medication_name" ASC, "appointments"."appointment_date" ASC
+
+RESULT:
+{
+  "columns": [
+    "medication_name",
+    "appointment_date",
+    "cumulative_days"
+  ],
+  "rows": [
+    [
+      "Med 1",
+      "2025-03-28",
+      7
+    ],
+    [
+      "Med 1",
+      "2025-05-07",
+      7
+    ],
+    [
+      "Med 1",
+      "2025-09-04",
+      7
+    ],
+    [
+      "Med 10",
+      "2025-03-16",
+      21
+    ],
+    [
+      "Med 10",
+      "2025-04-25",
+      21
+    ],
+    [
+      "Med 10",
+      "2025-08-23",
+      21
+    ],
+    [
+      "Med 11",
+      "2025-01-07",
+      7
+    ],
+    [
+      "Med 11",
+      "2025-02-16",
+      7
+    ],
+    [
+      "Med 11",
+      "2025-05-07",
+      7
+    ],
+    [
+      "Med 11",
+      "2025-06-16",
+      7
+    ],
+    [
+      "Med 12",
+      "2025-02-28",
+      28
+    ],
+    [
+      "Med 12",
+      "2025-04-09",
+      28
+    ],
+    [
+      "Med 12",
+      "2025-08-07",
+      28
+    ],
+    [
+      "Med 13",
+      "2025-01-31",
+      14
+    ],
+    [
+      "Med 13",
+      "2025-04-21",
+      14
+    ],
+    [
+      "Med 13",
+      "2025-05-31",
+      14
+    ],
+    [
+      "Med 13",
+      "2025-09-28",
+      14
+    ],
+    [
+      "Med 14",
+      "2025-02-12",
+      35
+    ],
+    [
+      "Med 14",
+      "2025-03-24",
+      35
+    ],
+    [
+      "Med 14",
+      "2025-07-22",
+      35
+    ],
+    [
+      "Med 15",
+      "2025-01-15",
+      21
+    ],
+    [
+      "Med 15",
+      "2025-04-05",
+      21
+    ],
+    [
+      "Med 15",
+      "2025-05-15",
+      21
+    ],
+    [
+      "Med 15",
+      "2025-09-12",
+      21
+    ],
+    [
+      "Med 16",
+      "2025-01-27",
+      7
+    ],
+    [
+      "Med 16",
+      "2025-03-08",
+      7
+    ],
+    [
+      "Med 16",
+      "2025-07-06",
+      7
+    ],
+    [
+      "Med 17",
+      "2025-03-20",
+      28
+    ],
+    [
+      "Med 17",
+      "2025-04-29",
+      28
+    ],
+    [
+      "Med 17",
+      "2025-08-27",
+      28
+    ],
+    [
+      "Med 18",
+      "2025-01-11",
+      14
+    ],
+    [
+      "Med 18",
+      "2025-02-20",
+      14
+    ],
+    [
+      "Med 18",
+      "2025-06-20",
+      14
+    ],
+    [
+      "Med 19",
+      "2025-03-04",
+      35
+    ],
+    [
+      "Med 19",
+      "2025-04-13",
+      35
+    ],
+    [
+      "Med 19",
+      "2025-08-11",
+      35
+    ],
+    [
+      "Med 2",
+      "2025-01-19",
+      28
+    ],
+    [
+      "Med 2",
+      "2025-02-28",
+      28
+    ],
+    [
+      "Med 2",
+      "2025-06-28",
+      28
+    ],
+    [
+      "Med 20",
+      "2025-02-04",
+      21
+    ],
+    [
+      "Med 20",
+      "2025-04-25",
+      21
+    ],
+    [
+      "Med 20",
+      "2025-06-04",
+      21
+    ],
+    [
+      "Med 20",
+      "2025-10-02",
+      21
+    ],
+    [
+      "Med 21",
+      "2025-02-16",
+      7
+    ],
+    [
+      "Med 21",
+      "2025-03-28",
+      7
+    ],
+    [
+      "Med 21",
+      "2025-07-26",
+      7
+    ],
+    [
+      "Med 22",
+      "2025-01-19",
+      28
+    ],
+    [
+      "Med 22",
+      "2025-04-09",
+      28
+    ],
+    [
+      "Med 22",
+      "2025-05-19",
+      28
+    ],
+    [
+      "Med 22",
+      "2025-09-16",
+      28
+    ],
+    [
+      "Med 23",
+      "2025-01-31",
+      14
+    ],
+    [
+      "Med 23",
+      "2025-03-12",
+      14
+    ],
+    [
+      "Med 23",
+      "2025-07-10",
+      14
+    ],
+    [
+      "Med 24",
+      "2025-03-24",
+      35
+    ],
+    [
+      "Med 24",
+      "2025-05-03",
+      35
+    ],
+    [
+      "Med 24",
+      "2025-08-31",
+      35
+    ],
+    [
+      "Med 25",
+      "2025-01-15",
+      21
+    ],
+    [
+      "Med 25",
+      "2025-02-24",
+      21
+    ],
+    [
+      "Med 25",
+      "2025-06-24",
+      21
+    ],
+    [
+      "Med 26",
+      "2025-03-08",
+      7
+    ],
+    [
+      "Med 26",
+      "2025-04-17",
+      7
+    ],
+    [
+      "Med 26",
+      "2025-08-15",
+      7
+    ],
+    [
+      "Med 27",
+      "2025-02-08",
+      28
+    ],
+    [
+      "Med 27",
+      "2025-04-29",
+      28
+    ],
+    [
+      "Med 27",
+      "2025-06-08",
+      28
+    ],
+    [
+      "Med 27",
+      "2025-10-06",
+      28
+    ],
+    [
+      "Med 28",
+      "2025-02-20",
+      14
+    ],
+    [
+      "Med 28",
+      "2025-04-01",
+      14
+    ],
+    [
+      "Med 28",
+      "2025-07-30",
+      14
+    ],
+    [
+      "Med 29",
+      "2025-01-23",
+      35
+    ],
+    [
+      "Med 29",
+      "2025-04-13",
+      35
+    ],
+    [
+      "Med 29",
+      "2025-05-23",
+      35
+    ],
+    [
+      "Med 29",
+      "2025-09-20",
+      35
+    ],
+    [
+      "Med 3",
+      "2025-03-12",
+      14
+    ],
+    [
+      "Med 3",
+      "2025-04-21",
+      14
+    ],
+    [
+      "Med 3",
+      "2025-08-19",
+      14
+    ],
+    [
+      "Med 30",
+      "2025-02-04",
+      21
+    ],
+    [
+      "Med 30",
+      "2025-03-16",
+      21
+    ],
+    [
+      "Med 30",
+      "2025-07-14",
+      21
+    ],
+    [
+      "Med 4",
+      "2025-02-12",
+      35
+    ],
+    [
+      "Med 4",
+      "2025-05-03",
+      35
+    ],
+    [
+      "Med 4",
+      "2025-06-12",
+      35
+    ],
+    [
+      "Med 4",
+      "2025-10-10",
+      35
+    ],
+    [
+      "Med 5",
+      "2025-02-24",
+      21
+    ],
+    [
+      "Med 5",
+      "2025-04-05",
+      21
+    ],
+    [
+      "Med 5",
+      "2025-08-03",
+      21
+    ],
+    [
+      "Med 6",
+      "2025-01-27",
+      7
+    ],
+    [
+      "Med 6",
+      "2025-04-17",
+      7
+    ],
+    [
+      "Med 6",
+      "2025-05-27",
+      7
+    ],
+    [
+      "Med 6",
+      "2025-09-24",
+      7
+    ],
+    [
+      "Med 7",
+      "2025-02-08",
+      28
+    ],
+    [
+      "Med 7",
+      "2025-03-20",
+      28
+    ],
+    [
+      "Med 7",
+      "2025-07-18",
+      28
+    ],
+    [
+      "Med 8",
+      "2025-01-11",
+      14
+    ],
+    [
+      "Med 8",
+      "2025-04-01",
+      14
+    ],
+    [
+      "Med 8",
+      "2025-05-11",
+      14
+    ],
+    [
+      "Med 8",
+      "2025-09-08",
+      14
+    ],
+    [
+      "Med 9",
+      "2025-01-23",
+      35
+    ],
+    [
+      "Med 9",
+      "2025-03-04",
+      35
+    ],
+    [
+      "Med 9",
+      "2025-07-02",
+      35
+    ]
+  ],
+  "row_count": 100
+}
+
+====================================================================================================
+QUERY 37
+QUESTION: Find patients whose monthly invoiced amount increased for at least two consecutive months.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 28.21
+ROW COUNT: 0
+
+SQL:
+WITH monthly_totals AS (
+    SELECT 
+        p.patient_id,
+        p.patient_name,
+        strftime('%Y-%m', a.appointment_date) AS month,
+        SUM(i.total_amount) AS total_amount
+    FROM patients p
+    JOIN appointments a ON p.patient_id = a.patient_id
+    JOIN invoices i ON a.appointment_id = i.appointment_id
+    GROUP BY p.patient_id, p.patient_name, strftime('%Y-%m', a.appointment_date)
+),
+consecutive_increases AS (
+    SELECT 
+        mt.patient_id,
+        mt.patient_name,
+        mt.month,
+        mt.total_amount,
+        LAG(mt.total_amount) OVER (PARTITION BY mt.patient_id ORDER BY mt.month) AS prev_amount,
+        LAG(mt.month) OVER (PARTITION BY mt.patient_id ORDER BY mt.month) AS prev_month
+    FROM monthly_totals mt
+),
+increasing_pairs AS (
+    SELECT 
+        ci.patient_id,
+        ci.patient_name,
+        ci.month,
+        ci.total_amount,
+        ci.prev_amount,
+        ci.prev_month,
+        LAG(ci.total_amount) OVER (PARTITION BY ci.patient_id ORDER BY ci.month) AS prev_prev_amount,
+        LAG(ci.month) OVER (PARTITION BY ci.patient_id ORDER BY ci.month) AS prev_prev_month
+    FROM consecutive_increases ci
+    WHERE ci.total_amount > ci.prev_amount
+)
+SELECT DISTINCT
+    ip.patient_id,
+    ip.patient_name
+FROM increasing_pairs ip
+JOIN increasing_pairs ip2 
+    ON ip.patient_id = ip2.patient_id 
+    AND ip.prev_month = ip2.month
+    AND ip.prev_amount = ip2.total_amount
+WHERE ip.total_amount > ip.prev_amount
+  AND ip.prev_amount > ip.prev_prev_amount
+
+RESULT:
+{
+  "columns": [
+    "patient_id",
+    "patient_name"
+  ],
+  "rows": [],
+  "row_count": 0
+}
+
+====================================================================================================
+QUERY 38
+QUESTION: Find doctors whose average invoice total for a visit type is above the overall average for that same visit type.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 14.98
+ROW COUNT: 9
+
+SQL:
+SELECT d.doctor_id, d.doctor_name, a.visit_type
+FROM doctors d
+JOIN appointments a ON d.doctor_id = a.doctor_id
+JOIN invoices i ON a.appointment_id = i.appointment_id
+GROUP BY d.doctor_id, a.visit_type
+HAVING AVG(i.total_amount) > (
+    SELECT AVG(i2.total_amount)
+    FROM appointments a2
+    JOIN invoices i2 ON a2.appointment_id = i2.appointment_id
+    WHERE a2.visit_type = a.visit_type
+)
+
+RESULT:
+{
+  "columns": [
+    "doctor_id",
+    "doctor_name",
+    "visit_type"
+  ],
+  "rows": [
+    [
+      1,
+      "Dr. 1",
+      "screening"
+    ],
+    [
+      1,
+      "Dr. 1",
+      "urgent"
+    ],
+    [
+      4,
+      "Dr. 4",
+      "checkup"
+    ],
+    [
+      7,
+      "Dr. 7",
+      "followup"
+    ],
+    [
+      7,
+      "Dr. 7",
+      "urgent"
+    ],
+    [
+      10,
+      "Dr. 10",
+      "checkup"
+    ],
+    [
+      10,
+      "Dr. 10",
+      "screening"
+    ],
+    [
+      13,
+      "Dr. 13",
+      "checkup"
+    ],
+    [
+      13,
+      "Dr. 13",
+      "followup"
+    ]
+  ],
+  "row_count": 9
+}
+
+====================================================================================================
+QUERY 39
+QUESTION: Find appointments whose invoice total is higher than the average invoice total for appointments of the same visit type.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 14.45
+ROW COUNT: 69
+
+SQL:
+SELECT a.appointment_id, a.visit_type, i.total_amount
+FROM appointments a
+JOIN invoices i ON a.appointment_id = i.appointment_id
+WHERE i.total_amount > (
+    SELECT AVG(i2.total_amount)
+    FROM appointments a2
+    JOIN invoices i2 ON a2.appointment_id = i2.appointment_id
+    WHERE a2.visit_type = a.visit_type
+)
+
+RESULT:
+{
+  "columns": [
+    "appointment_id",
+    "visit_type",
+    "total_amount"
+  ],
+  "rows": [
+    [
+      6,
+      "urgent",
+      302.0
+    ],
+    [
+      7,
+      "screening",
+      336.5
+    ],
+    [
+      8,
+      "checkup",
+      371.0
+    ],
+    [
+      9,
+      "followup",
+      405.5
+    ],
+    [
+      10,
+      "urgent",
+      440.0
+    ],
+    [
+      11,
+      "screening",
+      474.5
+    ],
+    [
+      12,
+      "checkup",
+      509.0
+    ],
+    [
+      20,
+      "checkup",
+      336.5
+    ],
+    [
+      21,
+      "followup",
+      371.0
+    ],
+    [
+      22,
+      "urgent",
+      405.5
+    ],
+    [
+      23,
+      "screening",
+      440.0
+    ],
+    [
+      24,
+      "checkup",
+      474.5
+    ],
+    [
+      25,
+      "followup",
+      509.0
+    ],
+    [
+      33,
+      "followup",
+      336.5
+    ],
+    [
+      34,
+      "urgent",
+      371.0
+    ],
+    [
+      35,
+      "screening",
+      405.5
+    ],
+    [
+      36,
+      "checkup",
+      440.0
+    ],
+    [
+      37,
+      "followup",
+      474.5
+    ],
+    [
+      38,
+      "urgent",
+      509.0
+    ],
+    [
+      45,
+      "followup",
+      302.0
+    ],
+    [
+      46,
+      "urgent",
+      336.5
+    ],
+    [
+      47,
+      "screening",
+      371.0
+    ],
+    [
+      48,
+      "checkup",
+      405.5
+    ],
+    [
+      49,
+      "followup",
+      440.0
+    ],
+    [
+      50,
+      "urgent",
+      474.5
+    ],
+    [
+      51,
+      "screening",
+      509.0
+    ],
+    [
+      58,
+      "urgent",
+      302.0
+    ],
+    [
+      59,
+      "screening",
+      336.5
+    ],
+    [
+      60,
+      "checkup",
+      371.0
+    ],
+    [
+      61,
+      "followup",
+      405.5
+    ],
+    [
+      62,
+      "urgent",
+      440.0
+    ],
+    [
+      63,
+      "screening",
+      474.5
+    ],
+    [
+      64,
+      "checkup",
+      509.0
+    ],
+    [
+      72,
+      "checkup",
+      336.5
+    ],
+    [
+      73,
+      "followup",
+      371.0
+    ],
+    [
+      74,
+      "urgent",
+      405.5
+    ],
+    [
+      75,
+      "screening",
+      440.0
+    ],
+    [
+      76,
+      "checkup",
+      474.5
+    ],
+    [
+      77,
+      "followup",
+      509.0
+    ],
+    [
+      85,
+      "followup",
+      336.5
+    ],
+    [
+      86,
+      "urgent",
+      371.0
+    ],
+    [
+      87,
+      "screening",
+      405.5
+    ],
+    [
+      88,
+      "checkup",
+      440.0
+    ],
+    [
+      89,
+      "followup",
+      474.5
+    ],
+    [
+      90,
+      "urgent",
+      509.0
+    ],
+    [
+      97,
+      "followup",
+      302.0
+    ],
+    [
+      98,
+      "urgent",
+      336.5
+    ],
+    [
+      99,
+      "screening",
+      371.0
+    ],
+    [
+      100,
+      "checkup",
+      405.5
+    ],
+    [
+      101,
+      "followup",
+      440.0
+    ],
+    [
+      102,
+      "urgent",
+      474.5
+    ],
+    [
+      103,
+      "screening",
+      509.0
+    ],
+    [
+      110,
+      "urgent",
+      302.0
+    ],
+    [
+      111,
+      "screening",
+      336.5
+    ],
+    [
+      112,
+      "checkup",
+      371.0
+    ],
+    [
+      113,
+      "followup",
+      405.5
+    ],
+    [
+      114,
+      "urgent",
+      440.0
+    ],
+    [
+      115,
+      "screening",
+      474.5
+    ],
+    [
+      116,
+      "checkup",
+      509.0
+    ],
+    [
+      124,
+      "checkup",
+      336.5
+    ],
+    [
+      125,
+      "followup",
+      371.0
+    ],
+    [
+      126,
+      "urgent",
+      405.5
+    ],
+    [
+      127,
+      "screening",
+      440.0
+    ],
+    [
+      128,
+      "checkup",
+      474.5
+    ],
+    [
+      129,
+      "followup",
+      509.0
+    ],
+    [
+      137,
+      "followup",
+      336.5
+    ],
+    [
+      138,
+      "urgent",
+      371.0
+    ],
+    [
+      139,
+      "screening",
+      405.5
+    ],
+    [
+      140,
+      "checkup",
+      440.0
+    ]
+  ],
+  "row_count": 69
+}
+
+====================================================================================================
+QUERY 40
+QUESTION: Find lab results whose value is above the average for the same test and whose patient has spent more than the average patient.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 21.98
+ROW COUNT: 33
+
+SQL:
+SELECT lr.lab_id, lr.test_name, lr.test_value, lr.result_flag, lr.result_date
+FROM lab_results lr
+JOIN appointments a ON lr.appointment_id = a.appointment_id
+JOIN invoices i ON a.appointment_id = i.appointment_id
+JOIN patients p ON a.patient_id = p.patient_id
+WHERE lr.test_value > (
+    SELECT AVG(lr2.test_value)
+    FROM lab_results lr2
+    WHERE lr2.test_name = lr.test_name
+)
+AND i.total_amount > (
+    SELECT AVG(total_amount)
+    FROM invoices
+)
+
+RESULT:
+{
+  "columns": [
+    "lab_id",
+    "test_name",
+    "test_value",
+    "result_flag",
+    "result_date"
+  ],
+  "rows": [
+    [
+      15,
+      "vitamin_d",
+      94.5,
+      "critical",
+      "2025-02-24"
+    ],
+    [
+      18,
+      "blood_pressure",
+      101.4,
+      "low",
+      "2025-03-05"
+    ],
+    [
+      19,
+      "vitamin_d",
+      103.7,
+      "critical",
+      "2025-03-08"
+    ],
+    [
+      21,
+      "glucose",
+      108.3,
+      "high",
+      "2025-03-14"
+    ],
+    [
+      22,
+      "blood_pressure",
+      110.6,
+      "low",
+      "2025-03-17"
+    ],
+    [
+      24,
+      "cholesterol",
+      115.2,
+      "normal",
+      "2025-03-23"
+    ],
+    [
+      25,
+      "glucose",
+      117.5,
+      "high",
+      "2025-03-26"
+    ],
+    [
+      28,
+      "cholesterol",
+      124.4,
+      "normal",
+      "2025-04-04"
+    ],
+    [
+      46,
+      "blood_pressure",
+      94.5,
+      "low",
+      "2025-05-28"
+    ],
+    [
+      47,
+      "vitamin_d",
+      96.8,
+      "critical",
+      "2025-05-31"
+    ],
+    [
+      50,
+      "blood_pressure",
+      103.7,
+      "low",
+      "2025-06-09"
+    ],
+    [
+      53,
+      "glucose",
+      110.6,
+      "high",
+      "2025-06-18"
+    ],
+    [
+      54,
+      "blood_pressure",
+      112.9,
+      "low",
+      "2025-06-21"
+    ],
+    [
+      56,
+      "cholesterol",
+      117.5,
+      "normal",
+      "2025-06-27"
+    ],
+    [
+      57,
+      "glucose",
+      119.8,
+      "high",
+      "2025-06-30"
+    ],
+    [
+      59,
+      "vitamin_d",
+      124.4,
+      "critical",
+      "2025-07-06"
+    ],
+    [
+      60,
+      "cholesterol",
+      126.7,
+      "normal",
+      "2025-07-09"
+    ],
+    [
+      78,
+      "blood_pressure",
+      96.8,
+      "low",
+      "2025-09-01"
+    ],
+    [
+      79,
+      "vitamin_d",
+      99.1,
+      "critical",
+      "2025-09-04"
+    ],
+    [
+      81,
+      "glucose",
+      103.7,
+      "high",
+      "2025-09-10"
+    ],
+    [
+      82,
+      "blood_pressure",
+      106.0,
+      "low",
+      "2025-09-13"
+    ],
+    [
+      85,
+      "glucose",
+      112.9,
+      "high",
+      "2025-09-22"
+    ],
+    [
+      88,
+      "cholesterol",
+      119.8,
+      "normal",
+      "2025-10-01"
+    ],
+    [
+      89,
+      "glucose",
+      122.1,
+      "high",
+      "2025-10-04"
+    ],
+    [
+      91,
+      "vitamin_d",
+      126.7,
+      "critical",
+      "2025-10-10"
+    ],
+    [
+      92,
+      "cholesterol",
+      129.0,
+      "normal",
+      "2025-10-13"
+    ],
+    [
+      110,
+      "blood_pressure",
+      99.1,
+      "low",
+      "2025-12-06"
+    ],
+    [
+      111,
+      "vitamin_d",
+      101.4,
+      "critical",
+      "2025-12-09"
+    ],
+    [
+      113,
+      "glucose",
+      106.0,
+      "high",
+      "2025-12-15"
+    ],
+    [
+      114,
+      "blood_pressure",
+      108.3,
+      "low",
+      "2025-12-18"
+    ],
+    [
+      116,
+      "cholesterol",
+      112.9,
+      "normal",
+      "2025-12-24"
+    ],
+    [
+      117,
+      "glucose",
+      115.2,
+      "high",
+      "2025-12-27"
+    ],
+    [
+      120,
+      "cholesterol",
+      122.1,
+      "normal",
+      "2026-01-05"
+    ]
+  ],
+  "row_count": 33
+}
+
+====================================================================================================
+QUERY 41
+QUESTION: Find medications whose unit cost is above the average for their class and whose prescription count is also above the average prescription count for medications in that class.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 18.06
+ROW COUNT: 20
+
+SQL:
+SELECT m.medication_id, m.medication_name, m.unit_cost, m.medication_class
+FROM medications m
+JOIN prescriptions p ON m.medication_id = p.medication_id
+WHERE m.unit_cost > (
+    SELECT AVG(m2.unit_cost)
+    FROM medications m2
+    WHERE m2.medication_class = m.medication_class
+)
+AND (
+    SELECT COUNT(*)
+    FROM prescriptions p2
+    WHERE p2.medication_id = m.medication_id
+) > (
+    SELECT AVG(med_count)
+    FROM (
+        SELECT m3.medication_class, COUNT(*) AS med_count
+        FROM medications m3
+        JOIN prescriptions p3 ON m3.medication_id = p3.medication_id
+        GROUP BY m3.medication_class, m3.medication_id
+    ) AS class_med_counts
+    WHERE class_med_counts.medication_class = m.medication_class
+)
+
+RESULT:
+{
+  "columns": [
+    "medication_id",
+    "medication_name",
+    "unit_cost",
+    "medication_class"
+  ],
+  "rows": [
+    [
+      6,
+      "Med 6",
+      24.2,
+      "painkiller"
+    ],
+    [
+      6,
+      "Med 6",
+      24.2,
+      "painkiller"
+    ],
+    [
+      6,
+      "Med 6",
+      24.2,
+      "painkiller"
+    ],
+    [
+      6,
+      "Med 6",
+      24.2,
+      "painkiller"
+    ],
+    [
+      8,
+      "Med 8",
+      30.6,
+      "inhaler"
+    ],
+    [
+      8,
+      "Med 8",
+      30.6,
+      "inhaler"
+    ],
+    [
+      8,
+      "Med 8",
+      30.6,
+      "inhaler"
+    ],
+    [
+      8,
+      "Med 8",
+      30.6,
+      "inhaler"
+    ],
+    [
+      20,
+      "Med 20",
+      33.8,
+      "antibiotic"
+    ],
+    [
+      20,
+      "Med 20",
+      33.8,
+      "antibiotic"
+    ],
+    [
+      20,
+      "Med 20",
+      33.8,
+      "antibiotic"
+    ],
+    [
+      20,
+      "Med 20",
+      33.8,
+      "antibiotic"
+    ],
+    [
+      27,
+      "Med 27",
+      21.0,
+      "statin"
+    ],
+    [
+      27,
+      "Med 27",
+      21.0,
+      "statin"
+    ],
+    [
+      27,
+      "Med 27",
+      21.0,
+      "statin"
+    ],
+    [
+      27,
+      "Med 27",
+      21.0,
+      "statin"
+    ],
+    [
+      29,
+      "Med 29",
+      27.4,
+      "allergy"
+    ],
+    [
+      29,
+      "Med 29",
+      27.4,
+      "allergy"
+    ],
+    [
+      29,
+      "Med 29",
+      27.4,
+      "allergy"
+    ],
+    [
+      29,
+      "Med 29",
+      27.4,
+      "allergy"
+    ]
+  ],
+  "row_count": 20
+}
+
+====================================================================================================
+QUERY 42
+QUESTION: Find pairs of doctors in the same specialty whose appointment counts differ by more than ten.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 23.2
+ROW COUNT: 0
+
+SQL:
+SELECT d1.doctor_id, d1.specialty
+FROM doctors d1
+JOIN doctors d2 ON d1.specialty = d2.specialty AND d1.doctor_id < d2.doctor_id
+JOIN appointments a1 ON d1.doctor_id = a1.doctor_id
+JOIN appointments a2 ON d2.doctor_id = a2.doctor_id
+GROUP BY d1.doctor_id, d1.specialty, d2.doctor_id
+HAVING ABS(COUNT(a1.appointment_id) - COUNT(a2.appointment_id)) > 10
+
+RESULT:
+{
+  "columns": [
+    "doctor_id",
+    "specialty"
+  ],
+  "rows": [],
+  "row_count": 0
+}
+
+====================================================================================================
+QUERY 43
+QUESTION: Find pairs of patients in the same city whose lifetime invoiced amounts differ by more than 500 dollars.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 21.76
+ROW COUNT: 17
+
+SQL:
+SELECT p1.patient_id, p1.city
+FROM patients p1
+JOIN patients p2 ON p1.city = p2.city AND p1.patient_id < p2.patient_id
+JOIN appointments a1 ON p1.patient_id = a1.patient_id
+JOIN invoices i1 ON a1.appointment_id = i1.appointment_id
+JOIN appointments a2 ON p2.patient_id = a2.patient_id
+JOIN invoices i2 ON a2.appointment_id = i2.appointment_id
+GROUP BY p1.patient_id, p1.city, p2.patient_id
+HAVING ABS(SUM(i1.total_amount) - SUM(i2.total_amount)) > 500
+
+RESULT:
+{
+  "columns": [
+    "patient_id",
+    "city"
+  ],
+  "rows": [
+    [
+      1,
+      "Boise"
+    ],
+    [
+      1,
+      "Boise"
+    ],
+    [
+      1,
+      "Boise"
+    ],
+    [
+      6,
+      "Pullman"
+    ],
+    [
+      6,
+      "Pullman"
+    ],
+    [
+      6,
+      "Pullman"
+    ],
+    [
+      11,
+      "Spokane"
+    ],
+    [
+      16,
+      "Moscow"
+    ],
+    [
+      16,
+      "Moscow"
+    ],
+    [
+      21,
+      "Boise"
+    ],
+    [
+      21,
+      "Boise"
+    ],
+    [
+      26,
+      "Pullman"
+    ],
+    [
+      26,
+      "Pullman"
+    ],
+    [
+      31,
+      "Spokane"
+    ],
+    [
+      36,
+      "Moscow"
+    ],
+    [
+      41,
+      "Boise"
+    ],
+    [
+      46,
+      "Pullman"
+    ]
+  ],
+  "row_count": 17
+}
+
+====================================================================================================
+QUERY 44
+QUESTION: Find patients who have been treated by at least one doctor from every specialty represented in the doctor records.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 17.23
+ROW COUNT: 14
+
+SQL:
+SELECT p.patient_id, p.patient_name
+FROM patients p
+JOIN appointments a ON p.patient_id = a.patient_id
+JOIN doctors d ON a.doctor_id = d.doctor_id
+GROUP BY p.patient_id, p.patient_name
+HAVING COUNT(DISTINCT d.specialty) = (SELECT COUNT(DISTINCT specialty) FROM doctors)
+
+RESULT:
+{
+  "columns": [
+    "patient_id",
+    "patient_name"
+  ],
+  "rows": [
+    [
+      1,
+      "Patient 1"
+    ],
+    [
+      6,
+      "Patient 6"
+    ],
+    [
+      11,
+      "Patient 11"
+    ],
+    [
+      16,
+      "Patient 16"
+    ],
+    [
+      21,
+      "Patient 21"
+    ],
+    [
+      26,
+      "Patient 26"
+    ],
+    [
+      31,
+      "Patient 31"
+    ],
+    [
+      36,
+      "Patient 36"
+    ],
+    [
+      41,
+      "Patient 41"
+    ],
+    [
+      46,
+      "Patient 46"
+    ],
+    [
+      51,
+      "Patient 51"
+    ],
+    [
+      56,
+      "Patient 56"
+    ],
+    [
+      61,
+      "Patient 61"
+    ],
+    [
+      66,
+      "Patient 66"
+    ]
+  ],
+  "row_count": 14
+}
+
+====================================================================================================
+QUERY 45
+QUESTION: Find doctors who have prescribed at least one medication from every medication class represented in the medication records.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 20.42
+ROW COUNT: 0
+
+SQL:
+WITH total_classes AS (
+    SELECT COUNT(DISTINCT medication_class) AS cnt
+    FROM medications
+),
+doctor_class_counts AS (
+    SELECT 
+        d.doctor_id,
+        d.doctor_name,
+        COUNT(DISTINCT m.medication_class) AS prescribed_class_count
+    FROM doctors d
+    JOIN appointments a ON d.doctor_id = a.doctor_id
+    JOIN prescriptions p ON a.appointment_id = p.appointment_id
+    JOIN medications m ON p.medication_id = m.medication_id
+    GROUP BY d.doctor_id, d.doctor_name
+)
+SELECT 
+    dc.doctor_id,
+    dc.doctor_name
+FROM doctor_class_counts dc
+CROSS JOIN total_classes tc
+WHERE dc.prescribed_class_count = tc.cnt
+
+RESULT:
+{
+  "columns": [
+    "doctor_id",
+    "doctor_name"
+  ],
+  "rows": [],
+  "row_count": 0
+}
+
+====================================================================================================
+QUERY 46
+QUESTION: Find insurance providers for which every patient with a chronic condition has at least one completed appointment.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 17.9
+ROW COUNT: 1
+
+SQL:
+SELECT p.insurance_provider
+FROM patients p
+JOIN appointments a ON p.patient_id = a.patient_id
+WHERE p.chronic_condition = 'yes'
+GROUP BY p.insurance_provider
+HAVING COUNT(DISTINCT a.appointment_id) > 0
+   AND NOT EXISTS (
+       SELECT 1
+       FROM patients p2
+       WHERE p2.chronic_condition = 'yes'
+         AND p2.insurance_provider = p.insurance_provider
+         AND NOT EXISTS (
+             SELECT 1
+             FROM appointments a2
+             WHERE a2.patient_id = p2.patient_id
+               AND a2.status = 'completed'
+         )
+   )
+
+RESULT:
+{
+  "columns": [
+    "insurance_provider"
+  ],
+  "rows": [
+    [
+      "Aetna"
+    ]
+  ],
+  "row_count": 1
+}
+
+====================================================================================================
+QUERY 47
+QUESTION: Find specialties where every doctor has handled at least one completed appointment.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 15.2
+ROW COUNT: 5
+
+SQL:
+SELECT DISTINCT "doctors"."specialty", COUNT(*) AS "completed_count" FROM "doctors" LEFT JOIN "appointments" ON "doctors"."doctor_id" = "appointments"."doctor_id" WHERE "appointments"."status" = ? GROUP BY "doctors"."specialty" HAVING "completed_count" >= ?
+
+RESULT:
+{
+  "columns": [
+    "specialty",
+    "completed_count"
+  ],
+  "rows": [
+    [
+      "cardiology",
+      14
+    ],
+    [
+      "dermatology",
+      14
+    ],
+    [
+      "orthopedics",
+      14
+    ],
+    [
+      "pediatrics",
+      14
+    ],
+    [
+      "primary",
+      14
+    ]
+  ],
+  "row_count": 5
+}
+
+====================================================================================================
+QUERY 48
+QUESTION: Find patients with abnormal results in more than one type of lab test and an outstanding balance above the average patient outstanding balance.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 22.12
+ROW COUNT: 4
+
+SQL:
+SELECT p.patient_id, p.patient_name
+FROM patients p
+JOIN appointments a ON p.patient_id = a.patient_id
+JOIN invoices i ON a.appointment_id = i.appointment_id
+JOIN lab_results l ON a.appointment_id = l.appointment_id
+WHERE l.result_flag IN ('high', 'low', 'critical')
+GROUP BY p.patient_id, p.patient_name
+HAVING COUNT(DISTINCT l.test_name) > 1
+   AND (i.total_amount - i.insurance_paid) > (
+       SELECT AVG(total_amount - insurance_paid)
+       FROM invoices
+       WHERE payment_status != 'paid'
+   )
+
+RESULT:
+{
+  "columns": [
+    "patient_id",
+    "patient_name"
+  ],
+  "rows": [
+    [
+      16,
+      "Patient 16"
+    ],
+    [
+      36,
+      "Patient 36"
+    ],
+    [
+      46,
+      "Patient 46"
+    ],
+    [
+      56,
+      "Patient 56"
+    ]
+  ],
+  "row_count": 4
+}
+
+====================================================================================================
+QUERY 49
+QUESTION: Find doctors whose average number of lab tests per appointment is above the average for their specialty and whose total invoiced amount is above the average for their clinic city.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 33.24
+ROW COUNT: 0
+
+SQL:
+WITH doctor_stats AS (
+  SELECT 
+    d.doctor_id,
+    d.doctor_name,
+    d.specialty,
+    d.clinic_city,
+    COUNT(l.lab_id) * 1.0 / COUNT(DISTINCT a.appointment_id) AS avg_tests_per_appt,
+    SUM(inv.total_amount) AS total_invoiced
+  FROM doctors d
+  JOIN appointments a ON d.doctor_id = a.doctor_id
+  JOIN invoices inv ON a.appointment_id = inv.appointment_id
+  JOIN lab_results l ON a.appointment_id = l.appointment_id
+  GROUP BY d.doctor_id, d.doctor_name, d.specialty, d.clinic_city
+),
+specialty_avg AS (
+  SELECT 
+    specialty,
+    AVG(avg_tests_per_appt) AS avg_specialty_tests
+  FROM doctor_stats
+  GROUP BY specialty
+),
+city_avg AS (
+  SELECT 
+    clinic_city,
+    AVG(total_invoiced) AS avg_city_invoiced
+  FROM doctor_stats
+  GROUP BY clinic_city
+)
+SELECT 
+  ds.doctor_id,
+  ds.doctor_name
+FROM doctor_stats ds
+JOIN specialty_avg sa ON ds.specialty = sa.specialty
+JOIN city_avg ca ON ds.clinic_city = ca.clinic_city
+WHERE ds.avg_tests_per_appt > sa.avg_specialty_tests
+  AND ds.total_invoiced > ca.avg_city_invoiced
+
+RESULT:
+{
+  "columns": [
+    "doctor_id",
+    "doctor_name"
+  ],
+  "rows": [],
+  "row_count": 0
+}
+
+====================================================================================================
+QUERY 50
+QUESTION: Find doctors who treated patients from a different city, prescribed at least one medication to those patients, and have an average invoice total above the average for their specialty.
+SUCCESS: True
+HTTP STATUS: 200
+ELAPSED SECONDS: 19.78
+ROW COUNT: 3
+
+SQL:
+SELECT d.doctor_id, d.doctor_name
+FROM doctors d
+JOIN appointments a ON d.doctor_id = a.doctor_id
+JOIN patients p ON a.patient_id = p.patient_id
+JOIN invoices i ON a.appointment_id = i.appointment_id
+JOIN prescriptions pr ON a.appointment_id = pr.appointment_id
+WHERE p.city != d.clinic_city
+GROUP BY d.doctor_id, d.doctor_name, d.specialty
+HAVING AVG(i.total_amount) > (
+    SELECT AVG(i2.total_amount)
+    FROM doctors d2
+    JOIN appointments a2 ON d2.doctor_id = a2.doctor_id
+    JOIN invoices i2 ON a2.appointment_id = i2.appointment_id
+    WHERE d2.specialty = d.specialty
+)
+
+RESULT:
+{
+  "columns": [
+    "doctor_id",
+    "doctor_name"
+  ],
+  "rows": [
+    [
+      4,
+      "Dr. 4"
+    ],
+    [
+      7,
+      "Dr. 7"
+    ],
+    [
+      13,
+      "Dr. 13"
+    ]
+  ],
+  "row_count": 3
+}
+
+====================================================================================================
+SUMMARY: 49 PASS, 1 FAIL

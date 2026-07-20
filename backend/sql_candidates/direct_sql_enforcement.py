@@ -84,4 +84,16 @@ def direct_sql_violations(sql, question, checklist, graph):
             reasons.append("joins a ZIP/postal column directly to a tract/census/"
                            "geo id instead of going through the required bridge "
                            "table")
+    reasons.extend(_day2_fatal(sql, question))
     return reasons
+
+
+def _day2_fatal(sql, question):
+    """Generic Day 2 fatal semantic rules (schema-independent). Only rules proven
+    to flag ZERO protected-correct queries in the static replay are fatal here;
+    warning/diagnostic rules never reach this path. Never raises."""
+    try:
+        from sql_candidates.day2_semantic_rules import day2_fatal_reasons
+        return day2_fatal_reasons(sql, question)
+    except Exception:
+        return []

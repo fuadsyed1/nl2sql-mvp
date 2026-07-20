@@ -198,6 +198,14 @@ def init_auth_db():
     _ensure_column(cursor, "databases", "table_count", "INTEGER DEFAULT 0")
     _ensure_column(cursor, "database_tables", "columns_loaded", "INTEGER DEFAULT 1")
     _ensure_column(cursor, "database_relationships", "source", "TEXT")
+    # Relationship finality flag (origin vs finality). NULL for pre-existing
+    # rows so the one-time backfill below can classify them; the resolver
+    # sets it explicitly (1 authoritative/declared, 0 unfinalized suggestions)
+    # for every database it processes thereafter.
+    _ensure_column(cursor, "databases", "relationships_finalized", "INTEGER")
+    # Relationship review state: 'review' (unfinalized suggestions/declared
+    # set awaiting approval) or 'finalized' (authoritative; querying enabled).
+    _ensure_column(cursor, "databases", "relationship_status", "TEXT")
 
     # Backfill table_count for existing databases (safe to re-run).
     cursor.execute(
@@ -209,6 +217,37 @@ def init_auth_db():
         )
         WHERE table_count IS NULL OR table_count = 0
         """
+    )
+
+    # One-time relationship migration (idempotent; only touches rows/columns still
+    # NULL, i.e. databases/rows that predate these columns). SAFE by design:
+    #  * No existing database is auto-finalized. Every legacy database enters
+    #    'review' and must be explicitly approved ("Review and approve existing
+    #    relationships") before querying — its stored set was never reviewed.
+    #  * Legacy relationship rows of unknown origin (source IS NULL) are preserved
+    #    as 'legacy_unknown' (never guessed as 'inferred', never deleted or
+    #    redetected). They are shown to the user for review.
+    cursor.execute(
+        "UPDATE databases SET relationship_status = 'review' "
+        "WHERE relationship_status IS NULL"
+    )
+    cursor.execute(
+        "UPDATE databases SET relationships_finalized = 0 "
+        "WHERE relationships_finalized IS NULL"
+    )
+    cursor.execute(
+        "UPDATE database_relationships SET source = 'legacy_unknown' "
+        "WHERE source IS NULL"
+    )
+
+    # Invariant sync (idempotent): a FINALIZED database's relationship rows must
+    # all be confirmed (approved). Earlier builds set databases.relationship_status
+    # to 'finalized' without marking the rows, so finalized sets rendered as
+    # "suggested". Enforce it here without reverting any database's status.
+    cursor.execute(
+        "UPDATE database_relationships SET confirmed = 1 "
+        "WHERE confirmed = 0 AND database_id IN ("
+        "  SELECT id FROM databases WHERE relationship_status = 'finalized')"
     )
 
     conn.commit()

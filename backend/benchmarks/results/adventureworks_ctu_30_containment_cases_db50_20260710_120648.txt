@@ -1,0 +1,2921 @@
+SpiderSQL 30_containment_cases
+Database: AdventureWorks CTU #50
+Expected tables: 71
+Expected metadata relationships: 91
+No hard SQL or hard verdict matching is used.
+
+============================================================================================================
+CASE 01: Product list-price threshold chain - normal NL
+MODE: normal
+CATEGORY: filter_threshold
+STATUS: PASS
+REASON: all queries generated SQL and the containment endpoint completed
+EXPECTED RELATIONSHIP NOTE: Higher price thresholds should be contained in lower thresholds.
+HTTP STATUS: 200
+ELAPSED SECONDS: 42.446
+
+INPUT QUERIES
+Q1: Which products cost more than 1500?
+Q2: Which products cost more than 1000?
+Q3: Which products cost more than 500?
+Q4: Which products cost more than 2000?
+
+GENERATED SQL AND EXECUTION
+Q1: success=True safe=True rows=21 empty=False
+columns=['ProductID', 'Name', 'StandardCost', 'ListPrice']
+SELECT ProductID, Name, StandardCost, ListPrice FROM Product WHERE StandardCost > 1500
+
+Q2: success=True safe=True rows=41 empty=False
+columns=['ProductID', 'Name', 'StandardCost', 'ListPrice']
+SELECT ProductID, Name, StandardCost, ListPrice FROM Product WHERE StandardCost > 1000
+
+Q3: success=True safe=True rows=86 empty=False
+columns=['ProductID', 'Name', 'StandardCost']
+SELECT ProductID, Name, StandardCost FROM Product WHERE StandardCost > 500
+
+Q4: success=True safe=True rows=5 empty=False
+columns=['ProductID', 'Name', 'StandardCost']
+SELECT ProductID, Name, StandardCost FROM Product WHERE StandardCost > 2000
+
+CONTAINMENT ANALYSIS
+{
+  "query_count": 4,
+  "main_queries": [
+    {
+      "index": 3,
+      "equivalent_to": [],
+      "contains": [
+        1,
+        2,
+        4
+      ],
+      "contained_by": []
+    }
+  ],
+  "equivalent_groups": [],
+  "containment_edges": [
+    {
+      "superset": 2,
+      "subset": 1,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 3,
+      "subset": 1,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 1,
+      "subset": 4,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 3,
+      "subset": 2,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 2,
+      "subset": 4,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 3,
+      "subset": 4,
+      "relationship_source": "pairwise"
+    }
+  ],
+  "independent_queries": [],
+  "unknown_pairs": [],
+  "incomparable_pairs": [],
+  "empty_queries": [],
+  "summary_text": "Query 3 is a main (broadest) query; it contains Query 1, Query 2, Query 4."
+}
+
+PAIRWISE RESULTS
+[]
+
+============================================================================================================
+CASE 02: Sales-order total threshold chain - normal NL
+MODE: normal
+CATEGORY: filter_threshold
+STATUS: FAIL
+REASON: query 1 reported execution failure
+EXPECTED RELATIONSHIP NOTE: Higher TotalDue thresholds should be subsets of lower thresholds.
+HTTP STATUS: 200
+ELAPSED SECONDS: 0.013
+
+INPUT QUERIES
+Q1: Show sales orders with total due above 20000.
+Q2: Show sales orders with total due above 10000.
+Q3: Show sales orders with total due above 5000.
+Q4: Show sales orders with total due above 30000.
+
+GENERATED SQL AND EXECUTION
+Q1: success=False safe=False rows=0 empty=False
+columns=None
+(no SQL)
+
+Q2: success=False safe=False rows=0 empty=False
+columns=None
+(no SQL)
+
+Q3: success=False safe=False rows=0 empty=False
+columns=None
+(no SQL)
+
+Q4: success=False safe=False rows=0 empty=False
+columns=None
+(no SQL)
+
+CONTAINMENT ANALYSIS
+{
+  "query_count": 4,
+  "main_queries": [
+    {
+      "index": 1,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    },
+    {
+      "index": 2,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    },
+    {
+      "index": 3,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    },
+    {
+      "index": 4,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    }
+  ],
+  "equivalent_groups": [],
+  "containment_edges": [],
+  "independent_queries": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "unknown_pairs": [
+    {
+      "left": 1,
+      "right": 2,
+      "reason": "Cannot compare: Query 1 (no SQL text was generated); Query 2 (no SQL text was generated)."
+    },
+    {
+      "left": 1,
+      "right": 3,
+      "reason": "Cannot compare: Query 1 (no SQL text was generated); Query 3 (no SQL text was generated)."
+    },
+    {
+      "left": 1,
+      "right": 4,
+      "reason": "Cannot compare: Query 1 (no SQL text was generated); Query 4 (no SQL text was generated)."
+    },
+    {
+      "left": 2,
+      "right": 3,
+      "reason": "Cannot compare: Query 2 (no SQL text was generated); Query 3 (no SQL text was generated)."
+    },
+    {
+      "left": 2,
+      "right": 4,
+      "reason": "Cannot compare: Query 2 (no SQL text was generated); Query 4 (no SQL text was generated)."
+    },
+    {
+      "left": 3,
+      "right": 4,
+      "reason": "Cannot compare: Query 3 (no SQL text was generated); Query 4 (no SQL text was generated)."
+    }
+  ],
+  "incomparable_pairs": [],
+  "empty_queries": [],
+  "summary_text": "Query 1 is a main (broadest) query. Query 2 is a main (broadest) query. Query 3 is a main (broadest) query. Query 4 is a main (broadest) query. Independent (no proven containment): Query 1, Query 2, Query 3, Query 4. 6 pair(s) could not be compared (unknown)."
+}
+
+PAIRWISE RESULTS
+[]
+
+============================================================================================================
+CASE 03: Employee hire date and vacation-hours narrowing - normal NL
+MODE: normal
+CATEGORY: conjunction
+STATUS: PASS
+REASON: all queries generated SQL and the containment endpoint completed
+EXPECTED RELATIONSHIP NOTE: The first query is narrower than each single-condition query and the weaker conjunction.
+HTTP STATUS: 200
+ELAPSED SECONDS: 52.972
+
+INPUT QUERIES
+Q1: Find employees hired after 2010 who have more than 50 vacation hours.
+Q2: Find employees hired after 2010.
+Q3: Find employees with more than 50 vacation hours.
+Q4: Find employees hired after 2005 who have more than 30 vacation hours.
+
+GENERATED SQL AND EXECUTION
+Q1: success=True safe=True rows=0 empty=True
+columns=['BusinessEntityID', 'JobTitle', 'HireDate', 'VacationHours']
+SELECT BusinessEntityID, JobTitle, HireDate, VacationHours
+FROM Employee
+WHERE HireDate > '2010-12-31'
+  AND VacationHours > 50
+
+Q2: success=True safe=True rows=23 empty=False
+columns=['BusinessEntityID', 'JobTitle', 'HireDate']
+SELECT BusinessEntityID, JobTitle, HireDate FROM Employee WHERE HireDate > '2010-12-31'
+
+Q3: success=True safe=True rows=147 empty=False
+columns=['BusinessEntityID', 'JobTitle', 'VacationHours']
+SELECT BusinessEntityID, JobTitle, VacationHours
+FROM Employee
+WHERE VacationHours > 50
+
+Q4: success=True safe=True rows=207 empty=False
+columns=['BusinessEntityID', 'JobTitle', 'HireDate', 'VacationHours']
+SELECT BusinessEntityID, JobTitle, HireDate, VacationHours
+FROM Employee
+WHERE HireDate > '2005-12-31' AND VacationHours > 30
+
+CONTAINMENT ANALYSIS
+{
+  "query_count": 4,
+  "main_queries": [
+    {
+      "index": 2,
+      "equivalent_to": [],
+      "contains": [
+        1
+      ],
+      "contained_by": []
+    },
+    {
+      "index": 4,
+      "equivalent_to": [],
+      "contains": [
+        1,
+        3
+      ],
+      "contained_by": []
+    }
+  ],
+  "equivalent_groups": [],
+  "containment_edges": [
+    {
+      "superset": 2,
+      "subset": 1,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 3,
+      "subset": 1,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 4,
+      "subset": 1,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 4,
+      "subset": 3,
+      "relationship_source": "pairwise"
+    }
+  ],
+  "independent_queries": [],
+  "unknown_pairs": [],
+  "incomparable_pairs": [
+    {
+      "left": 2,
+      "right": 3
+    },
+    {
+      "left": 2,
+      "right": 4
+    }
+  ],
+  "empty_queries": [
+    1
+  ],
+  "summary_text": "Query 2 is a main (broadest) query; it contains Query 1. Query 4 is a main (broadest) query; it contains Query 1, Query 3. Empty-result queries: Query 1. Incomparable: Query 2 vs Query 3; Query 2 vs Query 4."
+}
+
+PAIRWISE RESULTS
+[]
+
+============================================================================================================
+CASE 04: Vendor credit and activity narrowing - normal NL
+MODE: normal
+CATEGORY: conjunction
+STATUS: PASS
+REASON: all queries generated SQL and the containment endpoint completed
+EXPECTED RELATIONSHIP NOTE: Active rating-1 vendors should be contained in the broader vendor sets.
+HTTP STATUS: 200
+ELAPSED SECONDS: 53.392
+
+INPUT QUERIES
+Q1: List active vendors with credit rating 1.
+Q2: List active vendors.
+Q3: List vendors with credit rating 1.
+Q4: List active vendors with credit rating 2 or better.
+
+GENERATED SQL AND EXECUTION
+Q1: success=True safe=True rows=82 empty=False
+columns=['BusinessEntityID', 'Name', 'CreditRating', 'ActiveFlag']
+SELECT BusinessEntityID, Name, CreditRating, ActiveFlag
+FROM Vendor
+WHERE CreditRating = 1 AND ActiveFlag = 1
+
+Q2: success=True safe=True rows=100 empty=False
+columns=['BusinessEntityID', 'AccountNumber', 'Name', 'CreditRating', 'PreferredVendorStatus', 'ActiveFlag', 'PurchasingWebServiceURL', 'ModifiedDate']
+SELECT BusinessEntityID, AccountNumber, Name, CreditRating, PreferredVendorStatus, ActiveFlag, PurchasingWebServiceURL, ModifiedDate FROM Vendor WHERE ActiveFlag = 1
+
+Q3: success=True safe=True rows=84 empty=False
+columns=['BusinessEntityID', 'AccountNumber', 'Name', 'CreditRating', 'PreferredVendorStatus', 'ActiveFlag', 'PurchasingWebServiceURL', 'ModifiedDate']
+SELECT BusinessEntityID, AccountNumber, Name, CreditRating, PreferredVendorStatus, ActiveFlag, PurchasingWebServiceURL, ModifiedDate FROM Vendor WHERE CreditRating = 1
+
+Q4: success=True safe=True rows=90 empty=False
+columns=['BusinessEntityID', 'Name', 'CreditRating']
+SELECT vendor.BusinessEntityID, vendor.Name, vendor.CreditRating
+FROM Vendor
+WHERE vendor.CreditRating <= 2 AND vendor.ActiveFlag = 1
+
+CONTAINMENT ANALYSIS
+{
+  "query_count": 4,
+  "main_queries": [
+    {
+      "index": 2,
+      "equivalent_to": [],
+      "contains": [
+        1,
+        4
+      ],
+      "contained_by": []
+    },
+    {
+      "index": 3,
+      "equivalent_to": [],
+      "contains": [
+        1
+      ],
+      "contained_by": []
+    }
+  ],
+  "equivalent_groups": [],
+  "containment_edges": [
+    {
+      "superset": 2,
+      "subset": 1,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 3,
+      "subset": 1,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 4,
+      "subset": 1,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 2,
+      "subset": 4,
+      "relationship_source": "pairwise"
+    }
+  ],
+  "independent_queries": [],
+  "unknown_pairs": [],
+  "incomparable_pairs": [
+    {
+      "left": 2,
+      "right": 3
+    },
+    {
+      "left": 3,
+      "right": 4
+    }
+  ],
+  "empty_queries": [],
+  "summary_text": "Query 2 is a main (broadest) query; it contains Query 1, Query 4. Query 3 is a main (broadest) query; it contains Query 1. Incomparable: Query 2 vs Query 3; Query 3 vs Query 4."
+}
+
+PAIRWISE RESULTS
+[]
+
+============================================================================================================
+CASE 05: Product color and price narrowing - normal NL
+MODE: normal
+CATEGORY: conjunction
+STATUS: PASS
+REASON: all queries generated SQL and the containment endpoint completed
+EXPECTED RELATIONSHIP NOTE: Red and expensive products should be narrower than red-only and expensive-only products.
+HTTP STATUS: 200
+ELAPSED SECONDS: 43.865
+
+INPUT QUERIES
+Q1: Show red products priced above 1000.
+Q2: Show red products.
+Q3: Show products priced above 1000.
+Q4: Show colored products priced above 500.
+
+GENERATED SQL AND EXECUTION
+Q1: success=True safe=True rows=20 empty=False
+columns=['ProductID', 'Name', 'ProductNumber', 'Color', 'ListPrice']
+SELECT ProductID, Name, ProductNumber, Color, ListPrice FROM Product WHERE Color = 'Red' AND ListPrice > 1000
+
+Q2: success=True safe=True rows=38 empty=False
+columns=['ProductID', 'Name', 'ProductNumber', 'Color']
+SELECT ProductID, Name, ProductNumber, Color FROM Product WHERE Color = 'Red'
+
+Q3: success=True safe=True rows=86 empty=False
+columns=['ProductID', 'Name', 'ListPrice']
+SELECT ProductID, Name, ListPrice FROM Product WHERE ListPrice > 1000
+
+Q4: success=True safe=True rows=136 empty=False
+columns=['Name', 'Color', 'ListPrice']
+SELECT Name, Color, ListPrice FROM Product WHERE Color IS NOT NULL AND ListPrice > 500
+
+CONTAINMENT ANALYSIS
+{
+  "query_count": 4,
+  "main_queries": [
+    {
+      "index": 2,
+      "equivalent_to": [],
+      "contains": [
+        1
+      ],
+      "contained_by": []
+    },
+    {
+      "index": 4,
+      "equivalent_to": [],
+      "contains": [
+        1,
+        3
+      ],
+      "contained_by": []
+    }
+  ],
+  "equivalent_groups": [],
+  "containment_edges": [
+    {
+      "superset": 2,
+      "subset": 1,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 3,
+      "subset": 1,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 4,
+      "subset": 1,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 4,
+      "subset": 3,
+      "relationship_source": "pairwise"
+    }
+  ],
+  "independent_queries": [],
+  "unknown_pairs": [],
+  "incomparable_pairs": [
+    {
+      "left": 2,
+      "right": 3
+    },
+    {
+      "left": 2,
+      "right": 4
+    }
+  ],
+  "empty_queries": [],
+  "summary_text": "Query 2 is a main (broadest) query; it contains Query 1. Query 4 is a main (broadest) query; it contains Query 1, Query 3. Incomparable: Query 2 vs Query 3; Query 2 vs Query 4."
+}
+
+PAIRWISE RESULTS
+[]
+
+============================================================================================================
+CASE 06: Customer territory and order containment - normal NL
+MODE: normal
+CATEGORY: join
+STATUS: FAIL
+REASON: TimeoutError: timed out
+EXPECTED RELATIONSHIP NOTE: Territory-1 customers with orders should be contained in both broader parent sets.
+HTTP STATUS: None
+ELAPSED SECONDS: 420.007
+
+INPUT QUERIES
+Q1: List customers in territory 1 who have a sales order.
+Q2: List customers in territory 1.
+Q3: List customers who have a sales order.
+Q4: List customers in any assigned territory who have a sales order.
+
+GENERATED SQL AND EXECUTION
+CONTAINMENT ANALYSIS
+(none)
+
+PAIRWISE RESULTS
+[]
+
+============================================================================================================
+CASE 07: Category, subcategory, and product-price containment - normal NL
+MODE: normal
+CATEGORY: multi_join
+STATUS: FAIL
+REASON: query 1 reported execution failure
+EXPECTED RELATIONSHIP NOTE: Expensive bikes should be contained in bikes, expensive products, and the weaker price threshold.
+HTTP STATUS: 200
+ELAPSED SECONDS: 35.213
+
+INPUT QUERIES
+Q1: List bikes priced above 1000 with their category and subcategory.
+Q2: List all bike products with their category and subcategory.
+Q3: List all products priced above 1000 with their category and subcategory.
+Q4: List products in any category priced above 500 with category and subcategory.
+
+GENERATED SQL AND EXECUTION
+Q1: success=False safe=False rows=0 empty=False
+columns=None
+(no SQL)
+
+Q2: success=True safe=True rows=100 empty=False
+columns=['Name', 'ProductLine', 'ProductSubcategoryID']
+SELECT "product"."name", "product"."productline", "product"."productsubcategoryid" FROM "product" WHERE "product"."productline" = ?
+
+Q3: success=True safe=True rows=86 empty=False
+columns=['Name', 'ProductSubcategoryID', 'ProductModelID']
+SELECT Name, ProductSubcategoryID, ProductModelID
+FROM Product
+WHERE ListPrice > 1000
+
+Q4: success=True safe=True rows=136 empty=False
+columns=['Name', 'ProductSubcategoryID', 'ListPrice']
+SELECT Name, ProductSubcategoryID, ListPrice FROM Product WHERE ListPrice > 500
+
+CONTAINMENT ANALYSIS
+{
+  "query_count": 4,
+  "main_queries": [
+    {
+      "index": 1,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    },
+    {
+      "index": 2,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    },
+    {
+      "index": 3,
+      "equivalent_to": [
+        4
+      ],
+      "contains": [],
+      "contained_by": []
+    }
+  ],
+  "equivalent_groups": [
+    [
+      3,
+      4
+    ]
+  ],
+  "containment_edges": [],
+  "independent_queries": [
+    1,
+    2
+  ],
+  "unknown_pairs": [
+    {
+      "left": 1,
+      "right": 2,
+      "reason": "Cannot compare: Query 1 (no SQL text was generated)."
+    },
+    {
+      "left": 1,
+      "right": 3,
+      "reason": "Cannot compare: Query 1 (no SQL text was generated)."
+    },
+    {
+      "left": 1,
+      "right": 4,
+      "reason": "Cannot compare: Query 1 (no SQL text was generated)."
+    }
+  ],
+  "incomparable_pairs": [
+    {
+      "left": 2,
+      "right": 3
+    },
+    {
+      "left": 2,
+      "right": 4
+    }
+  ],
+  "empty_queries": [],
+  "summary_text": "Query 1 is a main (broadest) query. Query 2 is a main (broadest) query. Query 3 is a main (broadest) query (equivalent to Query 4). Query 3, Query 4 are equivalent on the current database. Independent (no proven containment): Query 1, Query 2. Incomparable: Query 2 vs Query 3; Query 2 vs Query 4. 3 pair(s) could not be compared (unknown)."
+}
+
+PAIRWISE RESULTS
+[]
+
+============================================================================================================
+CASE 08: Sales-line revenue containment - normal NL
+MODE: normal
+CATEGORY: derived_metric
+STATUS: FAIL
+REASON: query 1 reported execution failure
+EXPECTED RELATIONSHIP NOTE: The strong revenue-and-quantity condition should be narrower than the three broader conditions.
+HTTP STATUS: 200
+ELAPSED SECONDS: 0.009
+
+INPUT QUERIES
+Q1: Show sales order lines with net line revenue above 5000 and quantity above 5.
+Q2: Show sales order lines with net line revenue above 5000.
+Q3: Show sales order lines with quantity above 5.
+Q4: Show sales order lines with net line revenue above 2500 and quantity above 2.
+
+GENERATED SQL AND EXECUTION
+Q1: success=False safe=False rows=0 empty=False
+columns=None
+(no SQL)
+
+Q2: success=False safe=False rows=0 empty=False
+columns=None
+(no SQL)
+
+Q3: success=False safe=False rows=0 empty=False
+columns=None
+(no SQL)
+
+Q4: success=False safe=False rows=0 empty=False
+columns=None
+(no SQL)
+
+CONTAINMENT ANALYSIS
+{
+  "query_count": 4,
+  "main_queries": [
+    {
+      "index": 1,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    },
+    {
+      "index": 2,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    },
+    {
+      "index": 3,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    },
+    {
+      "index": 4,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    }
+  ],
+  "equivalent_groups": [],
+  "containment_edges": [],
+  "independent_queries": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "unknown_pairs": [
+    {
+      "left": 1,
+      "right": 2,
+      "reason": "Cannot compare: Query 1 (no SQL text was generated); Query 2 (no SQL text was generated)."
+    },
+    {
+      "left": 1,
+      "right": 3,
+      "reason": "Cannot compare: Query 1 (no SQL text was generated); Query 3 (no SQL text was generated)."
+    },
+    {
+      "left": 1,
+      "right": 4,
+      "reason": "Cannot compare: Query 1 (no SQL text was generated); Query 4 (no SQL text was generated)."
+    },
+    {
+      "left": 2,
+      "right": 3,
+      "reason": "Cannot compare: Query 2 (no SQL text was generated); Query 3 (no SQL text was generated)."
+    },
+    {
+      "left": 2,
+      "right": 4,
+      "reason": "Cannot compare: Query 2 (no SQL text was generated); Query 4 (no SQL text was generated)."
+    },
+    {
+      "left": 3,
+      "right": 4,
+      "reason": "Cannot compare: Query 3 (no SQL text was generated); Query 4 (no SQL text was generated)."
+    }
+  ],
+  "incomparable_pairs": [],
+  "empty_queries": [],
+  "summary_text": "Query 1 is a main (broadest) query. Query 2 is a main (broadest) query. Query 3 is a main (broadest) query. Query 4 is a main (broadest) query. Independent (no proven containment): Query 1, Query 2, Query 3, Query 4. 6 pair(s) could not be compared (unknown)."
+}
+
+PAIRWISE RESULTS
+[]
+
+============================================================================================================
+CASE 09: Purchase-order vendor threshold containment - normal NL
+MODE: normal
+CATEGORY: join
+STATUS: PASS
+REASON: all queries generated SQL and the containment endpoint completed
+EXPECTED RELATIONSHIP NOTE: Active vendors with very large orders should be subsets of the broader vendor-order sets.
+HTTP STATUS: 200
+ELAPSED SECONDS: 47.281
+
+INPUT QUERIES
+Q1: List active vendors with purchase orders above 20000.
+Q2: List active vendors with any purchase order.
+Q3: List vendors with purchase orders above 20000.
+Q4: List active vendors with purchase orders above 10000.
+
+GENERATED SQL AND EXECUTION
+Q1: success=True safe=True rows=100 empty=False
+columns=['Name']
+SELECT "vendor"."name" FROM "vendor" WHERE "vendor"."activeflag" = ?
+
+Q2: success=True safe=True rows=100 empty=False
+columns=['BusinessEntityID', 'Name']
+SELECT "vendor"."businessentityid", "vendor"."name" FROM "vendor" WHERE "vendor"."activeflag" = ?
+
+Q3: success=True safe=True rows=104 empty=False
+columns=['BusinessEntityID', 'Name']
+SELECT "vendor"."businessentityid", "vendor"."name" FROM "vendor"
+
+Q4: success=True safe=True rows=100 empty=False
+columns=['BusinessEntityID', 'Name']
+SELECT "vendor"."businessentityid", "vendor"."name" FROM "vendor" WHERE "vendor"."activeflag" = ?
+
+CONTAINMENT ANALYSIS
+{
+  "query_count": 4,
+  "main_queries": [
+    {
+      "index": 3,
+      "equivalent_to": [],
+      "contains": [
+        1,
+        2,
+        4
+      ],
+      "contained_by": []
+    }
+  ],
+  "equivalent_groups": [
+    [
+      1,
+      2,
+      4
+    ]
+  ],
+  "containment_edges": [
+    {
+      "superset": 3,
+      "subset": 1,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 3,
+      "subset": 2,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 3,
+      "subset": 4,
+      "relationship_source": "pairwise"
+    }
+  ],
+  "independent_queries": [],
+  "unknown_pairs": [],
+  "incomparable_pairs": [],
+  "empty_queries": [],
+  "summary_text": "Query 3 is a main (broadest) query; it contains Query 1, Query 2, Query 4. Query 1, Query 2, Query 4 are equivalent on the current database."
+}
+
+PAIRWISE RESULTS
+[]
+
+============================================================================================================
+CASE 10: Work-order scrap threshold containment - normal NL
+MODE: normal
+CATEGORY: filter_threshold
+STATUS: FAIL
+REASON: query 1 reported execution failure
+EXPECTED RELATIONSHIP NOTE: Larger scrap thresholds should be contained in smaller thresholds.
+HTTP STATUS: 200
+ELAPSED SECONDS: 0.023
+
+INPUT QUERIES
+Q1: Show work orders with more than 10 scrapped units.
+Q2: Show work orders with more than 5 scrapped units.
+Q3: Show work orders with any scrapped units.
+Q4: Show work orders with more than 20 scrapped units.
+
+GENERATED SQL AND EXECUTION
+Q1: success=False safe=False rows=0 empty=False
+columns=None
+(no SQL)
+
+Q2: success=False safe=False rows=0 empty=False
+columns=None
+(no SQL)
+
+Q3: success=False safe=False rows=0 empty=False
+columns=None
+(no SQL)
+
+Q4: success=False safe=False rows=0 empty=False
+columns=None
+(no SQL)
+
+CONTAINMENT ANALYSIS
+{
+  "query_count": 4,
+  "main_queries": [
+    {
+      "index": 1,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    },
+    {
+      "index": 2,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    },
+    {
+      "index": 3,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    },
+    {
+      "index": 4,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    }
+  ],
+  "equivalent_groups": [],
+  "containment_edges": [],
+  "independent_queries": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "unknown_pairs": [
+    {
+      "left": 1,
+      "right": 2,
+      "reason": "Cannot compare: Query 1 (no SQL text was generated); Query 2 (no SQL text was generated)."
+    },
+    {
+      "left": 1,
+      "right": 3,
+      "reason": "Cannot compare: Query 1 (no SQL text was generated); Query 3 (no SQL text was generated)."
+    },
+    {
+      "left": 1,
+      "right": 4,
+      "reason": "Cannot compare: Query 1 (no SQL text was generated); Query 4 (no SQL text was generated)."
+    },
+    {
+      "left": 2,
+      "right": 3,
+      "reason": "Cannot compare: Query 2 (no SQL text was generated); Query 3 (no SQL text was generated)."
+    },
+    {
+      "left": 2,
+      "right": 4,
+      "reason": "Cannot compare: Query 2 (no SQL text was generated); Query 4 (no SQL text was generated)."
+    },
+    {
+      "left": 3,
+      "right": 4,
+      "reason": "Cannot compare: Query 3 (no SQL text was generated); Query 4 (no SQL text was generated)."
+    }
+  ],
+  "incomparable_pairs": [],
+  "empty_queries": [],
+  "summary_text": "Query 1 is a main (broadest) query. Query 2 is a main (broadest) query. Query 3 is a main (broadest) query. Query 4 is a main (broadest) query. Independent (no proven containment): Query 1, Query 2, Query 3, Query 4. 6 pair(s) could not be compared (unknown)."
+}
+
+PAIRWISE RESULTS
+[]
+
+============================================================================================================
+CASE 11: Address geography containment - normal NL
+MODE: normal
+CATEGORY: join
+STATUS: FAIL
+REASON: HTTP 500
+EXPECTED RELATIONSHIP NOTE: Seattle, Washington addresses should be contained in Seattle, Washington, and United States sets.
+HTTP STATUS: 500
+ELAPSED SECONDS: 0.142
+
+INPUT QUERIES
+Q1: List addresses in Seattle, Washington.
+Q2: List addresses in Seattle.
+Q3: List addresses in Washington.
+Q4: List addresses in the United States.
+
+GENERATED SQL AND EXECUTION
+CONTAINMENT ANALYSIS
+(none)
+
+PAIRWISE RESULTS
+[]
+
+============================================================================================================
+CASE 12: Department employee-count containment - normal NL
+MODE: normal
+CATEGORY: group_having
+STATUS: PASS
+REASON: all queries generated SQL and the containment endpoint completed
+EXPECTED RELATIONSHIP NOTE: Higher department headcount thresholds should be contained in lower thresholds.
+HTTP STATUS: 200
+ELAPSED SECONDS: 66.036
+
+INPUT QUERIES
+Q1: Show departments with more than 20 current employees.
+Q2: Show departments with more than 10 current employees.
+Q3: Show departments with at least one current employee.
+Q4: Show departments with more than 30 current employees.
+
+GENERATED SQL AND EXECUTION
+Q1: success=True safe=True rows=16 empty=False
+columns=['Name']
+SELECT d.Name
+FROM Department d
+JOIN Employee e ON 1=1
+WHERE e.CurrentFlag = 1
+GROUP BY d.DepartmentID, d.Name
+HAVING COUNT(e.BusinessEntityID) > 20
+
+Q2: success=True safe=True rows=16 empty=False
+columns=['Name']
+SELECT d.Name
+FROM Department d
+JOIN Employee e ON 1=1
+WHERE e.CurrentFlag = 1
+GROUP BY d.DepartmentID
+HAVING COUNT(e.BusinessEntityID) > 10
+
+Q3: success=True safe=True rows=16 empty=False
+columns=['Name']
+SELECT d.Name
+FROM Department d
+JOIN Employee e ON 1=1
+WHERE e.CurrentFlag = 1
+GROUP BY d.DepartmentID, d.Name
+HAVING COUNT(*) >= 1
+
+Q4: success=True safe=False rows=0 empty=True
+columns=['Name']
+SELECT d.Name
+FROM Department d
+JOIN Employee e ON d.DepartmentID = e.BusinessEntityID
+WHERE e.CurrentFlag = '1'
+GROUP BY d.DepartmentID
+HAVING COUNT(e.BusinessEntityID) > 30
+
+CONTAINMENT ANALYSIS
+{
+  "query_count": 4,
+  "main_queries": [
+    {
+      "index": 1,
+      "equivalent_to": [
+        3
+      ],
+      "contains": [],
+      "contained_by": []
+    },
+    {
+      "index": 2,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    }
+  ],
+  "equivalent_groups": [
+    [
+      1,
+      3
+    ]
+  ],
+  "containment_edges": [],
+  "independent_queries": [
+    2,
+    4
+  ],
+  "unknown_pairs": [
+    {
+      "left": 1,
+      "right": 2,
+      "reason": "Cannot compare grouped queries: different group keys (['departmentid', 'name'] vs ['departmentid'])."
+    },
+    {
+      "left": 1,
+      "right": 4,
+      "reason": "Cannot compare: Query 4 (SQL was generated with low confidence)."
+    },
+    {
+      "left": 2,
+      "right": 3,
+      "reason": "Cannot compare grouped queries: different group keys (['departmentid'] vs ['departmentid', 'name'])."
+    },
+    {
+      "left": 2,
+      "right": 4,
+      "reason": "Cannot compare: Query 4 (SQL was generated with low confidence)."
+    },
+    {
+      "left": 3,
+      "right": 4,
+      "reason": "Cannot compare: Query 4 (SQL was generated with low confidence)."
+    }
+  ],
+  "incomparable_pairs": [],
+  "empty_queries": [
+    4
+  ],
+  "summary_text": "Query 1 is a main (broadest) query (equivalent to Query 3). Query 2 is a main (broadest) query. Query 1, Query 3 are equivalent on the current database. Independent (no proven containment): Query 2, Query 4. Empty-result queries: Query 4. 5 pair(s) could not be compared (unknown)."
+}
+
+PAIRWISE RESULTS
+[]
+
+============================================================================================================
+CASE 13: Salesperson quota attainment containment - normal NL
+MODE: normal
+CATEGORY: derived_metric
+STATUS: FAIL
+REASON: query 1 reported execution failure
+EXPECTED RELATIONSHIP NOTE: Higher quota-attainment thresholds should be narrower.
+HTTP STATUS: 200
+ELAPSED SECONDS: 0.011
+
+INPUT QUERIES
+Q1: List salespeople whose year-to-date sales exceed 150 percent of quota.
+Q2: List salespeople whose year-to-date sales exceed quota.
+Q3: List salespeople who have a nonzero sales quota.
+Q4: List salespeople whose year-to-date sales exceed 200 percent of quota.
+
+GENERATED SQL AND EXECUTION
+Q1: success=False safe=False rows=0 empty=False
+columns=None
+(no SQL)
+
+Q2: success=False safe=False rows=0 empty=False
+columns=None
+(no SQL)
+
+Q3: success=False safe=False rows=0 empty=False
+columns=None
+(no SQL)
+
+Q4: success=False safe=False rows=0 empty=False
+columns=None
+(no SQL)
+
+CONTAINMENT ANALYSIS
+{
+  "query_count": 4,
+  "main_queries": [
+    {
+      "index": 1,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    },
+    {
+      "index": 2,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    },
+    {
+      "index": 3,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    },
+    {
+      "index": 4,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    }
+  ],
+  "equivalent_groups": [],
+  "containment_edges": [],
+  "independent_queries": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "unknown_pairs": [
+    {
+      "left": 1,
+      "right": 2,
+      "reason": "Cannot compare: Query 1 (no SQL text was generated); Query 2 (no SQL text was generated)."
+    },
+    {
+      "left": 1,
+      "right": 3,
+      "reason": "Cannot compare: Query 1 (no SQL text was generated); Query 3 (no SQL text was generated)."
+    },
+    {
+      "left": 1,
+      "right": 4,
+      "reason": "Cannot compare: Query 1 (no SQL text was generated); Query 4 (no SQL text was generated)."
+    },
+    {
+      "left": 2,
+      "right": 3,
+      "reason": "Cannot compare: Query 2 (no SQL text was generated); Query 3 (no SQL text was generated)."
+    },
+    {
+      "left": 2,
+      "right": 4,
+      "reason": "Cannot compare: Query 2 (no SQL text was generated); Query 4 (no SQL text was generated)."
+    },
+    {
+      "left": 3,
+      "right": 4,
+      "reason": "Cannot compare: Query 3 (no SQL text was generated); Query 4 (no SQL text was generated)."
+    }
+  ],
+  "incomparable_pairs": [],
+  "empty_queries": [],
+  "summary_text": "Query 1 is a main (broadest) query. Query 2 is a main (broadest) query. Query 3 is a main (broadest) query. Query 4 is a main (broadest) query. Independent (no proven containment): Query 1, Query 2, Query 3, Query 4. 6 pair(s) could not be compared (unknown)."
+}
+
+PAIRWISE RESULTS
+[]
+
+============================================================================================================
+CASE 14: Inventory quantity containment - normal NL
+MODE: normal
+CATEGORY: filter_threshold
+STATUS: PASS
+REASON: all queries generated SQL and the containment endpoint completed
+EXPECTED RELATIONSHIP NOTE: Larger inventory thresholds should be subsets of lower thresholds.
+HTTP STATUS: 200
+ELAPSED SECONDS: 50.257
+
+INPUT QUERIES
+Q1: Show product inventory rows with quantity above 500.
+Q2: Show product inventory rows with quantity above 250.
+Q3: Show product inventory rows with quantity above 100.
+Q4: Show product inventory rows with quantity above 750.
+
+GENERATED SQL AND EXECUTION
+Q1: success=True safe=True rows=181 empty=False
+columns=['ProductID', 'Name', 'ProductNumber', 'MakeFlag', 'FinishedGoodsFlag', 'Color', 'SafetyStockLevel', 'ReorderPoint', 'StandardCost', 'ListPrice', 'Size', 'SizeUnitMeasureCode', 'WeightUnitMeasureCode', 'Weight', 'DaysToManufacture', 'ProductLine', 'Class', 'Style', 'ProductSubcategoryID', 'ProductModelID', 'SellStartDate', 'SellEndDate', 'DiscontinuedDate', 'rowguid', 'ModifiedDate']
+SELECT "product".* FROM "product" WHERE "product"."safetystocklevel" > ?
+
+Q2: success=True safe=True rows=348 empty=False
+columns=['ProductID', 'Name', 'ProductNumber', 'MakeFlag', 'FinishedGoodsFlag', 'Color', 'SafetyStockLevel', 'ReorderPoint', 'StandardCost', 'ListPrice', 'Size', 'SizeUnitMeasureCode', 'WeightUnitMeasureCode', 'Weight', 'DaysToManufacture', 'ProductLine', 'Class', 'Style', 'ProductSubcategoryID', 'ProductModelID', 'SellStartDate', 'SellEndDate', 'DiscontinuedDate', 'rowguid', 'ModifiedDate']
+SELECT ProductID, Name, ProductNumber, MakeFlag, FinishedGoodsFlag, Color, SafetyStockLevel, ReorderPoint, StandardCost, ListPrice, Size, SizeUnitMeasureCode, WeightUnitMeasureCode, Weight, DaysToManufacture, ProductLine, Class, Style, ProductSubcategoryID, ProductModelID, SellStartDate, SellEndDate, DiscontinuedDate, rowguid, ModifiedDate
+FROM Product
+WHERE SafetyStockLevel > 250 OR ReorderPoint > 250
+
+Q3: success=True safe=True rows=348 empty=False
+columns=['ProductID', 'Name', 'ProductNumber', 'MakeFlag', 'FinishedGoodsFlag', 'Color', 'SafetyStockLevel', 'ReorderPoint', 'StandardCost', 'ListPrice', 'Size', 'SizeUnitMeasureCode', 'WeightUnitMeasureCode', 'Weight', 'DaysToManufacture', 'ProductLine', 'Class', 'Style', 'ProductSubcategoryID', 'ProductModelID', 'SellStartDate', 'SellEndDate', 'DiscontinuedDate', 'rowguid', 'ModifiedDate']
+SELECT "product".* FROM "product" WHERE "product"."safetystocklevel" > ?
+
+Q4: success=True safe=True rows=181 empty=False
+columns=['ProductID', 'Name', 'ProductNumber', 'Color', 'SafetyStockLevel', 'ReorderPoint', 'StandardCost', 'ListPrice', 'Size', 'Weight', 'DaysToManufacture', 'ProductLine', 'Class', 'Style', 'ProductSubcategoryID', 'ProductModelID', 'SellStartDate', 'SellEndDate', 'DiscontinuedDate', 'rowguid', 'ModifiedDate']
+SELECT ProductID, Name, ProductNumber, Color, SafetyStockLevel, ReorderPoint, StandardCost, ListPrice, Size, Weight, DaysToManufacture, ProductLine, Class, Style, ProductSubcategoryID, ProductModelID, SellStartDate, SellEndDate, DiscontinuedDate, rowguid, ModifiedDate
+FROM Product
+WHERE SafetyStockLevel > 750
+
+CONTAINMENT ANALYSIS
+{
+  "query_count": 4,
+  "main_queries": [
+    {
+      "index": 2,
+      "equivalent_to": [
+        3
+      ],
+      "contains": [
+        1,
+        4
+      ],
+      "contained_by": []
+    }
+  ],
+  "equivalent_groups": [
+    [
+      1,
+      4
+    ],
+    [
+      2,
+      3
+    ]
+  ],
+  "containment_edges": [
+    {
+      "superset": 2,
+      "subset": 1,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 3,
+      "subset": 1,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 2,
+      "subset": 4,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 3,
+      "subset": 4,
+      "relationship_source": "pairwise"
+    }
+  ],
+  "independent_queries": [],
+  "unknown_pairs": [],
+  "incomparable_pairs": [],
+  "empty_queries": [],
+  "summary_text": "Query 2 is a main (broadest) query; it contains Query 1, Query 4 (equivalent to Query 3). Query 1, Query 4 are equivalent on the current database. Query 2, Query 3 are equivalent on the current database."
+}
+
+PAIRWISE RESULTS
+[]
+
+============================================================================================================
+CASE 15: Sales-order date and status containment - normal NL
+MODE: normal
+CATEGORY: date_and_status
+STATUS: FAIL
+REASON: query 1 reported execution failure
+EXPECTED RELATIONSHIP NOTE: Recent shipped orders should be narrower than recent-only and shipped-only sets.
+HTTP STATUS: 200
+ELAPSED SECONDS: 0.010
+
+INPUT QUERIES
+Q1: Show shipped sales orders placed after 2013.
+Q2: Show sales orders placed after 2013.
+Q3: Show shipped sales orders.
+Q4: Show completed sales orders placed after 2012.
+
+GENERATED SQL AND EXECUTION
+Q1: success=False safe=False rows=0 empty=False
+columns=None
+(no SQL)
+
+Q2: success=False safe=False rows=0 empty=False
+columns=None
+(no SQL)
+
+Q3: success=False safe=False rows=0 empty=False
+columns=None
+(no SQL)
+
+Q4: success=False safe=False rows=0 empty=False
+columns=None
+(no SQL)
+
+CONTAINMENT ANALYSIS
+{
+  "query_count": 4,
+  "main_queries": [
+    {
+      "index": 1,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    },
+    {
+      "index": 2,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    },
+    {
+      "index": 3,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    },
+    {
+      "index": 4,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    }
+  ],
+  "equivalent_groups": [],
+  "containment_edges": [],
+  "independent_queries": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "unknown_pairs": [
+    {
+      "left": 1,
+      "right": 2,
+      "reason": "Cannot compare: Query 1 (no SQL text was generated); Query 2 (no SQL text was generated)."
+    },
+    {
+      "left": 1,
+      "right": 3,
+      "reason": "Cannot compare: Query 1 (no SQL text was generated); Query 3 (no SQL text was generated)."
+    },
+    {
+      "left": 1,
+      "right": 4,
+      "reason": "Cannot compare: Query 1 (no SQL text was generated); Query 4 (no SQL text was generated)."
+    },
+    {
+      "left": 2,
+      "right": 3,
+      "reason": "Cannot compare: Query 2 (no SQL text was generated); Query 3 (no SQL text was generated)."
+    },
+    {
+      "left": 2,
+      "right": 4,
+      "reason": "Cannot compare: Query 2 (no SQL text was generated); Query 4 (no SQL text was generated)."
+    },
+    {
+      "left": 3,
+      "right": 4,
+      "reason": "Cannot compare: Query 3 (no SQL text was generated); Query 4 (no SQL text was generated)."
+    }
+  ],
+  "incomparable_pairs": [],
+  "empty_queries": [],
+  "summary_text": "Query 1 is a main (broadest) query. Query 2 is a main (broadest) query. Query 3 is a main (broadest) query. Query 4 is a main (broadest) query. Independent (no proven containment): Query 1, Query 2, Query 3, Query 4. 6 pair(s) could not be compared (unknown)."
+}
+
+PAIRWISE RESULTS
+[]
+
+============================================================================================================
+CASE 16: Product list-price threshold chain - structured NL
+MODE: structured
+CATEGORY: filter_threshold
+STATUS: PASS
+REASON: all queries generated SQL and the containment endpoint completed
+EXPECTED RELATIONSHIP NOTE: Higher price thresholds should be contained in lower thresholds.
+HTTP STATUS: 200
+ELAPSED SECONDS: 46.275
+
+INPUT QUERIES
+Q1: Return ProductID, Name, and ListPrice from Product where ListPrice is greater than 1500.
+Q2: Return ProductID, Name, and ListPrice from Product where ListPrice is greater than 1000.
+Q3: Return ProductID, Name, and ListPrice from Product where ListPrice is greater than 500.
+Q4: Return ProductID, Name, and ListPrice from Product where ListPrice is greater than 2000.
+
+GENERATED SQL AND EXECUTION
+Q1: success=True safe=True rows=39 empty=False
+columns=['ProductID', 'Name', 'ListPrice']
+SELECT ProductID, Name, ListPrice FROM Product WHERE ListPrice > 1500
+
+Q2: success=True safe=True rows=86 empty=False
+columns=['ProductID', 'Name', 'ListPrice']
+SELECT ProductID, Name, ListPrice FROM Product WHERE ListPrice > 1000
+
+Q3: success=True safe=True rows=136 empty=False
+columns=['ProductID', 'Name', 'ListPrice']
+SELECT ProductID, Name, ListPrice FROM Product WHERE ListPrice > 500
+
+Q4: success=True safe=True rows=35 empty=False
+columns=['ProductID', 'Name', 'ListPrice']
+SELECT ProductID, Name, ListPrice FROM Product WHERE ListPrice > 2000
+
+CONTAINMENT ANALYSIS
+{
+  "query_count": 4,
+  "main_queries": [
+    {
+      "index": 3,
+      "equivalent_to": [],
+      "contains": [
+        1,
+        2,
+        4
+      ],
+      "contained_by": []
+    }
+  ],
+  "equivalent_groups": [],
+  "containment_edges": [
+    {
+      "superset": 2,
+      "subset": 1,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 3,
+      "subset": 1,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 1,
+      "subset": 4,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 3,
+      "subset": 2,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 2,
+      "subset": 4,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 3,
+      "subset": 4,
+      "relationship_source": "pairwise"
+    }
+  ],
+  "independent_queries": [],
+  "unknown_pairs": [],
+  "incomparable_pairs": [],
+  "empty_queries": [],
+  "summary_text": "Query 3 is a main (broadest) query; it contains Query 1, Query 2, Query 4."
+}
+
+PAIRWISE RESULTS
+[]
+
+============================================================================================================
+CASE 17: Sales-order total threshold chain - structured NL
+MODE: structured
+CATEGORY: filter_threshold
+STATUS: PASS
+REASON: all queries generated SQL and the containment endpoint completed
+EXPECTED RELATIONSHIP NOTE: Higher TotalDue thresholds should be subsets of lower thresholds.
+HTTP STATUS: 200
+ELAPSED SECONDS: 51.918
+
+INPUT QUERIES
+Q1: Return SalesOrderID, CustomerID, OrderDate, and TotalDue from SalesOrderHeader where TotalDue is greater than 20000.
+Q2: Return SalesOrderID, CustomerID, OrderDate, and TotalDue from SalesOrderHeader where TotalDue is greater than 10000.
+Q3: Return SalesOrderID, CustomerID, OrderDate, and TotalDue from SalesOrderHeader where TotalDue is greater than 5000.
+Q4: Return SalesOrderID, CustomerID, OrderDate, and TotalDue from SalesOrderHeader where TotalDue is greater than 30000.
+
+GENERATED SQL AND EXECUTION
+Q1: success=True safe=True rows=1000 empty=False
+columns=['SalesOrderID', 'CustomerID', 'OrderDate', 'TotalDue']
+SELECT SalesOrderID, CustomerID, OrderDate, TotalDue
+FROM SalesOrderHeader
+WHERE TotalDue > 20000
+
+Q2: success=True safe=True rows=1000 empty=False
+columns=['SalesOrderID', 'CustomerID', 'OrderDate', 'TotalDue']
+SELECT SalesOrderID, CustomerID, OrderDate, TotalDue FROM SalesOrderHeader WHERE TotalDue > 10000
+
+Q3: success=True safe=True rows=1000 empty=False
+columns=['SalesOrderID', 'CustomerID', 'OrderDate', 'TotalDue']
+SELECT SalesOrderID, CustomerID, OrderDate, TotalDue
+FROM SalesOrderHeader
+WHERE TotalDue > 5000
+
+Q4: success=True safe=True rows=1000 empty=False
+columns=['SalesOrderID', 'CustomerID', 'OrderDate', 'TotalDue']
+SELECT SalesOrderID, CustomerID, OrderDate, TotalDue
+FROM SalesOrderHeader
+WHERE TotalDue > 30000
+
+CONTAINMENT ANALYSIS
+{
+  "query_count": 4,
+  "main_queries": [
+    {
+      "index": 3,
+      "equivalent_to": [],
+      "contains": [
+        1,
+        2,
+        4
+      ],
+      "contained_by": []
+    }
+  ],
+  "equivalent_groups": [],
+  "containment_edges": [
+    {
+      "superset": 2,
+      "subset": 1,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 3,
+      "subset": 1,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 1,
+      "subset": 4,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 3,
+      "subset": 2,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 2,
+      "subset": 4,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 3,
+      "subset": 4,
+      "relationship_source": "pairwise"
+    }
+  ],
+  "independent_queries": [],
+  "unknown_pairs": [],
+  "incomparable_pairs": [],
+  "empty_queries": [],
+  "summary_text": "Query 3 is a main (broadest) query; it contains Query 1, Query 2, Query 4."
+}
+
+PAIRWISE RESULTS
+[]
+
+============================================================================================================
+CASE 18: Employee hire date and vacation-hours narrowing - structured NL
+MODE: structured
+CATEGORY: conjunction
+STATUS: FAIL
+REASON: query 1 reported execution failure
+EXPECTED RELATIONSHIP NOTE: The first query is narrower than each single-condition query and the weaker conjunction.
+HTTP STATUS: 200
+ELAPSED SECONDS: 13.808
+
+INPUT QUERIES
+Q1: Return BusinessEntityID, JobTitle, HireDate, and VacationHours from Employee where HireDate is after 2010-01-01 and VacationHours is greater than 50.
+Q2: Return BusinessEntityID, JobTitle, HireDate, and VacationHours from Employee where HireDate is after 2010-01-01.
+Q3: Return BusinessEntityID, JobTitle, HireDate, and VacationHours from Employee where VacationHours is greater than 50.
+Q4: Return BusinessEntityID, JobTitle, HireDate, and VacationHours from Employee where HireDate is after 2005-01-01 and VacationHours is greater than 30.
+
+GENERATED SQL AND EXECUTION
+Q1: success=False safe=False rows=0 empty=False
+columns=None
+(no SQL)
+
+Q2: success=False safe=False rows=0 empty=False
+columns=None
+(no SQL)
+
+Q3: success=True safe=True rows=147 empty=False
+columns=['BusinessEntityID', 'JobTitle', 'HireDate', 'VacationHours']
+SELECT BusinessEntityID, JobTitle, HireDate, VacationHours
+FROM Employee
+WHERE VacationHours > 50
+
+Q4: success=False safe=False rows=0 empty=False
+columns=None
+(no SQL)
+
+CONTAINMENT ANALYSIS
+{
+  "query_count": 4,
+  "main_queries": [
+    {
+      "index": 1,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    },
+    {
+      "index": 2,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    },
+    {
+      "index": 3,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    },
+    {
+      "index": 4,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    }
+  ],
+  "equivalent_groups": [],
+  "containment_edges": [],
+  "independent_queries": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "unknown_pairs": [
+    {
+      "left": 1,
+      "right": 2,
+      "reason": "Cannot compare: Query 1 (no SQL text was generated); Query 2 (no SQL text was generated)."
+    },
+    {
+      "left": 1,
+      "right": 3,
+      "reason": "Cannot compare: Query 1 (no SQL text was generated)."
+    },
+    {
+      "left": 1,
+      "right": 4,
+      "reason": "Cannot compare: Query 1 (no SQL text was generated); Query 4 (no SQL text was generated)."
+    },
+    {
+      "left": 2,
+      "right": 3,
+      "reason": "Cannot compare: Query 2 (no SQL text was generated)."
+    },
+    {
+      "left": 2,
+      "right": 4,
+      "reason": "Cannot compare: Query 2 (no SQL text was generated); Query 4 (no SQL text was generated)."
+    },
+    {
+      "left": 3,
+      "right": 4,
+      "reason": "Cannot compare: Query 4 (no SQL text was generated)."
+    }
+  ],
+  "incomparable_pairs": [],
+  "empty_queries": [],
+  "summary_text": "Query 1 is a main (broadest) query. Query 2 is a main (broadest) query. Query 3 is a main (broadest) query. Query 4 is a main (broadest) query. Independent (no proven containment): Query 1, Query 2, Query 3, Query 4. 6 pair(s) could not be compared (unknown)."
+}
+
+PAIRWISE RESULTS
+[]
+
+============================================================================================================
+CASE 19: Vendor credit and activity narrowing - structured NL
+MODE: structured
+CATEGORY: conjunction
+STATUS: PASS
+REASON: all queries generated SQL and the containment endpoint completed
+EXPECTED RELATIONSHIP NOTE: Active rating-1 vendors should be contained in the broader vendor sets.
+HTTP STATUS: 200
+ELAPSED SECONDS: 51.364
+
+INPUT QUERIES
+Q1: Return BusinessEntityID, Name, CreditRating, and ActiveFlag from Vendor where ActiveFlag is true and CreditRating equals 1.
+Q2: Return BusinessEntityID, Name, CreditRating, and ActiveFlag from Vendor where ActiveFlag is true.
+Q3: Return BusinessEntityID, Name, CreditRating, and ActiveFlag from Vendor where CreditRating equals 1.
+Q4: Return BusinessEntityID, Name, CreditRating, and ActiveFlag from Vendor where ActiveFlag is true and CreditRating is less than or equal to 2.
+
+GENERATED SQL AND EXECUTION
+Q1: success=True safe=True rows=82 empty=False
+columns=['BusinessEntityID', 'Name', 'CreditRating', 'ActiveFlag']
+SELECT BusinessEntityID, Name, CreditRating, ActiveFlag
+FROM Vendor
+WHERE ActiveFlag = 1 AND CreditRating = 1
+
+Q2: success=True safe=True rows=100 empty=False
+columns=['BusinessEntityID', 'Name', 'CreditRating', 'ActiveFlag']
+SELECT BusinessEntityID, Name, CreditRating, ActiveFlag
+FROM Vendor
+WHERE ActiveFlag = 1
+
+Q3: success=True safe=True rows=84 empty=False
+columns=['BusinessEntityID', 'Name', 'CreditRating', 'ActiveFlag']
+SELECT Vendor.BusinessEntityID, Vendor.Name, Vendor.CreditRating, Vendor.ActiveFlag
+FROM Vendor
+WHERE Vendor.CreditRating = 1
+
+Q4: success=True safe=True rows=90 empty=False
+columns=['BusinessEntityID', 'Name', 'CreditRating', 'ActiveFlag']
+SELECT BusinessEntityID, Name, CreditRating, ActiveFlag
+FROM Vendor
+WHERE ActiveFlag = 1 AND CreditRating <= 2
+
+CONTAINMENT ANALYSIS
+{
+  "query_count": 4,
+  "main_queries": [
+    {
+      "index": 2,
+      "equivalent_to": [],
+      "contains": [
+        1,
+        4
+      ],
+      "contained_by": []
+    },
+    {
+      "index": 3,
+      "equivalent_to": [],
+      "contains": [
+        1
+      ],
+      "contained_by": []
+    }
+  ],
+  "equivalent_groups": [],
+  "containment_edges": [
+    {
+      "superset": 2,
+      "subset": 1,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 3,
+      "subset": 1,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 4,
+      "subset": 1,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 2,
+      "subset": 4,
+      "relationship_source": "pairwise"
+    }
+  ],
+  "independent_queries": [],
+  "unknown_pairs": [],
+  "incomparable_pairs": [
+    {
+      "left": 2,
+      "right": 3
+    },
+    {
+      "left": 3,
+      "right": 4
+    }
+  ],
+  "empty_queries": [],
+  "summary_text": "Query 2 is a main (broadest) query; it contains Query 1, Query 4. Query 3 is a main (broadest) query; it contains Query 1. Incomparable: Query 2 vs Query 3; Query 3 vs Query 4."
+}
+
+PAIRWISE RESULTS
+[]
+
+============================================================================================================
+CASE 20: Product color and price narrowing - structured NL
+MODE: structured
+CATEGORY: conjunction
+STATUS: PASS
+REASON: all queries generated SQL and the containment endpoint completed
+EXPECTED RELATIONSHIP NOTE: Red and expensive products should be narrower than red-only and expensive-only products.
+HTTP STATUS: 200
+ELAPSED SECONDS: 51.454
+
+INPUT QUERIES
+Q1: Return ProductID, Name, Color, and ListPrice from Product where Color equals Red and ListPrice is greater than 1000.
+Q2: Return ProductID, Name, Color, and ListPrice from Product where Color equals Red.
+Q3: Return ProductID, Name, Color, and ListPrice from Product where ListPrice is greater than 1000.
+Q4: Return ProductID, Name, Color, and ListPrice from Product where Color is not null and ListPrice is greater than 500.
+
+GENERATED SQL AND EXECUTION
+Q1: success=True safe=True rows=20 empty=False
+columns=['ProductID', 'Name', 'Color', 'ListPrice']
+SELECT ProductID, Name, Color, ListPrice FROM Product WHERE Color = 'Red' AND ListPrice > 1000
+
+Q2: success=True safe=True rows=38 empty=False
+columns=['ProductID', 'Name', 'Color', 'ListPrice']
+SELECT ProductID, Name, Color, ListPrice FROM Product WHERE Color = 'Red'
+
+Q3: success=True safe=True rows=86 empty=False
+columns=['ProductID', 'Name', 'Color', 'ListPrice']
+SELECT ProductID, Name, Color, ListPrice FROM Product WHERE ListPrice > 1000
+
+Q4: success=True safe=True rows=136 empty=False
+columns=['ProductID', 'Name', 'Color', 'ListPrice']
+SELECT ProductID, Name, Color, ListPrice FROM Product WHERE Color IS NOT NULL AND ListPrice > 500
+
+CONTAINMENT ANALYSIS
+{
+  "query_count": 4,
+  "main_queries": [
+    {
+      "index": 2,
+      "equivalent_to": [],
+      "contains": [
+        1
+      ],
+      "contained_by": []
+    },
+    {
+      "index": 4,
+      "equivalent_to": [],
+      "contains": [
+        1,
+        3
+      ],
+      "contained_by": []
+    }
+  ],
+  "equivalent_groups": [],
+  "containment_edges": [
+    {
+      "superset": 2,
+      "subset": 1,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 3,
+      "subset": 1,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 4,
+      "subset": 1,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 4,
+      "subset": 3,
+      "relationship_source": "pairwise"
+    }
+  ],
+  "independent_queries": [],
+  "unknown_pairs": [],
+  "incomparable_pairs": [
+    {
+      "left": 2,
+      "right": 3
+    },
+    {
+      "left": 2,
+      "right": 4
+    }
+  ],
+  "empty_queries": [],
+  "summary_text": "Query 2 is a main (broadest) query; it contains Query 1. Query 4 is a main (broadest) query; it contains Query 1, Query 3. Incomparable: Query 2 vs Query 3; Query 2 vs Query 4."
+}
+
+PAIRWISE RESULTS
+[]
+
+============================================================================================================
+CASE 21: Customer territory and order containment - structured NL
+MODE: structured
+CATEGORY: join
+STATUS: PASS
+REASON: all queries generated SQL and the containment endpoint completed
+EXPECTED RELATIONSHIP NOTE: Territory-1 customers with orders should be contained in both broader parent sets.
+HTTP STATUS: 200
+ELAPSED SECONDS: 46.245
+
+INPUT QUERIES
+Q1: Return distinct CustomerID and TerritoryID by joining Customer to SalesOrderHeader, where Customer TerritoryID equals 1.
+Q2: Return CustomerID and TerritoryID from Customer where TerritoryID equals 1.
+Q3: Return distinct CustomerID and TerritoryID by joining Customer to SalesOrderHeader.
+Q4: Return distinct CustomerID and TerritoryID by joining Customer to SalesOrderHeader where TerritoryID is not null.
+
+GENERATED SQL AND EXECUTION
+Q1: success=True safe=True rows=1000 empty=False
+columns=['CustomerID', 'TerritoryID']
+SELECT DISTINCT c.CustomerID, c.TerritoryID
+FROM Customer c
+JOIN SalesOrderHeader soh ON c.CustomerID = soh.CustomerID
+WHERE c.TerritoryID = 1
+
+Q2: success=True safe=True rows=1000 empty=False
+columns=['CustomerID', 'TerritoryID']
+SELECT CustomerID, TerritoryID FROM Customer WHERE TerritoryID = 1
+
+Q3: success=True safe=True rows=1000 empty=False
+columns=['CustomerID', 'TerritoryID']
+SELECT DISTINCT c.CustomerID, c.TerritoryID
+FROM Customer c
+JOIN SalesOrderHeader soh ON c.CustomerID = soh.CustomerID
+
+Q4: success=True safe=True rows=1000 empty=False
+columns=['CustomerID', 'TerritoryID']
+SELECT DISTINCT c.CustomerID, c.TerritoryID
+FROM Customer c
+JOIN SalesOrderHeader soh ON c.CustomerID = soh.CustomerID
+WHERE soh.TerritoryID IS NOT NULL
+
+CONTAINMENT ANALYSIS
+{
+  "query_count": 4,
+  "main_queries": [
+    {
+      "index": 2,
+      "equivalent_to": [],
+      "contains": [
+        1
+      ],
+      "contained_by": []
+    },
+    {
+      "index": 3,
+      "equivalent_to": [
+        4
+      ],
+      "contains": [
+        1
+      ],
+      "contained_by": []
+    }
+  ],
+  "equivalent_groups": [
+    [
+      3,
+      4
+    ]
+  ],
+  "containment_edges": [
+    {
+      "superset": 2,
+      "subset": 1,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 3,
+      "subset": 1,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 4,
+      "subset": 1,
+      "relationship_source": "pairwise"
+    }
+  ],
+  "independent_queries": [],
+  "unknown_pairs": [],
+  "incomparable_pairs": [
+    {
+      "left": 2,
+      "right": 3
+    },
+    {
+      "left": 2,
+      "right": 4
+    }
+  ],
+  "empty_queries": [],
+  "summary_text": "Query 2 is a main (broadest) query; it contains Query 1. Query 3 is a main (broadest) query; it contains Query 1 (equivalent to Query 4). Query 3, Query 4 are equivalent on the current database. Incomparable: Query 2 vs Query 3; Query 2 vs Query 4."
+}
+
+PAIRWISE RESULTS
+[]
+
+============================================================================================================
+CASE 22: Category, subcategory, and product-price containment - structured NL
+MODE: structured
+CATEGORY: multi_join
+STATUS: PASS
+REASON: all queries generated SQL and the containment endpoint completed
+EXPECTED RELATIONSHIP NOTE: Expensive bikes should be contained in bikes, expensive products, and the weaker price threshold.
+HTTP STATUS: 200
+ELAPSED SECONDS: 112.650
+
+INPUT QUERIES
+Q1: Join Product, ProductSubcategory, and ProductCategory; return ProductID, product Name, subcategory Name, category Name, and ListPrice where category Name equals Bikes and ListPrice is greater than 1000.
+Q2: Join Product, ProductSubcategory, and ProductCategory; return the same columns where category Name equals Bikes.
+Q3: Join Product, ProductSubcategory, and ProductCategory; return the same columns where ListPrice is greater than 1000.
+Q4: Join Product, ProductSubcategory, and ProductCategory; return the same columns where ListPrice is greater than 500.
+
+GENERATED SQL AND EXECUTION
+Q1: success=True safe=True rows=57 empty=False
+columns=['ProductID', 'Name', 'SubcategoryName', 'CategoryName', 'ListPrice']
+SELECT p.ProductID, p.Name, ps.Name AS SubcategoryName, pc.Name AS CategoryName, p.ListPrice
+FROM Product p
+JOIN ProductSubcategory ps ON p.ProductSubcategoryID = ps.ProductSubcategoryID
+JOIN ProductCategory pc ON ps.ProductCategoryID = pc.ProductCategoryID
+WHERE pc.Name = 'Bikes' AND p.ListPrice > 1000
+
+Q2: success=True safe=False rows=97 empty=False
+columns=['ProductID', 'Name', 'ProductNumber', 'MakeFlag', 'FinishedGoodsFlag', 'Color', 'SafetyStockLevel', 'ReorderPoint', 'StandardCost', 'ListPrice', 'Size', 'SizeUnitMeasureCode', 'WeightUnitMeasureCode', 'Weight', 'DaysToManufacture', 'ProductLine', 'Class', 'Style', 'ProductSubcategoryID', 'ProductModelID', 'SellStartDate', 'SellEndDate', 'DiscontinuedDate', 'rowguid', 'ModifiedDate', 'ProductSubcategoryID', 'ProductCategoryID', 'Name', 'rowguid', 'ModifiedDate', 'ProductCategoryID', 'Name', 'rowguid', 'ModifiedDate']
+SELECT p.*, ps.*, pc.*
+FROM Product p
+JOIN ProductSubcategory ps ON p.ProductSubcategoryID = ps.ProductSubcategoryID
+JOIN ProductCategory pc ON ps.ProductCategoryID = pc.ProductCategoryID
+WHERE pc.Name = 'Bikes'
+
+Q3: success=True safe=True rows=86 empty=False
+columns=['ProductID', 'Name', 'ProductNumber', 'MakeFlag', 'FinishedGoodsFlag', 'Color', 'SafetyStockLevel', 'ReorderPoint', 'StandardCost', 'ListPrice', 'Size', 'SizeUnitMeasureCode', 'WeightUnitMeasureCode', 'Weight', 'DaysToManufacture', 'ProductLine', 'Class', 'Style', 'ProductSubcategoryID', 'ProductModelID', 'SellStartDate', 'SellEndDate', 'DiscontinuedDate', 'rowguid', 'ModifiedDate', 'ProductSubcategoryID', 'ProductCategoryID', 'Name', 'rowguid', 'ModifiedDate', 'ProductCategoryID', 'Name', 'rowguid', 'ModifiedDate']
+SELECT p.ProductID, p.Name, p.ProductNumber, p.MakeFlag, p.FinishedGoodsFlag, p.Color, p.SafetyStockLevel, p.ReorderPoint, p.StandardCost, p.ListPrice, p.Size, p.SizeUnitMeasureCode, p.WeightUnitMeasureCode, p.Weight, p.DaysToManufacture, p.ProductLine, p.Class, p.Style, p.ProductSubcategoryID, p.ProductModelID, p.SellStartDate, p.SellEndDate, p.DiscontinuedDate, p.rowguid, p.ModifiedDate, ps.ProductSubcategoryID, ps.ProductCategoryID, ps.Name, ps.rowguid, ps.ModifiedDate, pc.ProductCategoryID, pc.Name, pc.rowguid, pc.ModifiedDate
+FROM Product p
+JOIN ProductSubcategory ps ON p.ProductSubcategoryID = ps.ProductSubcategoryID
+JOIN ProductCategory pc ON ps.ProductCategoryID = pc.ProductCategoryID
+WHERE p.ListPrice > 1000
+
+Q4: success=True safe=True rows=136 empty=False
+columns=['ProductID', 'Name', 'ProductNumber', 'MakeFlag', 'FinishedGoodsFlag', 'Color', 'SafetyStockLevel', 'ReorderPoint', 'StandardCost', 'ListPrice', 'Size', 'SizeUnitMeasureCode', 'WeightUnitMeasureCode', 'Weight', 'DaysToManufacture', 'ProductLine', 'Class', 'Style', 'ProductSubcategoryID', 'ProductModelID', 'SellStartDate', 'SellEndDate', 'DiscontinuedDate', 'rowguid', 'ModifiedDate', 'ProductSubcategoryID', 'ProductCategoryID', 'Name', 'rowguid', 'ModifiedDate', 'ProductCategoryID', 'Name', 'rowguid', 'ModifiedDate']
+SELECT p.ProductID, p.Name, p.ProductNumber, p.MakeFlag, p.FinishedGoodsFlag, p.Color, p.SafetyStockLevel, p.ReorderPoint, p.StandardCost, p.ListPrice, p.Size, p.SizeUnitMeasureCode, p.WeightUnitMeasureCode, p.Weight, p.DaysToManufacture, p.ProductLine, p.Class, p.Style, p.ProductSubcategoryID, p.ProductModelID, p.SellStartDate, p.SellEndDate, p.DiscontinuedDate, p.rowguid, p.ModifiedDate, ps.ProductSubcategoryID, ps.ProductCategoryID, ps.Name, ps.rowguid, ps.ModifiedDate, pc.ProductCategoryID, pc.Name, pc.rowguid, pc.ModifiedDate
+FROM Product p
+JOIN ProductSubcategory ps ON p.ProductSubcategoryID = ps.ProductSubcategoryID
+JOIN ProductCategory pc ON ps.ProductCategoryID = pc.ProductCategoryID
+WHERE p.ListPrice > 500
+
+CONTAINMENT ANALYSIS
+{
+  "query_count": 4,
+  "main_queries": [
+    {
+      "index": 2,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    },
+    {
+      "index": 4,
+      "equivalent_to": [],
+      "contains": [
+        1,
+        3
+      ],
+      "contained_by": []
+    }
+  ],
+  "equivalent_groups": [],
+  "containment_edges": [
+    {
+      "superset": 3,
+      "subset": 1,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 4,
+      "subset": 1,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 4,
+      "subset": 3,
+      "relationship_source": "pairwise"
+    }
+  ],
+  "independent_queries": [
+    2
+  ],
+  "unknown_pairs": [
+    {
+      "left": 1,
+      "right": 2,
+      "reason": "Cannot compare: Query 2 (SQL was generated with low confidence)."
+    },
+    {
+      "left": 2,
+      "right": 3,
+      "reason": "Cannot compare: Query 2 (SQL was generated with low confidence)."
+    },
+    {
+      "left": 2,
+      "right": 4,
+      "reason": "Cannot compare: Query 2 (SQL was generated with low confidence)."
+    }
+  ],
+  "incomparable_pairs": [],
+  "empty_queries": [],
+  "summary_text": "Query 2 is a main (broadest) query. Query 4 is a main (broadest) query; it contains Query 1, Query 3. Independent (no proven containment): Query 2. 3 pair(s) could not be compared (unknown)."
+}
+
+PAIRWISE RESULTS
+[]
+
+============================================================================================================
+CASE 23: Sales-line revenue containment - structured NL
+MODE: structured
+CATEGORY: derived_metric
+STATUS: PASS
+REASON: all queries generated SQL and the containment endpoint completed
+EXPECTED RELATIONSHIP NOTE: The strong revenue-and-quantity condition should be narrower than the three broader conditions.
+HTTP STATUS: 200
+ELAPSED SECONDS: 66.814
+
+INPUT QUERIES
+Q1: From SalesOrderDetail, return SalesOrderID, SalesOrderDetailID, OrderQty, and net line revenue where net line revenue is greater than 5000 and OrderQty is greater than 5.
+Q2: From SalesOrderDetail, return the same columns where net line revenue is greater than 5000.
+Q3: From SalesOrderDetail, return the same columns where OrderQty is greater than 5.
+Q4: From SalesOrderDetail, return the same columns where net line revenue is greater than 2500 and OrderQty is greater than 2.
+
+GENERATED SQL AND EXECUTION
+Q1: success=True safe=True rows=1000 empty=False
+columns=['SalesOrderID', 'SalesOrderDetailID', 'OrderQty', 'LineTotal']
+SELECT SalesOrderID, SalesOrderDetailID, OrderQty, LineTotal
+FROM SalesOrderDetail
+WHERE LineTotal > 5000 AND OrderQty > 5
+
+Q2: success=True safe=True rows=1000 empty=False
+columns=['SalesOrderID', 'SalesOrderDetailID', 'CarrierTrackingNumber', 'OrderQty', 'ProductID', 'SpecialOfferID', 'UnitPrice', 'UnitPriceDiscount', 'LineTotal', 'rowguid', 'ModifiedDate']
+SELECT SalesOrderID, SalesOrderDetailID, CarrierTrackingNumber, OrderQty, ProductID, SpecialOfferID, UnitPrice, UnitPriceDiscount, LineTotal, rowguid, ModifiedDate
+FROM SalesOrderDetail
+WHERE LineTotal > 5000
+
+Q3: success=True safe=True rows=1000 empty=False
+columns=['SalesOrderID', 'SalesOrderDetailID', 'CarrierTrackingNumber', 'OrderQty', 'ProductID', 'SpecialOfferID', 'UnitPrice', 'UnitPriceDiscount', 'LineTotal', 'rowguid', 'ModifiedDate']
+SELECT SalesOrderID, SalesOrderDetailID, CarrierTrackingNumber, OrderQty, ProductID, SpecialOfferID, UnitPrice, UnitPriceDiscount, LineTotal, rowguid, ModifiedDate
+FROM SalesOrderDetail
+WHERE OrderQty > 5
+
+Q4: success=True safe=True rows=1000 empty=False
+columns=['SalesOrderID', 'SalesOrderDetailID', 'CarrierTrackingNumber', 'OrderQty', 'ProductID', 'SpecialOfferID', 'UnitPrice', 'UnitPriceDiscount', 'LineTotal', 'rowguid', 'ModifiedDate']
+SELECT SalesOrderID, SalesOrderDetailID, CarrierTrackingNumber, OrderQty, ProductID, SpecialOfferID, UnitPrice, UnitPriceDiscount, LineTotal, rowguid, ModifiedDate
+FROM SalesOrderDetail
+WHERE LineTotal > 2500 AND OrderQty > 2
+
+CONTAINMENT ANALYSIS
+{
+  "query_count": 4,
+  "main_queries": [
+    {
+      "index": 3,
+      "equivalent_to": [],
+      "contains": [
+        1
+      ],
+      "contained_by": []
+    },
+    {
+      "index": 4,
+      "equivalent_to": [],
+      "contains": [
+        1,
+        2
+      ],
+      "contained_by": []
+    }
+  ],
+  "equivalent_groups": [],
+  "containment_edges": [
+    {
+      "superset": 2,
+      "subset": 1,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 3,
+      "subset": 1,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 4,
+      "subset": 1,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 4,
+      "subset": 2,
+      "relationship_source": "pairwise"
+    }
+  ],
+  "independent_queries": [],
+  "unknown_pairs": [],
+  "incomparable_pairs": [
+    {
+      "left": 2,
+      "right": 3
+    },
+    {
+      "left": 3,
+      "right": 4
+    }
+  ],
+  "empty_queries": [],
+  "summary_text": "Query 3 is a main (broadest) query; it contains Query 1. Query 4 is a main (broadest) query; it contains Query 1, Query 2. Incomparable: Query 2 vs Query 3; Query 3 vs Query 4."
+}
+
+PAIRWISE RESULTS
+[]
+
+============================================================================================================
+CASE 24: Purchase-order vendor threshold containment - structured NL
+MODE: structured
+CATEGORY: join
+STATUS: PASS
+REASON: all queries generated SQL and the containment endpoint completed
+EXPECTED RELATIONSHIP NOTE: Active vendors with very large orders should be subsets of the broader vendor-order sets.
+HTTP STATUS: 200
+ELAPSED SECONDS: 91.881
+
+INPUT QUERIES
+Q1: Join Vendor to PurchaseOrderHeader and return VendorID, vendor Name, PurchaseOrderID, and TotalDue where ActiveFlag is true and TotalDue is greater than 20000.
+Q2: Join Vendor to PurchaseOrderHeader and return the same columns where ActiveFlag is true.
+Q3: Join Vendor to PurchaseOrderHeader and return the same columns where TotalDue is greater than 20000.
+Q4: Join Vendor to PurchaseOrderHeader and return the same columns where ActiveFlag is true and TotalDue is greater than 10000.
+
+GENERATED SQL AND EXECUTION
+Q1: success=True safe=True rows=1000 empty=False
+columns=['VendorID', 'Name', 'PurchaseOrderID', 'TotalDue']
+SELECT poh.VendorID, v.Name, poh.PurchaseOrderID, poh.TotalDue
+FROM PurchaseOrderHeader poh
+JOIN Vendor v ON poh.VendorID = v.BusinessEntityID
+WHERE v.ActiveFlag = 1 AND poh.TotalDue > 20000
+
+Q2: success=True safe=True rows=1000 empty=False
+columns=['BusinessEntityID', 'AccountNumber', 'Name', 'CreditRating', 'PreferredVendorStatus', 'ActiveFlag', 'PurchasingWebServiceURL', 'ModifiedDate', 'PurchaseOrderID', 'RevisionNumber', 'Status', 'EmployeeID', 'VendorID', 'ShipMethodID', 'OrderDate', 'ShipDate', 'SubTotal', 'TaxAmt', 'Freight', 'TotalDue', 'ModifiedDate']
+SELECT Vendor.BusinessEntityID, Vendor.AccountNumber, Vendor.Name, Vendor.CreditRating, Vendor.PreferredVendorStatus, Vendor.ActiveFlag, Vendor.PurchasingWebServiceURL, Vendor.ModifiedDate, PurchaseOrderHeader.PurchaseOrderID, PurchaseOrderHeader.RevisionNumber, PurchaseOrderHeader.Status, PurchaseOrderHeader.EmployeeID, PurchaseOrderHeader.VendorID, PurchaseOrderHeader.ShipMethodID, PurchaseOrderHeader.OrderDate, PurchaseOrderHeader.ShipDate, PurchaseOrderHeader.SubTotal, PurchaseOrderHeader.TaxAmt, PurchaseOrderHeader.Freight, PurchaseOrderHeader.TotalDue, PurchaseOrderHeader.ModifiedDate
+FROM PurchaseOrderHeader
+JOIN Vendor ON PurchaseOrderHeader.VendorID = Vendor.BusinessEntityID
+WHERE Vendor.ActiveFlag = 1
+
+Q3: success=True safe=True rows=1000 empty=False
+columns=['PurchaseOrderID', 'RevisionNumber', 'Status', 'EmployeeID', 'VendorID', 'ShipMethodID', 'OrderDate', 'ShipDate', 'SubTotal', 'TaxAmt', 'Freight', 'TotalDue', 'ModifiedDate', 'BusinessEntityID', 'AccountNumber', 'Name', 'CreditRating', 'PreferredVendorStatus', 'ActiveFlag', 'PurchasingWebServiceURL', 'ModifiedDate']
+SELECT poh.PurchaseOrderID, poh.RevisionNumber, poh.Status, poh.EmployeeID, poh.VendorID, poh.ShipMethodID, poh.OrderDate, poh.ShipDate, poh.SubTotal, poh.TaxAmt, poh.Freight, poh.TotalDue, poh.ModifiedDate, v.BusinessEntityID, v.AccountNumber, v.Name, v.CreditRating, v.PreferredVendorStatus, v.ActiveFlag, v.PurchasingWebServiceURL, v.ModifiedDate
+FROM PurchaseOrderHeader poh
+JOIN Vendor v ON poh.VendorID = v.BusinessEntityID
+WHERE poh.TotalDue > 20000
+
+Q4: success=True safe=True rows=1000 empty=False
+columns=['PurchaseOrderID', 'RevisionNumber', 'Status', 'EmployeeID', 'VendorID', 'ShipMethodID', 'OrderDate', 'ShipDate', 'SubTotal', 'TaxAmt', 'Freight', 'TotalDue', 'ModifiedDate', 'BusinessEntityID', 'AccountNumber', 'Name', 'CreditRating', 'PreferredVendorStatus', 'ActiveFlag', 'PurchasingWebServiceURL', 'ModifiedDate']
+SELECT poh.PurchaseOrderID, poh.RevisionNumber, poh.Status, poh.EmployeeID, poh.VendorID, poh.ShipMethodID, poh.OrderDate, poh.ShipDate, poh.SubTotal, poh.TaxAmt, poh.Freight, poh.TotalDue, poh.ModifiedDate, v.BusinessEntityID, v.AccountNumber, v.Name, v.CreditRating, v.PreferredVendorStatus, v.ActiveFlag, v.PurchasingWebServiceURL, v.ModifiedDate
+FROM PurchaseOrderHeader poh
+JOIN Vendor v ON poh.VendorID = v.BusinessEntityID
+WHERE v.ActiveFlag = 1 AND poh.TotalDue > 10000
+
+CONTAINMENT ANALYSIS
+{
+  "query_count": 4,
+  "main_queries": [
+    {
+      "index": 2,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    },
+    {
+      "index": 3,
+      "equivalent_to": [],
+      "contains": [
+        1
+      ],
+      "contained_by": []
+    },
+    {
+      "index": 4,
+      "equivalent_to": [],
+      "contains": [
+        1
+      ],
+      "contained_by": []
+    }
+  ],
+  "equivalent_groups": [],
+  "containment_edges": [
+    {
+      "superset": 3,
+      "subset": 1,
+      "relationship_source": "pairwise"
+    },
+    {
+      "superset": 4,
+      "subset": 1,
+      "relationship_source": "pairwise"
+    }
+  ],
+  "independent_queries": [
+    2
+  ],
+  "unknown_pairs": [
+    {
+      "left": 1,
+      "right": 2,
+      "reason": "Cannot compare: queries do not expose a common comparable key (key purchaseorderid vs businessentityid)."
+    },
+    {
+      "left": 2,
+      "right": 3,
+      "reason": "Cannot compare: queries do not expose a common comparable key (key businessentityid vs purchaseorderid)."
+    },
+    {
+      "left": 2,
+      "right": 4,
+      "reason": "Cannot compare: queries do not expose a common comparable key (key businessentityid vs purchaseorderid)."
+    }
+  ],
+  "incomparable_pairs": [
+    {
+      "left": 3,
+      "right": 4
+    }
+  ],
+  "empty_queries": [],
+  "summary_text": "Query 2 is a main (broadest) query. Query 3 is a main (broadest) query; it contains Query 1. Query 4 is a main (broadest) query; it contains Query 1. Independent (no proven containment): Query 2. Incomparable: Query 3 vs Query 4. 3 pair(s) could not be compared (unknown)."
+}
+
+PAIRWISE RESULTS
+[]
+
+============================================================================================================
+CASE 25: Work-order scrap threshold containment - structured NL
+MODE: structured
+CATEGORY: filter_threshold
+STATUS: FAIL
+REASON: query 2 reported execution failure
+EXPECTED RELATIONSHIP NOTE: Larger scrap thresholds should be contained in smaller thresholds.
+HTTP STATUS: 200
+ELAPSED SECONDS: 12.687
+
+INPUT QUERIES
+Q1: Return WorkOrderID, ProductID, OrderQty, and ScrappedQty from WorkOrder where ScrappedQty is greater than 10.
+Q2: Return the same columns where ScrappedQty is greater than 5.
+Q3: Return the same columns where ScrappedQty is greater than 0.
+Q4: Return the same columns where ScrappedQty is greater than 20.
+
+GENERATED SQL AND EXECUTION
+Q1: success=True safe=True rows=131 empty=False
+columns=['WorkOrderID', 'ProductID', 'OrderQty', 'ScrappedQty']
+SELECT WorkOrderID, ProductID, OrderQty, ScrappedQty FROM WorkOrder WHERE ScrappedQty > 10
+
+Q2: success=False safe=False rows=0 empty=False
+columns=None
+(no SQL)
+
+Q3: success=False safe=False rows=0 empty=False
+columns=None
+(no SQL)
+
+Q4: success=False safe=False rows=0 empty=False
+columns=None
+(no SQL)
+
+CONTAINMENT ANALYSIS
+{
+  "query_count": 4,
+  "main_queries": [
+    {
+      "index": 1,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    },
+    {
+      "index": 2,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    },
+    {
+      "index": 3,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    },
+    {
+      "index": 4,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    }
+  ],
+  "equivalent_groups": [],
+  "containment_edges": [],
+  "independent_queries": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "unknown_pairs": [
+    {
+      "left": 1,
+      "right": 2,
+      "reason": "Cannot compare: Query 2 (no SQL text was generated)."
+    },
+    {
+      "left": 1,
+      "right": 3,
+      "reason": "Cannot compare: Query 3 (no SQL text was generated)."
+    },
+    {
+      "left": 1,
+      "right": 4,
+      "reason": "Cannot compare: Query 4 (no SQL text was generated)."
+    },
+    {
+      "left": 2,
+      "right": 3,
+      "reason": "Cannot compare: Query 2 (no SQL text was generated); Query 3 (no SQL text was generated)."
+    },
+    {
+      "left": 2,
+      "right": 4,
+      "reason": "Cannot compare: Query 2 (no SQL text was generated); Query 4 (no SQL text was generated)."
+    },
+    {
+      "left": 3,
+      "right": 4,
+      "reason": "Cannot compare: Query 3 (no SQL text was generated); Query 4 (no SQL text was generated)."
+    }
+  ],
+  "incomparable_pairs": [],
+  "empty_queries": [],
+  "summary_text": "Query 1 is a main (broadest) query. Query 2 is a main (broadest) query. Query 3 is a main (broadest) query. Query 4 is a main (broadest) query. Independent (no proven containment): Query 1, Query 2, Query 3, Query 4. 6 pair(s) could not be compared (unknown)."
+}
+
+PAIRWISE RESULTS
+[]
+
+============================================================================================================
+CASE 26: Address geography containment - structured NL
+MODE: structured
+CATEGORY: join
+STATUS: FAIL
+REASON: HTTP 500
+EXPECTED RELATIONSHIP NOTE: Seattle, Washington addresses should be contained in Seattle, Washington, and United States sets.
+HTTP STATUS: 500
+ELAPSED SECONDS: 0.150
+
+INPUT QUERIES
+Q1: Join Address to StateProvince and CountryRegion; return AddressID, City, state Name, and country Name where City equals Seattle and state Name equals Washington.
+Q2: Join Address to StateProvince and CountryRegion; return the same columns where City equals Seattle.
+Q3: Join Address to StateProvince and CountryRegion; return the same columns where state Name equals Washington.
+Q4: Join Address to StateProvince and CountryRegion; return the same columns where country Name equals United States.
+
+GENERATED SQL AND EXECUTION
+CONTAINMENT ANALYSIS
+(none)
+
+PAIRWISE RESULTS
+[]
+
+============================================================================================================
+CASE 27: Department employee-count containment - structured NL
+MODE: structured
+CATEGORY: group_having
+STATUS: PASS
+REASON: all queries generated SQL and the containment endpoint completed
+EXPECTED RELATIONSHIP NOTE: Higher department headcount thresholds should be contained in lower thresholds.
+HTTP STATUS: 200
+ELAPSED SECONDS: 56.369
+
+INPUT QUERIES
+Q1: Join current EmployeeDepartmentHistory to Department, group by DepartmentID and Name, and keep departments with employee count greater than 20.
+Q2: Use the same grouped output and keep departments with employee count greater than 10.
+Q3: Use the same grouped output and keep departments with employee count greater than 0.
+Q4: Use the same grouped output and keep departments with employee count greater than 30.
+
+GENERATED SQL AND EXECUTION
+Q1: success=True safe=True rows=1 empty=False
+columns=['DepartmentID', 'Name']
+SELECT d.DepartmentID, d.Name
+FROM Department d
+JOIN EmployeeDepartmentHistory edh ON d.DepartmentID = edh.DepartmentID
+JOIN Employee e ON edh.BusinessEntityID = e.BusinessEntityID
+WHERE e.CurrentFlag = 1
+GROUP BY d.DepartmentID, d.Name
+HAVING COUNT(e.BusinessEntityID) > 20
+
+Q2: success=True safe=True rows=16 empty=False
+columns=['Name']
+SELECT d.Name
+FROM Department d
+JOIN Employee e ON 1=1
+GROUP BY d.Name
+HAVING COUNT(e.BusinessEntityID) > 10
+
+Q3: success=True safe=True rows=16 empty=False
+columns=['Name']
+SELECT d.Name
+FROM Department d
+JOIN Employee e ON 1=1
+GROUP BY d.Name
+HAVING COUNT(e.BusinessEntityID) > 0
+
+Q4: success=True safe=True rows=16 empty=False
+columns=['Name']
+SELECT d.Name
+FROM Department d
+JOIN Employee e ON 1=1
+GROUP BY d.Name
+HAVING COUNT(e.BusinessEntityID) > 30
+
+CONTAINMENT ANALYSIS
+{
+  "query_count": 4,
+  "main_queries": [
+    {
+      "index": 1,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    },
+    {
+      "index": 2,
+      "equivalent_to": [
+        3,
+        4
+      ],
+      "contains": [],
+      "contained_by": []
+    }
+  ],
+  "equivalent_groups": [
+    [
+      2,
+      3,
+      4
+    ]
+  ],
+  "containment_edges": [],
+  "independent_queries": [
+    1
+  ],
+  "unknown_pairs": [
+    {
+      "left": 1,
+      "right": 2,
+      "reason": "Cannot compare grouped queries: different group keys (['departmentid', 'name'] vs ['name'])."
+    },
+    {
+      "left": 1,
+      "right": 3,
+      "reason": "Cannot compare grouped queries: different group keys (['departmentid', 'name'] vs ['name'])."
+    },
+    {
+      "left": 1,
+      "right": 4,
+      "reason": "Cannot compare grouped queries: different group keys (['departmentid', 'name'] vs ['name'])."
+    }
+  ],
+  "incomparable_pairs": [],
+  "empty_queries": [],
+  "summary_text": "Query 1 is a main (broadest) query. Query 2 is a main (broadest) query (equivalent to Query 3, Query 4). Query 2, Query 3, Query 4 are equivalent on the current database. Independent (no proven containment): Query 1. 3 pair(s) could not be compared (unknown)."
+}
+
+PAIRWISE RESULTS
+[]
+
+============================================================================================================
+CASE 28: Salesperson quota attainment containment - structured NL
+MODE: structured
+CATEGORY: derived_metric
+STATUS: FAIL
+REASON: query 2 reported execution failure
+EXPECTED RELATIONSHIP NOTE: Higher quota-attainment thresholds should be narrower.
+HTTP STATUS: 200
+ELAPSED SECONDS: 15.095
+
+INPUT QUERIES
+Q1: From SalesPerson, return BusinessEntityID, SalesQuota, SalesYTD, and quota attainment where SalesYTD divided by SalesQuota is greater than 1.5.
+Q2: Return the same columns where quota attainment is greater than 1.0.
+Q3: Return the same columns where SalesQuota is not null and greater than 0.
+Q4: Return the same columns where quota attainment is greater than 2.0.
+
+GENERATED SQL AND EXECUTION
+Q1: success=True safe=True rows=14 empty=False
+columns=['BusinessEntityID', 'SalesQuota', 'SalesYTD', 'quota_attainment']
+SELECT BusinessEntityID, SalesQuota, SalesYTD, SalesYTD / SalesQuota AS quota_attainment
+FROM SalesPerson
+WHERE SalesQuota IS NOT NULL AND SalesQuota != 0 AND SalesYTD / SalesQuota > 1.5
+
+Q2: success=False safe=False rows=0 empty=False
+columns=None
+(no SQL)
+
+Q3: success=False safe=False rows=0 empty=False
+columns=None
+(no SQL)
+
+Q4: success=False safe=False rows=0 empty=False
+columns=None
+(no SQL)
+
+CONTAINMENT ANALYSIS
+{
+  "query_count": 4,
+  "main_queries": [
+    {
+      "index": 1,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    },
+    {
+      "index": 2,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    },
+    {
+      "index": 3,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    },
+    {
+      "index": 4,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    }
+  ],
+  "equivalent_groups": [],
+  "containment_edges": [],
+  "independent_queries": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "unknown_pairs": [
+    {
+      "left": 1,
+      "right": 2,
+      "reason": "Cannot compare: Query 2 (no SQL text was generated)."
+    },
+    {
+      "left": 1,
+      "right": 3,
+      "reason": "Cannot compare: Query 3 (no SQL text was generated)."
+    },
+    {
+      "left": 1,
+      "right": 4,
+      "reason": "Cannot compare: Query 4 (no SQL text was generated)."
+    },
+    {
+      "left": 2,
+      "right": 3,
+      "reason": "Cannot compare: Query 2 (no SQL text was generated); Query 3 (no SQL text was generated)."
+    },
+    {
+      "left": 2,
+      "right": 4,
+      "reason": "Cannot compare: Query 2 (no SQL text was generated); Query 4 (no SQL text was generated)."
+    },
+    {
+      "left": 3,
+      "right": 4,
+      "reason": "Cannot compare: Query 3 (no SQL text was generated); Query 4 (no SQL text was generated)."
+    }
+  ],
+  "incomparable_pairs": [],
+  "empty_queries": [],
+  "summary_text": "Query 1 is a main (broadest) query. Query 2 is a main (broadest) query. Query 3 is a main (broadest) query. Query 4 is a main (broadest) query. Independent (no proven containment): Query 1, Query 2, Query 3, Query 4. 6 pair(s) could not be compared (unknown)."
+}
+
+PAIRWISE RESULTS
+[]
+
+============================================================================================================
+CASE 29: Inventory quantity containment - structured NL
+MODE: structured
+CATEGORY: filter_threshold
+STATUS: FAIL
+REASON: query 2 reported execution failure
+EXPECTED RELATIONSHIP NOTE: Larger inventory thresholds should be subsets of lower thresholds.
+HTTP STATUS: 200
+ELAPSED SECONDS: 13.216
+
+INPUT QUERIES
+Q1: Return ProductID, LocationID, Shelf, Bin, and Quantity from ProductInventory where Quantity is greater than 500.
+Q2: Return the same columns where Quantity is greater than 250.
+Q3: Return the same columns where Quantity is greater than 100.
+Q4: Return the same columns where Quantity is greater than 750.
+
+GENERATED SQL AND EXECUTION
+Q1: success=True safe=True rows=227 empty=False
+columns=['ProductID', 'LocationID', 'Shelf', 'Bin', 'Quantity']
+SELECT ProductID, LocationID, Shelf, Bin, Quantity FROM ProductInventory WHERE Quantity > 500
+
+Q2: success=False safe=False rows=0 empty=False
+columns=None
+(no SQL)
+
+Q3: success=False safe=False rows=0 empty=False
+columns=None
+(no SQL)
+
+Q4: success=False safe=False rows=0 empty=False
+columns=None
+(no SQL)
+
+CONTAINMENT ANALYSIS
+{
+  "query_count": 4,
+  "main_queries": [
+    {
+      "index": 1,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    },
+    {
+      "index": 2,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    },
+    {
+      "index": 3,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    },
+    {
+      "index": 4,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    }
+  ],
+  "equivalent_groups": [],
+  "containment_edges": [],
+  "independent_queries": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "unknown_pairs": [
+    {
+      "left": 1,
+      "right": 2,
+      "reason": "Cannot compare: Query 2 (no SQL text was generated)."
+    },
+    {
+      "left": 1,
+      "right": 3,
+      "reason": "Cannot compare: Query 3 (no SQL text was generated)."
+    },
+    {
+      "left": 1,
+      "right": 4,
+      "reason": "Cannot compare: Query 4 (no SQL text was generated)."
+    },
+    {
+      "left": 2,
+      "right": 3,
+      "reason": "Cannot compare: Query 2 (no SQL text was generated); Query 3 (no SQL text was generated)."
+    },
+    {
+      "left": 2,
+      "right": 4,
+      "reason": "Cannot compare: Query 2 (no SQL text was generated); Query 4 (no SQL text was generated)."
+    },
+    {
+      "left": 3,
+      "right": 4,
+      "reason": "Cannot compare: Query 3 (no SQL text was generated); Query 4 (no SQL text was generated)."
+    }
+  ],
+  "incomparable_pairs": [],
+  "empty_queries": [],
+  "summary_text": "Query 1 is a main (broadest) query. Query 2 is a main (broadest) query. Query 3 is a main (broadest) query. Query 4 is a main (broadest) query. Independent (no proven containment): Query 1, Query 2, Query 3, Query 4. 6 pair(s) could not be compared (unknown)."
+}
+
+PAIRWISE RESULTS
+[]
+
+============================================================================================================
+CASE 30: Sales-order date and status containment - structured NL
+MODE: structured
+CATEGORY: date_and_status
+STATUS: FAIL
+REASON: query 1 reported execution failure
+EXPECTED RELATIONSHIP NOTE: Recent shipped orders should be narrower than recent-only and shipped-only sets.
+HTTP STATUS: 200
+ELAPSED SECONDS: 0.035
+
+INPUT QUERIES
+Q1: Return SalesOrderID, OrderDate, Status, ShipDate, and TotalDue from SalesOrderHeader where OrderDate is after 2013-01-01 and ShipDate is not null.
+Q2: Return the same columns where OrderDate is after 2013-01-01.
+Q3: Return the same columns where ShipDate is not null.
+Q4: Return the same columns where OrderDate is after 2012-01-01 and Status indicates completion.
+
+GENERATED SQL AND EXECUTION
+Q1: success=False safe=False rows=0 empty=False
+columns=None
+(no SQL)
+
+Q2: success=False safe=False rows=0 empty=False
+columns=None
+(no SQL)
+
+Q3: success=False safe=False rows=0 empty=False
+columns=None
+(no SQL)
+
+Q4: success=False safe=False rows=0 empty=False
+columns=None
+(no SQL)
+
+CONTAINMENT ANALYSIS
+{
+  "query_count": 4,
+  "main_queries": [
+    {
+      "index": 1,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    },
+    {
+      "index": 2,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    },
+    {
+      "index": 3,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    },
+    {
+      "index": 4,
+      "equivalent_to": [],
+      "contains": [],
+      "contained_by": []
+    }
+  ],
+  "equivalent_groups": [],
+  "containment_edges": [],
+  "independent_queries": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "unknown_pairs": [
+    {
+      "left": 1,
+      "right": 2,
+      "reason": "Cannot compare: Query 1 (no SQL text was generated); Query 2 (no SQL text was generated)."
+    },
+    {
+      "left": 1,
+      "right": 3,
+      "reason": "Cannot compare: Query 1 (no SQL text was generated); Query 3 (no SQL text was generated)."
+    },
+    {
+      "left": 1,
+      "right": 4,
+      "reason": "Cannot compare: Query 1 (no SQL text was generated); Query 4 (no SQL text was generated)."
+    },
+    {
+      "left": 2,
+      "right": 3,
+      "reason": "Cannot compare: Query 2 (no SQL text was generated); Query 3 (no SQL text was generated)."
+    },
+    {
+      "left": 2,
+      "right": 4,
+      "reason": "Cannot compare: Query 2 (no SQL text was generated); Query 4 (no SQL text was generated)."
+    },
+    {
+      "left": 3,
+      "right": 4,
+      "reason": "Cannot compare: Query 3 (no SQL text was generated); Query 4 (no SQL text was generated)."
+    }
+  ],
+  "incomparable_pairs": [],
+  "empty_queries": [],
+  "summary_text": "Query 1 is a main (broadest) query. Query 2 is a main (broadest) query. Query 3 is a main (broadest) query. Query 4 is a main (broadest) query. Independent (no proven containment): Query 1, Query 2, Query 3, Query 4. 6 pair(s) could not be compared (unknown)."
+}
+
+PAIRWISE RESULTS
+[]
+
+============================================================================================================
+FINAL SUMMARY
+PASS: 16/30
+FAIL: 14/30

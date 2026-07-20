@@ -1,0 +1,439 @@
+SpiderSQL Lahman 100-Test SQL Classification Benchmark
+Generated: 20260710_005258
+Database ID: 49
+SQLite path: C:\Projects\nl2sql-mvp\backend\local_benchmarks\relational_sample_dbs\sqlite\lahman.sqlite
+Total tests: 100
+Passed: 39
+Failed: 61
+Accuracy: 39.0%
+
+CATEGORY SUMMARY
+category | structured passed/total | sql passed/total | combined accuracy
+------------------------------------------------------------------------------------------
+aggregation        | structured 1/5 | sql 5/5 | combined 6/10 = 60.0%
+derived_metric     | structured 0/5 | sql 1/5 | combined 1/10 = 10.0%
+distinct_count     | structured 0/5 | sql 3/5 | combined 3/10 = 30.0%
+group_by           | structured 3/5 | sql 2/5 | combined 5/10 = 50.0%
+having             | structured 1/5 | sql 4/5 | combined 5/10 = 50.0%
+join               | structured 0/5 | sql 3/5 | combined 3/10 = 30.0%
+multi_join         | structured 0/5 | sql 5/5 | combined 5/10 = 50.0%
+order_limit_topk   | structured 2/5 | sql 0/5 | combined 2/10 = 20.0%
+set_operation      | structured 3/5 | sql 3/5 | combined 6/10 = 60.0%
+subquery           | structured 0/5 | sql 3/5 | combined 3/10 = 30.0%
+
+FAILED TESTS
+------------------------------------------------------------------------------------------
+JOIN-S01 [join / structured] ordered row mismatch: expected 12 rows, got 12 rows
+  Question/SQL: For the 2001 season, list players who hit more than 40 home runs with their team name and team wins. Show first name, last name, year, team, wins, and home runs.
+  Generated SQL: SELECT p.nameFirst, p.nameLast, b.yearID, t.name, t.W, b.HR
+FROM batting b
+JOIN people p ON b.playerID = p.playerID
+JOIN teams t ON b.yearID = t.yearID AND b.teamID = t.teamID AND b.lgID = t.lgID
+WHERE b.yearID = 2001 AND b.HR > 40
+
+JOIN-S02 [join / structured] ordered row mismatch: expected 33 rows, got 33 rows
+  Question/SQL: List pitching seasons after 2010 where the pitcher won more than 18 games. Include pitcher name, year, team name, wins, losses, and strikeouts.
+  Generated SQL: SELECT p.nameFirst, p.nameLast, pi.yearID, t.name, pi.W, pi.L, pi.SO
+FROM pitching pi
+JOIN people p ON pi.playerID = p.playerID
+JOIN teams t ON pi.yearID = t.yearID AND pi.teamID = t.teamID AND pi.lgID = t.lgID
+WHERE pi.yearID > 2010 AND pi.W > 18
+
+JOIN-S03 [join / structured] ordered row mismatch: expected 100 rows, got 495 rows
+  Question/SQL: Show players who attended California schools after 2000. Include player name, school name, state, and college year.
+  Generated SQL: SELECT p.nameFirst, p.nameLast, s.name_full, s.state, cp.yearID
+FROM collegeplaying cp
+JOIN people p ON cp.playerID = p.playerID
+JOIN schools s ON cp.schoolID = s.schoolID
+WHERE cp.yearID > 2000 AND s.state = 'CA'
+
+JOIN-S04 [join / structured] ordered row mismatch: expected 34 rows, got 34 rows
+  Question/SQL: List salary records after 2015 where the player earned more than 20 million dollars. Show player name, year, team, league, and salary.
+  Generated SQL: SELECT p.nameFirst, p.nameLast, s.yearID, s.teamID, s.lgID, s.salary
+FROM salaries s
+JOIN people p ON s.playerID = p.playerID
+WHERE s.yearID > 2015 AND s.salary > 20000000
+
+JOIN-S05 [join / structured] ordered row mismatch: expected 24 rows, got 24 rows
+  Question/SQL: List Hall of Fame inducted players born after 1960. Show first name, last name, birth year, and induction year.
+  Generated SQL: SELECT p.nameFirst, p.nameLast, p.birthYear, h.yearid
+FROM HallOfFame h
+JOIN People p ON h.playerID = p.playerID
+WHERE h.inducted = 'Y' AND p.birthYear > 1960
+
+JOIN-Q04 [join / sql] unsafe/low confidence: low=False fatal=False safe=False reason=SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment
+  Question/SQL: SELECT p.nameFirst, p.nameLast, s.yearID, s.teamID, s.salary
+    FROM Salaries s
+    JOIN People p ON s.playerID = p.playerID
+    WHERE s.salary > 25000000
+    ORDER BY s.salary DESC, s.yearID DESC
+    LIMIT 50
+  Generated SQL: SELECT p.nameFirst, p.nameLast, s.yearID, s.teamID, s.salary
+FROM Salaries s
+JOIN People p ON s.playerID = p.playerID
+WHERE s.salary > 25000000
+ORDER BY s.salary DESC, s.yearID DESC
+LIMIT 50
+
+JOIN-Q05 [join / sql] unsafe/low confidence: low=False fatal=False safe=False reason=SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment
+  Question/SQL: SELECT p.nameFirst, p.nameLast, sc.name_full, sc.state, cp.yearID
+    FROM CollegePlaying cp
+    JOIN People p ON cp.playerID = p.playerID
+    JOIN Schools sc ON cp.schoolID = sc.schoolID
+    WHERE sc.country = 'USA' AND sc.state = 'TX' AND cp.yearID >= 1995
+    ORDER BY cp.yearID, sc.name_full, p.n
+  Generated SQL: SELECT p.nameFirst, p.nameLast, sc.name_full, sc.state, cp.yearID
+FROM CollegePlaying cp
+JOIN People p ON cp.playerID = p.playerID
+JOIN Schools sc ON cp.schoolID = sc.schoolID
+WHERE sc.country = 'USA' AND sc.state = 'TX' AND cp.yearID >= 1995
+ORDER BY cp.yearID, sc.name_full, p.nameLast
+LIMIT 100
+
+MJ-S01 [multi_join / structured] ordered row mismatch: expected 26 rows, got 26 rows
+  Question/SQL: For player seasons after 2000, list players who made more than 20 million dollars and hit more than 30 home runs in the same year and team. Show name, year, team, salary, and home runs.
+  Generated SQL: SELECT p.nameFirst, p.nameLast, b.yearID, t.name, s.salary, b.HR
+FROM batting b
+JOIN people p ON b.playerID = p.playerID
+JOIN salaries s ON b.playerID = s.playerID AND b.yearID = s.yearID AND b.teamID = s.teamID AND b.lgID = s.lgID
+JOIN teams t ON b.yearID = t.yearID AND b.teamID = t.teamID AND b.lgID = t.lgID
+WHERE b.yearID > 2000
+  AND s.salary > 20000000
+  AND b.HR > 30
+
+MJ-S02 [multi_join / structured] ordered row mismatch: expected 22 rows, got 58 rows
+  Question/SQL: List players who attended a California school and later hit more than 40 home runs in a season. Show player, school, batting year, team, and home runs.
+  Generated SQL: SELECT p.nameFirst, p.nameLast, s.name_full, b.yearID, b.teamID, b.HR
+FROM people p
+JOIN collegeplaying cp ON p.playerID = cp.playerID
+JOIN schools s ON cp.schoolID = s.schoolID
+JOIN batting b ON p.playerID = b.playerID
+WHERE s.state = 'CA'
+  AND b.HR > 40
+
+MJ-S03 [multi_join / structured] column mismatch: expected ['nameFirst', 'nameLast', 'induction_year', 'yearID', 'name', 'HR'], got ['nameFirst', 'nameLast', 'yearid', 'yearID', 'name', 'HR']
+  Question/SQL: List Hall of Fame inducted players who had a season with more than 40 home runs. Show player, induction year, batting year, team name, and home runs.
+  Generated SQL: SELECT p.nameFirst, p.nameLast, h.yearid, b.yearID, t.name, b.HR
+FROM halloffame h
+JOIN people p ON h.playerID = p.playerID
+JOIN batting b ON p.playerID = b.playerID
+JOIN teams t ON b.yearID = t.yearID AND b.teamID = t.teamID AND b.lgID = t.lgID
+WHERE h.inducted = 'Y' AND b.HR > 40
+
+MJ-S04 [multi_join / structured] ordered row mismatch: expected 223 rows, got 501 rows
+  Question/SQL: Find award-winning player seasons where a player won a Silver Slugger award and hit more than 35 home runs in that same year. Show player, year, team, award, and home runs.
+  Generated SQL: SELECT p.nameFirst, p.nameLast, asp.yearID, b.teamID, asp.awardID, b.HR
+FROM AwardsSharePlayers asp
+JOIN People p ON asp.playerID = p.playerID
+JOIN Batting b ON asp.playerID = b.playerID AND asp.yearID = b.yearID
+WHERE asp.awardID = 'MVP'
+  AND b.HR > 35
+
+MJ-S05 [multi_join / structured] ordered row mismatch: expected 69 rows, got 69 rows
+  Question/SQL: Show pitchers after 2010 who had more than 200 strikeouts and whose team won more than 90 games. Include pitcher, year, team, pitcher strikeouts, and team wins.
+  Generated SQL: SELECT p.nameFirst, p.nameLast, pi.yearID, t.name, pi.SO, t.W
+FROM people p
+JOIN pitching pi ON p.playerID = pi.playerID
+JOIN teams t ON pi.yearID = t.yearID AND pi.teamID = t.teamID AND pi.lgID = t.lgID
+WHERE pi.yearID > 2010
+  AND pi.SO > 200
+  AND t.W > 90
+
+GB-S04 [group_by / structured] column mismatch: expected ['yearID', 'avg_salary', 'max_salary', 'salary_records'], got ['yearID', 'avg_salary', 'max_salary', 'num_records']
+  Question/SQL: For each salary year after 2000, show average salary, maximum salary, and number of salary records. Order by year.
+  Generated SQL: SELECT yearid, AVG(salary) AS avg_salary, MAX(salary) AS max_salary, COUNT(*) AS num_records
+FROM salaries
+WHERE yearid > 2000
+GROUP BY yearid
+ORDER BY yearid
+
+GB-S05 [group_by / structured] ordered row mismatch: expected 25 rows, got 25 rows
+  Question/SQL: For each school state in the United States, show how many distinct players attended schools there. Order by player count descending and show top 25.
+  Generated SQL: SELECT "schools"."state", COUNT(DISTINCT "collegeplaying"."playerid") AS "player_count" FROM "collegeplaying" INNER JOIN "schools" ON "collegeplaying"."schoolid" = "schools"."schoolid" WHERE "schools"."country" = ? GROUP BY "schools"."state" ORDER BY "player_count" DESC LIMIT 25
+
+GB-Q02 [group_by / sql] unsafe/low confidence: low=False fatal=False safe=False reason=SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment
+  Question/SQL: SELECT teamID, lgID, COUNT(*) AS seasons, SUM(W) AS total_wins FROM Teams WHERE yearID >= 2000 GROUP BY teamID, lgID ORDER BY total_wins DESC LIMIT 30
+  Generated SQL: SELECT teamID, lgID, COUNT(*) AS seasons, SUM(W) AS total_wins FROM Teams WHERE yearID >= 2000 GROUP BY teamID, lgID ORDER BY total_wins DESC LIMIT 30
+
+GB-Q03 [group_by / sql] unsafe/low confidence: low=False fatal=False safe=False reason=SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment
+  Question/SQL: SELECT playerID, SUM(SO) AS career_so, SUM(W) AS career_wins FROM Pitching GROUP BY playerID HAVING SUM(SO) > 1000 ORDER BY career_so DESC LIMIT 50
+  Generated SQL: SELECT playerID, SUM(SO) AS career_so, SUM(W) AS career_wins FROM Pitching GROUP BY playerID HAVING SUM(SO) > 1000 ORDER BY career_so DESC LIMIT 50
+
+GB-Q05 [group_by / sql] unsafe/low confidence: low=False fatal=False safe=False reason=SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment
+  Question/SQL: SELECT sc.country, COUNT(DISTINCT cp.playerID) AS players FROM CollegePlaying cp JOIN Schools sc ON cp.schoolID = sc.schoolID GROUP BY sc.country ORDER BY players DESC LIMIT 20
+  Generated SQL: SELECT sc.country, COUNT(DISTINCT cp.playerID) AS players FROM CollegePlaying cp JOIN Schools sc ON cp.schoolID = sc.schoolID GROUP BY sc.country ORDER BY players DESC LIMIT 20
+
+HV-S01 [having / structured] ordered row mismatch: expected 141 rows, got 141 rows
+  Question/SQL: Find players with more than 300 career home runs and more than 1000 career RBIs. Show playerID, career home runs, and career RBIs.
+  Generated SQL: SELECT playerID, SUM(HR) AS career_hr, SUM(RBI) AS career_rbi
+FROM batting
+GROUP BY playerID
+HAVING SUM(HR) > 300 AND SUM(RBI) > 1000
+
+HV-S02 [having / structured] column mismatch: expected ['franchID', 'total_wins', 'total_losses', 'seasons'], got ['franchName', 'total_wins', 'total_losses', 'seasons']
+  Question/SQL: Find franchises after 1990 with more than 2500 total wins. Show franchise, total wins, total losses, and seasons.
+  Generated SQL: SELECT tf.franchName, SUM(t.W) AS total_wins, SUM(t.L) AS total_losses, COUNT(t.yearID) AS seasons
+FROM Teams t
+JOIN TeamsFranchises tf ON t.franchID = tf.franchID
+WHERE t.yearID > 1990
+GROUP BY tf.franchID
+HAVING SUM(t.W) > 2500
+
+HV-S03 [having / structured] ordered row mismatch: expected 23 rows, got 23 rows
+  Question/SQL: Find schools that produced more than 50 distinct major league players. Show school name and player count.
+  Generated SQL: SELECT s.name_full, COUNT(DISTINCT cp.playerID) AS player_count
+FROM CollegePlaying cp
+JOIN Schools s ON cp.schoolID = s.schoolID
+GROUP BY s.schoolID, s.name_full
+HAVING COUNT(DISTINCT cp.playerID) > 50
+
+HV-S05 [having / structured] column mismatch: expected ['playerID', 'career_so', 'career_wins'], got ['playerID', 'career_strikeouts', 'career_wins']
+  Question/SQL: Find pitchers with more than 2000 career strikeouts and more than 150 career wins. Show playerID, career strikeouts, and career wins.
+  Generated SQL: SELECT playerid, SUM(so) AS career_strikeouts, SUM(w) AS career_wins
+FROM pitching
+GROUP BY playerid
+HAVING SUM(so) > 2000 AND SUM(w) > 150
+
+HV-Q04 [having / sql] unsafe/low confidence: low=False fatal=False safe=False reason=SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment
+  Question/SQL: SELECT playerID, AVG(salary) AS avg_salary, MAX(salary) AS max_salary FROM Salaries GROUP BY playerID HAVING AVG(salary) > 10000000 ORDER BY avg_salary DESC LIMIT 50
+  Generated SQL: SELECT playerID, AVG(salary) AS avg_salary, MAX(salary) AS max_salary FROM Salaries GROUP BY playerID HAVING AVG(salary) > 10000000 ORDER BY avg_salary DESC LIMIT 50
+
+SUB-S01 [subquery / structured] ordered row mismatch: expected 167 rows, got 167 rows
+  Question/SQL: List 2001 batting rows where the player's home runs were above the average home runs for all 2001 batting rows with at least 100 at-bats. Show playerID, team, home runs, and at-bats.
+  Generated SQL: SELECT batting.playerID, batting.teamID, batting.HR, batting.AB
+FROM batting
+WHERE batting.yearID = 2001
+  AND batting.AB >= 100
+  AND batting.HR > (
+    SELECT AVG(batting_sub.HR)
+    FROM batting AS batting_sub
+    WHERE batting_sub.yearID = 2001
+      AND batting_sub.AB >= 100
+  )
+
+SUB-S02 [subquery / structured] ordered row mismatch: expected 16 rows, got 16 rows
+  Question/SQL: Find teams in 2019 whose wins were above the average wins for all 2019 teams. Show team name, league, wins, and losses.
+  Generated SQL: SELECT t.name, t.lgid, t.W, t.L
+FROM teams t
+WHERE t.yearID = 2019
+  AND t.W > (
+    SELECT AVG(t2.W)
+    FROM teams t2
+    WHERE t2.yearID = 2019
+  )
+
+SUB-S03 [subquery / structured] ordered row mismatch: expected 262 rows, got 262 rows
+  Question/SQL: Show salary records in 2016 where salary was above the 2016 average salary. Include playerID, team, and salary.
+  Generated SQL: SELECT s.playerID, s.teamID, s.salary
+FROM Salaries s
+WHERE s.yearID = 2016
+  AND s.salary > (
+    SELECT AVG(s2.salary)
+    FROM Salaries s2
+    WHERE s2.yearID = 2016
+  )
+
+SUB-S04 [subquery / structured] ordered row mismatch: expected 32 rows, got 32 rows
+  Question/SQL: Find players who have at least one Hall of Fame inducted record and more than 400 career home runs. Show playerID and career home runs.
+  Generated SQL: SELECT p.playerID, SUM(b.HR) AS career_hr
+FROM people p
+JOIN HallOfFame h ON p.playerID = h.playerID
+JOIN Batting b ON p.playerID = b.playerID
+WHERE h.inducted = 'Y'
+GROUP BY p.playerID
+HAVING SUM(b.HR) > 400
+
+SUB-S05 [subquery / structured] ordered row mismatch: expected 136 rows, got 136 rows
+  Question/SQL: Find schools in states that have more than 100 schools in the Schools table. Show schoolID, school name, and state.
+  Generated SQL: SELECT s.schoolID, s.name_full, s.state
+FROM Schools s
+WHERE s.state IN (
+    SELECT state
+    FROM Schools
+    GROUP BY state
+    HAVING COUNT(*) > 100
+)
+
+SUB-Q03 [subquery / sql] unsafe/low confidence: low=False fatal=False safe=False reason=SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment
+  Question/SQL: SELECT playerID, yearID, salary FROM Salaries s WHERE salary > (SELECT AVG(salary) FROM Salaries WHERE yearID = s.yearID) AND yearID >= 2015 ORDER BY yearID, salary DESC LIMIT 100
+  Generated SQL: SELECT s.playerID, s.yearID, s.salary FROM Salaries s WHERE s.salary > (SELECT AVG(salary) FROM Salaries WHERE yearID = s.yearID) AND s.yearID >= 2015 ORDER BY s.yearID, s.salary DESC LIMIT 100
+
+SUB-Q05 [subquery / sql] unsafe/low confidence: low=False fatal=False safe=False reason=SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment
+  Question/SQL: SELECT schoolID, name_full, country, state FROM Schools WHERE country = 'USA' AND state IN (SELECT state FROM Schools GROUP BY state HAVING COUNT(*) > 75) ORDER BY state, name_full LIMIT 100
+  Generated SQL: SELECT schools.schoolid, schools.name_full, schools.country, schools.state FROM schools WHERE schools.country = 'USA' AND schools.state IN (SELECT schools.state FROM schools GROUP BY schools.state HAVING COUNT(*) > 75) ORDER BY schools.state, schools.name_full LIMIT 100
+
+SET-S02 [set_operation / structured] request error: timed out
+  Question/SQL: Find playerIDs who had a salary record in 2016 but no batting record in 2016. Use EXCEPT and order the playerIDs.
+
+SET-S04 [set_operation / structured] ordered row mismatch: expected 0 rows, got 33 rows
+  Question/SQL: Find teamIDs that appear in Teams after 2000 but do not appear in Salaries after 2000. Use EXCEPT.
+  Generated SQL: SELECT DISTINCT "teams"."teamid" FROM "teams" INNER JOIN "salaries" ON "teams"."lgid" = "salaries"."lgid" WHERE "teams"."yearid" > ? AND NOT EXISTS (SELECT 1 FROM "salaries" WHERE "teams"."teamid" = "salaries"."teamid" AND "salaries"."yearid" > "teams"."yearid")
+
+SET-Q02 [set_operation / sql] request error: timed out
+  Question/SQL: SELECT playerID FROM Salaries WHERE yearID = 2015 EXCEPT SELECT playerID FROM Pitching WHERE yearID = 2015 ORDER BY playerID LIMIT 200
+
+SET-Q05 [set_operation / sql] unsafe/low confidence: low=False fatal=False safe=False reason=SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment
+  Question/SQL: SELECT DISTINCT playerID FROM AwardsPlayers INTERSECT SELECT DISTINCT playerID FROM HallOfFame ORDER BY playerID LIMIT 200
+  Generated SQL: SELECT DISTINCT ap.playerID, hf.playerID
+FROM AwardsPlayers ap
+JOIN HallOfFame hf ON ap.playerID = hf.playerID
+ORDER BY ap.playerID
+LIMIT 200
+
+TOP-S01 [order_limit_topk / structured] column mismatch: expected ['nameFirst', 'nameLast', 'career_hr'], got ['nameFirst', 'nameLast', 'career_home_runs']
+  Question/SQL: Show the top 10 players by career home runs. Include player name and career home runs.
+  Generated SQL: SELECT p.nameFirst, p.nameLast, SUM(b.HR) AS career_home_runs
+FROM batting b
+JOIN people p ON b.playerID = p.playerID
+GROUP BY p.playerID
+ORDER BY career_home_runs DESC
+LIMIT 10
+
+TOP-S03 [order_limit_topk / structured] column mismatch: expected ['nameFirst', 'nameLast', 'yearID', 'teamID', 'salary'], got ['nameFirst', 'nameLast', 'yearID', 'name', 'salary']
+  Question/SQL: Show the top 20 salaries after 2010 with player name, year, team, and salary.
+  Generated SQL: SELECT p.nameFirst, p.nameLast, s.yearID, t.name, s.salary
+FROM salaries s
+JOIN people p ON s.playerID = p.playerID
+JOIN teams t ON s.yearID = t.yearID AND s.teamID = t.teamID AND s.lgID = t.lgID
+WHERE s.yearID > 2010
+ORDER BY s.salary DESC
+LIMIT 20
+
+TOP-S05 [order_limit_topk / structured] column mismatch: expected ['nameFirst', 'nameLast', 'career_so'], got ['nameFirst', 'nameLast', 'career_strikeouts']
+  Question/SQL: Show the top 10 pitchers by career strikeouts with player name and career strikeouts.
+  Generated SQL: SELECT p.nameFirst, p.nameLast, SUM(pitching.SO) AS career_strikeouts
+FROM people p
+JOIN pitching ON p.playerID = pitching.playerID
+GROUP BY p.playerID, p.nameFirst, p.nameLast
+ORDER BY career_strikeouts DESC
+LIMIT 10
+
+TOP-Q01 [order_limit_topk / sql] unsafe/low confidence: low=False fatal=False safe=False reason=SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment
+  Question/SQL: SELECT playerID, SUM(HR) AS career_hr FROM Batting GROUP BY playerID ORDER BY career_hr DESC, playerID LIMIT 25
+  Generated SQL: SELECT batting.playerID, SUM(batting.HR) AS career_hr FROM Batting GROUP BY batting.playerID ORDER BY career_hr DESC, batting.playerID LIMIT 25
+
+TOP-Q02 [order_limit_topk / sql] unsafe/low confidence: low=False fatal=False safe=False reason=SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment
+  Question/SQL: SELECT yearID, name, W, L FROM Teams ORDER BY W DESC, yearID LIMIT 20
+  Generated SQL: SELECT teams.yearid, teams.name, teams.w, teams.l FROM teams ORDER BY teams.w DESC, teams.yearid LIMIT 20
+
+TOP-Q03 [order_limit_topk / sql] unsafe/low confidence: low=False fatal=False safe=False reason=SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment
+  Question/SQL: SELECT playerID, yearID, salary FROM Salaries ORDER BY salary DESC, yearID DESC LIMIT 30
+  Generated SQL: SELECT playerID, yearID, salary FROM Salaries ORDER BY salary DESC, yearID DESC LIMIT 30
+
+TOP-Q04 [order_limit_topk / sql] unsafe/low confidence: low=False fatal=False safe=False reason=SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment
+  Question/SQL: SELECT playerID, SUM(SO) AS career_so FROM Pitching GROUP BY playerID ORDER BY career_so DESC LIMIT 15
+  Generated SQL: SELECT playerID, SUM(SO) AS career_so FROM Pitching GROUP BY playerID ORDER BY career_so DESC LIMIT 15
+
+TOP-Q05 [order_limit_topk / sql] unsafe/low confidence: low=False fatal=False safe=False reason=SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment
+  Question/SQL: SELECT sc.name_full, COUNT(DISTINCT cp.playerID) AS players FROM CollegePlaying cp JOIN Schools sc ON cp.schoolID = sc.schoolID GROUP BY sc.schoolID, sc.name_full ORDER BY players DESC LIMIT 15
+  Generated SQL: SELECT sc.name_full, COUNT(DISTINCT cp.playerID) AS players FROM CollegePlaying cp JOIN Schools sc ON cp.schoolID = sc.schoolID GROUP BY sc.schoolID, sc.name_full ORDER BY players DESC LIMIT 15
+
+AGG-S02 [aggregation / structured] column mismatch: expected ['salary_count', 'avg_salary', 'min_salary', 'max_salary'], got ['num_salaries', 'avg_salary', 'min_salary', 'max_salary']
+  Question/SQL: For salary records in 2016, show number of salaries, average salary, minimum salary, and maximum salary.
+  Generated SQL: SELECT COUNT(*) AS num_salaries, AVG(salary) AS avg_salary, MIN(salary) AS min_salary, MAX(salary) AS max_salary FROM salaries WHERE yearID = 2016
+
+AGG-S03 [aggregation / structured] column mismatch: expected ['player_count'], got ['COUNT(*)']
+  Question/SQL: Count players born after 1980 who have a non-null debut date.
+  Generated SQL: SELECT COUNT(*) FROM people WHERE birthYear > 1980 AND debut IS NOT NULL
+
+AGG-S04 [aggregation / structured] column mismatch: expected ['total_wins', 'total_losses', 'avg_attendance'], got ['yearID', 'teamID', 'total_wins', 'total_losses', 'avg_attendance']
+  Question/SQL: For team seasons after 2000 with attendance above 3 million, show total wins, total losses, and average attendance.
+  Generated SQL: SELECT teams.yearid, teams.teamid, SUM(teams.w) AS total_wins, SUM(teams.l) AS total_losses, AVG(teams.attendance) AS avg_attendance
+FROM teams
+WHERE teams.yearid > 2000 AND teams.attendance > 3000000
+GROUP BY teams.yearid, teams.teamid
+
+AGG-S05 [aggregation / structured] column mismatch: expected ['total_so', 'max_wins', 'avg_era'], got ['total_strikeouts', 'max_wins', 'avg_era']
+  Question/SQL: For pitching seasons after 2010, show total strikeouts, maximum wins, and average ERA for rows with ERA not null.
+  Generated SQL: SELECT SUM(pitching.so) AS total_strikeouts, MAX(pitching.w) AS max_wins, AVG(pitching.era) AS avg_era
+FROM pitching
+WHERE pitching.yearid > 2010 AND pitching.era IS NOT NULL
+
+DST-S01 [distinct_count / structured] column mismatch: expected ['player_count'], got ['COUNT(DISTINCT batting.playerid)']
+  Question/SQL: Count distinct players who hit more than 40 home runs in any season after 1990.
+  Generated SQL: SELECT COUNT(DISTINCT batting.playerid)
+FROM batting
+JOIN people ON batting.playerid = people.playerid
+WHERE batting.hr > 40 AND batting.yearid > 1990
+
+DST-S02 [distinct_count / structured] column mismatch: expected ['team_count'], got ['COUNT(DISTINCT teamID)']
+  Question/SQL: Count distinct teams with more than 90 wins after 2000.
+  Generated SQL: SELECT COUNT(DISTINCT teamID) FROM teams WHERE W > 90 AND yearID > 2000
+
+DST-S03 [distinct_count / structured] ordered row mismatch: expected 49 rows, got 0 rows
+  Question/SQL: List distinct school states in the United States that have college playing records. Order alphabetically.
+  Generated SQL: SELECT "schools"."state" FROM "collegeplaying" INNER JOIN "schools" ON "collegeplaying"."schoolid" = "schools"."schoolid" WHERE "schools"."country" = 'US' GROUP BY "schools"."state" HAVING COUNT(*) > 0 ORDER BY "schools"."state" ASC
+
+DST-S04 [distinct_count / structured] column mismatch: expected ['award_player_count'], got ['COUNT(DISTINCT ap.playerID)']
+  Question/SQL: Count distinct players who received any award after 2000.
+  Generated SQL: SELECT COUNT(DISTINCT ap.playerID)
+FROM AwardsPlayers ap
+JOIN AwardsSharePlayers asp ON ap.playerID = asp.playerID
+WHERE ap.yearID > 2000
+
+DST-S05 [distinct_count / structured] column mismatch: expected ['yearID', 'player_count', 'team_count'], got ['yearID', 'distinct_players', 'distinct_teams']
+  Question/SQL: For each year after 2010, count distinct salaried players and distinct teams paying salaries.
+  Generated SQL: SELECT yearid, COUNT(DISTINCT playerid) AS distinct_players, COUNT(DISTINCT teamid) AS distinct_teams
+FROM salaries
+WHERE yearid > 2010
+GROUP BY yearid
+
+DST-Q02 [distinct_count / sql] unsafe/low confidence: low=False fatal=False safe=False reason=SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment
+  Question/SQL: SELECT DISTINCT lgID FROM Teams WHERE yearID >= 1900 ORDER BY lgID
+  Generated SQL: SELECT DISTINCT teams.lgid
+FROM teams
+WHERE teams.yearid >= 1900
+ORDER BY teams.lgid
+LIMIT 100
+
+DST-Q05 [distinct_count / sql] unsafe/low confidence: low=False fatal=False safe=False reason=SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment
+  Question/SQL: SELECT DISTINCT awardID FROM AwardsPlayers WHERE yearID >= 2010 ORDER BY awardID
+  Generated SQL: SELECT DISTINCT awardID FROM AwardsPlayers WHERE yearID >= 2010 ORDER BY awardID LIMIT 1
+
+DRV-S01 [derived_metric / structured] column mismatch: expected ['playerID', 'yearID', 'H', 'AB', 'batting_avg'], got ['playerID', 'yearID', 'H', 'AB', 'batting_average']
+  Question/SQL: For batting seasons after 2010 with at least 500 at-bats, show playerID, year, hits, at-bats, and batting average. Order by batting average descending and limit to 25.
+  Generated SQL: SELECT batting.playerID, batting.yearID, batting.H, batting.AB, CAST(batting.H AS REAL) / batting.AB AS batting_average
+FROM batting
+WHERE batting.yearID > 2010 AND batting.AB >= 500
+ORDER BY batting_average DESC
+LIMIT 25
+
+DRV-S02 [derived_metric / structured] column mismatch: expected ['yearID', 'name', 'W', 'L', 'win_pct'], got ['yearID', 'name', 'W', 'L', 'winning_percentage']
+  Question/SQL: For team seasons after 2000, show year, team name, wins, losses, and winning percentage for teams with more than 95 wins. Order by winning percentage descending.
+  Generated SQL: SELECT teams.yearid, teams.name, teams.w, teams.l, CAST(teams.w AS REAL) / (teams.w + teams.l) AS winning_percentage
+FROM teams
+WHERE teams.yearid > 2000 AND teams.w > 95
+ORDER BY winning_percentage DESC
+
+DRV-S03 [derived_metric / structured] request error: timed out
+  Question/SQL: For player salary and batting seasons after 2010, show playerID, year, salary, home runs, and salary per home run for seasons with more than 20 home runs and salary above 10 million.
+
+DRV-S04 [derived_metric / structured] column mismatch: expected ['playerID', 'yearID', 'SO', 'BB', 'so_bb_ratio'], got ['playerID', 'yearID', 'SO', 'BB', 'ratio']
+  Question/SQL: For pitchers after 2015 with at least 150 strikeouts, show playerID, year, strikeouts, walks, and strikeout-to-walk ratio. Order by the ratio descending.
+  Generated SQL: SELECT playerID, yearID, so, bb, CAST(so AS REAL) / bb AS ratio
+FROM pitching
+WHERE yearID > 2015 AND so >= 150
+ORDER BY ratio DESC
+
+DRV-S05 [derived_metric / structured] column mismatch: expected ['yearID', 'name', 'attendance', 'Ghome', 'attendance_per_home_game'], got ['yearID', 'name', 'attendance', 'G', 'attendance_per_game']
+  Question/SQL: For teams after 2010 with attendance above 2 million, show year, team, attendance, games, and attendance per home game. Order by attendance per game descending.
+  Generated SQL: SELECT teams.yearid, teams.name, teams.attendance, teams.g, CAST(teams.attendance AS REAL) / teams.g AS attendance_per_game
+FROM teams
+WHERE teams.yearid > 2010 AND teams.attendance > 2000000
+ORDER BY attendance_per_game DESC
+
+DRV-Q01 [derived_metric / sql] unsafe/low confidence: low=False fatal=False safe=False reason=SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment
+  Question/SQL: SELECT playerID, yearID, H, AB, 1.0 * H / NULLIF(AB, 0) AS batting_avg FROM Batting WHERE yearID = 2019 AND AB >= 400 ORDER BY batting_avg DESC LIMIT 30
+  Generated SQL: SELECT playerID, yearID, H, AB FROM Batting WHERE yearID = 2019 AND AB >= 400 ORDER BY CAST(H AS REAL) / AB DESC LIMIT 30
+
+DRV-Q02 [derived_metric / sql] column mismatch: expected ['yearID', 'name', 'W', 'L', 'win_pct'], got ['yearID', 'name', 'W', 'L']
+  Question/SQL: SELECT yearID, name, W, L, 1.0 * W / NULLIF(W + L, 0) AS win_pct FROM Teams WHERE yearID = 2021 ORDER BY win_pct DESC, name
+  Generated SQL: SELECT yearID, name, W, L FROM Teams WHERE yearID = 2021 ORDER BY 1.0 * W / NULLIF(W + L, 0) DESC, name
+
+DRV-Q03 [derived_metric / sql] unsafe/low confidence: low=False fatal=False safe=False reason=SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment
+  Question/SQL: SELECT s.playerID, s.yearID, s.salary, b.HR, 1.0 * s.salary / NULLIF(b.HR, 0) AS salary_per_hr FROM Salaries s JOIN Batting b ON s.playerID = b.playerID AND s.yearID = b.yearID AND s.teamID = b.teamID AND s.lgID = b.lgID WHERE s.yearID = 2016 AND b.HR > 10 ORDER BY salary_per_hr DESC LIMIT 50
+  Generated SQL: SELECT s.playerID, s.yearID, s.salary, b.HR, 1.0 * s.salary / NULLIF(b.HR, 0) AS salary_per_hr FROM Salaries s JOIN Batting b ON s.playerID = b.playerID AND s.yearID = b.yearID AND s.teamID = b.teamID AND s.lgID = b.lgID WHERE s.yearID = 2016 AND b.HR > 10 ORDER BY salary_per_hr DESC LIMIT 50
+
+DRV-Q05 [derived_metric / sql] unsafe/low confidence: low=False fatal=False safe=False reason=SQL uses LIMIT (and possibly ORDER BY); cannot be safely wrapped for containment
+  Question/SQL: SELECT yearID, name, attendance, Ghome, 1.0 * attendance / NULLIF(Ghome, 0) AS attendance_per_home_game FROM Teams WHERE yearID >= 2015 AND attendance > 2500000 AND Ghome IS NOT NULL ORDER BY attendance_per_home_game DESC LIMIT 25
+  Generated SQL: SELECT yearID, name, attendance, Ghome, 1.0 * attendance / NULLIF(Ghome, 0) AS attendance_per_home_game FROM Teams WHERE yearID >= 2015 AND attendance > 2500000 AND Ghome IS NOT NULL ORDER BY attendance_per_home_game DESC LIMIT 25

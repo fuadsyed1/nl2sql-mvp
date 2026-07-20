@@ -36,6 +36,14 @@ W_NAME = 0.30
 
 MAX_PK_TARGETS_PER_TABLE = 5    # cap ranked PK candidates tested per table
 
+# Ambiguity handling on saturated integer keys: when two candidate targets
+# for the same source column have essentially the same value overlap (dense
+# 1..N id ranges overlap everything) and the winner has no decisive name
+# bridge, the choice is untrustworthy -> emit it as a weak suggestion.
+SATURATION_EPS = 0.05           # overlaps within this are considered tied
+DECISIVE_NAME_SIM = 0.85        # name similarity strong enough to disambiguate
+AMBIGUOUS_CONFIDENCE_CAP = 0.55 # confidence ceiling for ambiguous edges
+
 # shared_identifier edges are weak inferences: never fully confident and never
 # auto-confirmed. Only a declared FK or an exact ID-to-PK match may reach 1.0.
 SHARED_IDENTIFIER_CONFIDENCE_CAP = 0.84
@@ -250,13 +258,31 @@ def _classify(b_col, b_table) -> str:
 
 
 def _dedupe(candidates):
-    # Keep the single best target per source column.
-    best_src = {}
+    # Group all candidate targets per source column so we can see whether the
+    # winning target actually dominates or merely edged out an equally-overlapping
+    # rival (the saturated-integer-key ambiguity).
+    from collections import defaultdict
+    groups = defaultdict(list)
     for c in candidates:
-        key = (c["from_table"], c["from_column"])
-        cur = best_src.get(key)
-        if cur is None or (c["confidence"], c["dir_pref"]) > (cur["confidence"], cur["dir_pref"]):
-            best_src[key] = c
+        groups[(c["from_table"], c["from_column"])].append(c)
+
+    best_src = {}
+    for key, group in groups.items():
+        group.sort(key=lambda c: (c["confidence"], c["dir_pref"]), reverse=True)
+        best = group[0]
+        for other in group[1:]:
+            if (other["to_table"], other["to_column"]) == (best["to_table"], best["to_column"]):
+                continue
+            saturated = abs((best.get("value_overlap") or 0.0)
+                            - (other.get("value_overlap") or 0.0)) <= SATURATION_EPS
+            no_bridge = (best.get("name_similarity") or 0.0) < DECISIVE_NAME_SIM
+            if saturated and no_bridge:
+                best = dict(best)
+                best["confidence"] = round(
+                    min(best["confidence"], AMBIGUOUS_CONFIDENCE_CAP), 3)
+                best["ambiguous"] = True
+            break
+        best_src[key] = best
 
     # Drop reverse duplicates of the same logical link; when confidence ties
     # (common on small data where both sides look unique), the orientation
@@ -346,6 +372,12 @@ def detect_relationships(database_id):
                         continue
                     if not _types_compatible(a_col.get("data_type"), b_col.get("data_type")):
                         continue
+                    # FK sources are identifier-like (end in id / named after a
+                    # table) or a key column; this excludes numeric non-key
+                    # columns generically, no hardcoded name list.
+                    if not (_is_id_like(a_col["column_name"], a["table_name"])
+                            or a_col.get("is_primary_key_candidate")):
+                        continue
 
                     # Skip spurious primary-key-to-primary-key edges between
                     # different tables (e.g. patient_id <-> medication_id). A real
@@ -400,12 +432,11 @@ def detect_relationships(database_id):
 
     edges = _dedupe(candidates)
 
+    # Inference never grants authority. Every inferred edge is an unapproved
+    # suggestion (confirmed=0, source='inferred'); authority/finality comes only
+    # from declared FKs, user edits, or explicit finalization of the set.
     for edge in edges:
-        edge["confirmed"] = (
-            1
-            if edge["confidence"] >= AUTO_CONFIRM_CONFIDENCE
-            and edge["value_overlap"] >= AUTO_CONFIRM_OVERLAP
-            else 0
-        )
+        edge["confirmed"] = 0
+        edge["source"] = "inferred"
 
     return edges

@@ -1,0 +1,11 @@
+{
+  "generated_at": "2026-07-20T11:35:24",
+  "candidate_fix": "generic pool-relative derived-expression operand-only penalty",
+  "method": "static replay over 2000 captured Day1 candidate pools; best-scored-executed proxy",
+  "pools_where_penalty_applies_protected": 85,
+  "protected_correct_winner_changes": 38,
+  "incorrect_winner_flips": 10,
+  "named_selection_loss_cases_flipped": [],
+  "decision": "REJECTED \u2014 not wired into production",
+  "reason": "38 protected-correct winner changes >> 10 incorrect flips violates the 0 protected-regression gate; selection-loss cases were lost to consensus/RC grouping, not raw score, so a score penalty does not recover them safely."
+}

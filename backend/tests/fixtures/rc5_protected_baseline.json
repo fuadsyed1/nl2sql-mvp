@@ -1,0 +1,1912 @@
+{
+ "description": "RC5 regression baseline \u2014 frozen RC1-RC4 selections. Any RC5 change must preserve every protected query's selection (label OR result signature). Includes the 8 RC4 recoveries in the main protected set.",
+ "frozen_stages": [
+  "RC1",
+  "RC2",
+  "RC3",
+  "RC4"
+ ],
+ "protected_count": 367,
+ "protected": {
+  "1": {
+   "label": "llm_sql_direct_grain",
+   "reason": "consensus_group",
+   "sig": "(1, (('274',),))"
+  },
+  "2": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('1.52795e+06',),))"
+  },
+  "3": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('91004',),))"
+  },
+  "4": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('6',),))"
+  },
+  "5": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('580.874',),))"
+  },
+  "6": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('1594.9',),))"
+  },
+  "7": {
+   "label": "llm_sql_direct_grain",
+   "reason": "consensus_group",
+   "sig": "(1, (('5.79',),))"
+  },
+  "8": {
+   "label": "llm_sql_repair",
+   "reason": "best_scored_executed",
+   "sig": "(1, (('0',),))"
+  },
+  "9": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('347672',),))"
+  },
+  "10": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('93986.8',),))"
+  },
+  "12": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('7.41851e+06',),))"
+  },
+  "13": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('9450.26',),))"
+  },
+  "14": {
+   "label": "llm_sql_direct_grain",
+   "reason": "consensus_group",
+   "sig": "(1, (('201',),))"
+  },
+  "15": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('7099.47',),))"
+  },
+  "16": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('1.97848e+06',),))"
+  },
+  "17": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('8806.74',),))"
+  },
+  "19": {
+   "label": "llm_sql_direct_grain",
+   "reason": "consensus_group",
+   "sig": "(1, (('2.44797e+07',),))"
+  },
+  "20": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('73.862',),))"
+  },
+  "21": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('14002173',),))"
+  },
+  "22": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('126335',),))"
+  },
+  "23": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('1993',),))"
+  },
+  "24": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('782180',),))"
+  },
+  "25": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('\u2205',),))"
+  },
+  "26": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('13.1219',),))"
+  },
+  "27": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('1.19994e+06',),))"
+  },
+  "28": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('2034',),))"
+  },
+  "29": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('50',),))"
+  },
+  "30": {
+   "label": "llm_sql_direct",
+   "reason": "consensus_group",
+   "sig": "(1, (('1.64062e+06',),))"
+  },
+  "31": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('603.535',),))"
+  },
+  "32": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('2.28737e+06',),))"
+  },
+  "33": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('239245',),))"
+  },
+  "34": {
+   "label": "llm_sql_direct",
+   "reason": "direct_sql_override",
+   "sig": "(1, (('1.98889',),))"
+  },
+  "35": {
+   "label": "llm_primary",
+   "reason": "best_scored_executed",
+   "sig": "(1, (('3.49024e+06',),))"
+  },
+  "64": {
+   "label": "llm_sql_repair",
+   "reason": "consensus_group",
+   "sig": "(3, (('1', 'evergreen industries', '8.57143'), ('10', 'bluesky logistics', '4.28571'), ('2', 'redrock trading', '8.57143'), ('3', 'redrock trading', '4.28571'), ('4', 'global partners', '4.28571'), ('5', 'metro industries', '2.14286'), ('6', 'river supply co.', '4.28571'), ('7', 'summit industries', '8.57143'), ('8', 'global goods', '8.57143'), ('9', 'evergreen supply co.', '6.42857')))"
+  },
+  "65": {
+   "label": "llm_sql_repair",
+   "reason": "consensus_group",
+   "sig": "(5, (('1', 'evergreen advanced lamp 1', '544.26', '902.34', '65.7921'), ('10', 'terra everyday set 10', '385.78', '996.81', '158.388'), ('2', 'metroworks premium mat 2', '120.51', '289.14', '139.93'), ('3', 'vertex classic monitor 3', '228.71', '501.34', '119.203'), ('4', 'northstar premium adapter 4', '433.12', '683.42', '57.79'), ('5', 'nova compact speaker 5', '382.26', '671.07', '75.5533'), ('6', 'northstar professional pack 6', '106.66', '227.14', '112.957'), ('7', 'northstar eco helmet 7', '281.76', '684.2', '142.831'), ('8', 'northstar ultra bottle 8', '363.9', '528.04', '45.1058'), ('9', 'bluepeak portable cleaner 9', '261.18', '413.92', '58.4807')))"
+  },
+  "66": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('online', '8806.74'), ('partner', '10044.3'), ('phone', '9587.98'), ('store', '8796.64')))"
+  },
+  "68": {
+   "label": "llm_sql_direct_grain",
+   "reason": "consensus_group",
+   "sig": "(2, (('ach', '0.0137776'), ('check', '0.0175063'), ('credit_card', '0.0132558'), ('paypal', '0.0374515'), ('wire', '0.0142516')))"
+  },
+  "70": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('1', 'moscow distribution center 1', '0.805551'), ('10', 'spokane distribution center 10', '0.803293'), ('2', 'phoenix distribution center 2', '0.802934'), ('3', 'chicago distribution center 3', '0.808797'), ('4', 'new york distribution center 4', '0.794163'), ('5', 'spokane distribution center 5', '0.795268'), ('6', 'moscow distribution center 6', '0.792059'), ('7', 'phoenix distribution center 7', '0.816631'), ('8', 'chicago distribution center 8', '0.815932'), ('9', 'new york distribution center 9', '0.777802')))"
+  },
+  "71": {
+   "label": "llm_sql_direct",
+   "reason": "consensus_group",
+   "sig": "(2, (('dhl', '9.29261'), ('fedex', '7.74182'), ('northstar freight', '8.34644'), ('ups', '8.38378'), ('usps', '9.12257')))"
+  },
+  "72": {
+   "label": "llm_sql_direct",
+   "reason": "consensus_group",
+   "sig": "(2, (('adyen', '1.70206'), ('bankdirect', '1.42346'), ('northstar treasury', '1.59565'), ('paypal', '1.59801'), ('stripe', '1.73748')))"
+  },
+  "73": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('1', 'executive', '113140'), ('10', 'finance', '117319'), ('2', 'sales', '36676.6'), ('3', 'marketing', '45752.4'), ('4', 'customer service', '57450.5'), ('5', 'operations', '83475.5'), ('6', 'logistics', '32934.8'), ('7', 'procurement', '37708.1'), ('8', 'product', '49489.5'), ('9', 'information technology', '140372')))"
+  },
+  "74": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('enterprise', '4.82315'), ('nonprofit', '4.66032'), ('retail', '5.12812'), ('small_business', '4.65854')))"
+  },
+  "77": {
+   "label": "llm_sql_direct_grain",
+   "reason": "best_scored_executed",
+   "sig": "(3, (('1', 'moscow distribution center 1', '0.0188976'), ('10', 'spokane distribution center 10', '0.0176288'), ('2', 'phoenix distribution center 2', '0.0185376'), ('3', 'chicago distribution center 3', '0.0182971'), ('4', 'new york distribution center 4', '0.0197861'), ('5', 'spokane distribution center 5', '0.0200949'), ('6', 'moscow distribution center 6', '0.0228074'), ('7', 'phoenix distribution center 7', '0.0174488'), ('8', 'chicago distribution center 8', '0.0157383'), ('9', 'new york distribution center 9', '0.019945')))"
+  },
+  "78": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('cancelled', '9218.09'), ('delivered', '9634.82'), ('placed', '8551.56'), ('processing', '8559.03'), ('shipped', '8327.91')))"
+  },
+  "81": {
+   "label": "llm_sql_direct",
+   "reason": "consensus_group",
+   "sig": "(2, (('dhl', '46.2025'), ('fedex', '53.3742'), ('northstar freight', '53.2468'), ('ups', '60.5714'), ('usps', '48.6667')))"
+  },
+  "82": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('online', '3.09524'), ('partner', '2.90769'), ('phone', '2.77181'), ('store', '3.01235')))"
+  },
+  "84": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('enterprise', '3.53849'), ('nonprofit', '2.46954'), ('retail', '2.28768'), ('small_business', '1.94126')))"
+  },
+  "85": {
+   "label": "llm_sql_repair",
+   "reason": "consensus_group",
+   "sig": "(2, (('apparel', '10.5383'), ('automotive', '13.1052'), ('electronics', '15.9901'), ('health', '11.0663'), ('home', '14.0118'), ('office supplies', '14.1334'), ('outdoors', '9.53555'), ('pet supplies', '11.6193')))"
+  },
+  "88": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('1', 'moscow distribution center 1', '72.8149'), ('10', 'spokane distribution center 10', '58.8732'), ('2', 'phoenix distribution center 2', '74.9835'), ('3', 'chicago distribution center 3', '56.2006'), ('4', 'new york distribution center 4', '135.682'), ('5', 'spokane distribution center 5', '70.9015'), ('6', 'moscow distribution center 6', '140.005'), ('7', 'phoenix distribution center 7', '67.0835'), ('8', 'chicago distribution center 8', '147.671'), ('9', 'new york distribution center 9', '110.332')))"
+  },
+  "91": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('apparel', '0.455448'), ('automotive', '0.407965'), ('electronics', '0.443517'), ('health', '0.428663'), ('home', '0.427653'), ('office supplies', '0.43822'), ('outdoors', '0.435793'), ('pet supplies', '0.453575')))"
+  },
+  "93": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('dhl', '0.224815'), ('fedex', '0.145972'), ('northstar freight', '0.123491'), ('ups', '0.173848'), ('usps', '0.173486')))"
+  },
+  "98": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('1', 'executive', '0.207942'), ('10', 'finance', '0.413937'), ('2', 'sales', '0.441971'), ('3', 'marketing', '0.515'), ('4', 'customer service', '0.637703'), ('5', 'operations', '0.420265'), ('6', 'logistics', '0.55521'), ('7', 'procurement', '0.561654'), ('8', 'product', '0.353225'), ('9', 'information technology', '0.301263')))"
+  },
+  "99": {
+   "label": "llm_sql_direct",
+   "reason": "best_scored_executed",
+   "sig": "(4, (('2025-01', '265385', '\u2205', '\u2205'), ('2025-02', '116312', '265385', '-149073'), ('2025-03', '104372', '116312', '-11939.5'), ('2025-04', '189677', '104372', '85304.3'), ('2025-05', '243757', '189677', '54080.7'), ('2025-06', '186231', '243757', '-57526.1'), ('2025-07', '229674', '186231', '43442.6'), ('2025-08', '130978', '229674', '-98695.6'), ('2025-09', '122160', '130978', '-8818.18'), ('2025-10', '102561', '122160', '-19598.8')))"
+  },
+  "101": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('4',),))"
+  },
+  "102": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('4',),))"
+  },
+  "103": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('15',),))"
+  },
+  "104": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('41',),))"
+  },
+  "105": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('3',),))"
+  },
+  "106": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('8',),))"
+  },
+  "107": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('15',),))"
+  },
+  "108": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('7',),))"
+  },
+  "109": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('5',),))"
+  },
+  "110": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('4',),))"
+  },
+  "111": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('5',),))"
+  },
+  "112": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('5',),))"
+  },
+  "113": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('4',),))"
+  },
+  "114": {
+   "label": "llm_sql_repair",
+   "reason": "consensus_group",
+   "sig": "(1, (('12',),))"
+  },
+  "115": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('5',),))"
+  },
+  "116": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('187',),))"
+  },
+  "119": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('257',),))"
+  },
+  "125": {
+   "label": "llm_sql_repair",
+   "reason": "consensus_group",
+   "sig": "(1, (('5',),))"
+  },
+  "127": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('8',),))"
+  },
+  "128": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('60',),))"
+  },
+  "129": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('11',),))"
+  },
+  "131": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('0',),))"
+  },
+  "132": {
+   "label": "llm_sql_direct_grain",
+   "reason": "consensus_group",
+   "sig": "(1, (('169',),))"
+  },
+  "133": {
+   "label": "llm_sql_repair",
+   "reason": "consensus_group",
+   "sig": "(1, (('20',),))"
+  },
+  "134": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('286',),))"
+  },
+  "135": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('0',),))"
+  },
+  "136": {
+   "label": "llm_sql_direct_variant",
+   "reason": "validation_score_override",
+   "sig": "(1, (('71',),))"
+  },
+  "137": {
+   "label": "llm_sql_direct_variant",
+   "reason": "best_scored_executed",
+   "sig": "(1, (('289',),))"
+  },
+  "138": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('0',),))"
+  },
+  "142": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('20',),))"
+  },
+  "143": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('217',),))"
+  },
+  "144": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('5',),))"
+  },
+  "145": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('8',),))"
+  },
+  "147": {
+   "label": "llm_sql_direct_grain",
+   "reason": "validation_score_override",
+   "sig": "(1, (('153',),))"
+  },
+  "150": {
+   "label": "llm_sql_repair",
+   "reason": "consensus_group",
+   "sig": "(1, (('15',),))"
+  },
+  "151": {
+   "label": "llm_sql_repair",
+   "reason": "consensus_group",
+   "sig": "(2, (('active', '274'), ('closed', '15'), ('suspended', '11')))"
+  },
+  "152": {
+   "label": "llm_sql_repair",
+   "reason": "consensus_group",
+   "sig": "(2, (('bronze', '105'), ('gold', '66'), ('platinum', '31'), ('silver', '98')))"
+  },
+  "153": {
+   "label": "llm_sql_direct_grain",
+   "reason": "consensus_group",
+   "sig": "(2, (('az', '37'), ('ca', '33'), ('co', '30'), ('ga', '34'), ('id', '80'), ('il', '31'), ('ma', '40'), ('ny', '34'), ('or', '40'), ('tx', '74')))"
+  },
+  "155": {
+   "label": "llm_sql_repair",
+   "reason": "consensus_group",
+   "sig": "(2, (('1', '6'), ('2', '10'), ('3', '13'), ('4', '14'), ('5', '17')))"
+  },
+  "156": {
+   "label": "llm_sql_direct_grain",
+   "reason": "consensus_group",
+   "sig": "(2, (('apparel', '59'), ('automotive', '55'), ('electronics', '77'), ('health', '58'), ('home', '68'), ('office supplies', '73'), ('outdoors', '52'), ('pet supplies', '58')))"
+  },
+  "158": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('1', 'moscow distribution center 1', '31203'), ('10', 'spokane distribution center 10', '26201'), ('2', 'phoenix distribution center 2', '28024'), ('3', 'chicago distribution center 3', '26920'), ('4', 'new york distribution center 4', '30665'), ('5', 'spokane distribution center 5', '29009'), ('6', 'moscow distribution center 6', '26949'), ('7', 'phoenix distribution center 7', '31357'), ('8', 'chicago distribution center 8', '32869'), ('9', 'new york distribution center 9', '28858')))"
+  },
+  "159": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('cancelled', '44'), ('delivered', '523'), ('placed', '63'), ('processing', '84'), ('shipped', '86')))"
+  },
+  "160": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('online', '1.8318e+06'), ('partner', '1.77784e+06'), ('phone', '1.9176e+06'), ('store', '1.89128e+06')))"
+  },
+  "161": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('ach', '166'), ('check', '181'), ('credit_card', '157'), ('paypal', '154'), ('wire', '142')))"
+  },
+  "163": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('contractor', '83405.5'), ('full-time', '95110.4'), ('part-time', '92402.8')))"
+  },
+  "164": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('apparel', '529.938'), ('automotive', '689.694'), ('electronics', '580.874'), ('health', '585.461'), ('home', '600.866'), ('office supplies', '564.047'), ('outdoors', '616.515'), ('pet supplies', '576.117')))"
+  },
+  "165": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('commercial', '5395859'), ('corporate', '14002173'), ('operations', '8437171'), ('product', '3446352'), ('technology', '3726603')))"
+  },
+  "166": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('bronze', '1.81585e+06'), ('gold', '1.06982e+06'), ('platinum', '672531'), ('silver', '1.48081e+06')))"
+  },
+  "167": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('apparel', '1360'), ('automotive', '1438'), ('electronics', '1993'), ('health', '1405'), ('home', '1673'), ('office supplies', '1906'), ('outdoors', '1185'), ('pet supplies', '1457')))"
+  },
+  "168": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('chicago', '2.5396e+07'), ('moscow', '3.81659e+07'), ('new york', '2.55927e+07'), ('phoenix', '3.68344e+07'), ('spokane', '2.44797e+07')))"
+  },
+  "169": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('distributor', '3.31818'), ('manufacturer', '3.77273'), ('wholesaler', '3.125')))"
+  },
+  "170": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('customer service', 'full-time', '9'), ('executive', 'full-time', '9'), ('finance', 'full-time', '6'), ('finance', 'part-time', '2'), ('human resources', 'contractor', '1'), ('human resources', 'full-time', '8'), ('human resources', 'part-time', '1'), ('information technology', 'full-time', '7'), ('information technology', 'part-time', '1'), ('legal & compliance', 'contractor', '2')))"
+  },
+  "171": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('ach', '18882.8'), ('check', '27003.6'), ('credit_card', '19414.9'), ('paypal', '51393.1'), ('wire', '17999.4')))"
+  },
+  "172": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('dhl', 'freight', '14.5932'), ('dhl', 'ground', '13.4676'), ('dhl', 'overnight', '13.1295'), ('dhl', 'two_day', '14.1278'), ('fedex', 'freight', '12.9853'), ('fedex', 'ground', '15.1025'), ('fedex', 'overnight', '11.6804'), ('fedex', 'two_day', '13.25'), ('northstar freight', 'freight', '13.9239'), ('northstar freight', 'ground', '14.5649')))"
+  },
+  "173": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('high', '131', '9159.81'), ('low', '62', '9724.36'), ('normal', '584', '9232.06'), ('urgent', '23', '9745.39')))"
+  },
+  "174": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('1', 'moscow distribution center 1', '732'), ('10', 'spokane distribution center 10', '575'), ('2', 'phoenix distribution center 2', '647'), ('3', 'chicago distribution center 3', '609'), ('4', 'new york distribution center 4', '764'), ('5', 'spokane distribution center 5', '733'), ('6', 'moscow distribution center 6', '776'), ('7', 'phoenix distribution center 7', '670'), ('8', 'chicago distribution center 8', '634'), ('9', 'new york distribution center 9', '740')))"
+  },
+  "175": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('enterprise', 'english', '20'), ('enterprise', 'french', '4'), ('enterprise', 'mandarin', '2'), ('enterprise', 'spanish', '3'), ('nonprofit', 'english', '17'), ('nonprofit', 'french', '1'), ('nonprofit', 'spanish', '1'), ('retail', 'english', '158'), ('retail', 'french', '6'), ('retail', 'mandarin', '6')))"
+  },
+  "176": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('apex', '35', '652.083'), ('bluepeak', '39', '710.875'), ('cascade', '40', '735.637'), ('evergreen', '20', '706.346'), ('harbor', '33', '574.255'), ('lumina', '37', '604.156'), ('metroworks', '30', '685.452'), ('northstar', '42', '582.931'), ('nova', '37', '718.66'), ('prairie', '28', '745.336')))"
+  },
+  "177": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('fulfilled', '5.75807e+06'), ('partial', '607260'), ('unfulfilled', '1.05693e+06')))"
+  },
+  "179": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('az', '38'), ('ca', '21'), ('co', '27'), ('ga', '25'), ('id', '84'), ('il', '22'), ('ma', '53'), ('ny', '33'), ('or', '44'), ('tx', '72')))"
+  },
+  "180": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('central', '76.235'), ('mountain', '75.915'), ('northeast', '76.02'), ('northwest', '57.185'), ('southeast', '72.37'), ('southwest', '80.26'), ('west', '70.115')))"
+  },
+  "181": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('bronze', '550718'), ('gold', '255085'), ('platinum', '120283'), ('silver', '601863')))"
+  },
+  "182": {
+   "label": "llm_sql_direct_grain",
+   "reason": "best_scored_executed",
+   "sig": "(2, (('customer service', '4.03'), ('executive', '3.529'), ('finance', '3.885'), ('information technology', '3.806'), ('logistics', '3.84'), ('marketing', '3.77'), ('operations', '3.859'), ('procurement', '4.024'), ('product', '3.671'), ('sales', '3.242')))"
+  },
+  "183": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('2024', 'online', '83'), ('2024', 'partner', '60'), ('2024', 'phone', '77'), ('2024', 'store', '90'), ('2025', 'online', '80'), ('2025', 'partner', '81'), ('2025', 'phone', '78'), ('2025', 'store', '86'), ('2026', 'online', '45'), ('2026', 'partner', '36')))"
+  },
+  "184": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('apparel', '165'), ('automotive', '151'), ('electronics', '268'), ('health', '183'), ('home', '228'), ('office supplies', '245'), ('outdoors', '143'), ('pet supplies', '188')))"
+  },
+  "185": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('cancelled', '14.6418'), ('delivered', '13.5745'), ('exception', '16.226'), ('in_transit', '13.4684'), ('pending', '13.3518')))"
+  },
+  "186": {
+   "label": "llm_primary",
+   "reason": "consensus_group",
+   "sig": "(3, (('enterprise', 'apparel', '79063.9'), ('enterprise', 'automotive', '69868.6'), ('enterprise', 'electronics', '62856.9'), ('enterprise', 'health', '59550.5'), ('enterprise', 'home', '93259.8'), ('enterprise', 'office supplies', '89867.5'), ('enterprise', 'outdoors', '44915.7'), ('enterprise', 'pet supplies', '58448.6'), ('nonprofit', 'apparel', '44403.1'), ('nonprofit', 'automotive', '65767.5')))"
+  },
+  "188": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('central', 'online', '449'), ('central', 'partner', '310'), ('central', 'phone', '353'), ('central', 'store', '523'), ('mountain', 'online', '457'), ('mountain', 'partner', '349'), ('mountain', 'phone', '338'), ('mountain', 'store', '345'), ('northeast', 'online', '175'), ('northeast', 'partner', '175')))"
+  },
+  "189": {
+   "label": "llm_sql_direct_grain",
+   "reason": "consensus_group",
+   "sig": "(3, (('bronze', '2024', '9421.46'), ('bronze', '2025', '8307.16'), ('bronze', '2026', '9794.19'), ('gold', '2024', '8224.2'), ('gold', '2025', '8812.13'), ('gold', '2026', '8891.26'), ('platinum', '2024', '9336.85'), ('platinum', '2025', '8872.58'), ('platinum', '2026', '11630.9'), ('silver', '2024', '9359.54')))"
+  },
+  "191": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(4, (('dhl', 'az', '8', '3.25'), ('dhl', 'ca', '4', '4.75'), ('dhl', 'co', '8', '4.875'), ('dhl', 'ga', '5', '3.4'), ('dhl', 'id', '10', '4'), ('dhl', 'il', '3', '4.33333'), ('dhl', 'ma', '6', '3.5'), ('dhl', 'ny', '3', '4'), ('dhl', 'or', '12', '3.25'), ('dhl', 'tx', '15', '3.93333')))"
+  },
+  "192": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('high', 'central', '2.19755e+06'), ('high', 'mountain', '1.12501e+06'), ('high', 'northeast', '939795'), ('high', 'northwest', '1.94019e+06'), ('high', 'southeast', '1.0976e+06'), ('high', 'southwest', '1.97461e+06'), ('high', 'west', '2.12226e+06'), ('low', 'central', '1.46304e+07'), ('low', 'mountain', '1.21698e+07'), ('low', 'northeast', '7.15592e+06')))"
+  },
+  "193": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('adam martin', 'apparel', '48'), ('adam martin', 'automotive', '69'), ('adam martin', 'electronics', '79'), ('adam martin', 'health', '76'), ('adam martin', 'home', '69'), ('adam martin', 'office supplies', '98'), ('adam martin', 'outdoors', '36'), ('adam martin', 'pet supplies', '44'), ('adam walker', 'apparel', '57'), ('adam walker', 'automotive', '94')))"
+  },
+  "194": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('enterprise', 'apex', '0.042'), ('enterprise', 'bluepeak', '0.0619048'), ('enterprise', 'cascade', '0.07'), ('enterprise', 'evergreen', '0.0541667'), ('enterprise', 'harbor', '0.05'), ('enterprise', 'lumina', '0.0520833'), ('enterprise', 'metroworks', '0.036'), ('enterprise', 'northstar', '0.0392857'), ('enterprise', 'nova', '0.054'), ('enterprise', 'prairie', '0.05')))"
+  },
+  "195": {
+   "label": "llm_sql_direct_variant",
+   "reason": "best_scored_executed",
+   "sig": "(3, (('az', 'az', '260668'), ('az', 'id', '29360.5'), ('az', 'il', '7055.86'), ('az', 'ny', '6325.31'), ('az', 'tx', '1096.54'), ('ca', 'ca', '115731'), ('ca', 'ga', '21695.6'), ('ca', 'id', '50651.3'), ('ca', 'il', '85.4'), ('ca', 'or', '33049.2')))"
+  },
+  "197": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('2025-01', '373884'), ('2025-02', '176664'), ('2025-03', '152997'), ('2025-04', '283031'), ('2025-05', '305662'), ('2025-06', '305709'), ('2025-07', '323471'), ('2025-08', '211411'), ('2025-09', '181041'), ('2025-10', '179789')))"
+  },
+  "198": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('1', 'apparel', '146477'), ('1', 'automotive', '61020.1'), ('1', 'electronics', '190965'), ('1', 'health', '100366'), ('1', 'home', '31440.4'), ('1', 'office supplies', '45678.9'), ('1', 'outdoors', '72109.6'), ('1', 'pet supplies', '26323.9'), ('2', 'apparel', '118611'), ('2', 'automotive', '186786')))"
+  },
+  "201": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('bronze',), ('gold',), ('silver',)))"
+  },
+  "202": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('az',), ('ca',), ('co',), ('ga',), ('id',), ('il',), ('ma',), ('ny',), ('or',), ('tx',)))"
+  },
+  "203": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('1', 'executive'), ('10', 'finance'), ('2', 'sales'), ('3', 'marketing'), ('4', 'customer service'), ('5', 'operations'), ('6', 'logistics'), ('7', 'procurement'), ('8', 'product'), ('9', 'information technology')))"
+  },
+  "204": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('3',), ('4',), ('5',)))"
+  },
+  "205": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('apparel',), ('automotive',), ('electronics',), ('health',), ('home',), ('office supplies',), ('outdoors',), ('pet supplies',)))"
+  },
+  "206": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('central',), ('mountain',), ('northwest',), ('southwest',), ('west',)))"
+  },
+  "207": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('cancelled',), ('delivered',), ('placed',), ('processing',), ('shipped',)))"
+  },
+  "208": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('ach',), ('check',), ('credit_card',), ('paypal',), ('wire',)))"
+  },
+  "209": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('dhl',), ('fedex',), ('northstar freight',), ('ups',), ('usps',)))"
+  },
+  "210": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('contractor',), ('full-time',), ('part-time',)))"
+  },
+  "211": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('apparel',), ('automotive',), ('electronics',), ('health',), ('home',), ('office supplies',), ('outdoors',), ('pet supplies',)))"
+  },
+  "212": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('commercial',), ('corporate',), ('operations',), ('product',), ('technology',)))"
+  },
+  "213": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('1', 'moscow distribution center 1', 'wh-001'), ('10', 'spokane distribution center 10', 'wh-010'), ('2', 'phoenix distribution center 2', 'wh-002'), ('3', 'chicago distribution center 3', 'wh-003'), ('4', 'new york distribution center 4', 'wh-004'), ('5', 'spokane distribution center 5', 'wh-005'), ('6', 'moscow distribution center 6', 'wh-006'), ('7', 'phoenix distribution center 7', 'wh-007'), ('8', 'chicago distribution center 8', 'wh-008'), ('9', 'new york distribution center 9', 'wh-009')))"
+  },
+  "214": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('enterprise',), ('nonprofit',), ('retail',), ('small_business',)))"
+  },
+  "215": {
+   "label": "llm_sql_repair",
+   "reason": "consensus_group",
+   "sig": "(1, ())"
+  },
+  "216": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('1', 'daniel perez'), ('10', 'maya davis'), ('2', 'emma stewart'), ('3', 'sebastian clark'), ('4', 'jack wright'), ('5', 'noah green'), ('6', 'adam moore'), ('7', 'noah sanchez'), ('8', 'ethan bell'), ('9', 'jack cook')))"
+  },
+  "217": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('11', 'prairie essential monitor 11', 'sku-out-000011'), ('12', 'apex pro adapter 12', 'sku-hea-000012'), ('14', 'silverline pro jacket 14', 'sku-out-000014'), ('2', 'metroworks premium mat 2', 'sku-out-000002'), ('4', 'northstar premium adapter 4', 'sku-aut-000004'), ('5', 'nova compact speaker 5', 'sku-ele-000005'), ('6', 'northstar professional pack 6', 'sku-hea-000006'), ('7', 'northstar eco helmet 7', 'sku-aut-000007'), ('8', 'northstar ultra bottle 8', 'sku-off-000008'), ('9', 'bluepeak portable cleaner 9', 'sku-off-000009')))"
+  },
+  "218": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('1', 'evergreen industries'), ('10', 'bluesky logistics'), ('2', 'redrock trading'), ('3', 'redrock trading'), ('4', 'global partners'), ('5', 'metro industries'), ('6', 'river supply co.'), ('7', 'summit industries'), ('8', 'global goods'), ('9', 'evergreen supply co.')))"
+  },
+  "219": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('1', 'moscow distribution center 1'), ('10', 'spokane distribution center 10'), ('2', 'phoenix distribution center 2'), ('3', 'chicago distribution center 3'), ('4', 'new york distribution center 4'), ('5', 'spokane distribution center 5'), ('6', 'moscow distribution center 6'), ('7', 'phoenix distribution center 7'), ('8', 'chicago distribution center 8'), ('9', 'new york distribution center 9')))"
+  },
+  "220": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('14', 'charlotte', 'baker'), ('16', 'aria', 'garcia'), ('2', 'isabella', 'mitchell'), ('26', 'alexander', 'hill'), ('28', 'rafi', 'morris'), ('38', 'camila', 'wright'), ('4', 'sofia', 'walker'), ('40', 'mia', 'bailey'), ('50', 'elena', 'collins'), ('52', 'adam', 'walker')))"
+  },
+  "221": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('1', 'executive'), ('10', 'finance'), ('2', 'sales'), ('3', 'marketing'), ('4', 'customer service'), ('5', 'operations'), ('6', 'logistics'), ('7', 'procurement'), ('8', 'product'), ('9', 'information technology')))"
+  },
+  "223": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('apex',), ('bluepeak',), ('cascade',), ('evergreen',), ('harbor',), ('lumina',), ('metroworks',), ('northstar',), ('nova',), ('prairie',)))"
+  },
+  "224": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('dhl',), ('fedex',), ('northstar freight',), ('ups',), ('usps',)))"
+  },
+  "226": {
+   "label": "llm_sql_repair",
+   "reason": "best_scored_executed",
+   "sig": "(3, (('10', 'maya', 'davis'), ('18', 'sara', 'taylor'), ('20', 'charlotte', 'garcia'), ('24', 'adam', 'bailey'), ('29', 'jonah', 'young'), ('34', 'olivia', 'reed'), ('36', 'alexander', 'reed'), ('4', 'jack', 'wright'), ('40', 'sebastian', 'anderson'), ('7', 'noah', 'sanchez')))"
+  },
+  "227": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('apparel',), ('automotive',), ('electronics',), ('health',), ('home',), ('office supplies',), ('outdoors',), ('pet supplies',)))"
+  },
+  "228": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('distributor',), ('manufacturer',), ('wholesaler',)))"
+  },
+  "229": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('chicago',), ('moscow',), ('new york',), ('phoenix',), ('spokane',)))"
+  },
+  "230": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('bronze',), ('gold',), ('platinum',), ('silver',)))"
+  },
+  "231": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('online',), ('partner',), ('phone',), ('store',)))"
+  },
+  "232": {
+   "label": "llm_primary",
+   "reason": "consensus_group",
+   "sig": "(4, (('14', 'charlotte', 'baker', '7913.83'), ('16', 'aria', 'garcia', '10962.6'), ('2', 'isabella', 'mitchell', '7825.94'), ('26', 'alexander', 'hill', '8925.56'), ('28', 'rafi', 'morris', '8246.23'), ('38', 'camila', 'wright', '9027.6'), ('4', 'sofia', 'walker', '8996.53'), ('40', 'mia', 'bailey', '7441.09'), ('50', 'elena', 'collins', '9982.19'), ('52', 'adam', 'walker', '9867.91')))"
+  },
+  "233": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('1', 'evergreen advanced lamp 1'), ('11', 'prairie essential monitor 11'), ('12', 'apex pro adapter 12'), ('14', 'silverline pro jacket 14'), ('18', 'northstar compact speaker 18'), ('2', 'metroworks premium mat 2'), ('3', 'vertex classic monitor 3'), ('5', 'nova compact speaker 5'), ('8', 'northstar ultra bottle 8'), ('9', 'bluepeak portable cleaner 9')))"
+  },
+  "234": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('az',), ('id',), ('ma',), ('ny',), ('or',), ('tx',), ('wa',)))"
+  },
+  "235": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('124', 'fatima', 'white'), ('157', 'luna', 'miller'), ('158', 'harper', 'reed'), ('21', 'leo', 'hill'), ('64', 'layla', 'stewart'), ('7', 'noah', 'sanchez'), ('73', 'rafi', 'green'), ('79', 'lucas', 'wilson'), ('86', 'sara', 'garcia'), ('90', 'sophia', 'bailey')))"
+  },
+  "236": {
+   "label": "llm_primary",
+   "reason": "best_scored_executed",
+   "sig": "(3, (('1', 'evergreen industries', '38427.6'), ('10', 'bluesky logistics', '24021.3'), ('2', 'redrock trading', '29729.5'), ('3', 'redrock trading', '32082.9'), ('4', 'global partners', '21311.2'), ('5', 'metro industries', '50812.5'), ('6', 'river supply co.', '37686.1'), ('7', 'summit industries', '50274.7'), ('8', 'global goods', '24749.8'), ('9', 'evergreen supply co.', '20836.8')))"
+  },
+  "238": {
+   "label": "llm_sql_repair",
+   "reason": "best_scored_executed",
+   "sig": "(2, ())"
+  },
+  "241": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('14', 'charlotte', 'baker'), ('2', 'isabella', 'mitchell'), ('26', 'alexander', 'hill'), ('28', 'rafi', 'morris'), ('38', 'camila', 'wright'), ('4', 'sofia', 'walker'), ('40', 'mia', 'bailey'), ('52', 'adam', 'walker'), ('62', 'sophia', 'young'), ('64', 'olivia', 'mitchell')))"
+  },
+  "242": {
+   "label": "llm_sql_repair",
+   "reason": "consensus_group",
+   "sig": "(1, ())"
+  },
+  "245": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('10', 'bluesky logistics'), ('12', 'summit goods'), ('13', 'united supply co.'), ('15', 'mountain trading'), ('16', 'bluesky industries'), ('2', 'redrock trading'), ('4', 'global partners'), ('5', 'metro industries'), ('6', 'river supply co.'), ('8', 'global goods')))"
+  },
+  "246": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('1', 'daniel', 'perez'), ('10', 'maya', 'davis'), ('11', 'ava', 'thompson'), ('3', 'sebastian', 'clark'), ('4', 'jack', 'wright'), ('5', 'noah', 'green'), ('6', 'adam', 'moore'), ('7', 'noah', 'sanchez'), ('8', 'ethan', 'bell'), ('9', 'jack', 'cook')))"
+  },
+  "247": {
+   "label": "llm_primary",
+   "reason": "best_scored_executed",
+   "sig": "(3, (('1', 'moscow distribution center 1', '156'), ('10', 'spokane distribution center 10', '127'), ('2', 'phoenix distribution center 2', '145'), ('3', 'chicago distribution center 3', '138'), ('4', 'new york distribution center 4', '162'), ('5', 'spokane distribution center 5', '133'), ('6', 'moscow distribution center 6', '151'), ('7', 'phoenix distribution center 7', '135'), ('8', 'chicago distribution center 8', '149'), ('9', 'new york distribution center 9', '148')))"
+  },
+  "248": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('apparel',), ('automotive',), ('electronics',), ('health',), ('home',), ('office supplies',), ('outdoors',), ('pet supplies',)))"
+  },
+  "249": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(4, (('1', 'executive', '15', '10'), ('2', 'sales', '20', '13'), ('3', 'marketing', '16', '11'), ('4', 'customer service', '11', '8'), ('8', 'product', '21', '11')))"
+  },
+  "251": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('daniel perez', 'salt lake city', 'ut'), ('emma stewart', 'phoenix', 'az'), ('jack wright', 'portland', 'or'), ('jack wright', 'portland', 'or'), ('jack wright', 'san diego', 'ca'), ('noah green', 'chicago', 'il'), ('noah green', 'portland', 'or'), ('sebastian clark', 'boise', 'id'), ('sebastian clark', 'new york', 'ny'), ('sebastian clark', 'san diego', 'ca')))"
+  },
+  "252": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('ava', 'brown', 'product'), ('camila', 'campbell', 'executive'), ('charlotte', 'baker', 'information technology'), ('isabella', 'mitchell', 'sales'), ('jack', 'edwards', 'finance'), ('layla', 'mitchell', 'operations'), ('layla', 'wright', 'logistics'), ('sofia', 'thomas', 'marketing'), ('sofia', 'walker', 'customer service'), ('sophia', 'moore', 'procurement')))"
+  },
+  "253": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('bluepeak portable cleaner 9', 'pacific trading'), ('evergreen advanced lamp 1', 'global goods'), ('metroworks premium mat 2', 'bluesky logistics'), ('northstar eco helmet 7', 'pioneer industries'), ('northstar premium adapter 4', 'northern logistics'), ('northstar professional pack 6', 'summit wholesale'), ('northstar ultra bottle 8', 'global logistics'), ('nova compact speaker 5', 'liberty distribution'), ('terra everyday set 10', 'liberty distribution'), ('vertex classic monitor 3', 'liberty goods')))"
+  },
+  "254": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('chicago distribution center 3', 'sofia', 'martin'), ('chicago distribution center 8', 'jonah', 'sanchez'), ('moscow distribution center 1', 'sofia', 'martin'), ('moscow distribution center 6', 'sebastian', 'morris'), ('new york distribution center 4', 'nina', 'turner'), ('new york distribution center 9', 'elena', 'jackson'), ('phoenix distribution center 2', 'isabella', 'morris'), ('phoenix distribution center 7', 'elena', 'jackson'), ('spokane distribution center 10', 'benjamin', 'bell'), ('spokane distribution center 5', 'sebastian', 'morris')))"
+  },
+  "255": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('1', 'evergreen advanced lamp 1', 'moscow distribution center 1'), ('10', 'vertex classic monitor 3', 'new york distribution center 4'), ('2', 'evergreen advanced lamp 1', 'spokane distribution center 5'), ('3', 'evergreen advanced lamp 1', 'moscow distribution center 11'), ('4', 'evergreen advanced lamp 1', 'chicago distribution center 3'), ('5', 'evergreen advanced lamp 1', 'spokane distribution center 10'), ('6', 'metroworks premium mat 2', 'phoenix distribution center 7'), ('7', 'metroworks premium mat 2', 'new york distribution center 4'), ('8', 'metroworks premium mat 2', 'chicago distribution center 8'), ('9', 'metroworks premium mat 2', 'moscow distribution center 1')))"
+  },
+  "256": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('so-2024-000001', 'camila young'), ('so-2024-000003', 'lucas jackson'), ('so-2024-000006', 'sara miller'), ('so-2024-000007', 'jack wright'), ('so-2024-000009', 'jonah lewis'), ('so-2025-000002', 'henry roberts'), ('so-2025-000004', 'noah anderson'), ('so-2025-000008', 'liam johnson'), ('so-2026-000005', 'diego white'), ('so-2026-000010', 'emma turner')))"
+  },
+  "257": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('so-2024-000001', 'aria garcia'), ('so-2024-000003', 'mason parker'), ('so-2024-000006', 'leo bell'), ('so-2024-000007', 'mason parker'), ('so-2024-000009', 'sofia walker'), ('so-2025-000002', 'camila wright'), ('so-2025-000004', 'isabella mitchell'), ('so-2025-000008', 'sophia young'), ('so-2026-000005', 'adam walker'), ('so-2026-000010', 'sofia walker')))"
+  },
+  "258": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('so-2024-000001', 'lumina eco cable 411', '4'), ('so-2024-000001', 'northstar classic station 54', '3'), ('so-2024-000001', 'northstar smart box 65', '5'), ('so-2024-000001', 'nova classic stand 146', '6'), ('so-2024-000001', 'summit classic lamp 415', '2'), ('so-2024-000001', 'summit essential box 145', '1'), ('so-2025-000002', 'evergreen eco system 222', '7'), ('so-2025-000002', 'nova compact speaker 5', '9'), ('so-2025-000002', 'summit pro station 369', '10'), ('so-2025-000002', 'terra premium bottle 353', '8')))"
+  },
+  "259": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('pay-0000001', 'so-2024-000001'), ('pay-0000002', 'so-2025-000002'), ('pay-0000003', 'so-2024-000003'), ('pay-0000004', 'so-2025-000004'), ('pay-0000005', 'so-2026-000005'), ('pay-0000006', 'so-2024-000006'), ('pay-0000007', 'so-2024-000007'), ('pay-0000008', 'so-2025-000008'), ('pay-0000009', 'so-2024-000009'), ('pay-0000010', 'so-2026-000010')))"
+  },
+  "260": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('shp-0000001', 'so-2024-000001'), ('shp-0000002', 'so-2025-000002'), ('shp-0000003', 'so-2024-000003'), ('shp-0000004', 'so-2025-000004'), ('shp-0000005', 'so-2026-000005'), ('shp-0000006', 'so-2024-000006'), ('shp-0000007', 'so-2024-000007'), ('shp-0000008', 'so-2025-000008'), ('shp-0000009', 'so-2024-000009'), ('shp-0000010', 'so-2026-000010')))"
+  },
+  "261": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('shp-0000001', 'boston'), ('shp-0000002', 'portland'), ('shp-0000003', 'chicago'), ('shp-0000004', 'austin'), ('shp-0000005', 'boise'), ('shp-0000006', 'portland'), ('shp-0000007', 'portland'), ('shp-0000008', 'portland'), ('shp-0000009', 'boise'), ('shp-0000010', 'boise')))"
+  },
+  "262": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('bluepeak portable cleaner 9', 'product'), ('evergreen advanced lamp 1', 'information technology'), ('metroworks premium mat 2', 'product'), ('northstar eco helmet 7', 'product'), ('northstar premium adapter 4', 'product'), ('northstar professional pack 6', 'product'), ('northstar ultra bottle 8', 'product'), ('nova compact speaker 5', 'information technology'), ('terra everyday set 10', 'product'), ('vertex classic monitor 3', 'product')))"
+  },
+  "263": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(4, (('aria', 'garcia', 'sofia', 'walker'), ('benjamin', 'bell', 'layla', 'wright'), ('charlotte', 'baker', 'isabella', 'mitchell'), ('elena', 'green', 'charlotte', 'baker'), ('elijah', 'campbell', 'layla', 'mitchell'), ('ethan', 'bailey', 'sophia', 'moore'), ('jack', 'baker', 'sofia', 'thomas'), ('jonah', 'clark', 'jack', 'edwards'), ('leo', 'collins', 'camila', 'campbell'), ('maya', 'thomas', 'ava', 'brown')))"
+  },
+  "264": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('1', 'boston'), ('10', 'boise'), ('2', 'portland'), ('3', 'chicago'), ('4', 'austin'), ('5', 'boise'), ('6', 'portland'), ('7', 'san diego'), ('8', 'portland'), ('9', 'boise')))"
+  },
+  "265": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('1', 'so-2024-000001', 'boston'), ('10', 'so-2026-000010', 'boise'), ('2', 'so-2025-000002', 'portland'), ('3', 'so-2024-000003', 'chicago'), ('4', 'so-2025-000004', 'austin'), ('5', 'so-2026-000005', 'boise'), ('6', 'so-2024-000006', 'portland'), ('7', 'so-2024-000007', 'portland'), ('8', 'so-2025-000008', 'portland'), ('9', 'so-2024-000009', 'boise')))"
+  },
+  "266": {
+   "label": "llm_variant_1",
+   "reason": "best_scored_executed",
+   "sig": "(4, (('so-2024-000003', 'lucas', 'jackson', '12118'), ('so-2024-000006', 'sara', 'miller', '9137.16'), ('so-2024-000007', 'jack', 'wright', '4424.04'), ('so-2024-000009', 'jonah', 'lewis', '7433.78'), ('so-2024-000012', 'jack', 'wright', '5479.11'), ('so-2025-000011', 'charlotte', 'robinson', '6467.17'), ('so-2025-000014', 'fatima', 'thomas', '21926.2'), ('so-2025-000016', 'luna', 'lewis', '5133.98'), ('so-2025-000018', 'fatima', 'thomas', '14058.8'), ('so-2026-000010', 'emma', 'turner', '7299.77')))"
+  },
+  "267": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('evergreen advanced lamp 1', 'global goods', '705.05'), ('harbor everyday case 15', 'frontier industries', '791.04'), ('lumina everyday mat 57', 'prime industries', '587.29'), ('northstar classic station 54', 'pioneer logistics', '201.91'), ('nova compact speaker 5', 'liberty distribution', '622.42'), ('nova essential cleaner 36', 'pacific supply co.', '454.06'), ('nova premium chair 41', 'pacific manufacturing', '524.47'), ('redwood ultra helmet 35', 'liberty distribution', '179.77'), ('silverline pro bottle 49', 'united supply co.', '726.72'), ('vertex lightweight box 44', 'evergreen industries', '77.27')))"
+  },
+  "268": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(5, (('1', 'camila', 'campbell', 'executive', '137062'), ('10', 'jack', 'edwards', 'finance', '85112.4'), ('2', 'isabella', 'mitchell', 'sales', '70445.3'), ('3', 'sofia', 'thomas', 'marketing', '57716.3'), ('4', 'sofia', 'walker', 'customer service', '62800.5'), ('5', 'layla', 'mitchell', 'operations', '105039'), ('6', 'layla', 'wright', 'logistics', '85969.1'), ('7', 'sophia', 'moore', 'procurement', '62995.3'), ('8', 'ava', 'brown', 'product', '114085'), ('9', 'charlotte', 'baker', 'information technology', '123343')))"
+  },
+  "269": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('16', 'vertex professional bottle 27', 'phoenix distribution center 12'), ('35', 'apex pro adapter 12', 'moscow distribution center 1'), ('35', 'vertex classic monitor 3', 'chicago distribution center 3'), ('48', 'silverline pro jacket 14', 'new york distribution center 9'), ('5', 'evergreen advanced lamp 1', 'spokane distribution center 5'), ('60', 'silverline pro jacket 14', 'new york distribution center 4'), ('61', 'nova compact speaker 5', 'moscow distribution center 11'), ('71', 'nova essential cleaner 21', 'moscow distribution center 11'), ('8', 'northstar compact speaker 18', 'new york distribution center 4'), ('93', 'nova essential cleaner 21', 'phoenix distribution center 2')))"
+  },
+  "270": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('charlotte', 'robinson', '6467.17'), ('emma', 'turner', '7299.77'), ('fatima', 'thomas', '21926.2'), ('jack', 'wright', '4424.04'), ('jack', 'wright', '5479.11'), ('jonah', 'lewis', '7433.78'), ('lucas', 'jackson', '12118'), ('noah', 'anderson', '9536.05'), ('priya', 'garcia', '9000.44'), ('sara', 'miller', '9137.16')))"
+  },
+  "271": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('charlotte', 'robinson', '2025-09-03'), ('emma', 'turner', '2026-05-29'), ('fatima', 'thomas', '2025-05-19'), ('fatima', 'thomas', '2025-06-02'), ('jack', 'wright', '2024-05-28'), ('jack', 'wright', '2025-01-01'), ('jonah', 'lewis', '2024-04-04'), ('lucas', 'jackson', '2024-02-15'), ('luna', 'lewis', '2025-10-24'), ('sara', 'miller', '2024-03-05')))"
+  },
+  "272": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(6, (('15', 'so-2024-000015', '2024-11-02', '789.19', 'charlotte', 'baker'), ('23', 'so-2024-000023', '2024-10-04', '6997.6', 'alexander', 'carter'), ('28', 'so-2024-000028', '2024-04-22', '3455.18', 'aria', 'garcia'), ('41', 'so-2025-000041', '2025-12-26', '3531.62', 'sophia', 'young'), ('49', 'so-2024-000049', '2024-09-04', '10182', 'ava', 'davis'), ('5', 'so-2026-000005', '2026-01-13', '11228.2', 'adam', 'walker'), ('50', 'so-2026-000050', '2026-05-22', '15247.8', 'mason', 'parker'), ('51', 'so-2024-000051', '2024-02-11', '2890.68', 'ava', 'davis'), ('54', 'so-2024-000054', '2024-08-02', '21291.5', 'grace', 'rogers'), ('63', 'so-2025-000063', '2025-07-06', '10773.3', 'leo', 'bell')))"
+  },
+  "273": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('apex deluxe monitor 363', '841.34', '1'), ('apex heavy-duty speaker 422', '99.09', '1'), ('bluepeak eco tool 320', '1100.52', '1'), ('bluepeak premium bottle 199', '661.36', '1'), ('cascade ultra station 104', '1074.62', '1'), ('harbor portable device 314', '310.26', '1'), ('metroworks ultra bundle 45', '926', '1'), ('northstar advanced cable 265', '1095.62', '1'), ('northstar heavy-duty adapter 254', '286.82', '1'), ('northstar lightweight speaker 158', '347.12', '1')))"
+  },
+  "274": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(23, (('104', 'shp-0000104', '104', '2026-01-24', 'fedex', 'nst546457762353', 'delivered', '2026-01-29', '558.258', '11.28', 'sara nelson', 'consolidated shipment', '2026-01-22 12:00:00', '2026-02-15 17:28:26', '3', 'chicago distribution center 3', 'wh-003', 'mountain', 'chicago', 'il', '60601', 'us', '1'), ('113', 'shp-0000113', '113', '2024-01-10', 'fedex', 'nst945748391333', 'delivered', '2024-01-13', '211.699', '13.59', 'maya mitchell', 'consolidated shipment', '2024-01-07 12:00:00', '2024-04-24 20:25:32', '3', 'chicago distribution center 3', 'wh-003', 'mountain', 'chicago', 'il', '60601', 'us', '1'), ('124', 'shp-0000124', '124', '2024-10-04', 'dhl', 'nst333919044992', 'delivered', '2024-10-11', '190.662', '14.66', 'james brown', '\u2205', '2024-09-30 12:00:00', '2026-03-07 16:42:59', '3', 'chicago distribution center 3', 'wh-003', 'mountain', 'chicago', 'il', '60601', 'us', '1'), ('18', 'shp-0000018', '18', '2025-05-31', 'northstar freight', 'nst152108752916', 'delivered', '2025-06-02', '426.959', '17.11', 'fatima thomas', 'customer requested delivery notification', '2025-05-27 12:00:00', '2025-10-31 15:20:24', '3', 'chicago distribution center 3', 'wh-003', 'mountain', 'chicago', 'il', '60601', 'us', '1'), ('40', 'shp-0000040', '40', '\u2205', 'dhl', '\u2205', 'pending', '\u2205', '18.694', '10.41', 'sofia johnson', '\u2205', '2025-04-22 12:00:00', '2025-04-29 14:55:52', '3', 'chicago distribution center 3', 'wh-003', 'mountain', 'chicago', 'il', '60601', 'us', '1'), ('64', 'shp-0000064', '64', '2026-02-01', 'dhl', 'nst796404005894', 'in_transit', '\u2205', '332.494', '12.47', 'henry johnson', 'consolidated shipment', '2026-01-30 12:00:00', '2026-02-07 18:18:47', '3', 'chicago distribution center 3', 'wh-003', 'mountain', 'chicago', 'il', '60601', 'us', '1'), ('75', 'shp-0000075', '75', '2025-03-04', 'usps', 'nst106802971179', 'delivered', '2025-03-09', '37.099', '6.84', 'evelyn thompson', 'consolidated shipment', '2025-02-27 12:00:00', '2025-09-18 19:43:03', '3', 'chicago distribution center 3', 'wh-003', 'mountain', 'chicago', 'il', '60601', 'us', '1'), ('82', 'shp-0000082', '82', '2026-05-05', 'usps', 'nst374526860915', 'delivered', '2026-05-07', '17.233', '19.77', 'aria young', '\u2205', '2026-05-01 12:00:00', '2026-07-06 20:08:44', '3', 'chicago distribution center 3', 'wh-003', 'mountain', 'chicago', 'il', '60601', 'us', '1'), ('86', 'shp-0000086', '86', '\u2205', 'dhl', '\u2205', 'pending', '\u2205', '110.651', '5.55', 'lucas jackson', 'consolidated shipment', '2025-07-18 12:00:00', '2026-04-19 15:06:36', '3', 'chicago distribution center 3', 'wh-003', 'mountain', 'chicago', 'il', '60601', 'us', '1'), ('92', 'shp-0000092', '92', '2025-01-24', 'ups', 'nst656942285205', 'delivered', '2025-01-27', '398.857', '6.35', 'fatima white', 'consolidated shipment', '2025-01-19 12:00:00', '2025-12-22 08:51:44', '3', 'chicago distribution center 3', 'wh-003', 'mountain', 'chicago', 'il', '60601', 'us', '1')))"
+  },
+  "275": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(8, (('1', 'daniel', 'perez', '1', '1694 washington ave', 'salt lake city', 'ut', '84101'), ('10', 'maya', 'davis', '16', '5274 oak ave', 'san diego', 'ca', '92101'), ('2', 'emma', 'stewart', '2', '4804 college dr', 'phoenix', 'az', '85004'), ('3', 'sebastian', 'clark', '3', '5281 market ct', 'san diego', 'ca', '92101'), ('4', 'jack', 'wright', '6', '9418 madison ave', 'portland', 'or', '97205'), ('5', 'noah', 'green', '9', '6194 highland blvd', 'chicago', 'il', '60601'), ('6', 'adam', 'moore', '11', '3952 main ln', 'spokane', 'wa', '99201'), ('7', 'noah', 'sanchez', '13', '9740 broadway rd', 'portland', 'or', '97205'), ('8', 'ethan', 'bell', '14', '1514 broadway dr', 'salt lake city', 'ut', '84101'), ('9', 'jack', 'cook', '15', '7212 willow ct', 'salt lake city', 'ut', '84101')))"
+  },
+  "276": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('1', 'summit essential box 145', '6'), ('10', 'summit pro station 369', '1'), ('2', 'summit classic lamp 415', '3'), ('3', 'northstar classic station 54', '2'), ('4', 'lumina eco cable 411', '1'), ('5', 'northstar smart box 65', '5'), ('6', 'nova classic stand 146', '6'), ('7', 'evergreen eco system 222', '6'), ('8', 'terra premium bottle 353', '8'), ('9', 'nova compact speaker 5', '7')))"
+  },
+  "277": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('1', 'moscow distribution center 1', 'logistics'), ('10', 'spokane distribution center 10', 'logistics'), ('2', 'phoenix distribution center 2', 'logistics'), ('3', 'chicago distribution center 3', 'logistics'), ('4', 'new york distribution center 4', 'logistics'), ('5', 'spokane distribution center 5', 'logistics'), ('6', 'moscow distribution center 6', 'logistics'), ('7', 'phoenix distribution center 7', 'logistics'), ('8', 'chicago distribution center 8', 'logistics'), ('9', 'new york distribution center 9', 'logistics')))"
+  },
+  "278": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(5, (('12', 'so-2024-000012', '4', '2024-12-28', '5479.11'), ('14', 'so-2025-000014', '167', '2025-05-11', '21926.2'), ('19', 'so-2025-000019', '190', '2025-08-29', '17282.1'), ('20', 'so-2025-000020', '220', '2025-12-30', '6356.8'), ('21', 'so-2024-000021', '137', '2024-01-13', '388.42'), ('22', 'so-2025-000022', '169', '2025-06-15', '4012.04'), ('25', 'so-2026-000025', '49', '2026-03-07', '12900.9'), ('26', 'so-2025-000026', '251', '2025-11-05', '10752.8'), ('29', 'so-2025-000029', '163', '2025-07-02', '15526'), ('7', 'so-2024-000007', '4', '2024-05-20', '4424.04')))"
+  },
+  "279": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('1', 'evergreen advanced lamp 1', '1'), ('13', 'northstar essential helmet 13', '335'), ('16', 'cascade premium monitor 16', '130'), ('18', 'northstar compact speaker 18', '362'), ('21', 'nova essential cleaner 21', '422'), ('22', 'apex classic system 22', '255'), ('23', 'nova everyday notebook 23', '364'), ('25', 'vertex everyday printer 25', '58'), ('29', 'metroworks premium chair 29', '119'), ('3', 'vertex classic monitor 3', '253')))"
+  },
+  "280": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('bluesky logistics', 'metroworks premium mat 2', '120.51'), ('global goods', 'evergreen advanced lamp 1', '544.26'), ('global logistics', 'northstar ultra bottle 8', '363.9'), ('liberty distribution', 'nova compact speaker 5', '382.26'), ('liberty distribution', 'terra everyday set 10', '385.78'), ('liberty goods', 'vertex classic monitor 3', '228.71'), ('northern logistics', 'northstar premium adapter 4', '433.12'), ('pacific trading', 'bluepeak portable cleaner 9', '261.18'), ('pioneer industries', 'northstar eco helmet 7', '281.76'), ('summit wholesale', 'northstar professional pack 6', '106.66')))"
+  },
+  "281": {
+   "label": "llm_sql_repair",
+   "reason": "consensus_group",
+   "sig": "(4, (('1', 'camila', 'campbell', 'executive'), ('10', 'jack', 'edwards', 'finance'), ('2', 'isabella', 'mitchell', 'sales'), ('3', 'sofia', 'thomas', 'marketing'), ('4', 'sofia', 'walker', 'customer service'), ('5', 'layla', 'mitchell', 'operations'), ('6', 'layla', 'wright', 'logistics'), ('7', 'sophia', 'moore', 'procurement'), ('8', 'ava', 'brown', 'product'), ('9', 'charlotte', 'baker', 'information technology')))"
+  },
+  "282": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('diego', 'jackson', '2001.88'), ('evelyn', 'robinson', '9804.56'), ('henry', 'johnson', '8103.11'), ('james', 'brown', '3872.24'), ('leo', 'hill', '2197.98'), ('lucas', 'wilson', '4530.17'), ('nora', 'collins', '576.3'), ('omar', 'walker', '863.97'), ('sophia', 'bailey', '385.46'), ('sophia', 'taylor', '1084.66')))"
+  },
+  "283": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(4, (('1', 'shp-0000001', 'spokane', 'boston'), ('10', 'shp-0000010', 'phoenix', 'boise'), ('2', 'shp-0000002', 'new york', 'portland'), ('3', 'shp-0000003', 'new york', 'chicago'), ('4', 'shp-0000004', 'spokane', 'austin'), ('5', 'shp-0000005', 'chicago', 'boise'), ('6', 'shp-0000006', 'phoenix', 'portland'), ('7', 'shp-0000007', 'spokane', 'portland'), ('8', 'shp-0000008', 'spokane', 'portland'), ('9', 'shp-0000009', 'moscow', 'boise')))"
+  },
+  "284": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('daniel', 'perez', 'check'), ('daniel', 'perez', 'credit_card'), ('emma', 'stewart', 'credit_card'), ('emma', 'stewart', 'paypal'), ('jack', 'wright', 'ach'), ('jack', 'wright', 'credit_card'), ('jack', 'wright', 'wire'), ('noah', 'green', 'wire'), ('sebastian', 'clark', 'credit_card'), ('sebastian', 'clark', 'wire')))"
+  },
+  "285": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(4, (('104', 'cascade ultra station 104', '11', 'moscow distribution center 11'), ('105', 'redwood deluxe kit 105', '3', 'chicago distribution center 3'), ('112', 'bluepeak lightweight box 112', '10', 'spokane distribution center 10'), ('124', 'cascade classic bag 124', '4', 'new york distribution center 4'), ('142', 'northstar portable station 142', '12', 'phoenix distribution center 12'), ('18', 'northstar compact speaker 18', '4', 'new york distribution center 4'), ('19', 'lumina ultra box 19', '1', 'moscow distribution center 1'), ('31', 'bluepeak everyday cable 31', '11', 'moscow distribution center 11'), ('48', 'apex ultra bag 48', '12', 'phoenix distribution center 12'), ('64', 'redwood portable station 64', '2', 'phoenix distribution center 2')))"
+  },
+  "288": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(5, (('1', 'camila young', 'boston', 'boston', 'aria garcia'), ('10', 'emma turner', 'boise', 'boise', 'sofia walker'), ('2', 'henry roberts', 'portland', 'portland', 'camila wright'), ('3', 'lucas jackson', 'chicago', 'chicago', 'mason parker'), ('4', 'noah anderson', 'austin', 'austin', 'isabella mitchell'), ('5', 'diego white', 'boise', 'boise', 'adam walker'), ('6', 'sara miller', 'portland', 'portland', 'leo bell'), ('7', 'jack wright', 'san diego', 'portland', 'mason parker'), ('8', 'liam johnson', 'portland', 'portland', 'sophia young'), ('9', 'jonah lewis', 'boise', 'boise', 'sofia walker')))"
+  },
+  "290": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(9, (('10', 'shp-0000010', 'nst619016275186', '2026-05-26', '2026-05-29', 'dhl', 'two_day', '198', '12'), ('12', 'shp-0000012', 'nst283485247315', '2024-12-29', '2025-01-01', 'northstar freight', 'two_day', '7', '6'), ('14', 'shp-0000014', 'nst218933869144', '2025-05-12', '2025-05-19', 'northstar freight', 'ground', '295', '11'), ('16', 'shp-0000016', 'nst393702375333', '2025-10-19', '2025-10-24', 'fedex', 'freight', '162', '6'), ('18', 'shp-0000018', 'nst152108752916', '2025-05-31', '2025-06-02', 'northstar freight', 'freight', '296', '3'), ('20', 'shp-0000020', 'nst735290165070', '2026-01-04', '2026-01-08', 'ups', 'overnight', '396', '12'), ('21', 'shp-0000021', 'nst867610222727', '2024-01-17', '2024-01-21', 'ups', 'freight', '243', '11'), ('3', 'shp-0000003', 'nst982657320744', '2024-02-11', '2024-02-15', 'ups', 'two_day', '309', '4'), ('6', 'shp-0000006', 'nst325616704330', '2024-03-03', '2024-03-05', 'northstar freight', 'overnight', '112', '2'), ('7', 'shp-0000007', 'nst978537746755', '2024-05-25', '2024-05-28', 'fedex', 'overnight', '6', '5')))"
+  },
+  "291": {
+   "label": "llm_sql_repair",
+   "reason": "consensus_group",
+   "sig": "(4, ())"
+  },
+  "293": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('122', 'terra smart bag 122', 'sku-out-000122'), ('122', 'terra smart bag 122', 'sku-out-000122'), ('122', 'terra smart bag 122', 'sku-out-000122'), ('122', 'terra smart bag 122', 'sku-out-000122'), ('145', 'summit essential box 145', 'sku-hom-000145'), ('145', 'summit essential box 145', 'sku-hom-000145'), ('62', 'lumina compact cleaner 62', 'sku-out-000062'), ('62', 'lumina compact cleaner 62', 'sku-out-000062'), ('62', 'lumina compact cleaner 62', 'sku-out-000062'), ('62', 'lumina compact cleaner 62', 'sku-out-000062')))"
+  },
+  "294": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('logistics', 'chicago distribution center 3'), ('logistics', 'chicago distribution center 8'), ('logistics', 'moscow distribution center 1'), ('logistics', 'moscow distribution center 11'), ('logistics', 'moscow distribution center 6'), ('logistics', 'new york distribution center 4'), ('logistics', 'new york distribution center 9'), ('logistics', 'phoenix distribution center 7'), ('logistics', 'spokane distribution center 10'), ('logistics', 'spokane distribution center 5')))"
+  },
+  "295": {
+   "label": "llm_primary",
+   "reason": "best_scored_executed",
+   "sig": "(3, (('1', 'pay-0000001', '15744.4'), ('10', 'pay-0000010', '7299.77'), ('2', 'pay-0000002', '11232.5'), ('3', 'pay-0000003', '12118'), ('4', 'pay-0000004', '9536.05'), ('5', 'pay-0000005', '11228.2'), ('6', 'pay-0000006', '9137.16'), ('7', 'pay-0000007', '4424.04'), ('8', 'pay-0000008', '20398.7'), ('9', 'pay-0000009', '7433.78')))"
+  },
+  "296": {
+   "label": "llm_sql_repair",
+   "reason": "consensus_group",
+   "sig": "(4, ())"
+  },
+  "297": {
+   "label": "llm_primary",
+   "reason": "consensus_group",
+   "sig": "(3, (('13', 'leo', 'collins'), ('14', 'charlotte', 'baker'), ('15', 'jack', 'baker'), ('16', 'aria', 'garcia'), ('17', 'elijah', 'campbell'), ('18', 'benjamin', 'bell'), ('19', 'ethan', 'bailey'), ('20', 'maya', 'thomas'), ('21', 'elena', 'green'), ('22', 'jonah', 'clark')))"
+  },
+  "298": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(4, ())"
+  },
+  "299": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(5, (('1', 'evergreen advanced lamp 1', '1', '57', '45'), ('1', 'evergreen advanced lamp 1', '5', '60', '45'), ('2', 'metroworks premium mat 2', '7', '75', '66'), ('2', 'metroworks premium mat 2', '8', '69', '66'), ('3', 'vertex classic monitor 3', '5', '63', '53'), ('3', 'vertex classic monitor 3', '6', '73', '53'), ('4', 'northstar premium adapter 4', '10', '51', '40'), ('4', 'northstar premium adapter 4', '9', '45', '40'), ('5', 'nova compact speaker 5', '11', '73', '65'), ('5', 'nova compact speaker 5', '3', '82', '65')))"
+  },
+  "300": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('1', 'daniel', 'perez'), ('10', 'maya', 'davis'), ('11', 'ava', 'thompson'), ('12', 'adam', 'davis'), ('2', 'emma', 'stewart'), ('3', 'sebastian', 'clark'), ('5', 'noah', 'green'), ('7', 'noah', 'sanchez'), ('8', 'ethan', 'bell'), ('9', 'jack', 'cook')))"
+  },
+  "301": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('so-2024-000001', 'camila young', 'lumina eco cable 411'), ('so-2024-000001', 'camila young', 'northstar classic station 54'), ('so-2024-000001', 'camila young', 'northstar smart box 65'), ('so-2024-000001', 'camila young', 'nova classic stand 146'), ('so-2024-000001', 'camila young', 'summit classic lamp 415'), ('so-2024-000001', 'camila young', 'summit essential box 145'), ('so-2025-000002', 'henry roberts', 'evergreen eco system 222'), ('so-2025-000002', 'henry roberts', 'nova compact speaker 5'), ('so-2025-000002', 'henry roberts', 'summit pro station 369'), ('so-2025-000002', 'henry roberts', 'terra premium bottle 353')))"
+  },
+  "303": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(4, (('1', 'camila', 'young', 'so-2024-000001'), ('10', 'emma', 'turner', 'so-2026-000010'), ('2', 'henry', 'roberts', 'so-2025-000002'), ('3', 'lucas', 'jackson', 'so-2024-000003'), ('4', 'noah', 'anderson', 'so-2025-000004'), ('5', 'diego', 'white', 'so-2026-000005'), ('6', 'sara', 'miller', 'so-2024-000006'), ('7', 'jack', 'wright', 'so-2024-000007'), ('8', 'liam', 'johnson', 'so-2025-000008'), ('9', 'jonah', 'lewis', 'so-2024-000009')))"
+  },
+  "304": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('1', 'summit essential box 145', 'river goods'), ('10', 'summit pro station 369', 'bluesky goods'), ('2', 'summit classic lamp 415', 'northern wholesale'), ('3', 'northstar classic station 54', 'pioneer logistics'), ('4', 'lumina eco cable 411', 'metro industries'), ('5', 'northstar smart box 65', 'mountain industries'), ('6', 'nova classic stand 146', 'bluesky goods'), ('7', 'evergreen eco system 222', 'metro distribution'), ('8', 'terra premium bottle 353', 'global logistics'), ('9', 'nova compact speaker 5', 'liberty distribution')))"
+  },
+  "305": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(4, (('1', 'evergreen advanced lamp 1', 'global goods', 'moscow distribution center 1'), ('10', 'vertex classic monitor 3', 'liberty goods', 'new york distribution center 4'), ('2', 'evergreen advanced lamp 1', 'global goods', 'spokane distribution center 5'), ('3', 'evergreen advanced lamp 1', 'global goods', 'moscow distribution center 11'), ('4', 'evergreen advanced lamp 1', 'global goods', 'chicago distribution center 3'), ('5', 'evergreen advanced lamp 1', 'global goods', 'spokane distribution center 10'), ('6', 'metroworks premium mat 2', 'bluesky logistics', 'phoenix distribution center 7'), ('7', 'metroworks premium mat 2', 'bluesky logistics', 'new york distribution center 4'), ('8', 'metroworks premium mat 2', 'bluesky logistics', 'chicago distribution center 8'), ('9', 'metroworks premium mat 2', 'bluesky logistics', 'moscow distribution center 1')))"
+  },
+  "306": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('so-2024-000001', 'camila young', 'boston'), ('so-2024-000003', 'lucas jackson', 'chicago'), ('so-2024-000006', 'sara miller', 'portland'), ('so-2024-000007', 'jack wright', 'portland'), ('so-2024-000009', 'jonah lewis', 'boise'), ('so-2025-000002', 'henry roberts', 'portland'), ('so-2025-000004', 'noah anderson', 'austin'), ('so-2025-000008', 'liam johnson', 'portland'), ('so-2026-000005', 'diego white', 'boise'), ('so-2026-000010', 'emma turner', 'boise')))"
+  },
+  "307": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(4, (('1', 'camila young', 'aria garcia', 'customer service'), ('10', 'emma turner', 'sofia walker', 'customer service'), ('2', 'henry roberts', 'camila wright', 'sales'), ('3', 'lucas jackson', 'mason parker', 'customer service'), ('4', 'noah anderson', 'isabella mitchell', 'sales'), ('5', 'diego white', 'adam walker', 'customer service'), ('6', 'sara miller', 'leo bell', 'sales'), ('7', 'jack wright', 'mason parker', 'customer service'), ('8', 'liam johnson', 'sophia young', 'sales'), ('9', 'jonah lewis', 'sofia walker', 'customer service')))"
+  },
+  "308": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(4, (('1', 'evergreen advanced lamp 1', 'global goods', 'information technology'), ('10', 'terra everyday set 10', 'liberty distribution', 'product'), ('2', 'metroworks premium mat 2', 'bluesky logistics', 'product'), ('3', 'vertex classic monitor 3', 'liberty goods', 'product'), ('4', 'northstar premium adapter 4', 'northern logistics', 'product'), ('5', 'nova compact speaker 5', 'liberty distribution', 'information technology'), ('6', 'northstar professional pack 6', 'summit wholesale', 'product'), ('7', 'northstar eco helmet 7', 'pioneer industries', 'product'), ('8', 'northstar ultra bottle 8', 'global logistics', 'product'), ('9', 'bluepeak portable cleaner 9', 'pacific trading', 'product')))"
+  },
+  "309": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('so-2024-000001', 'lumina eco cable 411', 'new york distribution center 9'), ('so-2024-000001', 'northstar classic station 54', 'spokane distribution center 5'), ('so-2024-000001', 'northstar smart box 65', 'phoenix distribution center 12'), ('so-2024-000001', 'nova classic stand 146', 'new york distribution center 4'), ('so-2024-000001', 'summit classic lamp 415', 'new york distribution center 9'), ('so-2024-000001', 'summit essential box 145', 'spokane distribution center 5'), ('so-2025-000002', 'evergreen eco system 222', 'new york distribution center 9'), ('so-2025-000002', 'nova compact speaker 5', 'phoenix distribution center 7'), ('so-2025-000002', 'summit pro station 369', 'moscow distribution center 1'), ('so-2025-000002', 'terra premium bottle 353', 'chicago distribution center 8')))"
+  },
+  "310": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(5, (('1', 'moscow distribution center 1', 'sofia', 'martin', 'logistics'), ('10', 'spokane distribution center 10', 'benjamin', 'bell', 'logistics'), ('2', 'phoenix distribution center 2', 'isabella', 'morris', 'logistics'), ('3', 'chicago distribution center 3', 'sofia', 'martin', 'logistics'), ('4', 'new york distribution center 4', 'nina', 'turner', 'logistics'), ('5', 'spokane distribution center 5', 'sebastian', 'morris', 'logistics'), ('6', 'moscow distribution center 6', 'sebastian', 'morris', 'logistics'), ('7', 'phoenix distribution center 7', 'elena', 'jackson', 'logistics'), ('8', 'chicago distribution center 8', 'jonah', 'sanchez', 'logistics'), ('9', 'new york distribution center 9', 'elena', 'jackson', 'logistics')))"
+  },
+  "312": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(4, (('1', 'camila', 'young', 'spokane distribution center 5'), ('10', 'emma', 'turner', 'phoenix distribution center 12'), ('2', 'henry', 'roberts', 'new york distribution center 9'), ('3', 'lucas', 'jackson', 'new york distribution center 4'), ('4', 'noah', 'anderson', 'spokane distribution center 10'), ('5', 'diego', 'white', 'chicago distribution center 8'), ('6', 'sara', 'miller', 'phoenix distribution center 2'), ('7', 'jack', 'wright', 'spokane distribution center 5'), ('8', 'liam', 'johnson', 'spokane distribution center 10'), ('9', 'jonah', 'lewis', 'moscow distribution center 11')))"
+  },
+  "313": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('1', '4', '1'), ('1', '4', '15'), ('1', '4', '263'), ('1', '4', '292'), ('1', '4', '377'), ('2', '3', '236'), ('2', '3', '318'), ('2', '3', '66'), ('2', '3', '78'), ('3', '3', '24')))"
+  },
+  "314": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('116', 'so-2026-000010', 'boise'), ('161', 'so-2026-000005', 'boise'), ('174', 'so-2024-000003', 'chicago'), ('196', 'so-2025-000004', 'austin'), ('241', 'so-2024-000001', 'boston'), ('252', 'so-2025-000002', 'portland'), ('4', 'so-2024-000007', 'portland'), ('41', 'so-2024-000009', 'boise'), ('67', 'so-2024-000006', 'portland'), ('91', 'so-2025-000008', 'portland')))"
+  },
+  "316": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(4, (('jack wright', 'northstar smart bag 477', '7', '4424.04'), ('lucas jackson', 'cascade heavy-duty station 33', '4', '4803.27'), ('lucas jackson', 'harbor premium rack 416', '3', '984.41'), ('lucas jackson', 'harbor professional tool 50', '1', '624.57'), ('lucas jackson', 'lumina essential mat 286', '1', '566.48'), ('lucas jackson', 'prairie compact mat 410', '7', '5139.24'), ('sara miller', 'bluepeak compact adapter 348', '5', '3032.01'), ('sara miller', 'harbor eco notebook 392', '1', '762.21'), ('sara miller', 'harbor professional tool 50', '5', '3306.56'), ('sara miller', 'terra advanced kit 123', '6', '2051.38')))"
+  },
+  "318": {
+   "label": "llm_sql_direct_grain",
+   "reason": "consensus_group",
+   "sig": "(3, (('evergreen advanced lamp 1', 'jonah', 'roberts'), ('evergreen advanced lamp 1', 'sofia', 'wright'), ('harbor everyday case 15', 'omar', 'anderson'), ('nova compact speaker 5', 'ava', 'thompson'), ('nova compact speaker 5', 'henry', 'roberts'), ('nova essential cleaner 36', 'evelyn', 'thompson'), ('nova essential cleaner 36', 'maya', 'garcia'), ('nova premium chair 41', 'grace', 'parker'), ('nova premium chair 41', 'minh', 'rogers'), ('nova premium chair 41', 'nina', 'morgan')))"
+  },
+  "319": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(4, (('so-2024-000001', 'lumina eco cable 411', 'metro industries', 'new york distribution center 9'), ('so-2024-000001', 'northstar classic station 54', 'pioneer logistics', 'spokane distribution center 5'), ('so-2024-000001', 'northstar smart box 65', 'mountain industries', 'phoenix distribution center 12'), ('so-2024-000001', 'nova classic stand 146', 'bluesky goods', 'new york distribution center 4'), ('so-2024-000001', 'summit classic lamp 415', 'northern wholesale', 'new york distribution center 9'), ('so-2024-000001', 'summit essential box 145', 'river goods', 'spokane distribution center 5'), ('so-2025-000002', 'evergreen eco system 222', 'metro distribution', 'new york distribution center 9'), ('so-2025-000002', 'nova compact speaker 5', 'liberty distribution', 'phoenix distribution center 7'), ('so-2025-000002', 'summit pro station 369', 'bluesky goods', 'moscow distribution center 1'), ('so-2025-000002', 'terra premium bottle 353', 'global logistics', 'chicago distribution center 8')))"
+  },
+  "320": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(4, (('198', 'jonah', 'young', 'chicago'), ('211', 'michael', 'cook', 'spokane'), ('28', 'leo', 'carter', 'chicago'), ('371', 'jonah', 'young', 'phoenix'), ('395', 'adam', 'moore', 'phoenix'), ('507', 'jonah', 'young', 'new york'), ('515', 'evelyn', 'bailey', 'phoenix'), ('554', 'evelyn', 'bailey', 'moscow'), ('586', 'leo', 'carter', 'chicago'), ('670', 'leo', 'carter', 'phoenix')))"
+  },
+  "321": {
+   "label": "llm_sql_direct_variant",
+   "reason": "validation_score_override",
+   "sig": "(4, ())"
+  },
+  "322": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('diego white', 'adam walker', 'pending'), ('elena wilson', 'ava davis', 'delivered'), ('elijah phillips', 'sophia young', 'delivered'), ('evelyn johnson', 'alexander carter', 'delivered'), ('jack cook', 'ava davis', 'delivered'), ('leo carter', 'aria garcia', 'delivered'), ('leo davis', 'grace rogers', 'pending'), ('maya davis', 'mason parker', 'delivered'), ('michael carter', 'leo bell', 'delivered'), ('priya cook', 'charlotte baker', 'in_transit')))"
+  },
+  "323": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(4, (('44', 'vertex lightweight box 44', 'moscow distribution center 1', '161'), ('44', 'vertex lightweight box 44', 'moscow distribution center 6', '283'), ('51', 'redwood essential jacket 51', 'moscow distribution center 1', '13'), ('51', 'redwood essential jacket 51', 'new york distribution center 4', '82'), ('51', 'redwood essential jacket 51', 'spokane distribution center 5', '85'), ('73', 'harbor portable helmet 73', 'moscow distribution center 6', '149'), ('73', 'harbor portable helmet 73', 'phoenix distribution center 2', '252'), ('73', 'harbor portable helmet 73', 'spokane distribution center 10', '25'), ('79', 'cascade professional station 79', 'moscow distribution center 11', '54'), ('79', 'cascade professional station 79', 'new york distribution center 9', '178')))"
+  },
+  "324": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(5, (('18', 'benjamin', 'bell', 'logistics', 'mountain'), ('42', 'nina', 'turner', 'logistics', 'southwest'), ('54', 'sebastian', 'morris', 'logistics', 'central'), ('54', 'sebastian', 'morris', 'logistics', 'southeast'), ('66', 'elena', 'jackson', 'logistics', 'northeast'), ('66', 'elena', 'jackson', 'logistics', 'west'), ('78', 'jonah', 'sanchez', 'logistics', 'northwest'), ('78', 'jonah', 'sanchez', 'logistics', 'southwest'), ('90', 'sofia', 'martin', 'logistics', 'central'), ('90', 'sofia', 'martin', 'logistics', 'mountain')))"
+  },
+  "325": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(4, (('charlotte robinson', 'so-2025-000011', 'settled', 'delivered'), ('fatima thomas', 'so-2025-000014', 'settled', 'delivered'), ('fatima thomas', 'so-2025-000018', 'settled', 'delivered'), ('henry roberts', 'so-2025-000002', 'authorized', 'pending'), ('leo lewis', 'so-2025-000019', 'failed', 'cancelled'), ('liam johnson', 'so-2025-000008', 'failed', 'pending'), ('luna lewis', 'so-2025-000016', 'settled', 'delivered'), ('noah anderson', 'so-2025-000004', 'settled', 'in_transit'), ('priya garcia', 'so-2025-000013', 'settled', 'in_transit'), ('sofia johnson', 'so-2025-000020', 'settled', 'delivered')))"
+  },
+  "326": {
+   "label": "llm_sql_repair",
+   "reason": "consensus_group",
+   "sig": "(3, ())"
+  },
+  "327": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('bluesky goods', 'aisha martin', '0'), ('bluesky goods', 'michael perez', '1'), ('bluesky goods', 'sofia johnson', '5'), ('prime supply co.', 'maya smith', '2'), ('prime supply co.', 'sara phillips', '5'), ('summit goods', 'adam robinson', '4'), ('summit goods', 'harper bell', '0'), ('summit goods', 'james brown', '2'), ('summit goods', 'mia miller', '8'), ('summit goods', 'noah sanchez', '3')))"
+  },
+  "328": {
+   "label": "llm_sql_direct_grain",
+   "reason": "consensus_group",
+   "sig": "(2, (('dhl', 'boise'), ('dhl', 'san diego'), ('dhl', 'seattle'), ('fedex', 'dallas'), ('northstar freight', 'austin'), ('northstar freight', 'portland'), ('ups', 'austin'), ('ups', 'new york'), ('ups', 'phoenix'), ('usps', 'spokane')))"
+  },
+  "329": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(4, (('bluesky goods', 'bluepeak heavy-duty cable 251', '1', '26474.9'), ('bluesky goods', 'bluepeak heavy-duty cable 251', '11', '112066'), ('bluesky goods', 'bluepeak heavy-duty cable 251', '12', '192688'), ('bluesky goods', 'bluepeak heavy-duty cable 251', '4', '28429.7'), ('bluesky goods', 'bluepeak heavy-duty cable 251', '6', '226820'), ('bluesky goods', 'bluepeak portable system 364', '11', '90103'), ('bluesky goods', 'bluepeak portable system 364', '5', '183898'), ('bluesky goods', 'harbor premium rack 416', '1', '73451.2'), ('bluesky goods', 'harbor premium rack 416', '8', '39296.2'), ('bluesky goods', 'lumina classic bottle 287', '2', '48667.6')))"
+  },
+  "330": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(4, (('2', 'so-2024-000160', 'az', 'az'), ('2', 'so-2026-000373', 'az', 'az'), ('6', 'so-2025-000247', 'wa', 'az'), ('6', 'so-2025-000657', 'wa', 'az'), ('6', 'so-2026-000395', 'az', 'wa'), ('7', 'so-2024-000141', 'or', 'or'), ('7', 'so-2024-000522', 'or', 'or'), ('7', 'so-2025-000630', 'or', 'or'), ('7', 'so-2026-000419', 'or', 'or'), ('9', 'so-2024-000051', 'ut', 'ut')))"
+  },
+  "332": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(6, (('1', 'evergreen advanced lamp 1', 'global goods', 'spokane distribution center 5', '5', '1'), ('12', 'apex pro adapter 12', 'pioneer manufacturing', 'moscow distribution center 1', '35', '4'), ('14', 'silverline pro jacket 14', 'prime goods', 'new york distribution center 4', '60', '2'), ('14', 'silverline pro jacket 14', 'prime goods', 'new york distribution center 9', '48', '45'), ('18', 'northstar compact speaker 18', 'pioneer goods', 'new york distribution center 4', '8', '0'), ('21', 'nova essential cleaner 21', 'redrock trading', 'moscow distribution center 11', '71', '1'), ('21', 'nova essential cleaner 21', 'redrock trading', 'phoenix distribution center 2', '93', '22'), ('27', 'vertex professional bottle 27', 'prime supply co.', 'phoenix distribution center 12', '16', '12'), ('3', 'vertex classic monitor 3', 'liberty goods', 'chicago distribution center 3', '35', '24'), ('5', 'nova compact speaker 5', 'liberty distribution', 'moscow distribution center 11', '61', '24')))"
+  },
+  "333": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(8, (('2', 'isabella', 'mitchell', '162', 'henry', 'roberts', '231', 'redwood professional adapter 231'), ('2', 'isabella', 'mitchell', '162', 'henry', 'roberts', '324', 'apex advanced case 324'), ('2', 'isabella', 'mitchell', '162', 'henry', 'roberts', '68', 'bluepeak deluxe rack 68'), ('2', 'isabella', 'mitchell', '196', 'noah', 'anderson', '126', 'bluepeak professional speaker 126'), ('2', 'isabella', 'mitchell', '196', 'noah', 'anderson', '405', 'prairie eco helmet 405'), ('2', 'isabella', 'mitchell', '196', 'noah', 'anderson', '425', 'nova essential stand 425'), ('2', 'isabella', 'mitchell', '231', 'charlotte', 'baker', '291', 'lumina smart printer 291'), ('2', 'isabella', 'mitchell', '231', 'charlotte', 'baker', '313', 'northstar ultra station 313'), ('2', 'isabella', 'mitchell', '231', 'charlotte', 'baker', '348', 'bluepeak compact adapter 348'), ('2', 'isabella', 'mitchell', '231', 'charlotte', 'baker', '59', 'vertex smart printer 59')))"
+  },
+  "334": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('camila young', '15744.4', 'dhl'), ('diego white', '11228.2', 'dhl'), ('emma turner', '7299.77', 'dhl'), ('henry roberts', '11232.5', 'usps'), ('jack wright', '4424.04', 'fedex'), ('jonah lewis', '7433.78', 'ups'), ('liam johnson', '20398.7', 'dhl'), ('lucas jackson', '12118', 'ups'), ('noah anderson', '9536.05', 'usps'), ('sara miller', '9137.16', 'northstar freight')))"
+  },
+  "337": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(4, (('evergreen industries', 'high', 'leo baker', '6103.8'), ('evergreen industries', 'high', 'leo hill', '2197.98'), ('evergreen industries', 'high', 'lucas morris', '6697.36'), ('evergreen industries', 'high', 'sara garcia', '2423.04'), ('frontier industries', 'high', 'harper reed', '365.54'), ('frontier industries', 'high', 'henry johnson', '5586.01'), ('river supply co.', 'high', 'camila young', '6396.97'), ('river supply co.', 'high', 'evelyn robinson', '9804.56'), ('river supply co.', 'high', 'layla stewart', '470.99'), ('river supply co.', 'high', 'noah sanchez', '6408.03')))"
+  },
+  "340": {
+   "label": "llm_sql_repair",
+   "reason": "consensus_group",
+   "sig": "(4, ())"
+  },
+  "341": {
+   "label": "llm_sql_direct_grain",
+   "reason": "consensus_group",
+   "sig": "(2, (('12', 'so-2024-000012'), ('12', 'so-2024-000012'), ('14', 'so-2025-000014'), ('14', 'so-2025-000014'), ('14', 'so-2025-000014'), ('14', 'so-2025-000014'), ('14', 'so-2025-000014'), ('14', 'so-2025-000014'), ('19', 'so-2025-000019'), ('19', 'so-2025-000019')))"
+  },
+  "342": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(5, (('114', 'so-2025-000041', 'dhl', 'phoenix distribution center 12', 'wa'), ('135', 'so-2024-000023', 'fedex', 'new york distribution center 9', 'ga'), ('163', 'so-2025-000029', 'ups', 'new york distribution center 4', 'tx'), ('167', 'so-2025-000014', 'northstar freight', 'moscow distribution center 11', 'tx'), ('169', 'so-2025-000022', 'usps', 'spokane distribution center 10', 'ny'), ('174', 'so-2024-000003', 'ups', 'new york distribution center 4', 'il'), ('177', 'so-2025-000011', 'northstar freight', 'phoenix distribution center 7', 'az'), ('22', 'so-2026-000045', 'ups', 'moscow distribution center 11', 'az'), ('49', 'so-2026-000025', 'dhl', 'moscow distribution center 1', 'tx'), ('9', 'so-2025-000048', 'ups', 'moscow distribution center 6', 'ut')))"
+  },
+  "343": {
+   "label": "llm_sql_direct_grain",
+   "reason": "best_scored_executed",
+   "sig": "(5, (('104', 'cascade ultra station 104', '11', 'moscow distribution center 11', '1046.95'), ('104', 'cascade ultra station 104', '6', 'moscow distribution center 6', '10120.5'), ('116', 'terra essential bag 116', '1', 'moscow distribution center 1', '1114.98'), ('14', 'silverline pro jacket 14', '11', 'moscow distribution center 11', '1308.01'), ('14', 'silverline pro jacket 14', '9', 'new york distribution center 9', '327'), ('42', 'vertex deluxe monitor 42', '3', 'chicago distribution center 3', '728.44'), ('52', 'bluepeak professional cable 52', '2', 'phoenix distribution center 2', '4906.24'), ('52', 'bluepeak professional cable 52', '6', 'moscow distribution center 6', '4528.83'), ('8', 'northstar ultra bottle 8', '8', 'chicago distribution center 8', '1441.01'), ('8', 'northstar ultra bottle 8', '9', 'new york distribution center 9', '8045.65')))"
+  },
+  "344": {
+   "label": "llm_sql_repair",
+   "reason": "consensus_group",
+   "sig": "(6, ())"
+  },
+  "345": {
+   "label": "llm_sql_repair",
+   "reason": "best_scored_executed",
+   "sig": "(3, (('10', 'maya', 'davis'), ('13', 'mia', 'harris'), ('15', 'daniel', 'turner'), ('18', 'sara', 'taylor'), ('3', 'sebastian', 'clark'), ('4', 'jack', 'wright'), ('6', 'adam', 'moore'), ('7', 'noah', 'sanchez'), ('8', 'ethan', 'bell'), ('9', 'jack', 'cook')))"
+  },
+  "346": {
+   "label": "llm_sql_repair",
+   "reason": "consensus_group",
+   "sig": "(12, (('1', 'so-2024-000001', '241', 'camila', 'young', 'camila.young241@example.com', '1', 'shp-0000001', 'dhl', '\u2205', '\u2205', '\u2205'), ('10', 'so-2026-000010', '116', 'emma', 'turner', 'emma.turner116@example.com', '10', 'shp-0000010', 'dhl', 'nst619016275186', '2026-05-26', '2026-05-29'), ('11', 'so-2025-000011', '177', 'charlotte', 'robinson', 'charlotte.robinson177@example.com', '11', 'shp-0000011', 'northstar freight', 'nst715864191404', '2025-08-29', '2025-09-03'), ('2', 'so-2025-000002', '252', 'henry', 'roberts', 'henry.roberts252@example.com', '2', 'shp-0000002', 'usps', '\u2205', '\u2205', '\u2205'), ('3', 'so-2024-000003', '174', 'lucas', 'jackson', 'lucas.jackson174@example.com', '3', 'shp-0000003', 'ups', 'nst982657320744', '2024-02-11', '2024-02-15'), ('4', 'so-2025-000004', '196', 'noah', 'anderson', 'noah.anderson196@example.com', '4', 'shp-0000004', 'usps', 'nst269141415099', '2025-06-18', '\u2205'), ('5', 'so-2026-000005', '161', 'diego', 'white', 'diego.white161@example.com', '5', 'shp-0000005', 'dhl', '\u2205', '\u2205', '\u2205'), ('6', 'so-2024-000006', '67', 'sara', 'miller', 'sara.miller67@example.com', '6', 'shp-0000006', 'northstar freight', 'nst325616704330', '2024-03-03', '2024-03-05'), ('8', 'so-2025-000008', '91', 'liam', 'johnson', 'liam.johnson91@example.com', '8', 'shp-0000008', 'dhl', '\u2205', '\u2205', '\u2205'), ('9', 'so-2024-000009', '41', 'jonah', 'lewis', 'jonah.lewis41@example.com', '9', 'shp-0000009', 'ups', 'nst744537781401', '2024-03-31', '2024-04-04')))"
+  },
+  "347": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(4, (('122', 'terra smart bag 122', 'river goods', 'chicago distribution center 3'), ('122', 'terra smart bag 122', 'river goods', 'moscow distribution center 11'), ('122', 'terra smart bag 122', 'river goods', 'new york distribution center 4'), ('122', 'terra smart bag 122', 'river goods', 'spokane distribution center 5'), ('130', 'cascade classic rack 130', 'bluesky industries', 'chicago distribution center 3'), ('130', 'cascade classic rack 130', 'bluesky industries', 'phoenix distribution center 2'), ('8', 'northstar ultra bottle 8', 'global logistics', 'chicago distribution center 8'), ('8', 'northstar ultra bottle 8', 'global logistics', 'moscow distribution center 6'), ('8', 'northstar ultra bottle 8', 'global logistics', 'new york distribution center 9'), ('8', 'northstar ultra bottle 8', 'global logistics', 'phoenix distribution center 12')))"
+  },
+  "350": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('2', 'sales'), ('4', 'customer service')))"
+  },
+  "351": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('134', 'sara evans', '59013.3'), ('201', 'henry green', '65096.4'), ('207', 'mason bell', '53319.1'), ('42', 'jack anderson', '60127.1'), ('9', 'jack cook', '53980.3')))"
+  },
+  "352": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('106', 'cascade ultra organizer 106', '1562.21'), ('225', 'apex advanced set 225', '1660.79'), ('226', 'apex smart cable 226', '1481.06'), ('247', 'nova ultra printer 247', '1587.13'), ('251', 'bluepeak heavy-duty cable 251', '1485.21'), ('26', 'nova lightweight bundle 26', '1577.17'), ('381', 'redwood lightweight pack 381', '1594.9'), ('386', 'metroworks heavy-duty monitor 386', '1582.39'), ('63', 'silverline pro station 63', '1498.38'), ('67', 'terra portable stand 67', '1479.43')))"
+  },
+  "353": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('140', 'harbor advanced set 140', '8.45'), ('330', 'bluepeak classic stand 330', '7.08'), ('382', 'harbor classic set 382', '10.86'), ('401', 'vertex heavy-duty printer 401', '8.53'), ('403', 'lumina lightweight set 403', '9.7')))"
+  },
+  "354": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('12', 'summit goods', '5'), ('16', 'bluesky industries', '5'), ('17', 'northern goods', '5'), ('3', 'redrock trading', '5'), ('9', 'evergreen supply co.', '5')))"
+  },
+  "355": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('11', 'moscow distribution center 11', '81.53'), ('12', 'phoenix distribution center 12', '93.99'), ('3', 'chicago distribution center 3', '85.14'), ('4', 'new york distribution center 4', '78.99'), ('7', 'phoenix distribution center 7', '76.02')))"
+  },
+  "356": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(4, (('109', 'maya', 'walker', '151103'), ('21', 'elena', 'green', '142586'), ('25', 'kai', 'murphy', '167085'), ('33', 'evelyn', 'wilson', '143443'), ('37', 'sara', 'murphy', '169952'), ('49', 'grace', 'johnson', '181927'), ('61', 'evelyn', 'stewart', '210860'), ('73', 'layla', 'collins', '170575'), ('85', 'jack', 'sanchez', '193367'), ('97', 'camila', 'stewart', '183847')))"
+  },
+  "357": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('105', 'so-2026-000105', '28094.2'), ('157', 'so-2024-000157', '24459.9'), ('27', 'so-2026-000027', '24885.7'), ('308', 'so-2026-000308', '24634.7'), ('315', 'so-2025-000315', '28692'), ('393', 'so-2025-000393', '24892.6'), ('397', 'so-2026-000397', '25752.8'), ('634', 'so-2026-000634', '28663.5'), ('684', 'so-2026-000684', '27200.6'), ('714', 'so-2026-000714', '24560.9')))"
+  },
+  "358": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('105', '28094.2'), ('157', '24459.9'), ('27', '24885.7'), ('308', '24634.7'), ('315', '28692'), ('393', '24892.6'), ('397', '25752.8'), ('634', '28663.5'), ('684', '27200.6'), ('714', '24560.9')))"
+  },
+  "359": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('226', 'shp-0000226', '816.99'), ('237', 'shp-0000237', '883.201'), ('259', 'shp-0000259', '755.782'), ('27', 'shp-0000027', '752.41'), ('393', 'shp-0000393', '764.003'), ('404', 'shp-0000404', '781.575'), ('468', 'shp-0000468', '757.267'), ('516', 'shp-0000516', '818.968'), ('634', 'shp-0000634', '739.829'), ('793', 'shp-0000793', '890.07')))"
+  },
+  "360": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('finance', '3915730'), ('human resources', '4374234'), ('information technology', '3726603'), ('legal & compliance', '4610581'), ('product', '3446352')))"
+  },
+  "361": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(4, (('1289', '373', '12', '485'), ('1693', '490', '2', '480'), ('1703', '493', '1', '478'), ('207', '60', '1', '486'), ('42', '12', '9', '476'), ('501', '147', '10', '479'), ('63', '18', '7', '478'), ('688', '198', '7', '491'), ('708', '204', '8', '483'), ('919', '262', '2', '494')))"
+  },
+  "362": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(4, (('106', 'cascade ultra organizer 106', '1562.21', '606.71'), ('163', 'vertex everyday cleaner 163', '1475.82', '582.47'), ('225', 'apex advanced set 225', '1660.79', '636.55'), ('247', 'nova ultra printer 247', '1587.13', '641.15'), ('26', 'nova lightweight bundle 26', '1577.17', '604.41'), ('381', 'redwood lightweight pack 381', '1594.9', '648.29'), ('386', 'metroworks heavy-duty monitor 386', '1582.39', '637.96'), ('413', 'prairie compact adapter 413', '1456.95', '565.87'), ('63', 'silverline pro station 63', '1498.38', '582.56'), ('67', 'terra portable stand 67', '1479.43', '596.83')))"
+  },
+  "363": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(4, (('124', 'fatima', 'white', '24439'), ('141', 'nina', 'cook', '24342'), ('22', 'emma', 'stewart', '24940'), ('63', 'noah', 'garcia', '24622'), ('64', 'layla', 'stewart', '24945')))"
+  },
+  "364": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('144', 'shp-0000144', '21.99'), ('219', 'shp-0000219', '21.99'), ('303', 'shp-0000303', '24.2'), ('376', 'shp-0000376', '22.76'), ('471', 'shp-0000471', '21.89'), ('491', 'shp-0000491', '21.99'), ('65', 'shp-0000065', '21.93'), ('677', 'shp-0000677', '21.87'), ('709', 'shp-0000709', '29.66'), ('717', 'shp-0000717', '21.9')))"
+  },
+  "365": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('1', 'evergreen industries', '60'), ('2', 'redrock trading', '60'), ('20', 'summit wholesale', '60'), ('7', 'summit industries', '60'), ('8', 'global goods', '60')))"
+  },
+  "366": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('107', 'sophia anderson'), ('124', 'fatima white'), ('132', 'sara edwards'), ('167', 'fatima thomas'), ('170', 'michael carter'), ('194', 'jonah roberts'), ('205', 'priya garcia'), ('235', 'aria young'), ('251', 'mason cook'), ('272', 'omar bell')))"
+  },
+  "367": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('17', 'terra essential rack 17'), ('188', 'northstar compact station 188'), ('2', 'metroworks premium mat 2'), ('250', 'nova heavy-duty rack 250'), ('254', 'northstar heavy-duty adapter 254'), ('337', 'bluepeak compact box 337'), ('372', 'metroworks advanced helmet 372'), ('380', 'summit pro station 380'), ('398', 'silverline smart monitor 398'), ('80', 'metroworks lightweight system 80')))"
+  },
+  "368": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('bluesky industries',), ('mountain trading',), ('northern logistics',), ('northern wholesale',), ('united supply co.',)))"
+  },
+  "369": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('1', 'moscow distribution center 1'), ('11', 'moscow distribution center 11'), ('4', 'new york distribution center 4'), ('5', 'spokane distribution center 5'), ('8', 'chicago distribution center 8')))"
+  },
+  "370": {
+   "label": "llm_sql_direct_grain",
+   "reason": "consensus_group",
+   "sig": "(3, (('100', 'jack roberts', '390785'), ('112', 'mason parker', '447320'), ('38', 'camila wright', '487490'), ('4', 'sofia walker', '377854'), ('52', 'adam walker', '374981'), ('64', 'olivia mitchell', '367329'), ('74', 'leo bell', '433948'), ('76', 'grace rogers', '411404'), ('88', 'daniel bell', '480834'), ('98', 'ava davis', '414322')))"
+  },
+  "371": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('automotive',), ('electronics',), ('home',), ('office supplies',), ('pet supplies',)))"
+  },
+  "372": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('dhl',), ('fedex',), ('northstar freight',), ('ups',), ('usps',)))"
+  },
+  "373": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('10', 'spokane distribution center 10'), ('12', 'phoenix distribution center 12'), ('2', 'phoenix distribution center 2'), ('3', 'chicago distribution center 3'), ('6', 'moscow distribution center 6')))"
+  },
+  "374": {
+   "label": "llm_sql_direct_grain",
+   "reason": "consensus_group",
+   "sig": "(3, (('159', 'henry johnson', '13689.1'), ('183', 'diego jackson', '6520.87'), ('199', 'benjamin perez', '4582.85'), ('200', 'lucas morris', '6697.36'), ('241', 'camila young', '12531.6'), ('274', 'evelyn robinson', '9804.56'), ('280', 'diego moore', '16222.5'), ('285', 'leo baker', '6103.8'), ('7', 'noah sanchez', '18426.8'), ('79', 'lucas wilson', '4530.17')))"
+  },
+  "376": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('executive',), ('finance',), ('information technology',), ('legal & compliance',), ('product',)))"
+  },
+  "377": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('atlanta',), ('austin',), ('boise',), ('boston',), ('moscow',), ('new york',), ('phoenix',), ('portland',), ('seattle',), ('spokane',)))"
+  },
+  "378": {
+   "label": "llm_primary",
+   "reason": "consensus_group",
+   "sig": "(2, (('adyen', '1.13409e+06'), ('bankdirect', '864872'), ('northstar treasury', '1.24194e+06'), ('paypal', '1.08432e+06'), ('stripe', '1.42999e+06')))"
+  },
+  "380": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('enterprise', '9084.5'), ('nonprofit', '9966.41'), ('retail', '8929.65'), ('small_business', '10321.2')))"
+  },
+  "381": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('135', '2155.69'), ('174', '1909.33'), ('242', '2029.3'), ('469', '2469.9'), ('537', '2232.34'), ('634', '3064.15'), ('638', '1945.63'), ('660', '2254.2'), ('741', '2137.36'), ('751', '1898.29')))"
+  },
+  "382": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('bluepeak',), ('cascade',), ('lumina',), ('northstar',), ('nova',)))"
+  },
+  "383": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('107', 'sophia anderson'), ('167', 'fatima thomas'), ('169', 'grace parker'), ('172', 'harper morgan'), ('177', 'charlotte robinson'), ('18', 'sara taylor'), ('251', 'mason cook'), ('279', 'daniel perez'), ('289', 'adam miller'), ('4', 'jack wright')))"
+  },
+  "385": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('15', 'mountain trading'), ('18', 'prime supply co.'), ('2', 'redrock trading'), ('27', 'prime manufacturing'), ('28', 'united partners'), ('32', 'prime industries'), ('4', 'global partners'), ('42', 'liberty logistics'), ('48', 'evergreen trading'), ('58', 'prime industries')))"
+  },
+  "386": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('192', 'silverline premium device 192', 'apparel'), ('226', 'apex smart cable 226', 'electronics'), ('232', 'terra portable system 232', 'automotive'), ('250', 'nova heavy-duty rack 250', 'automotive'), ('412', 'prairie portable tool 412', 'electronics'), ('417', 'evergreen eco bundle 417', 'apparel'), ('420', 'cascade everyday pack 420', 'automotive'), ('441', 'lumina everyday case 441', 'electronics'), ('51', 'redwood essential jacket 51', 'health'), ('75', 'vertex professional speaker 75', 'apparel')))"
+  },
+  "387": {
+   "label": "llm_sql_repair",
+   "reason": "best_scored_executed",
+   "sig": "(3, (('124', 'gold', 'fatima white'), ('132', 'gold', 'sara edwards'), ('167', 'bronze', 'fatima thomas'), ('168', 'bronze', 'evelyn edwards'), ('172', 'bronze', 'harper morgan'), ('18', 'gold', 'sara taylor'), ('251', 'bronze', 'mason cook'), ('271', 'gold', 'amelia rogers'), ('288', 'bronze', 'liam bailey'), ('289', 'gold', 'adam miller')))"
+  },
+  "388": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('customer service', '88', 'daniel bell'), ('sales', '38', 'camila wright')))"
+  },
+  "389": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('1', 'northwest'), ('10', 'mountain'), ('11', 'southwest'), ('12', 'central'), ('3', 'mountain'), ('4', 'southwest'), ('5', 'central'), ('6', 'southeast'), ('7', 'northeast'), ('8', 'northwest')))"
+  },
+  "391": {
+   "label": "llm_sql_repair",
+   "reason": "best_scored_executed",
+   "sig": "(3, (('112', 'bluepeak lightweight box 112', 'sku-hom-000112'), ('145', 'summit essential box 145', 'sku-hom-000145'), ('218', 'cascade compact bundle 218', 'sku-off-000218'), ('230', 'evergreen pro pack 230', 'sku-hea-000230'), ('330', 'bluepeak classic stand 330', 'sku-ele-000330'), ('346', 'evergreen eco cleaner 346', 'sku-off-000346'), ('353', 'terra premium bottle 353', 'sku-pet-000353'), ('399', 'nova deluxe jacket 399', 'sku-out-000399'), ('43', 'summit ultra speaker 43', 'sku-pet-000043'), ('64', 'redwood portable station 64', 'sku-hom-000064')))"
+  },
+  "392": {
+   "label": "llm_primary",
+   "reason": "best_scored_executed",
+   "sig": "(3, (('chicago', '10564.3', '18'), ('new york', '10463.3', '38'), ('phoenix', '10500.2', '29'), ('salt lake city', '10861.9', '21'), ('san diego', '11274.8', '25')))"
+  },
+  "396": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(5, (('159', 'cust-000159', 'henry', 'johnson', 'henry johnson'), ('183', 'cust-000183', 'diego', 'jackson', 'diego jackson'), ('241', 'cust-000241', 'camila', 'young', 'camila young'), ('280', 'cust-000280', 'diego', 'moore', 'diego moore'), ('7', 'cust-000007', 'noah', 'sanchez', 'noah sanchez')))"
+  },
+  "397": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('4', 'new york distribution center 4'), ('6', 'moscow distribution center 6'), ('8', 'chicago distribution center 8')))"
+  },
+  "398": {
+   "label": "llm_sql_repair",
+   "reason": "best_scored_executed",
+   "sig": "(2, ())"
+  },
+  "400": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('2025-01', '265385'), ('2025-05', '243757'), ('2025-07', '229674')))"
+  },
+  "401": {
+   "label": "llm_sql_repair",
+   "reason": "consensus_group",
+   "sig": "(1, (('atlanta',), ('austin',), ('boise',), ('boston',), ('chicago',), ('dallas',), ('denver',), ('moscow',), ('new york',), ('phoenix',)))"
+  },
+  "403": {
+   "label": "llm_sql_repair",
+   "reason": "consensus_group",
+   "sig": "(2, (('adam', 'bailey'), ('adam', 'clark'), ('adam', 'cook'), ('adam', 'davis'), ('adam', 'king'), ('adam', 'martin'), ('adam', 'miller'), ('adam', 'moore'), ('adam', 'roberts'), ('adam', 'robinson')))"
+  },
+  "407": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('1',), ('10',), ('2',), ('3',), ('4',), ('5',), ('6',), ('7',), ('8',), ('9',)))"
+  },
+  "409": {
+   "label": "llm_sql_repair",
+   "reason": "consensus_group",
+   "sig": "(1, (('14',), ('16',), ('18',), ('2',), ('26',), ('28',), ('38',), ('4',), ('40',), ('42',)))"
+  },
+  "411": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('161', 'diego', 'white'), ('205', 'priya', 'garcia'), ('220', 'sofia', 'johnson'), ('230', 'priya', 'cook'), ('252', 'henry', 'roberts'), ('4', 'jack', 'wright'), ('41', 'jonah', 'lewis'), ('67', 'sara', 'miller'), ('73', 'rafi', 'green'), ('97', 'luna', 'lewis')))"
+  },
+  "412": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('1', 'evergreen advanced lamp 1', 'electronics'), ('15', 'harbor everyday case 15', 'electronics'), ('26', 'nova lightweight bundle 26', 'apparel'), ('27', 'vertex professional bottle 27', 'apparel'), ('30', 'summit classic box 30', 'apparel'), ('35', 'redwood ultra helmet 35', 'electronics'), ('36', 'nova essential cleaner 36', 'electronics'), ('39', 'lumina portable printer 39', 'apparel'), ('41', 'nova premium chair 41', 'electronics'), ('5', 'nova compact speaker 5', 'electronics')))"
+  },
+  "413": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(4, (('14', 'northern distribution', 'moscow', 'id'), ('20', 'summit wholesale', 'boise', 'id'), ('27', 'prime manufacturing', 'moscow', 'id'), ('3', 'redrock trading', 'moscow', 'id'), ('32', 'prime industries', 'boise', 'id'), ('36', 'prime trading', 'seattle', 'wa'), ('38', 'liberty distribution', 'boise', 'id'), ('42', 'liberty logistics', 'boise', 'id'), ('44', 'river supply co.', 'boise', 'id'), ('6', 'river supply co.', 'spokane', 'wa')))"
+  },
+  "414": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(5, (('15', 'shp-0000015', 'ups', '15', '2024-11-03'), ('16', 'shp-0000016', 'fedex', '16', '2025-10-19'), ('20', 'shp-0000020', 'ups', '20', '2026-01-04'), ('21', 'shp-0000021', 'ups', '21', '2024-01-17'), ('23', 'shp-0000023', 'fedex', '23', '2024-10-08'), ('26', 'shp-0000026', 'fedex', '26', '2025-11-07'), ('27', 'shp-0000027', 'ups', '27', '2026-04-24'), ('3', 'shp-0000003', 'ups', '3', '2024-02-11'), ('7', 'shp-0000007', 'fedex', '7', '2024-05-25'), ('9', 'shp-0000009', 'ups', '9', '2024-03-31')))"
+  },
+  "415": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(4, (('1', 'camila', 'campbell', 'full-time'), ('10', 'jack', 'edwards', 'part-time'), ('2', 'isabella', 'mitchell', 'full-time'), ('3', 'sofia', 'thomas', 'full-time'), ('4', 'sofia', 'walker', 'full-time'), ('5', 'layla', 'mitchell', 'full-time'), ('6', 'layla', 'wright', 'full-time'), ('7', 'sophia', 'moore', 'full-time'), ('8', 'ava', 'brown', 'full-time'), ('9', 'charlotte', 'baker', 'full-time')))"
+  },
+  "416": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('26', 'charlotte', 'bailey'), ('28', 'daniel', 'parker'), ('29', 'jonah', 'young'), ('30', 'sara', 'green'), ('33', 'leo', 'carter'), ('34', 'olivia', 'reed'), ('4', 'jack', 'wright'), ('7', 'noah', 'sanchez'), ('8', 'ethan', 'bell'), ('9', 'jack', 'cook')))"
+  },
+  "417": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('1', 'evergreen advanced lamp 1'), ('11', 'prairie essential monitor 11'), ('12', 'apex pro adapter 12'), ('16', 'cascade premium monitor 16'), ('18', 'northstar compact speaker 18'), ('2', 'metroworks premium mat 2'), ('4', 'northstar premium adapter 4'), ('5', 'nova compact speaker 5'), ('7', 'northstar eco helmet 7'), ('8', 'northstar ultra bottle 8')))"
+  },
+  "418": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('1', 'daniel', 'perez'), ('10', 'maya', 'davis'), ('2', 'emma', 'stewart'), ('3', 'sebastian', 'clark'), ('4', 'jack', 'wright'), ('5', 'noah', 'green'), ('6', 'adam', 'moore'), ('7', 'noah', 'sanchez'), ('8', 'ethan', 'bell'), ('9', 'jack', 'cook')))"
+  },
+  "419": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('1', 'moscow distribution center 1'), ('10', 'spokane distribution center 10'), ('2', 'phoenix distribution center 2'), ('3', 'chicago distribution center 3'), ('4', 'new york distribution center 4'), ('5', 'spokane distribution center 5'), ('6', 'moscow distribution center 6'), ('7', 'phoenix distribution center 7'), ('8', 'chicago distribution center 8'), ('9', 'new york distribution center 9')))"
+  },
+  "420": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('1', 'evergreen advanced lamp 1', 'sku-ele-000001'), ('12', 'apex pro adapter 12', 'sku-hea-000012'), ('14', 'silverline pro jacket 14', 'sku-out-000014'), ('18', 'northstar compact speaker 18', 'sku-pet-000018'), ('21', 'nova essential cleaner 21', 'sku-off-000021'), ('27', 'vertex professional bottle 27', 'sku-app-000027'), ('3', 'vertex classic monitor 3', 'sku-out-000003'), ('31', 'bluepeak everyday cable 31', 'sku-aut-000031'), ('32', 'northstar portable chair 32', 'sku-aut-000032'), ('5', 'nova compact speaker 5', 'sku-ele-000005')))"
+  },
+  "421": {
+   "label": "llm_variant_2",
+   "reason": "best_scored_executed",
+   "sig": "(3, (('112', 'mason', 'parker'), ('16', 'aria', 'garcia'), ('2', 'isabella', 'mitchell'), ('4', 'sofia', 'walker'), ('76', 'grace', 'rogers'), ('88', 'daniel', 'bell')))"
+  },
+  "423": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('1', 'evergreen industries'), ('10', 'bluesky logistics'), ('2', 'redrock trading'), ('3', 'redrock trading'), ('4', 'global partners'), ('5', 'metro industries'), ('6', 'river supply co.'), ('7', 'summit industries'), ('8', 'global goods'), ('9', 'evergreen supply co.')))"
+  },
+  "424": {
+   "label": "llm_sql_repair",
+   "reason": "consensus_group",
+   "sig": "(2, ())"
+  },
+  "425": {
+   "label": "llm_sql_repair",
+   "reason": "best_scored_executed",
+   "sig": "(3, (('67', 'terra portable stand 67', 'sku-ele-000067'), ('67', 'terra portable stand 67', 'sku-ele-000067'), ('67', 'terra portable stand 67', 'sku-ele-000067'), ('67', 'terra portable stand 67', 'sku-ele-000067')))"
+  },
+  "427": {
+   "label": "llm_sql_repair",
+   "reason": "consensus_group",
+   "sig": "(2, ())"
+  },
+  "428": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('10', 'terra everyday set 10'), ('15', 'harbor everyday case 15'), ('17', 'terra essential rack 17'), ('19', 'lumina ultra box 19'), ('23', 'nova everyday notebook 23'), ('3', 'vertex classic monitor 3'), ('31', 'bluepeak everyday cable 31'), ('34', 'apex lightweight case 34'), ('43', 'summit ultra speaker 43'), ('9', 'bluepeak portable cleaner 9')))"
+  },
+  "429": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('21', 'leo', 'hill'), ('25', 'daniel', 'wilson'), ('27', 'amelia', 'moore'), ('30', 'sara', 'green'), ('32', 'maya', 'smith'), ('35', 'michael', 'cook'), ('43', 'maya', 'garcia'), ('44', 'sara', 'miller'), ('50', 'sofia', 'smith'), ('52', 'jonah', 'jackson')))"
+  },
+  "432": {
+   "label": "llm_sql_repair",
+   "reason": "best_scored_executed",
+   "sig": "(3, (('14', 'charlotte', 'baker'), ('16', 'aria', 'garcia'), ('2', 'isabella', 'mitchell'), ('26', 'alexander', 'hill'), ('28', 'rafi', 'morris'), ('38', 'camila', 'wright'), ('4', 'sofia', 'walker'), ('40', 'mia', 'bailey'), ('50', 'elena', 'collins'), ('52', 'adam', 'walker')))"
+  },
+  "433": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('ups',),))"
+  },
+  "438": {
+   "label": "llm_sql_repair",
+   "reason": "consensus_group",
+   "sig": "(2, ())"
+  },
+  "441": {
+   "label": "llm_sql_repair",
+   "reason": "best_scored_executed",
+   "sig": "(3, (('32', 'maya', 'smith'), ('36', 'alexander', 'reed'), ('4', 'jack', 'wright'), ('49', 'harper', 'wright'), ('62', 'aria', 'collins'), ('65', 'jonah', 'morgan'), ('71', 'luna', 'sanchez'), ('73', 'rafi', 'green'), ('77', 'sara', 'phillips'), ('84', 'michael', 'taylor')))"
+  },
+  "442": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('16', 'cascade premium monitor 16'), ('18', 'northstar compact speaker 18'), ('25', 'vertex everyday printer 25'), ('26', 'nova lightweight bundle 26'), ('32', 'northstar portable chair 32'), ('35', 'redwood ultra helmet 35'), ('39', 'lumina portable printer 39'), ('54', 'northstar classic station 54'), ('58', 'bluepeak heavy-duty bag 58'), ('67', 'terra portable stand 67')))"
+  },
+  "444": {
+   "label": "llm_sql_repair",
+   "reason": "best_scored_executed",
+   "sig": "(1, ())"
+  },
+  "445": {
+   "label": "llm_sql_repair",
+   "reason": "consensus_group",
+   "sig": "(1, ())"
+  },
+  "447": {
+   "label": "llm_sql_repair",
+   "reason": "consensus_group",
+   "sig": "(3, ())"
+  },
+  "449": {
+   "label": "llm_sql_repair",
+   "reason": "consensus_group",
+   "sig": "(1, ())"
+  },
+  "450": {
+   "label": "llm_sql_repair",
+   "reason": "consensus_group",
+   "sig": "(2, (('1', 'evergreen advanced lamp 1'), ('15', 'harbor everyday case 15'), ('22', 'apex classic system 22'), ('23', 'nova everyday notebook 23'), ('31', 'bluepeak everyday cable 31'), ('38', 'metroworks deluxe bottle 38'), ('40', 'bluepeak everyday case 40'), ('41', 'nova premium chair 41'), ('43', 'summit ultra speaker 43'), ('6', 'northstar professional pack 6')))"
+  },
+  "451": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('1', 'evergreen advanced lamp 1', '705.05'), ('10', 'terra everyday set 10', '782.34'), ('11', 'prairie essential monitor 11', '756.48'), ('15', 'harbor everyday case 15', '791.04'), ('18', 'northstar compact speaker 18', '801.67'), ('22', 'apex classic system 22', '971.72'), ('25', 'vertex everyday printer 25', '751.35'), ('26', 'nova lightweight bundle 26', '1410.72'), ('4', 'northstar premium adapter 4', '613.17'), ('5', 'nova compact speaker 5', '622.42')))"
+  },
+  "452": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(4, (('1', 'camila', 'campbell', '137062'), ('12', 'camila', 'harris', '138361'), ('13', 'leo', 'collins', '131327'), ('21', 'elena', 'green', '142586'), ('23', 'minh', 'reed', '99940.3'), ('24', 'camila', 'brown', '122509'), ('25', 'kai', 'murphy', '167085'), ('5', 'layla', 'mitchell', '105039'), ('8', 'ava', 'brown', '114085'), ('9', 'charlotte', 'baker', '123343')))"
+  },
+  "453": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('13', 'mia harris', '5213.32'), ('19', 'leo harris', '32033.8'), ('2', 'emma stewart', '22572.1'), ('28', 'daniel parker', '48928.9'), ('29', 'jonah young', '12351.4'), ('42', 'jack anderson', '60127.1'), ('50', 'sofia smith', '5107.75'), ('58', 'elena hill', '7642.7'), ('6', 'adam moore', '24784.7'), ('9', 'jack cook', '53980.3')))"
+  },
+  "455": {
+   "label": "llm_sql_repair",
+   "reason": "consensus_group",
+   "sig": "(3, (('11', 'metro distribution', '4'), ('12', 'summit goods', '5'), ('13', 'united supply co.', '4'), ('15', 'mountain trading', '4'), ('16', 'bluesky industries', '5'), ('17', 'northern goods', '5'), ('19', 'river trading', '4'), ('3', 'redrock trading', '5'), ('8', 'global goods', '4'), ('9', 'evergreen supply co.', '5')))"
+  },
+  "456": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('1', 'so-2024-000001', '15744.4'), ('14', 'so-2025-000014', '21926.2'), ('17', 'so-2024-000017', '13738'), ('18', 'so-2025-000018', '14058.8'), ('19', 'so-2025-000019', '17282.1'), ('2', 'so-2025-000002', '11232.5'), ('3', 'so-2024-000003', '12118'), ('4', 'so-2025-000004', '9536.05'), ('5', 'so-2026-000005', '11228.2'), ('8', 'so-2025-000008', '20398.7')))"
+  },
+  "457": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('1', '15744.4'), ('13', '9000.44'), ('14', '21926.2'), ('17', '13738'), ('2', '11232.5'), ('3', '12118'), ('4', '9536.05'), ('5', '11228.2'), ('6', '9137.16'), ('8', '20398.7')))"
+  },
+  "458": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('1', 'shp-0000001', '545.177'), ('14', 'shp-0000014', '470.081'), ('17', 'shp-0000017', '333.88'), ('18', 'shp-0000018', '426.959'), ('19', 'shp-0000019', '585.431'), ('2', 'shp-0000002', '295.237'), ('20', 'shp-0000020', '414.966'), ('3', 'shp-0000003', '364.113'), ('5', 'shp-0000005', '547.43'), ('8', 'shp-0000008', '296.986')))"
+  },
+  "460": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('1', '1', '263'), ('10', '3', '371'), ('11', '3', '253'), ('12', '3', '374'), ('16', '4', '415'), ('17', '5', '236'), ('3', '1', '377'), ('4', '1', '292'), ('7', '2', '318'), ('9', '2', '236')))"
+  },
+  "461": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('67', 'terra portable stand 67', 'sku-ele-000067'),))"
+  },
+  "462": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('109', 'olivia', 'hill'), ('110', 'sara', 'baker'), ('117', 'layla', 'wright'), ('126', 'emma', 'perez'), ('14', 'rafi', 'walker'), ('16', 'adam', 'clark'), ('19', 'leo', 'harris'), ('63', 'noah', 'garcia'), ('74', 'isabella', 'robinson'), ('93', 'minh', 'smith')))"
+  },
+  "463": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('1', 'evergreen industries'), ('10', 'bluesky logistics'), ('11', 'metro distribution'), ('2', 'redrock trading'), ('3', 'redrock trading'), ('4', 'global partners'), ('5', 'metro industries'), ('6', 'river supply co.'), ('8', 'global goods'), ('9', 'evergreen supply co.')))"
+  },
+  "464": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('18', 'benjamin', 'bell'), ('23', 'minh', 'reed'), ('25', 'kai', 'murphy'), ('26', 'alexander', 'hill'), ('27', 'amelia', 'stewart'), ('29', 'noah', 'morgan'), ('35', 'aria', 'thompson'), ('36', 'daniel', 'young'), ('42', 'nina', 'turner'), ('43', 'amelia', 'stewart')))"
+  },
+  "465": {
+   "label": "llm_sql_repair",
+   "reason": "consensus_group",
+   "sig": "(2, ())"
+  },
+  "466": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(4, (('1', 'evergreen advanced lamp 1', 'electronics', '705.05'), ('10', 'terra everyday set 10', 'automotive', '782.34'), ('11', 'prairie essential monitor 11', 'outdoors', '756.48'), ('15', 'harbor everyday case 15', 'electronics', '791.04'), ('18', 'northstar compact speaker 18', 'pet supplies', '801.67'), ('22', 'apex classic system 22', 'home', '971.72'), ('25', 'vertex everyday printer 25', 'office supplies', '751.35'), ('26', 'nova lightweight bundle 26', 'apparel', '1410.72'), ('27', 'vertex professional bottle 27', 'apparel', '764.27'), ('5', 'nova compact speaker 5', 'electronics', '622.42')))"
+  },
+  "467": {
+   "label": "llm_sql_repair",
+   "reason": "consensus_group",
+   "sig": "(5, (('12', 'camila', 'harris', '138361', '12'), ('18', 'benjamin', 'bell', '85035.8', '6'), ('19', 'ethan', 'bailey', '80452.1', '7'), ('21', 'elena', 'green', '142586', '9'), ('23', 'minh', 'reed', '99940.3', '11'), ('24', 'camila', 'brown', '122509', '12'), ('29', 'noah', 'morgan', '102956', '5'), ('5', 'layla', 'mitchell', '105039', '5'), ('6', 'layla', 'wright', '85969.1', '6'), ('8', 'ava', 'brown', '114085', '8')))"
+  },
+  "468": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('13', 'mia', 'harris'), ('18', 'sara', 'taylor'), ('20', 'charlotte', 'garcia'), ('24', 'adam', 'bailey'), ('28', 'daniel', 'parker'), ('29', 'jonah', 'young'), ('4', 'jack', 'wright'), ('6', 'adam', 'moore'), ('7', 'noah', 'sanchez'), ('9', 'jack', 'cook')))"
+  },
+  "469": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('1', 'moscow distribution center 1'), ('11', 'moscow distribution center 11'), ('4', 'new york distribution center 4'), ('5', 'spokane distribution center 5'), ('7', 'phoenix distribution center 7'), ('8', 'chicago distribution center 8')))"
+  },
+  "470": {
+   "label": "llm_sql_repair",
+   "reason": "best_scored_executed",
+   "sig": "(2, (('1', 'evergreen industries'), ('10', 'bluesky logistics'), ('2', 'redrock trading'), ('3', 'redrock trading'), ('4', 'global partners'), ('5', 'metro industries'), ('6', 'river supply co.'), ('7', 'summit industries'), ('8', 'global goods'), ('9', 'evergreen supply co.')))"
+  },
+  "471": {
+   "label": "llm_sql_repair",
+   "reason": "consensus_group",
+   "sig": "(4, (('1', 'so-2024-000001', '241', '15744.4'), ('14', 'so-2025-000014', '167', '21926.2'), ('17', 'so-2024-000017', '73', '13738'), ('18', 'so-2025-000018', '167', '14058.8'), ('2', 'so-2025-000002', '252', '11232.5'), ('26', 'so-2025-000026', '251', '10752.8'), ('3', 'so-2024-000003', '174', '12118'), ('6', 'so-2024-000006', '67', '9137.16'), ('8', 'so-2025-000008', '91', '20398.7'), ('9', 'so-2024-000009', '41', '7433.78')))"
+  },
+  "472": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(4, (('1', 'pay-0000001', 'check', '15744.4'), ('13', 'pay-0000013', 'wire', '9000.44'), ('14', 'pay-0000014', 'credit_card', '21926.2'), ('17', 'pay-0000017', 'ach', '13738'), ('2', 'pay-0000002', 'ach', '11232.5'), ('3', 'pay-0000003', 'ach', '12118'), ('4', 'pay-0000004', 'ach', '9536.05'), ('5', 'pay-0000005', 'paypal', '11228.2'), ('6', 'pay-0000006', 'check', '9137.16'), ('8', 'pay-0000008', 'wire', '20398.7')))"
+  },
+  "473": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('11', 'northstar freight', '21.4'), ('14', 'northstar freight', '20.84'), ('18', 'northstar freight', '17.11'), ('19', 'dhl', '18.69'), ('21', 'ups', '21.69'), ('22', 'usps', '14.18'), ('24', 'dhl', '20.96'), ('26', 'fedex', '16.59'), ('3', 'ups', '15.25'), ('4', 'usps', '15.95')))"
+  },
+  "474": {
+   "label": "llm_sql_repair",
+   "reason": "best_scored_executed",
+   "sig": "(3, (('112', 'bluepeak lightweight box 112', 'sku-hom-000112'), ('145', 'summit essential box 145', 'sku-hom-000145'), ('218', 'cascade compact bundle 218', 'sku-off-000218'), ('353', 'terra premium bottle 353', 'sku-pet-000353'), ('64', 'redwood portable station 64', 'sku-hom-000064')))"
+  },
+  "475": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('1', 'daniel', 'perez'), ('10', 'maya', 'davis'), ('11', 'ava', 'thompson'), ('13', 'mia', 'harris'), ('2', 'emma', 'stewart'), ('3', 'sebastian', 'clark'), ('4', 'jack', 'wright'), ('5', 'noah', 'green'), ('7', 'noah', 'sanchez'), ('8', 'ethan', 'bell')))"
+  },
+  "476": {
+   "label": "llm_sql_direct_grain",
+   "reason": "best_scored_executed",
+   "sig": "(3, (('14', 'charlotte', 'baker'), ('2', 'isabella', 'mitchell'), ('28', 'rafi', 'morris'), ('38', 'camila', 'wright'), ('4', 'sofia', 'walker'), ('40', 'mia', 'bailey'), ('74', 'leo', 'bell'), ('76', 'grace', 'rogers'), ('88', 'daniel', 'bell'), ('98', 'ava', 'davis')))"
+  },
+  "477": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(1, (('automotive',), ('electronics',), ('home',), ('office supplies',)))"
+  },
+  "481": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('1', 'executive'), ('10', 'finance'), ('3', 'marketing'), ('9', 'information technology')))"
+  },
+  "483": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('159', 'henry', 'johnson'), ('183', 'diego', 'jackson'), ('199', 'benjamin', 'perez'), ('200', 'lucas', 'morris'), ('241', 'camila', 'young'), ('274', 'evelyn', 'robinson'), ('280', 'diego', 'moore'), ('285', 'leo', 'baker'), ('7', 'noah', 'sanchez'), ('79', 'lucas', 'wilson')))"
+  },
+  "484": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('1', 'moscow distribution center 1'), ('10', 'spokane distribution center 10'), ('2', 'phoenix distribution center 2'), ('3', 'chicago distribution center 3'), ('4', 'new york distribution center 4'), ('5', 'spokane distribution center 5'), ('6', 'moscow distribution center 6'), ('7', 'phoenix distribution center 7'), ('8', 'chicago distribution center 8'), ('9', 'new york distribution center 9')))"
+  },
+  "486": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('104', 'cascade ultra station 104', 'outdoors'), ('148', 'vertex eco pack 148', 'office supplies'), ('250', 'nova heavy-duty rack 250', 'automotive'), ('265', 'northstar advanced cable 265', 'electronics'), ('278', 'evergreen compact bag 278', 'apparel'), ('37', 'metroworks smart organizer 37', 'home'), ('407', 'redwood advanced chair 407', 'pet supplies'), ('415', 'summit classic lamp 415', 'health')))"
+  },
+  "487": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(5, (('106', '10', 'aisha', 'cook', '116814'), ('33', '9', 'evelyn', 'wilson', '143443'), ('38', '2', 'camila', 'wright', '91917.2'), ('40', '4', 'mia', 'bailey', '77703.2'), ('5', '5', 'layla', 'mitchell', '105039'), ('6', '6', 'layla', 'wright', '85969.1'), ('61', '1', 'evelyn', 'stewart', '210860'), ('67', '7', 'sara', 'hill', '92701.5'), ('75', '3', 'ethan', 'carter', '91094.8'), ('8', '8', 'ava', 'brown', '114085')))"
+  },
+  "488": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('1', '492', '12280.8'), ('10', '50', '15247.8'), ('2', '160', '10966.7'), ('3', '521', '16933.5'), ('4', '248', '14444.5'), ('5', '35', '18511.6'), ('6', '657', '20268.5'), ('7', '630', '12018.8'), ('8', '738', '6672.49'), ('9', '168', '20090.2')))"
+  },
+  "489": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(5, (('225', '225', 'shp-0000225', '2025-02-11', '4'), ('35', '35', 'shp-0000035', '2024-02-08', '5'), ('373', '373', 'shp-0000373', '2026-04-11', '2'), ('395', '395', 'shp-0000395', '2026-04-09', '6'), ('419', '419', 'shp-0000419', '2026-03-30', '7'), ('437', '437', 'shp-0000437', '2026-07-03', '3'), ('48', '48', 'shp-0000048', '2025-07-28', '9'), ('492', '492', 'shp-0000492', '2025-11-25', '1'), ('50', '50', 'shp-0000050', '2026-05-25', '10'), ('738', '738', 'shp-0000738', '2025-02-14', '8')))"
+  },
+  "490": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('10', 'maya davis', 'bronze'), ('13', 'mia harris', 'silver'), ('18', 'sara taylor', 'gold'), ('20', 'charlotte garcia', 'bronze'), ('24', 'adam bailey', 'silver'), ('29', 'jonah young', 'silver'), ('34', 'olivia reed', 'platinum'), ('4', 'jack wright', 'gold'), ('6', 'adam moore', 'bronze'), ('7', 'noah sanchez', 'gold')))"
+  },
+  "491": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('1', 'evergreen industries', 'wholesaler'), ('12', 'summit goods', 'manufacturer'), ('13', 'united supply co.', 'distributor'), ('15', 'mountain trading', 'distributor'), ('16', 'bluesky industries', 'manufacturer'), ('18', 'prime supply co.', 'distributor'), ('2', 'redrock trading', 'manufacturer'), ('24', 'northern logistics', 'distributor'), ('25', 'evergreen manufacturing', 'manufacturer'), ('6', 'river supply co.', 'distributor')))"
+  },
+  "495": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('107', 'sophia anderson'), ('13', 'mia harris'), ('154', 'layla robinson'), ('167', 'fatima thomas'), ('24', 'adam bailey'), ('251', 'mason cook'), ('75', 'jack campbell')))"
+  },
+  "496": {
+   "label": "llm_sql_repair",
+   "reason": "consensus_group",
+   "sig": "(2, (('1', 'evergreen industries'), ('10', 'bluesky logistics'), ('2', 'redrock trading'), ('3', 'redrock trading'), ('4', 'global partners'), ('5', 'metro industries'), ('6', 'river supply co.'), ('7', 'summit industries'), ('8', 'global goods'), ('9', 'evergreen supply co.')))"
+  },
+  "498": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('107', 'sophia', 'anderson'), ('108', 'leo', 'nelson'), ('113', 'ava', 'bailey'), ('118', 'elijah', 'martin'), ('121', 'jonah', 'collins'), ('139', 'aria', 'bailey'), ('36', 'alexander', 'reed'), ('8', 'ethan', 'bell'), ('86', 'sara', 'garcia'), ('95', 'henry', 'johnson')))"
+  },
+  "499": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(2, (('1', 'evergreen advanced lamp 1'), ('10', 'terra everyday set 10'), ('12', 'apex pro adapter 12'), ('15', 'harbor everyday case 15'), ('3', 'vertex classic monitor 3'), ('4', 'northstar premium adapter 4'), ('5', 'nova compact speaker 5'), ('6', 'northstar professional pack 6'), ('7', 'northstar eco helmet 7'), ('8', 'northstar ultra bottle 8')))"
+  }
+ },
+ "rc4_newly_recovered": {
+  "68": {
+   "label": "llm_sql_direct_grain",
+   "reason": "consensus_group",
+   "sig": "(2, (('ach', '0.0137776'), ('check', '0.0175063'), ('credit_card', '0.0132558'), ('paypal', '0.0374515'), ('wire', '0.0142516')))"
+  },
+  "73": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('1', 'executive', '113140'), ('10', 'finance', '117319'), ('2', 'sales', '36676.6'), ('3', 'marketing', '45752.4'), ('4', 'customer service', '57450.5'), ('5', 'operations', '83475.5'), ('6', 'logistics', '32934.8'), ('7', 'procurement', '37708.1'), ('8', 'product', '49489.5'), ('9', 'information technology', '140372')))"
+  },
+  "81": {
+   "label": "llm_sql_direct",
+   "reason": "consensus_group",
+   "sig": "(2, (('dhl', '46.2025'), ('fedex', '53.3742'), ('northstar freight', '53.2468'), ('ups', '60.5714'), ('usps', '48.6667')))"
+  },
+  "98": {
+   "label": "llm_sql_direct_variant",
+   "reason": "consensus_group",
+   "sig": "(3, (('1', 'executive', '0.207942'), ('10', 'finance', '0.413937'), ('2', 'sales', '0.441971'), ('3', 'marketing', '0.515'), ('4', 'customer service', '0.637703'), ('5', 'operations', '0.420265'), ('6', 'logistics', '0.55521'), ('7', 'procurement', '0.561654'), ('8', 'product', '0.353225'), ('9', 'information technology', '0.301263')))"
+  },
+  "137": {
+   "label": "llm_sql_direct_variant",
+   "reason": "best_scored_executed",
+   "sig": "(1, (('289',),))"
+  },
+  "242": {
+   "label": "llm_sql_repair",
+   "reason": "consensus_group",
+   "sig": "(1, ())"
+  },
+  "401": {
+   "label": "llm_sql_repair",
+   "reason": "consensus_group",
+   "sig": "(1, (('atlanta',), ('austin',), ('boise',), ('boston',), ('chicago',), ('dallas',), ('denver',), ('moscow',), ('new york',), ('phoenix',)))"
+  },
+  "447": {
+   "label": "llm_sql_repair",
+   "reason": "consensus_group",
+   "sig": "(3, ())"
+  }
+ },
+ "notes": {
+  "rc4_new_recoveries": [
+   "68",
+   "73",
+   "81",
+   "98",
+   "137",
+   "242",
+   "401",
+   "447"
+  ],
+  "already_correct_after_rc3_not_rc4": [
+   "157",
+   "162"
+  ],
+  "still_incorrect": [
+   "69",
+   "80",
+   "146",
+   "187"
+  ],
+  "protected_set_definition": "347 audit-accurate + RC1/RC2 recoveries {128,129,133,142,144,466,467,473} + RC3 recoveries {153,156,343,392} + RC4 recoveries {68,73,81,98,137,242,401,447}"
+ }
+}

@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 load_dotenv()
 import re
 import json
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from semantic.ai_semantic_extractor import extract_semantics
@@ -30,7 +30,7 @@ from services.dataset_service import (
     clear_chat_state,
 )
 from services.conversation_manager import understand_followup
-from fastapi import UploadFile, File, Form
+from fastapi import UploadFile, File, Form, Body
 import os
 import shutil
 from schema.csv_schema_detector import detect_csv_schema
@@ -47,6 +47,11 @@ from schema.schema_extractor import extract_table_columns
 from schema.relationship_detector import detect_relationships
 from containment.models import ContainmentRequest, ContainmentBatchRequest
 from containment.service import check_containment, check_containment_batch
+from local_benchmarks.benchmark_registry import list_benchmarks
+from local_benchmarks.benchmark_loader import load_benchmark
+from local_benchmarks.benchmark_relationships import (
+    augment_graph as augment_local_benchmark_relationships,
+)
 from schema.lazy_loader import (
     get_database_meta,
     list_tables as lazy_list_tables,
@@ -60,7 +65,9 @@ from schema.database_mode import (
 from retrieval.table_retriever import retrieve_tables, requested_dates_satisfied
 from schema.subgraph_builder import build_subgraph
 from schema.query_context import resolve_query_graph
-from schema.named_table_forcing import force_named_tables
+from schema.named_table_forcing import force_named_tables, physical_tables
+from sql_candidates.name_normalizer import normalize_schema_prefixes
+from retrieval.relationship_expansion import augment_graph_with_physical_fks
 from schema.partition_filter import (
     remove_redundant_partition_date_filters,
     detect_partitioned_ambiguity,
@@ -96,6 +103,16 @@ from db.database_service import (
     clear_relationships,
     get_database_graph,
     get_database_path,
+    set_relationships_finalized,
+    get_relationships_finalized,
+    set_relationship_status,
+    get_relationship_status,
+    set_all_relationships_confirmed,
+    add_user_relationship,
+    update_relationship,
+    delete_relationship,
+    delete_database,
+    verify_database_access,
 )
 from semantic.ai_semantic_extractor import (
     extract_semantics,
@@ -112,7 +129,17 @@ from sql_candidates import (
     select_best,
     annotate_with_probes,
 )
+from sql_candidates.candidate_selector import enforce_selection_safety
+from diagnostics import full_trace
+print(
+    "[FULL TRACE STARTUP]",
+    f"enabled={full_trace.enabled()}",
+    f"debug={full_trace.trace_debug_enabled()}",
+    f"run_id={os.getenv('SPIDERSQL_TRACE_RUN_ID')!r}",
+    flush=True,
+)
 from semantic.semantic_checklist import generate_checklist
+from semantic.semantic_contract import build_grain_contract, contract_to_dict
 from semantic.schema_linker import correct_checklist_tables
 from sql_candidates.direct_sql_enforcement import direct_sql_violations, required_tables_for
 from query_families.slot_extractor import index_schema as se_index_schema
@@ -199,6 +226,12 @@ class LoginRequest(BaseModel):
 
 class IRRequest(BaseModel):
     question: str
+    # Ownership context (threaded from the frontend's authenticated session).
+    # When present, the query endpoints verify the (user_id, username) pair owns
+    # this database + conversation before running.
+    user_id: int | None = None
+    username: str | None = None
+    conversation_id: int | None = None
 
 class AssignmentTextRequest(BaseModel):
     user_id: int
@@ -475,6 +508,36 @@ async def upload_csv(
         "path": file_path
     }
 
+def _rollback_if_rejected(result, database_id):
+    """When relationship resolution rejects a large DB (no declared PK/FK and no
+    user-supplied relationships), roll back the just-created instance: delete the
+    databases row + metadata and remove ONLY the SpiderSQL-managed db_<id> folder.
+    The user's original source files outside that folder are never touched.
+    Returns a rejection response dict, or None when not rejected."""
+    if not isinstance(result, dict) or not result.get("rejected"):
+        return None
+    try:
+        db_path = delete_database(database_id)
+    except Exception as exc:
+        print(f"ROLLBACK ERROR (metadata): {exc}", flush=True)
+        db_path = result.get("db_path")
+    try:
+        managed_dir = os.path.dirname(db_path) if db_path else None
+        # Safety: only remove a path under the managed uploads/.../databases/db_<id> tree.
+        if managed_dir and os.path.basename(managed_dir) == f"db_{database_id}" \
+                and os.path.isdir(managed_dir):
+            shutil.rmtree(managed_dir, ignore_errors=True)
+    except Exception as exc:
+        print(f"ROLLBACK ERROR (folder): {exc}", flush=True)
+    return {
+        "success": False,
+        "error": result.get("reason") or "large_database_requires_relationships",
+        "message": ("This large database has no declared PK/FK relationships. "
+                    "Upload a database with declared foreign-key relationships, "
+                    "or provide relationships, before it can be used."),
+    }
+
+
 @app.post("/upload-database")
 async def upload_database(
     user_id: int = Form(...),
@@ -548,6 +611,9 @@ async def upload_database(
     result = create_metadata(
         database_id, db_path, db_name, table_specs, rel_provider, large
     )
+    _rej = _rollback_if_rejected(result, database_id)
+    if _rej is not None:
+        return _rej
 
     # Re-shape successful tables to the original CSV entry keys, interleaving
     # them with failures in upload order.
@@ -650,6 +716,9 @@ async def create_database_from_schema(
     result = create_metadata(
         database_id, db_path, db_name, table_specs, relationships, large
     )
+    _rej = _rollback_if_rejected(result, database_id)
+    if _rej is not None:
+        return _rej
     result["tables"] = [
         {"table_name": t["table_name"], "rows_inserted": t["rows_inserted"],
          "success": True}
@@ -714,6 +783,9 @@ async def upload_sqlite(
     result = create_metadata(
         database_id, db_path, db_name, table_specs, rel_provider, large
     )
+    _rej = _rollback_if_rejected(result, database_id)
+    if _rej is not None:
+        return _rej
     result["tables"] = [
         {"table_name": t["table_name"],
          "rows_inserted": t.get("rows_inserted", 0),
@@ -722,6 +794,38 @@ async def upload_sqlite(
         for t in result["tables"]
     ]
     return result
+
+
+# ---------------------------------------------------------------------------
+# Local benchmark databases — list + load the accepted relational sample DBs
+# ---------------------------------------------------------------------------
+
+class LocalBenchmarkLoadRequest(BaseModel):
+    user_id: int
+    conversation_id: int | None = None
+
+
+@app.get("/local_benchmarks/databases")
+def local_benchmarks_list():
+    """List the accepted local benchmark databases and whether each SQLite file
+    exists locally (available=false when the file is missing)."""
+    return {"success": True, "databases": list_benchmarks()}
+
+
+@app.post("/local_benchmarks/databases/{benchmark_id}/load")
+def local_benchmarks_load(benchmark_id: str, body: LocalBenchmarkLoadRequest):
+    """Load one benchmark into the current chat, reusing the SAME registration
+    flow as an uploaded SQLite file (create_database -> copy -> create_metadata).
+    The source template under relational_sample_dbs/sqlite/ is never modified."""
+    return load_benchmark(
+        benchmark_id, body.user_id, body.conversation_id,
+        create_database=create_database,
+        set_database_path=set_database_path,
+        inspect_sqlite_file=inspect_sqlite_file,
+        is_large_database=is_large_database,
+        create_metadata=create_metadata,
+        uploads_root="uploads",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -806,6 +910,9 @@ def spider2_import(req: Spider2ImportRequest):
         database_id, db_path, db_name, table_specs, relationships, large,
         source={"type": "spider2", "spider2_id": req.spider2_id},
     )
+    _rej = _rollback_if_rejected(result, database_id)
+    if _rej is not None:
+        return _rej
     result["tables"] = [
         {"table_name": t["table_name"], "rows_inserted": t["rows_inserted"],
          "success": True}
@@ -882,19 +989,174 @@ def database_schema(database_id: int):
     return {"success": True, "database": schema}
 
 
+def _access_error(database_id, user_id, username, conversation_id):
+    """Ownership enforcement for every relationship + query operation. Verifies
+    the login-issued (user_id, username) pair, that the database belongs to that
+    user AND the specified conversation, and that the conversation belongs to the
+    user. Returns an error dict on any mismatch, else None."""
+    ok, reason = verify_database_access(
+        user_id, username, conversation_id, database_id)
+    if not ok:
+        return {"success": False, "error": "access_denied", "message": reason}
+    return None
+
+
 @app.get("/database/{database_id}/relationships")
-def database_relationships(database_id: int):
-    return {"success": True, "relationships": get_relationships(database_id)}
+def database_relationships(database_id: int, user_id: int = None,
+                           username: str = None, conversation_id: int = None):
+    err = _access_error(database_id, user_id, username, conversation_id)
+    if err is not None:
+        return err
+    return {"success": True,
+            "relationships": get_relationships(database_id),
+            "relationship_status": get_relationship_status(database_id)}
 
 
 @app.post("/database/{database_id}/detect-relationships")
-def redetect_relationships(database_id: int):
-    if not get_database(database_id):
-        return {"success": False, "message": "Database not found"}
+def redetect_relationships(database_id: int, user_id: int = None,
+                           username: str = None, conversation_id: int = None):
+    """Explicit redetection through the single authority resolver: PK/FK
+    constraints win (100%, no inference); a small DB with none gets inferred
+    suggestions; a large DB with none and no user rows is rejected. The result
+    always returns to 'review' — approval is a separate step."""
+    err = _access_error(database_id, user_id, username, conversation_id)
+    if err is not None:
+        return err
+    from services.relationship_resolver import resolve_and_store_relationships
+    res = resolve_and_store_relationships(database_id, force_inference=True)
+    if res.get("rejected"):
+        return {"success": False, "error": res.get("reason"),
+                "message": ("Detection produced no usable relationship set. "
+                            "Add relationships manually before querying.")}
+    return {"success": True, "relationships": res.get("edges", []),
+            "relationship_status": res.get("status") or "review"}
+
+
+def _validate_relationship_endpoints(database_id, from_table, from_column,
+                                     to_table, to_column):
+    """Ensure both endpoints reference tables that exist in this database's
+    metadata. Returns (ok, message)."""
+    tables = {t["table_name"] for t in (get_database_tables(database_id) or [])}
+    for tbl in (from_table, to_table):
+        if tbl not in tables:
+            return False, f"unknown table '{tbl}' for database {database_id}"
+    return True, ""
+
+
+class UserRelationshipBody(BaseModel):
+    from_table: str
+    from_column: str
+    to_table: str
+    to_column: str
+    relationship_type: str = "foreign_key"
+
+
+@app.post("/database/{database_id}/relationships")
+def create_user_relationship(database_id: int, body: UserRelationshipBody,
+                             user_id: int = None, username: str = None,
+                             conversation_id: int = None):
+    """Add a user relationship to the single stored set. Any edit returns the
+    database to 'review' until re-finalized."""
+    err = _access_error(database_id, user_id, username, conversation_id)
+    if err is not None:
+        return err
+    ok, msg = _validate_relationship_endpoints(
+        database_id, body.from_table, body.from_column,
+        body.to_table, body.to_column)
+    if not ok:
+        return {"success": False, "message": msg}
+    rel_id = add_user_relationship(
+        database_id, body.from_table, body.from_column,
+        body.to_table, body.to_column, body.relationship_type)
+    set_all_relationships_confirmed(database_id, False)
+    set_relationship_status(database_id, "review")
+    return {"success": True, "relationship_id": rel_id,
+            "relationship_status": "review"}
+
+
+@app.patch("/database/{database_id}/relationships/{rel_id}")
+def edit_user_relationship(database_id: int, rel_id: int,
+                           body: dict = Body(default=None),
+                           user_id: int = None, username: str = None,
+                           conversation_id: int = None):
+    err = _access_error(database_id, user_id, username, conversation_id)
+    if err is not None:
+        return err
+    update_relationship(rel_id, **{k: v for k, v in (body or {}).items()})
+    set_all_relationships_confirmed(database_id, False)
+    set_relationship_status(database_id, "review")
+    return {"success": True, "relationship_status": "review"}
+
+
+@app.delete("/database/{database_id}/relationships/{rel_id}")
+def remove_user_relationship(database_id: int, rel_id: int,
+                             user_id: int = None, username: str = None,
+                             conversation_id: int = None):
+    err = _access_error(database_id, user_id, username, conversation_id)
+    if err is not None:
+        return err
+    delete_relationship(rel_id)
+    set_all_relationships_confirmed(database_id, False)
+    set_relationship_status(database_id, "review")
+    return {"success": True, "relationship_status": "review"}
+
+
+@app.put("/database/{database_id}/relationships")
+def replace_relationship_set(database_id: int, body: dict = Body(default=None),
+                             user_id: int = None, username: str = None,
+                             conversation_id: int = None):
+    """Replace the entire stored relationship set with the reviewed list (used by
+    the review card, which edits locally then commits). Per-row `source` is
+    preserved; rows without a source are treated as user-added. Sets the database
+    back to 'review' (the caller finalizes separately)."""
+    err = _access_error(database_id, user_id, username, conversation_id)
+    if err is not None:
+        return err
+    incoming = (body or {}).get("relationships") or []
+    sanitized = []
+    for r in incoming:
+        if not isinstance(r, dict):
+            continue
+        if not (r.get("from_table") and r.get("from_column")
+                and r.get("to_table") and r.get("to_column")):
+            continue
+        src = r.get("source") or "user"
+        sanitized.append({
+            "from_table": r.get("from_table"),
+            "from_column": r.get("from_column"),
+            "to_table": r.get("to_table"),
+            "to_column": r.get("to_column"),
+            "relationship_type": r.get("relationship_type") or "foreign_key",
+            "name_similarity": r.get("name_similarity"),
+            "value_overlap": r.get("value_overlap"),
+            "confidence": r.get("confidence",
+                                1.0 if src in ("pk_fk", "user") else None),
+            # Saving a reviewed set leaves it unapproved until finalized; the
+            # finalize step marks every row confirmed. Origin is preserved.
+            "confirmed": 0,
+            "source": src,
+        })
     clear_relationships(database_id)
-    relationships = detect_relationships(database_id)
-    add_relationships(database_id, relationships)
-    return {"success": True, "relationships": relationships}
+    add_relationships(database_id, sanitized)
+    set_all_relationships_confirmed(database_id, False)
+    set_relationship_status(database_id, "review")
+    return {"success": True, "relationships": get_relationships(database_id),
+            "relationship_status": "review"}
+
+
+@app.post("/database/{database_id}/relationships/finalize")
+def finalize_relationships(database_id: int, user_id: int = None,
+                           username: str = None, conversation_id: int = None):
+    """Approve the current stored set; enables querying for this instance.
+    Marks every current relationship row confirmed (approval is separate from
+    origin — `source` is unchanged) so the finalized set renders as Confirmed."""
+    err = _access_error(database_id, user_id, username, conversation_id)
+    if err is not None:
+        return err
+    set_all_relationships_confirmed(database_id, True)
+    set_relationship_status(database_id, "finalized")
+    return {"success": True, "relationship_status": "finalized",
+            "relationships": get_relationships(database_id)}
 
 
 @app.get("/database/{database_id}/graph")
@@ -1156,9 +1418,24 @@ def run_nl_sql_pipeline(database_id: int, question: str) -> dict:
     preserved exactly.
     """
     body = IRRequest(question=question)
+    full_trace.begin(database_id, question)   # no-op unless SPIDERSQL_FULL_TRACE
     meta = get_database_meta(database_id)
     if not meta:
         return {"success": False, "message": "Database not found"}
+
+    # Relationship-finality gate: queries run ONLY on a finalized, authoritative
+    # relationship set. A database whose relationships are unfinalized (empty or
+    # unreviewed inference suggestions) must be detected/finalized first — the
+    # query interface never fabricates relationships to fill the gap.
+    if not get_relationships_finalized(database_id):
+        return {
+            "success": False,
+            "error": "relationships_not_finalized",
+            "message": ("This database's relationships are not finalized. "
+                        "Run relationship detection and finalize the set "
+                        "before querying."),
+            "database_id": database_id,
+        }
 
     # Mode-aware schema selection (small = full graph, large = retrieve top-k +
     # sub-graph). Shared helper; behavior unchanged. Returns an early response
@@ -1169,6 +1446,13 @@ def run_nl_sql_pipeline(database_id: int, question: str) -> dict:
     )
     if early is not None:
         return early
+
+    # NOTE (relationship lifecycle): query-time relationship augmentation was
+    # removed. Benchmark-trusted and declared FK edges are imported and saved as
+    # metadata at database setup / redetection (services/relationship_resolver),
+    # so the graph handed to generation/validation/scoring is exactly the
+    # finalized stored set. Queries never create, merge, or rediscover
+    # relationships.
 
     # Force explicitly-named tables into the graph (MODE-INDEPENDENT + physical
     # fallback): top-k retrieval must never hide a table the question named
@@ -1188,6 +1472,7 @@ def run_nl_sql_pipeline(database_id: int, question: str) -> dict:
                   "(injected into graph from physical schema)", flush=True)
         print(f"[GRAPH FORCE] final_subgraph_tables={_fdbg['final_subgraph_tables']}",
               flush=True)
+        full_trace.note("layer3", "graph_force", _fdbg)
     except Exception as exc:
         print(f"GRAPH FORCE ERROR: {exc}", flush=True)
     print("[GRAPH] available tables for checklist: "
@@ -1204,6 +1489,18 @@ def run_nl_sql_pipeline(database_id: int, question: str) -> dict:
     # =========================================================================
     db_path = get_database_path(database_id)
     candidates = []
+
+    # Physical table names — used to normalize hallucinated SQL-Server schema
+    # prefixes (Purchasing.PurchaseOrderHeader -> PurchaseOrderHeader) on every
+    # generated direct/repair SQL, so a semantically-correct candidate is not
+    # lost to a bare qualification error. Read once; empty on any problem.
+    try:
+        _phys_names = list(physical_tables(db_path).keys())
+    except Exception:
+        _phys_names = []
+
+    def _norm_sql(s):
+        return normalize_schema_prefixes(s, _phys_names) if s else s
 
     # -- Value grounding: sample distinct values of enum-like columns so the
     #    LLM writes literals with the DB's actual conventions (yes/no vs
@@ -1235,6 +1532,24 @@ def run_nl_sql_pipeline(database_id: int, question: str) -> dict:
         checklist = correct_checklist_tables(body.question, checklist, graph)
     except Exception as exc:
         print(f"SCHEMA LINKER ERROR: {exc}", flush=True)
+
+    # -- Typed grain contract (semantic-contract Stage 0): machine-checkable
+    #    view of the checklist's optional grain fields, consumed by the grain
+    #    validator during scoring. Building it can never fail the request; a
+    #    None / low-confidence contract simply means grain validation is
+    #    skipped or advisory.
+    grain_contract = None
+    try:
+        grain_contract = build_grain_contract(checklist, graph)
+        if grain_contract is not None:
+            print("SEMANTIC CONTRACT:", contract_to_dict(grain_contract),
+                  flush=True)
+        else:
+            print("SEMANTIC CONTRACT: none (typed grain fields absent) — "
+                  "grain validation skipped", flush=True)
+    except Exception as exc:
+        print(f"SEMANTIC CONTRACT ERROR: {exc}", flush=True)
+        grain_contract = None
 
     # -- large-mode IR postprocess (table fallback + partition filter), applied
     #    per LLM candidate. Mirrors the previous single-path behavior.
@@ -1393,10 +1708,13 @@ def run_nl_sql_pipeline(database_id: int, question: str) -> dict:
     except Exception as exc:
         print(f"DIRECT SQL ERROR: {exc}", flush=True)
         direct_sql = None
+    direct_sql = _norm_sql(direct_sql)
     if direct_sql:
         _v = direct_sql_violations(direct_sql, body.question, checklist, graph)
         if _v:
             print(f"REJECTED direct candidate llm_sql_direct: {_v}", flush=True)
+            full_trace.note("layer5", "rejected::llm_sql_direct",
+                            {"sql": direct_sql, "violations": _v})
         else:
             candidates.append(build_direct_sql_candidate(
                 label="llm_sql_direct", sql=direct_sql, db_path=db_path))
@@ -1413,10 +1731,13 @@ def run_nl_sql_pipeline(database_id: int, question: str) -> dict:
     except Exception as exc:
         print(f"DIRECT SQL GRAIN ERROR: {exc}", flush=True)
         direct_sql_grain = None
+    direct_sql_grain = _norm_sql(direct_sql_grain)
     if direct_sql_grain:
         _v = direct_sql_violations(direct_sql_grain, body.question, checklist, graph)
         if _v:
             print(f"REJECTED direct candidate llm_sql_direct_grain: {_v}", flush=True)
+            full_trace.note("layer5", "rejected::llm_sql_direct_grain",
+                            {"sql": direct_sql_grain, "violations": _v})
         else:
             candidates.append(build_direct_sql_candidate(
                 label="llm_sql_direct_grain", sql=direct_sql_grain,
@@ -1428,10 +1749,13 @@ def run_nl_sql_pipeline(database_id: int, question: str) -> dict:
     except Exception as exc:
         print(f"DIRECT SQL VARIANT ERROR: {exc}", flush=True)
         direct_sql_variant = None
+    direct_sql_variant = _norm_sql(direct_sql_variant)
     if direct_sql_variant:
         _v = direct_sql_violations(direct_sql_variant, body.question, checklist, graph)
         if _v:
             print(f"REJECTED direct candidate llm_sql_direct_variant: {_v}", flush=True)
+            full_trace.note("layer5", "rejected::llm_sql_direct_variant",
+                            {"sql": direct_sql_variant, "violations": _v})
         else:
             candidates.append(build_direct_sql_candidate(
                 label="llm_sql_direct_variant", sql=direct_sql_variant,
@@ -1442,7 +1766,8 @@ def run_nl_sql_pipeline(database_id: int, question: str) -> dict:
     for cand in candidates:
         try:
             score_candidate(body.question, cand, graph, checklist=checklist,
-                            value_profile=value_profile)
+                            value_profile=value_profile,
+                            contract=grain_contract)
         except Exception as exc:
             print(f"CANDIDATE SCORER ERROR ({cand.label}): {exc}", flush=True)
             cand.score = 0.0
@@ -1483,7 +1808,10 @@ def run_nl_sql_pipeline(database_id: int, question: str) -> dict:
                 _kept.append(cand)
         candidates = _kept
 
-    selected, selection_meta = select_best(candidates)
+    sem_index = se_index_schema(graph)
+    selected, selection_meta = select_best(
+        candidates, checklist=checklist, contract=grain_contract,
+        idx=sem_index, question=body.question)
 
     # -- One-shot repair ("llm_sql_repair"): when the winner looks unreliable
     #    (fatal / low score / missing concepts / zero rows / weak family pick),
@@ -1507,7 +1835,9 @@ def run_nl_sql_pipeline(database_id: int, question: str) -> dict:
         repair_meta["repair_attempted"] = True
         repair_meta["repair_triggers"] = repair_triggers
         repair_sql = generate_repair_sql(
-            body.question, graph, value_hints, checklist, selected, candidates)
+            body.question, graph, value_hints, checklist, selected, candidates,
+            contract=grain_contract)
+        repair_sql = _norm_sql(repair_sql)
         if repair_sql and direct_sql_violations(
                 repair_sql, body.question, checklist, graph):
             print("REJECTED repair candidate: "
@@ -1520,7 +1850,8 @@ def run_nl_sql_pipeline(database_id: int, question: str) -> dict:
                 source="llm_sql_repair")
             try:
                 score_candidate(body.question, repair_cand, graph,
-                                checklist=checklist, value_profile=value_profile)
+                                checklist=checklist, value_profile=value_profile,
+                                contract=grain_contract)
             except Exception as exc:
                 print(f"REPAIR SCORER ERROR: {exc}", flush=True)
                 repair_cand.score = 0.0
@@ -1529,9 +1860,12 @@ def run_nl_sql_pipeline(database_id: int, question: str) -> dict:
             annotate_with_probes(repair_cand, db_path)
             repair_meta["repair_executed"] = repair_cand.executed_ok
             repair_meta["repair_score"] = repair_cand.score
-            selected, selection_meta = select_best(candidates)
+            selected, selection_meta = select_best(
+                candidates, checklist=checklist, contract=grain_contract,
+                idx=sem_index, question=body.question)
             repair_meta["repair_selected"] = selected is repair_cand
 
+    _trace_enforce_rejected = False        # diagnostics only (full trace)
     # -- FINAL enforcement (post-repair): nothing may bypass the explicit
     #    table-lock / bridge rules — not repair, not any post-selection path.
     #    If the final SQL violates, drop it and fall back to the best
@@ -1548,13 +1882,60 @@ def run_nl_sql_pipeline(database_id: int, question: str) -> dict:
             _ok = [c for c in candidates if c.sql and not
                    direct_sql_violations(c.sql, body.question, checklist, graph)]
             if _ok:
-                selected, selection_meta = select_best(_ok)
+                selected, selection_meta = select_best(
+                    _ok, checklist=checklist, contract=grain_contract,
+                    idx=sem_index, question=body.question)
                 print(f"[FINAL ENFORCE] replaced with non-violating candidate: "
                       f"{selected.label if selected else None}", flush=True)
             else:
                 selected = None
                 print("[FINAL ENFORCE] no non-violating candidate; returning "
                       "NO SQL", flush=True)
+                _trace_enforce_rejected = True
+
+    # HARD SELECTION INVARIANT (final stabilization): a candidate with ANY
+    # fatal reason can never be returned as a normal success — regardless of
+    # score, consensus, repair, or low-confidence fallback. The old gate only
+    # fired when *every* candidate (including non-executed ones) was fatal,
+    # which let an all-executed-fatal consensus slip through as ACCEPTED.
+    def _cand_fatal(c):
+        return bool((c.validation or {}).get("fatal"))
+
+    _rejected_debug_sql = (selected.sql if selected is not None
+                           and _cand_fatal(selected) else None)
+    selected, _controlled_failure, _fatal_reasons = enforce_selection_safety(
+        selected, candidates)
+    if _controlled_failure:
+        print("[SEMANTIC FAILURE] selected candidate is fatal and no clean "
+              "executed candidate exists; returning controlled "
+              "no-valid-SQL failure instead of misleading SQL", flush=True)
+        _resp = {
+            "success": False,
+            "error": "no_semantically_valid_sql",
+            "database_id": database_id,
+            "question": body.question,
+            "tables_considered": tables_considered,
+            "message": ("No semantically valid SQL could be generated for this "
+                        "question — every executed candidate violated a "
+                        "required relationship, measure, or query shape."),
+            "semantic_checklist": checklist,
+            "semantic_contract": contract_to_dict(grain_contract),
+            "candidate_fatal_reasons": {
+                c.label: (c.validation or {}).get("fatal") or []
+                for c in candidates},
+            # diagnostic ONLY — never presented as accepted generated SQL
+            "debug_rejected_sql": _rejected_debug_sql,
+            "debug_rejected_fatal_reasons": _fatal_reasons,
+            **selection_meta,
+        }
+        full_trace.finish(
+            response=_resp, graph=graph, checklist=checklist,
+            contract_dict=contract_to_dict(grain_contract),
+            candidates=candidates, selected=None,
+            selection_meta=selection_meta, repair_meta=repair_meta,
+            tables_considered=tables_considered, controlled=True,
+            enforcement_rejected=_trace_enforce_rejected)
+        return _resp
 
     # Value-grounding warning: the WINNER compares a profiled column against a
     # literal that was never seen in that column's sampled values.
@@ -1571,7 +1952,7 @@ def run_nl_sql_pipeline(database_id: int, question: str) -> dict:
     #    plus candidate-selection metadata.
     _log_layer(6, "RESULT - winner selected; run it and return the answer")
     if selected is None:  # defensive; primary always exists
-        return {
+        _resp = {
             "success": False,
             "database_id": database_id,
             "question": body.question,
@@ -1579,6 +1960,14 @@ def run_nl_sql_pipeline(database_id: int, question: str) -> dict:
             "message": "No SQL candidates could be generated.",
             **selection_meta,
         }
+        full_trace.finish(
+            response=_resp, graph=graph, checklist=checklist,
+            contract_dict=contract_to_dict(grain_contract),
+            candidates=candidates, selected=None,
+            selection_meta=selection_meta, repair_meta=repair_meta,
+            tables_considered=tables_considered, controlled=False,
+            enforcement_rejected=_trace_enforce_rejected)
+        return _resp
 
     base = {
         "database_id": database_id,
@@ -1606,6 +1995,7 @@ def run_nl_sql_pipeline(database_id: int, question: str) -> dict:
         "selected_candidate_score": selected.score,
         "selected_candidate_validation": selected.validation,
         "semantic_checklist": checklist,
+        "semantic_contract": contract_to_dict(grain_contract),
         **repair_meta,
         "value_grounding": {
             "profiled_columns": sum(len(c) for c in value_profile.values()),
@@ -1613,21 +2003,74 @@ def run_nl_sql_pipeline(database_id: int, question: str) -> dict:
         },
     }
 
-    return {
-        "success": selected.executed_ok,
+    # Final assertion (Part A): the selected candidate cannot be fatal here.
+    # enforce_selection_safety above guarantees it; if this is ever violated
+    # by a future code path, convert to a controlled failure instead of
+    # returning misleading SQL as a success.
+    if _cand_fatal(selected):
+        print("[ASSERTION] fatal candidate reached response assembly; "
+              "converting to controlled failure", flush=True)
+        _resp = {
+            "success": False,
+            "error": "no_semantically_valid_sql",
+            "database_id": database_id,
+            "question": body.question,
+            "message": "selected candidate failed semantic validation",
+            "debug_rejected_sql": selected.sql,
+            "debug_rejected_fatal_reasons":
+                (selected.validation or {}).get("fatal") or [],
+            **selection_meta,
+        }
+        full_trace.finish(
+            response=_resp, graph=graph, checklist=checklist,
+            contract_dict=contract_to_dict(grain_contract),
+            candidates=candidates, selected=selected,
+            selection_meta=selection_meta, repair_meta=repair_meta,
+            tables_considered=tables_considered, controlled=True,
+            enforcement_rejected=_trace_enforce_rejected)
+        return _resp
+
+    _resp = {
+        "success": selected.executed_ok and not _cand_fatal(selected),
         **base,
         "plan": selected.plan,
         "generated_sql": selected.generated_sql,
         "relational_algebra": selected.relational_algebra,
         "execution": selected.execution,
     }
+    full_trace.finish(
+        response=_resp, graph=graph, checklist=checklist,
+        contract_dict=contract_to_dict(grain_contract),
+        candidates=candidates, selected=selected,
+        selection_meta=selection_meta, repair_meta=repair_meta,
+        tables_considered=tables_considered, controlled=False,
+        enforcement_rejected=_trace_enforce_rejected)
+    return _resp
 
 
 @app.post("/database/{database_id}/execute_sql")
-def execute_sql_endpoint(database_id: int, body: IRRequest):
+def execute_sql_endpoint(database_id: int, body: IRRequest,
+                         request: Request = None):
     """Unchanged public contract. Thin wrapper that delegates to the shared
-    run_nl_sql_pipeline helper so /check_containment can reuse the same path."""
-    return run_nl_sql_pipeline(database_id, body.question)
+    run_nl_sql_pipeline helper so /check_containment can reuse the same path.
+    When SPIDERSQL_FULL_TRACE is enabled, optional X-SpiderSQL-* headers
+    attach benchmark metadata to the diagnostic trace (never logged
+    otherwise; authorization headers are never read)."""
+    if full_trace.enabled() and request is not None:
+        full_trace.set_request_meta(
+            full_trace.request_meta_from_headers(request.headers))
+    # Ownership enforcement when the frontend threads authenticated context.
+    # (Non-interactive tools, e.g. the benchmark runner, omit it and are not
+    # ownership-checked — see report; strict mode can require it.)
+    if body.user_id is not None:
+        ok, reason = verify_database_access(
+            body.user_id, body.username, body.conversation_id, database_id)
+        if not ok:
+            return {"success": False, "error": "access_denied",
+                    "message": reason}
+    response = run_nl_sql_pipeline(database_id, body.question)
+    full_trace.ensure_finished(response)
+    return response
 
 
 @app.post("/database/{database_id}/check_containment")

@@ -1,0 +1,156 @@
+{
+  "problems": [],
+  "categories": {
+    "join": {
+      "cases": 200,
+      "templates": 50,
+      "difficulty": {
+        "easy": 60,
+        "medium": 80,
+        "hard": 60
+      },
+      "databases": {
+        "46": 80,
+        "49": 60,
+        "50": 60
+      },
+      "zero_row_cases": 12
+    },
+    "multi_table_join": {
+      "cases": 200,
+      "templates": 50,
+      "difficulty": {
+        "easy": 60,
+        "medium": 80,
+        "hard": 60
+      },
+      "databases": {
+        "46": 80,
+        "49": 60,
+        "50": 60
+      },
+      "zero_row_cases": 4
+    },
+    "group_by": {
+      "cases": 200,
+      "templates": 50,
+      "difficulty": {
+        "easy": 60,
+        "medium": 80,
+        "hard": 60
+      },
+      "databases": {
+        "46": 80,
+        "49": 60,
+        "50": 60
+      },
+      "zero_row_cases": 0
+    },
+    "having": {
+      "cases": 200,
+      "templates": 50,
+      "difficulty": {
+        "easy": 60,
+        "medium": 80,
+        "hard": 60
+      },
+      "databases": {
+        "46": 80,
+        "49": 60,
+        "50": 60
+      },
+      "zero_row_cases": 12
+    },
+    "subquery_cte": {
+      "cases": 200,
+      "templates": 50,
+      "difficulty": {
+        "easy": 60,
+        "medium": 80,
+        "hard": 60
+      },
+      "databases": {
+        "46": 80,
+        "49": 60,
+        "50": 60
+      },
+      "zero_row_cases": 0
+    },
+    "set_operations": {
+      "cases": 200,
+      "templates": 50,
+      "difficulty": {
+        "easy": 60,
+        "medium": 80,
+        "hard": 60
+      },
+      "databases": {
+        "46": 80,
+        "49": 60,
+        "50": 60
+      },
+      "zero_row_cases": 4
+    },
+    "order_limit_topk": {
+      "cases": 200,
+      "templates": 50,
+      "difficulty": {
+        "easy": 60,
+        "medium": 80,
+        "hard": 60
+      },
+      "databases": {
+        "46": 80,
+        "49": 60,
+        "50": 60
+      },
+      "zero_row_cases": 0
+    },
+    "aggregation": {
+      "cases": 200,
+      "templates": 50,
+      "difficulty": {
+        "easy": 60,
+        "medium": 80,
+        "hard": 60
+      },
+      "databases": {
+        "46": 80,
+        "49": 60,
+        "50": 60
+      },
+      "zero_row_cases": 0
+    },
+    "distinct_count": {
+      "cases": 200,
+      "templates": 50,
+      "difficulty": {
+        "easy": 60,
+        "medium": 80,
+        "hard": 60
+      },
+      "databases": {
+        "46": 80,
+        "49": 60,
+        "50": 60
+      },
+      "zero_row_cases": 0
+    },
+    "derived_metric": {
+      "cases": 200,
+      "templates": 50,
+      "difficulty": {
+        "easy": 60,
+        "medium": 80,
+        "hard": 60
+      },
+      "databases": {
+        "46": 80,
+        "49": 60,
+        "50": 60
+      },
+      "zero_row_cases": 0
+    }
+  },
+  "total_cases": 2000
+}

@@ -93,23 +93,50 @@ def _contains_word(q, phrase):
     return re.search(r"(?<![a-z0-9_])" + re.escape(p) + r"(?![a-z0-9_])", q) is not None
 
 
+def _name_tokens_set(name):
+    return {_singular(t) for t in str(name or "").lower().replace("_", " ").split()
+            if len(t) > 2}
+
+
 def mentioned_tables(question, idx):
-    """Tables whose name/singular/plural appears in the question, first-seen order."""
+    """Tables whose name/singular/plural appears in the question, first-seen order.
+
+    Parent/child disambiguation (generic, no hardcoding): a child table whose
+    name is a token-superset of a co-mentioned parent (e.g. sales_order_items vs
+    sales_orders) is dropped when the question contains NONE of the child's
+    distinctive tokens — so a question about a "sales order" no longer drags in
+    "sales_order_items" merely through the shared words 'sales'/'order'."""
     q = _norm(question)
     hits = []
     for name in idx["tables"]:
         for form in _forms(name):
             if _contains_word(q, form):
-                pos = q.find(form)
-                hits.append((pos, name))
+                hits.append((q.find(form), name))
                 break
     hits.sort()
-    seen, out = set(), []
+    names, seen = [], set()
     for _, n in hits:
         if n not in seen:
             seen.add(n)
-            out.append(n)
-    return out
+            names.append(n)
+
+    qtokens = {_singular(w) for w in q.split() if len(w) > 2}
+    kept = []
+    for n in names:
+        tn = _name_tokens_set(n)
+        drop = False
+        for other in names:
+            if other == n:
+                continue
+            to = _name_tokens_set(other)
+            if to and to < tn:  # `other` (parent) tokens are a proper subset of n (child)
+                extra = tn - to
+                if not (extra & qtokens):
+                    drop = True
+                    break
+        if not drop:
+            kept.append(n)
+    return kept
 
 
 def columns_of(idx, table):

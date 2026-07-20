@@ -1,0 +1,462 @@
+{
+  "generated_at": "2026-07-19T21:28:21",
+  "config_schema_version": "day1.v2",
+  "nl_to_sql_execution": {
+    "by_database": {
+      "54": {
+        "total_queries": 500,
+        "execution_successes": 496,
+        "execution_failures": 4
+      },
+      "55": {
+        "total_queries": 500,
+        "execution_successes": 496,
+        "execution_failures": 4
+      },
+      "56": {
+        "total_queries": 500,
+        "execution_successes": 493,
+        "execution_failures": 7
+      },
+      "57": {
+        "total_queries": 500,
+        "execution_successes": 500,
+        "execution_failures": 0
+      }
+    },
+    "totals": {
+      "total_queries": 2000,
+      "execution_successes": 1985,
+      "execution_failures": 15,
+      "min_execution_target": 1985,
+      "meets_execution_target": true
+    }
+  },
+  "nl_to_sql_semantic_correct": {
+    "by_database": {
+      "54": {
+        "correct": 439,
+        "incorrect": 61,
+        "total": 500,
+        "accuracy": 0.878,
+        "by_category": {
+          "aggregation": {
+            "total": 50,
+            "correct": 42
+          },
+          "derived_metric": {
+            "total": 50,
+            "correct": 34
+          },
+          "distinct_count": {
+            "total": 50,
+            "correct": 47
+          },
+          "group_by": {
+            "total": 50,
+            "correct": 49
+          },
+          "having": {
+            "total": 50,
+            "correct": 45
+          },
+          "join": {
+            "total": 50,
+            "correct": 46
+          },
+          "multi_table_join": {
+            "total": 50,
+            "correct": 44
+          },
+          "order_limit_topk": {
+            "total": 50,
+            "correct": 44
+          },
+          "set_operations": {
+            "total": 50,
+            "correct": 45
+          },
+          "subquery_cte": {
+            "total": 50,
+            "correct": 43
+          }
+        },
+        "by_difficulty": {
+          "easy": {
+            "total": 150,
+            "correct": 143
+          },
+          "hard": {
+            "total": 150,
+            "correct": 123
+          },
+          "moderate": {
+            "total": 200,
+            "correct": 173
+          }
+        },
+        "audit_format": "markdown"
+      },
+      "55": {
+        "correct": 407,
+        "incorrect": 93,
+        "total": 500,
+        "accuracy": 0.814,
+        "by_category": {
+          "aggregation": {
+            "total": 50,
+            "correct": 44
+          },
+          "derived_metric": {
+            "total": 50,
+            "correct": 34
+          },
+          "distinct_count": {
+            "total": 50,
+            "correct": 42
+          },
+          "group_by": {
+            "total": 50,
+            "correct": 44
+          },
+          "having": {
+            "total": 50,
+            "correct": 44
+          },
+          "join": {
+            "total": 50,
+            "correct": 45
+          },
+          "multi_table_join": {
+            "total": 50,
+            "correct": 34
+          },
+          "order_limit_topk": {
+            "total": 50,
+            "correct": 45
+          },
+          "set_operations": {
+            "total": 50,
+            "correct": 34
+          },
+          "subquery_cte": {
+            "total": 50,
+            "correct": 41
+          }
+        },
+        "by_difficulty": {
+          "easy": {
+            "total": 150,
+            "correct": 135
+          },
+          "hard": {
+            "total": 150,
+            "correct": 107
+          },
+          "moderate": {
+            "total": 200,
+            "correct": 165
+          }
+        },
+        "audit_format": "csv"
+      },
+      "56": {
+        "correct": 368,
+        "incorrect": 132,
+        "total": 500,
+        "accuracy": 0.736,
+        "by_category": {
+          "aggregation": {
+            "total": 50,
+            "correct": 41
+          },
+          "derived_metric": {
+            "total": 50,
+            "correct": 24
+          },
+          "distinct_count": {
+            "total": 50,
+            "correct": 39
+          },
+          "group_by": {
+            "total": 50,
+            "correct": 40
+          },
+          "having": {
+            "total": 50,
+            "correct": 40
+          },
+          "join": {
+            "total": 50,
+            "correct": 45
+          },
+          "multi_table_join": {
+            "total": 50,
+            "correct": 36
+          },
+          "order_limit_topk": {
+            "total": 50,
+            "correct": 42
+          },
+          "set_operations": {
+            "total": 50,
+            "correct": 25
+          },
+          "subquery_cte": {
+            "total": 50,
+            "correct": 36
+          }
+        },
+        "by_difficulty": {
+          "easy": {
+            "total": 150,
+            "correct": 131
+          },
+          "hard": {
+            "total": 150,
+            "correct": 80
+          },
+          "moderate": {
+            "total": 200,
+            "correct": 157
+          }
+        },
+        "audit_format": "csv"
+      },
+      "57": {
+        "correct": 392,
+        "incorrect": 108,
+        "total": 500,
+        "accuracy": 0.784,
+        "by_category": {
+          "aggregation": {
+            "total": 50,
+            "correct": 44
+          },
+          "derived_metric": {
+            "total": 50,
+            "correct": 29
+          },
+          "distinct_count": {
+            "total": 50,
+            "correct": 44
+          },
+          "group_by": {
+            "total": 50,
+            "correct": 45
+          },
+          "having": {
+            "total": 50,
+            "correct": 41
+          },
+          "join": {
+            "total": 50,
+            "correct": 49
+          },
+          "multi_table_join": {
+            "total": 50,
+            "correct": 35
+          },
+          "order_limit_topk": {
+            "total": 50,
+            "correct": 41
+          },
+          "set_operations": {
+            "total": 50,
+            "correct": 25
+          },
+          "subquery_cte": {
+            "total": 50,
+            "correct": 39
+          }
+        },
+        "by_difficulty": {
+          "easy": {
+            "total": 150,
+            "correct": 137
+          },
+          "hard": {
+            "total": 150,
+            "correct": 92
+          },
+          "moderate": {
+            "total": 200,
+            "correct": 163
+          }
+        },
+        "audit_format": "csv"
+      }
+    },
+    "by_category": {
+      "aggregation": {
+        "total": 200,
+        "correct": 171
+      },
+      "derived_metric": {
+        "total": 200,
+        "correct": 121
+      },
+      "distinct_count": {
+        "total": 200,
+        "correct": 172
+      },
+      "group_by": {
+        "total": 200,
+        "correct": 178
+      },
+      "having": {
+        "total": 200,
+        "correct": 170
+      },
+      "join": {
+        "total": 200,
+        "correct": 185
+      },
+      "multi_table_join": {
+        "total": 200,
+        "correct": 149
+      },
+      "order_limit_topk": {
+        "total": 200,
+        "correct": 172
+      },
+      "set_operations": {
+        "total": 200,
+        "correct": 129
+      },
+      "subquery_cte": {
+        "total": 200,
+        "correct": 159
+      }
+    },
+    "by_difficulty": {
+      "easy": {
+        "total": 600,
+        "correct": 546
+      },
+      "hard": {
+        "total": 600,
+        "correct": 402
+      },
+      "moderate": {
+        "total": 800,
+        "correct": 658
+      }
+    },
+    "totals": {
+      "status": "available",
+      "correct": 1606,
+      "total": 2000,
+      "incorrect": 394,
+      "measured_accuracy": 0.803,
+      "min_semantic_target": 1738,
+      "meets_semantic_target": false,
+      "gap_to_target": 132,
+      "category_rollup_correct": 1606,
+      "target_reconciliation": "Presented-accuracy target is internally inconsistent: a category rollup implies 1737 correct while a per-database percentage rollup implies 1738. Engineering target is fixed at 1738. Measured semantic-correct counts are taken verbatim from the audit files and never adjusted to hit this number."
+    }
+  },
+  "containment": {
+    "status": "available",
+    "source": "case_summary (authoritative)",
+    "by_database": {
+      "54": {
+        "designed_edges": 300,
+        "recovered": 220,
+        "accuracy": 0.7333,
+        "config_recovered_target": 250
+      },
+      "55": {
+        "designed_edges": 200,
+        "recovered": 154,
+        "accuracy": 0.77,
+        "config_recovered_target": 174
+      },
+      "56": {
+        "designed_edges": 200,
+        "recovered": 145,
+        "accuracy": 0.725,
+        "config_recovered_target": 155
+      },
+      "57": {
+        "designed_edges": 300,
+        "recovered": 186,
+        "accuracy": 0.62,
+        "config_recovered_target": 216
+      }
+    },
+    "weighted_recovered": 705,
+    "weighted_total": 1000,
+    "weighted_accuracy": 0.705,
+    "unweighted_db_average": 0.7121,
+    "weighted_recovered_target": 795,
+    "meets_weighted_target": false
+  },
+  "source_files": {
+    "sql_result_54": {
+      "path": "sales_db54_500_query_sql_results.txt",
+      "exists": true,
+      "sha1": "ac0e8a7d63b2ddcb96735dd0dfe60e2387c909b8",
+      "size_bytes": 259740,
+      "mtime": "2026-07-17T14:47:14"
+    },
+    "semantic_audit_54": {
+      "path": "benchmarks/go_live_day1/inputs/sales_db54_manual_semantic_audit.md",
+      "exists": true,
+      "sha1": "fcf036fbdc430eb8c8ba872b0d84b24bddf148ce",
+      "size_bytes": 37315,
+      "mtime": "2026-07-19T21:20:42"
+    },
+    "sql_result_55": {
+      "path": "students_db55_500_query_sql_results.txt",
+      "exists": true,
+      "sha1": "7e8a1dbede43dacb63edbc8fb359919e514f9bad",
+      "size_bytes": 246746,
+      "mtime": "2026-07-17T17:24:55"
+    },
+    "semantic_audit_55": {
+      "path": "benchmarks/go_live_day1/inputs/students_db55_manual_semantic_audit.csv",
+      "exists": true,
+      "sha1": "6cdb3302104ecb63a54de32a23f662699a6d009c",
+      "size_bytes": 183244,
+      "mtime": "2026-07-19T21:20:42"
+    },
+    "sql_result_56": {
+      "path": "doctor_db56_500_query_sql_results.txt",
+      "exists": true,
+      "sha1": "2042e78f04dae5efd680890f94d01ecb234e2060",
+      "size_bytes": 244129,
+      "mtime": "2026-07-17T20:51:51"
+    },
+    "semantic_audit_56": {
+      "path": "benchmarks/go_live_day1/inputs/doctor_db56_manual_semantic_audit.csv",
+      "exists": true,
+      "sha1": "b09d2f3f4cbdcc8917f4af04d697923fcd661756",
+      "size_bytes": 182905,
+      "mtime": "2026-07-19T21:20:42"
+    },
+    "sql_result_57": {
+      "path": "player_db57_500_query_sql_results.txt",
+      "exists": true,
+      "sha1": "77db3b43eab83be5b352d819177348759cf1be24",
+      "size_bytes": 240664,
+      "mtime": "2026-07-17T23:29:49"
+    },
+    "semantic_audit_57": {
+      "path": "benchmarks/go_live_day1/inputs/player_db57_manual_semantic_audit.csv",
+      "exists": true,
+      "sha1": "bc36da3bac323138c73b5f73878004f9f2f27689",
+      "size_bytes": 178985,
+      "mtime": "2026-07-19T21:20:42"
+    },
+    "containment_case_summary": {
+      "path": "benchmarks/go_live_day1/inputs/spidersql_containment_case_summary.csv",
+      "exists": true,
+      "sha1": "3bed09b53c13558124e30d494188dc89acc45fbf",
+      "size_bytes": 39735,
+      "mtime": "2026-07-19T21:20:42"
+    }
+  },
+  "missing_artifacts": [],
+  "warnings": []
+}

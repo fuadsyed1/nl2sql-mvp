@@ -1,0 +1,11 @@
+key,total,correct,wrong,controlled_failure,error,timeout,strict_accuracy,avg_latency_s
+aggregation,2,2,0,0,0,0,1.000,10.4
+derived_metric,2,2,0,0,0,0,1.000,13.8
+distinct_count,2,2,0,0,0,0,1.000,10.3
+group_by,2,2,0,0,0,0,1.000,13.4
+having,2,2,0,0,0,0,1.000,14.6
+join,2,2,0,0,0,0,1.000,11.6
+multi_table_join,2,2,0,0,0,0,1.000,15.2
+order_limit_topk,2,0,2,0,0,0,0.000,12.8
+set_operations,2,2,0,0,0,0,1.000,10.3
+subquery_cte,2,1,1,0,0,0,0.500,23.4

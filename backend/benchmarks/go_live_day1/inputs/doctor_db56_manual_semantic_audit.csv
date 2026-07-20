@@ -1,0 +1,2775 @@
+test_id,category,difficulty,execution_status,semantic_audit,query,sql,audit_note
+1,aggregation,easy,PASS,CORRECT,How many departments are currently open?,SELECT COUNT(department_id) FROM departments WHERE operating_status = 'open',
+2,aggregation,easy,PASS,CORRECT,What is the total annual budget across all departments?,SELECT SUM(annual_budget) FROM departments,
+3,aggregation,easy,PASS,CORRECT,What is the average department quality rating?,SELECT AVG(departments.quality_rating) FROM departments,
+4,aggregation,easy,PASS,CORRECT,How many doctors are currently active?,SELECT COUNT(doctor_id) FROM doctors WHERE active_flag = '1',
+5,aggregation,easy,PASS,CORRECT,What is the average salary of all doctors?,SELECT AVG(doctors.salary) FROM doctors,
+6,aggregation,easy,PASS,CORRECT,What is the highest number of years of experience among doctors?,SELECT MAX(doctors.years_experience) FROM doctors,
+7,aggregation,easy,PASS,CORRECT,How many insurance policies are currently active?,"SELECT COUNT(policy_id)
+FROM insurance_policies
+WHERE active_flag = 1",
+8,aggregation,easy,PASS,CORRECT,What is the average deductible amount across insurance policies?,SELECT AVG(deductible_amount) FROM insurance_policies,
+9,aggregation,easy,PASS,CORRECT,How many patients have a chronic condition?,"SELECT COUNT(patient_id)
+FROM patients
+WHERE chronic_condition_flag = '1'",
+10,aggregation,easy,PASS,CORRECT,What is the average patient weight?,SELECT AVG(weight_kg) FROM patients,
+11,aggregation,easy,PASS,CORRECT,How many appointments have been completed?,"SELECT COUNT(appointment_id)
+FROM appointments
+WHERE appointment_status = 'completed'",
+12,aggregation,easy,PASS,CORRECT,What is the average wait time for appointments?,SELECT AVG(wait_time_minutes) FROM appointments,
+13,aggregation,easy,PASS,CORRECT,How many diagnoses are currently active?,SELECT COUNT(diagnosis_id) FROM diagnoses WHERE clinical_status = 'active',
+14,aggregation,easy,PASS,CORRECT,What is the average estimated cost of prescriptions?,SELECT AVG(estimated_cost) FROM prescriptions,
+15,aggregation,easy,PASS,CORRECT,What is the total billed amount across all billing claims?,SELECT SUM(billed_amount) FROM billing_claims,
+16,aggregation,moderate,PASS,CORRECT,How many active doctors are accepting new patients?,"SELECT COUNT(doctor_id)
+FROM doctors
+WHERE active_flag = '1' AND accepting_new_patients = '1'",
+17,aggregation,moderate,PASS,CORRECT,What is the average salary of board-certified doctors?,"SELECT AVG(doctors.salary)
+FROM doctors
+WHERE doctors.board_certified_flag = 1",
+18,aggregation,moderate,PASS,CORRECT,What is the total bed capacity of accredited departments?,"SELECT SUM(departments.bed_capacity)
+FROM departments
+WHERE departments.accreditation_status = 'accredited'",
+19,aggregation,moderate,PASS,CORRECT,What is the average occupancy of departments that offer emergency services?,"SELECT AVG(departments.current_occupancy)
+FROM departments
+WHERE departments.emergency_services = '1'",
+20,aggregation,moderate,PASS,CORRECT,How many active insurance policies include prescription coverage?,"SELECT COUNT(*) 
+FROM insurance_policies 
+WHERE active_flag = 1 AND prescription_coverage = 1",
+21,aggregation,moderate,PASS,CORRECT,What is the average out-of-pocket maximum for PPO plans?,"SELECT AVG(out_of_pocket_max)
+FROM insurance_policies
+WHERE plan_type = 'PPO'",
+22,aggregation,moderate,PASS,CORRECT,How many patients prefer a language other than English?,"SELECT COUNT(patient_id)
+FROM patients
+WHERE preferred_language != 'English'",
+23,aggregation,moderate,PASS,CORRECT,What is the average weight of patients who currently smoke?,"SELECT AVG(p.weight_kg)
+FROM patients p
+WHERE p.smoking_status = 'current'",
+24,aggregation,moderate,PASS,CORRECT,How many appointments were completed in 2025?,"SELECT COUNT(appointment_id)
+FROM appointments
+WHERE appointment_status = 'completed'
+  AND appointment_date LIKE '2025%'",
+25,aggregation,moderate,PASS,CORRECT,What is the average wait time for urgent appointments?,"SELECT AVG(appointments.wait_time_minutes)
+FROM appointments
+WHERE appointments.appointment_type = 'urgent'",
+26,aggregation,moderate,PASS,CORRECT,How many telehealth appointments required an interpreter?,"SELECT COUNT(appointment_id)
+FROM appointments
+WHERE telehealth_flag = '1' AND interpreter_required = '1'",
+27,aggregation,moderate,PASS,CORRECT,What is the average follow-up interval for confirmed diagnoses?,"SELECT AVG(d.follow_up_interval_days) AS average_interval
+FROM diagnoses d
+WHERE d.confirmed_flag = '1'",
+28,aggregation,moderate,PASS,INCORRECT,How many active prescriptions require prior authorization?,"SELECT COUNT(prescription_id)
+FROM prescriptions
+WHERE prior_authorization_required = '1'",Filters only prior_authorization_required and never requires prescription_status = 'active'.
+29,aggregation,moderate,PASS,CORRECT,What is the total estimated cost of controlled-substance prescriptions?,"SELECT SUM(estimated_cost)
+FROM prescriptions
+WHERE controlled_substance_flag = '1'",
+30,aggregation,moderate,PASS,INCORRECT,How many completed lab tests had an abnormal result?,"SELECT COUNT(*) AS ""count_abnormal_completed"" FROM ""lab_tests"" WHERE ""lab_tests"".""test_status"" = ? AND ""lab_tests"".""abnormal_flag"" = ?","Treats abnormal as a single equality value even though abnormal_flag stores normal, low, high, or critical."
+31,aggregation,moderate,PASS,CORRECT,What is the average result value for critical lab tests?,"SELECT AVG(lab_tests.result_value)
+FROM lab_tests
+WHERE lab_tests.critical_flag = 1",
+32,aggregation,moderate,PASS,INCORRECT,How many completed procedures required general anesthesia?,"SELECT COUNT(DISTINCT p.procedure_id) AS procedure_count
+FROM procedures p
+JOIN appointments a ON p.appointment_id = a.appointment_id
+WHERE a.appointment_status = 'completed'
+  AND p.anesthesia_type = 'general'",Uses completed appointment status instead of requiring procedure_status = 'completed'.
+33,aggregation,moderate,PASS,INCORRECT,What is the average recovery time after successful procedures?,"SELECT AVG(procedures.recovery_minutes)
+FROM procedures
+WHERE procedures.procedure_status = 'completed'",Treats procedure_status = 'completed' as success even though successful outcome is stored in procedures.outcome.
+34,aggregation,moderate,PASS,CORRECT,What is the total patient responsibility on paid claims?,"SELECT SUM(patient_responsibility)
+FROM billing_claims
+WHERE claim_status = 'paid'",
+35,aggregation,moderate,PASS,CORRECT,What is the average number of days to payment for approved claims?,"SELECT AVG(days_to_payment)
+FROM billing_claims
+WHERE claim_status = 'approved'",
+36,aggregation,hard,PASS,INCORRECT,How many active patients have a primary doctor who is accepting new patients?,"SELECT COUNT(DISTINCT p.patient_id)
+FROM patients p
+JOIN doctors d ON p.primary_doctor_id = d.doctor_id
+WHERE d.active_flag = '1'
+  AND d.accepting_new_patients = '1'","The query asks for active patients, but patients has no activity-status column; the SQL substitutes an active-doctor condition."
+37,aggregation,hard,PASS,CORRECT,What is the average salary of doctors working in accredited departments with emergency services?,"SELECT AVG(d.salary)
+FROM doctors d
+JOIN departments dept ON d.department_id = dept.department_id
+WHERE dept.accreditation_status = 'accredited'
+  AND dept.emergency_services = '1'",
+38,aggregation,hard,PASS,CORRECT,What is the total billed amount for completed appointments in 2025?,"SELECT SUM(bc.billed_amount) AS total_billed_amount
+FROM billing_claims bc
+JOIN appointments a ON bc.appointment_id = a.appointment_id
+WHERE a.appointment_status = 'completed'
+  AND a.appointment_date LIKE '2025%'",
+39,aggregation,hard,PASS,CORRECT,What is the average patient responsibility for claims tied to urgent appointments?,"SELECT AVG(bc.patient_responsibility)
+FROM billing_claims bc
+JOIN appointments a ON bc.appointment_id = a.appointment_id
+WHERE a.appointment_type = 'urgent'",
+40,aggregation,hard,PASS,CORRECT,How many patients with chronic conditions received a confirmed diagnosis?,"SELECT COUNT(DISTINCT p.patient_id)
+FROM patients p
+JOIN diagnoses d ON p.patient_id = d.patient_id
+WHERE p.chronic_condition_flag = '1'
+  AND d.confirmed_flag = '1'",
+41,aggregation,hard,PASS,CORRECT,What is the total estimated prescription cost for patients covered by active PPO policies?,"SELECT SUM(p.estimated_cost)
+FROM prescriptions p
+JOIN patients pat ON p.patient_id = pat.patient_id
+JOIN insurance_policies ip ON pat.policy_id = ip.policy_id
+WHERE ip.plan_type = 'PPO' AND ip.active_flag = 1",
+42,aggregation,hard,PASS,INCORRECT,How many appointments for patients with high deductibles were completed?,"SELECT COUNT(*) 
+FROM appointments 
+JOIN billing_claims ON appointments.appointment_id = billing_claims.appointment_id 
+WHERE appointments.appointment_status = 'completed' 
+  AND billing_claims.deductible_amount > (
+    SELECT AVG(deductible_amount) 
+    FROM billing_claims
+  )",Uses claim-level deductible_amount and counts joined claim rows rather than patients whose policy has a high deductible.
+43,aggregation,hard,PASS,CORRECT,What is the average wait time for appointments handled by board-certified doctors?,"SELECT AVG(a.wait_time_minutes)
+FROM appointments a
+JOIN doctors d ON a.doctor_id = d.doctor_id
+WHERE d.board_certified_flag = 1",
+44,aggregation,hard,PASS,INCORRECT,What is the total allowed amount for claims submitted for procedures requiring anesthesia?,"SELECT SUM(bc.allowed_amount)
+FROM billing_claims bc
+JOIN procedures p ON bc.appointment_id = p.appointment_id
+WHERE p.anesthesia_type IS NOT NULL AND p.anesthesia_type != ''",Includes anesthesia_type = 'none' and can duplicate claim allowed amounts when an appointment has multiple procedures.
+45,aggregation,hard,PASS,CORRECT,How many abnormal lab tests belong to patients with chronic conditions?,"SELECT COUNT(lab_tests.lab_test_id)
+FROM lab_tests
+JOIN patients ON lab_tests.patient_id = patients.patient_id
+WHERE lab_tests.abnormal_flag IN ('critical', 'high', 'low')
+  AND patients.chronic_condition_flag = 1",
+46,aggregation,hard,PASS,INCORRECT,What is the average procedure cost in departments with a quality rating above 4?,"SELECT d.department_name
+FROM departments d
+JOIN procedures p ON d.department_id = p.department_id
+WHERE d.quality_rating > 4
+GROUP BY d.department_id, d.department_name
+HAVING AVG(p.estimated_cost) IS NOT NULL",Returns department names only and never returns the requested average procedure cost.
+47,aggregation,hard,PASS,INCORRECT,How many patients received both a diagnosis and a prescription during the same appointment?,"SELECT COUNT(DISTINCT a.appointment_id)
+FROM appointments a
+JOIN billing_claims bc ON a.appointment_id = bc.appointment_id
+JOIN diagnoses d ON a.appointment_id = d.appointment_id
+JOIN doctors doc ON a.doctor_id = doc.doctor_id
+JOIN insurance_policies ip ON bc.policy_id = ip.policy_id
+JOIN prescriptions p ON a.appointment_id = p.appointment_id",Counts distinct appointments rather than patients and unnecessarily requires a billing claim.
+48,aggregation,hard,PASS,CORRECT,What is the total insurance-paid amount for claims associated with completed appointments?,"SELECT SUM(b.insurance_paid_amount)
+FROM billing_claims b
+JOIN appointments a ON b.appointment_id = a.appointment_id
+WHERE a.appointment_status = 'completed'",
+49,aggregation,hard,PASS,CORRECT,What is the average number of days to payment for claims on active insurance policies?,"SELECT AVG(bc.days_to_payment)
+FROM billing_claims bc
+JOIN insurance_policies ip ON bc.policy_id = ip.policy_id
+WHERE ip.active_flag = '1'",
+50,aggregation,hard,PASS,CORRECT,How many active doctors performed procedures with no complications?,"SELECT COUNT(DISTINCT d.doctor_id)
+FROM doctors d
+JOIN procedures p ON d.doctor_id = p.doctor_id
+WHERE d.active_flag = '1'
+  AND p.complication_flag = 0",
+51,derived_metric,easy,PASS,INCORRECT,Show each department with the number of unused beds based on bed capacity minus current occupancy.,"SELECT ""departments"".""department_name"", ""departments"".""bed_capacity"", ""departments"".""current_occupancy"", SUM(""departments"".""bed_capacity"") AS ""unused_beds"" FROM ""departments"" GROUP BY ""departments"".""department_name""",Sums bed_capacity instead of calculating bed_capacity - current_occupancy.
+52,derived_metric,easy,PASS,INCORRECT,Show each department with annual budget per doctor.,"SELECT 
+    d.department_name, 
+    d.annual_budget, 
+    d.doctor_count
+FROM departments d
+GROUP BY d.department_id
+HAVING d.doctor_count > 0",Returns annual_budget and doctor_count but never divides budget by doctor count.
+53,derived_metric,easy,PASS,CORRECT,Show each department with current occupancy as a percentage of bed capacity.,"SELECT department_name, current_occupancy, bed_capacity, (CAST(current_occupancy AS REAL) / bed_capacity) * 100 AS occupancy_percentage FROM departments",
+54,derived_metric,easy,PASS,INCORRECT,Show each doctor with salary per year of experience.,"SELECT doctor_id, first_name, last_name, salary, years_experience
+FROM doctors
+WHERE years_experience > 0",Returns salary and years_experience without calculating salary per year of experience.
+55,derived_metric,easy,PASS,INCORRECT,Show each doctor with the number of years remaining until license expiration.,"SELECT 
+    d.doctor_id,
+    d.first_name,
+    d.last_name,
+    d.license_expiration_date,
+    CAST((julianday(d.license_expiration_date) - julianday('now')) / 365.25 AS INTEGER) AS years_remaining
+FROM doctors d
+WHERE d.active_flag = '1'
+ORDER BY years_remaining ASC","Adds an unrequested active-doctor filter, so it does not show each doctor."
+56,derived_metric,easy,PASS,CORRECT,Show each insurance policy with remaining out-of-pocket exposure after subtracting the deductible.,"SELECT 
+    ip.policy_id,
+    ip.policy_number,
+    ip.plan_name,
+    ip.deductible_amount,
+    ip.out_of_pocket_max,
+    (ip.out_of_pocket_max - ip.deductible_amount) AS remaining_exposure
+FROM insurance_policies ip
+WHERE ip.out_of_pocket_max IS NOT NULL 
+  AND ip.deductible_amount IS NOT NULL",
+57,derived_metric,easy,PASS,CORRECT,Show each insurance policy with specialist copay minus primary-care copay.,"SELECT policy_id, copay_specialist - copay_primary AS copay_difference
+FROM insurance_policies",
+58,derived_metric,easy,PASS,INCORRECT,Show each patient with body mass index using weight and height.,"SELECT patient_id, first_name, last_name, weight_kg, height_cm
+FROM patients",Returns weight and height but never calculates body mass index.
+59,derived_metric,easy,PASS,CORRECT,Show each appointment with the difference between planned duration and actual time between check-in and check-out.,"SELECT 
+  a.appointment_id,
+  a.duration_minutes,
+  a.check_out_time,
+  a.check_in_time,
+  (a.duration_minutes - (
+    (CAST(SUBSTR(a.check_out_time, 1, 2) AS INTEGER) * 60 + CAST(SUBSTR(a.check_out_time, 4, 2) AS INTEGER)) -
+    (CAST(SUBSTR(a.check_in_time, 1, 2) AS INTEGER) * 60 + CAST(SUBSTR(a.check_in_time, 4, 2) AS INTEGER))
+  )) AS duration_difference
+FROM appointments a
+WHERE a.check_in_time IS NOT NULL AND a.check_out_time IS NOT NULL",
+60,derived_metric,easy,PASS,INCORRECT,Show each appointment with copay per minute of appointment duration.,"SELECT appointment_id, copay_amount, duration_minutes
+FROM appointments",Returns copay and duration but never divides copay by duration.
+61,derived_metric,easy,PASS,CORRECT,Show each diagnosis with the number of days between onset and diagnosis.,"SELECT diagnosis_id, diagnosis_name, onset_date, diagnosis_date, julianday(diagnosis_date) - julianday(onset_date) AS days_between FROM diagnoses",
+62,derived_metric,easy,PASS,CORRECT,Show each prescription with estimated cost per prescribed unit.,"SELECT prescription_id, medication_name, estimated_cost, quantity, estimated_cost * 1.0 / quantity AS cost_per_unit FROM prescriptions",
+63,derived_metric,easy,PASS,INCORRECT,Show each lab test with the position of its result within the reference range.,"SELECT ""lab_tests"".""lab_test_id"", ""lab_tests"".""test_name"", ""lab_tests"".""result_value"", ""lab_tests"".""reference_low"", ""lab_tests"".""reference_high"" FROM ""lab_tests""",Returns result and reference bounds but never calculates the result's position within the range.
+64,derived_metric,easy,PASS,INCORRECT,Show each procedure with estimated cost per minute of procedure time.,"SELECT procedure_id, procedure_name, estimated_cost, duration_minutes
+FROM procedures
+WHERE duration_minutes > 0",Returns cost and duration but never calculates cost per minute.
+65,derived_metric,easy,PASS,INCORRECT,Show each billing claim with the unpaid amount after insurance payment.,"SELECT claim_id, claim_number, patient_id, doctor_id, billed_amount, insurance_paid_amount, patient_responsibility
+FROM billing_claims",Returns claim amounts but never calculates billed_amount - insurance_paid_amount.
+66,derived_metric,moderate,PASS,INCORRECT,Calculate the bed occupancy percentage for each department.,"SELECT ""departments"".""department_id"", ""departments"".""department_name"", ""departments"".""current_occupancy"", ""departments"".""bed_capacity""
+FROM ""departments""
+GROUP BY ""departments"".""department_id""
+HAVING ""departments"".""bed_capacity"" > 0",Returns occupancy and capacity but never calculates the occupancy percentage.
+67,derived_metric,moderate,PASS,CORRECT,Calculate the average salary per year of experience for each medical specialty.,"SELECT doctors.specialty, AVG(doctors.salary * 1.0 / doctors.years_experience) AS avg_salary_per_year
+FROM doctors
+GROUP BY doctors.specialty",
+68,derived_metric,moderate,PASS,CORRECT,Calculate the percentage of active doctors for each department.,"SELECT d.department_name,
+       CAST(SUM(CASE WHEN doc.active_flag = '1' THEN 1 ELSE 0 END) AS REAL) * 100.0 / COUNT(*) AS active_percentage
+FROM departments d
+JOIN doctors doc ON d.department_id = doc.department_id
+GROUP BY d.department_id, d.department_name",
+69,derived_metric,moderate,PASS,CORRECT,Calculate the percentage of doctors accepting new patients for each specialty.,"SELECT 
+    doctors.specialty,
+    CAST(SUM(doctors.accepting_new_patients) AS REAL) * 100.0 / COUNT(*) AS percentage_accepting_new_patients
+FROM doctors
+GROUP BY doctors.specialty
+HAVING COUNT(*) > 0",
+70,derived_metric,moderate,PASS,CORRECT,Calculate the average deductible as a percentage of the out-of-pocket maximum for each plan type.,"SELECT plan_type, AVG(deductible_amount * 100.0 / out_of_pocket_max) AS avg_deductible_pct
+FROM insurance_policies
+GROUP BY plan_type
+HAVING AVG(deductible_amount * 100.0 / out_of_pocket_max) IS NOT NULL",
+71,derived_metric,moderate,PASS,CORRECT,Calculate the percentage of policies with prescription coverage for each provider.,"SELECT provider_name, (CAST(SUM(prescription_coverage) AS REAL) * 100.0 / COUNT(*)) AS percentage
+FROM insurance_policies
+GROUP BY provider_name",
+72,derived_metric,moderate,PASS,CORRECT,Calculate the percentage of patients with chronic conditions for each primary doctor.,"SELECT 
+    d.doctor_id,
+    d.first_name,
+    d.last_name,
+    CAST(SUM(CASE WHEN p.chronic_condition_flag = 1 THEN 1 ELSE 0 END) AS REAL) * 100.0 / COUNT(*) AS percentage
+FROM doctors d
+JOIN patients p ON d.doctor_id = p.primary_doctor_id
+GROUP BY d.doctor_id, d.first_name, d.last_name",
+73,derived_metric,moderate,PASS,CORRECT,Calculate the average body mass index for each patient gender.,"SELECT patients.gender, AVG(10000.0 * patients.weight_kg / (patients.height_cm * patients.height_cm)) AS avg_bmi
+FROM patients
+GROUP BY patients.gender
+HAVING COUNT(*) > 0",
+74,derived_metric,moderate,PASS,CORRECT,Calculate the completed-appointment rate for each appointment type.,"SELECT 
+    appointments.appointment_type,
+    CAST(SUM(CASE WHEN appointments.appointment_status = 'completed' THEN 1 ELSE 0 END) AS REAL) * 100.0 / COUNT(*) AS completed_rate
+FROM appointments
+GROUP BY appointments.appointment_type",
+75,derived_metric,moderate,PASS,INCORRECT,Calculate the average wait time per appointment minute for each priority level.,"SELECT priority_level, AVG(wait_time_minutes) AS avg_wait_time
+FROM appointments
+GROUP BY priority_level",Returns average wait time only and never divides by appointment duration.
+76,derived_metric,moderate,PASS,CORRECT,Calculate the percentage of confirmed diagnoses for each diagnosis category.,"SELECT 
+  diagnosis_category,
+  CAST(SUM(CASE WHEN confirmed_flag = '1' THEN 1 ELSE 0 END) AS REAL) * 100.0 / COUNT(*) AS confirmed_percentage
+FROM diagnoses
+GROUP BY diagnosis_category",
+77,derived_metric,moderate,PASS,CORRECT,Calculate the average follow-up interval for each diagnosis severity.,"SELECT diagnoses.severity, AVG(diagnoses.follow_up_interval_days) AS avg_follow_up_interval
+FROM diagnoses
+GROUP BY diagnoses.severity",
+78,derived_metric,moderate,PASS,INCORRECT,Calculate the average prescription cost per unit for each drug class.,"SELECT drug_class, AVG(estimated_cost) AS average_cost
+FROM prescriptions
+GROUP BY drug_class","Averages prescription cost, not prescription cost per unit."
+79,derived_metric,moderate,PASS,CORRECT,Calculate the percentage of active prescriptions for each medication form.,"SELECT 
+  dosage_form,
+  CAST(SUM(CASE WHEN prescription_status = 'active' THEN 1 ELSE 0 END) AS REAL) * 100.0 / COUNT(*) AS active_percentage
+FROM prescriptions
+GROUP BY dosage_form",
+80,derived_metric,moderate,PASS,INCORRECT,Calculate the abnormal-result rate for each lab-test category.,"SELECT ""lab_tests"".""test_category"", AVG(""lab_tests"".""abnormal_flag"") AS ""abnormal_result_rate"" FROM ""lab_tests"" GROUP BY ""lab_tests"".""test_category""",Applies AVG directly to the text abnormal_flag column instead of calculating a conditional abnormal rate.
+81,derived_metric,moderate,PASS,INCORRECT,Calculate the critical-result rate for each laboratory.,"SELECT laboratory_name, CAST(SUM(critical_flag) AS REAL) * 100.0 / COUNT(*) AS critical_result_rate
+FROM lab_tests
+GROUP BY laboratory_name
+HAVING SUM(critical_flag) > 0",Excludes laboratories with zero critical results by using HAVING SUM(critical_flag) > 0.
+82,derived_metric,moderate,PASS,INCORRECT,Calculate the complication rate for each procedure category.,"SELECT procedure_category, CAST(SUM(complication_flag) AS REAL) * 100.0 / COUNT(*) AS complication_rate
+FROM procedures
+GROUP BY procedure_category
+HAVING SUM(complication_flag) > 0",Excludes procedure categories with zero complications instead of returning a zero rate.
+83,derived_metric,moderate,PASS,CORRECT,Calculate the average procedure cost per recovery minute for each anesthesia type.,"SELECT anesthesia_type, AVG(estimated_cost * 1.0 / recovery_minutes) AS avg_cost_per_recovery_minute
+FROM procedures
+WHERE recovery_minutes > 0
+GROUP BY anesthesia_type
+HAVING AVG(estimated_cost * 1.0 / recovery_minutes) IS NOT NULL",
+84,derived_metric,moderate,PASS,CORRECT,Calculate the insurance payment rate for each claim status using insurance-paid amount divided by billed amount.,"SELECT claim_status, SUM(insurance_paid_amount) * 1.0 / SUM(billed_amount) AS insurance_payment_rate
+FROM billing_claims
+GROUP BY claim_status
+HAVING SUM(billed_amount) > 0",
+85,derived_metric,moderate,PASS,INCORRECT,Calculate the average patient-responsibility percentage for each insurance provider.,"SELECT 
+    ip.provider_name,
+    AVG(bc.patient_responsibility) AS avg_patient_responsibility
+FROM billing_claims bc
+JOIN insurance_policies ip ON bc.policy_id = ip.policy_id
+GROUP BY ip.provider_name","Returns average patient-responsibility amount, not patient responsibility as a percentage."
+86,derived_metric,hard,PASS,CORRECT,"For each department, calculate total doctor payroll as a percentage of the department annual budget.","SELECT 
+    d.department_id,
+    d.department_name,
+    d.annual_budget,
+    (SUM(dr.salary) * 100.0 / d.annual_budget) AS payroll_percentage
+FROM departments d
+JOIN doctors dr ON d.department_id = dr.department_id
+GROUP BY d.department_id, d.department_name, d.annual_budget",
+87,derived_metric,hard,PASS,CORRECT,"For each doctor, calculate completed appointments per year of experience.","SELECT d.doctor_id, d.years_experience, COUNT(a.appointment_id) * 1.0 / d.years_experience AS completed_appointments_per_year_experience
+FROM doctors d
+JOIN appointments a ON d.doctor_id = a.doctor_id
+WHERE a.appointment_status = 'completed'
+GROUP BY d.doctor_id, d.years_experience
+HAVING d.years_experience > 0",
+88,derived_metric,hard,PASS,INCORRECT,"For each doctor, calculate confirmed diagnoses per completed appointment.","SELECT ""doctors"".""doctor_id"", ""doctors"".""first_name"", ""doctors"".""last_name"", COUNT(*) AS ""confirmed_diagnoses_count"" FROM ""appointments"" INNER JOIN ""diagnoses"" ON ""appointments"".""appointment_id"" = ""diagnoses"".""appointment_id"" INNER JOIN ""doctors"" ON ""appointments"".""doctor_id"" = ""doctors"".""doctor_id"" WHERE ""appointments"".""appointment_status"" = ? AND ""diagnoses"".""confirmed_flag"" = ? GROUP BY ""doctors"".""doctor_id"", ""doctors"".""first_name"", ""doctors"".""last_name""",Returns confirmed-diagnosis count but never divides by completed appointment count.
+89,derived_metric,hard,PASS,INCORRECT,"For each patient, calculate total billed amount per completed appointment.","SELECT p.patient_id, SUM(bc.billed_amount) AS total_billed_amount
+FROM appointments a
+JOIN billing_claims bc ON a.appointment_id = bc.appointment_id
+JOIN patients p ON a.patient_id = p.patient_id
+WHERE a.appointment_status = 'completed'
+GROUP BY p.patient_id",Returns total billed amount but never divides by completed appointment count.
+90,derived_metric,hard,PASS,INCORRECT,"For each patient, calculate insurance-paid amount as a percentage of total billed amount.","SELECT p.patient_id
+FROM patients p
+JOIN billing_claims bc ON p.patient_id = bc.patient_id
+GROUP BY p.patient_id
+HAVING SUM(bc.insurance_paid_amount) * 1.0 / SUM(bc.billed_amount) > (
+    SELECT AVG(insurance_pct)
+    FROM (
+        SELECT SUM(bc2.insurance_paid_amount) * 1.0 / SUM(bc2.billed_amount) AS insurance_pct
+        FROM billing_claims bc2
+        GROUP BY bc2.patient_id
+    )
+)",Returns only patients above an average threshold instead of returning each patient's insurance-paid percentage.
+91,derived_metric,hard,PASS,INCORRECT,"For each insurance provider, calculate total insurance payments per active policy.","SELECT 
+    ip.provider_name,
+    ip.policy_id,
+    SUM(bc.insurance_paid_amount) AS total_insurance_paid
+FROM insurance_policies ip
+JOIN billing_claims bc ON ip.policy_id = bc.policy_id
+WHERE ip.active_flag = 1
+GROUP BY ip.provider_name, ip.policy_id
+HAVING COUNT(bc.claim_id) > 0",Groups by individual policy and never divides provider payments by the number of active policies.
+92,derived_metric,hard,PASS,INCORRECT,"For each appointment type, calculate prescription cost per completed appointment.","SELECT a.appointment_type, SUM(p.estimated_cost) * 1.0 / COUNT(DISTINCT a.appointment_id) AS prescription_cost_per_completed_appointment
+FROM appointments a
+JOIN prescriptions p ON a.appointment_id = p.appointment_id
+WHERE a.appointment_status = 'completed'
+GROUP BY a.appointment_type","Divides by completed appointments that have prescriptions, not all completed appointments of each type."
+93,derived_metric,hard,PASS,INCORRECT,"For each diagnosis category, calculate total treatment cost using prescription and procedure costs.","SELECT d.diagnosis_category, SUM(p.estimated_cost) + SUM(pr.estimated_cost) AS total_treatment_cost
+FROM diagnoses d
+JOIN prescriptions p ON d.appointment_id = p.appointment_id
+JOIN procedures pr ON d.appointment_id = pr.appointment_id
+GROUP BY d.diagnosis_category","Joins prescriptions and procedures directly, multiplying costs when an appointment has multiple rows in either table."
+94,derived_metric,hard,PASS,CORRECT,"For each doctor specialty, calculate average patient wait time per completed appointment.","SELECT d.specialty, AVG(a.wait_time_minutes) AS avg_wait_time
+FROM appointments a
+JOIN doctors d ON a.doctor_id = d.doctor_id
+WHERE a.appointment_status = 'completed'
+GROUP BY d.specialty",
+95,derived_metric,hard,PASS,INCORRECT,"For each department, calculate successful procedures as a percentage of completed procedures.","SELECT ""departments"".""department_name"", ""procedures"".""procedure_status"" AS ""successful_procedure_count"", ""procedures"".""procedure_status"" AS ""completed_procedure_count"", COUNT(*) AS ""successful_procedure_count"", COUNT(*) AS ""completed_procedure_count"" FROM ""procedures"" INNER JOIN ""departments"" ON ""procedures"".""department_id"" = ""departments"".""department_id"" WHERE ""procedures"".""procedure_status"" IN (?, ?) GROUP BY ""departments"".""department_name""",Returns duplicate counts and never calculates successful procedures divided by completed procedures.
+96,derived_metric,hard,PASS,INCORRECT,"For each patient, calculate abnormal lab tests as a percentage of completed lab tests.","SELECT 
+    p.patient_id,
+    p.first_name,
+    p.last_name
+FROM lab_tests lt
+JOIN patients p ON lt.patient_id = p.patient_id
+WHERE lt.test_status = 'completed'
+GROUP BY p.patient_id, p.first_name, p.last_name
+HAVING CAST(SUM(CASE WHEN lt.abnormal_flag IN ('critical', 'high', 'low') THEN 1 ELSE 0 END) AS REAL) * 100.0 / COUNT(*) > (
+    SELECT AVG(abnormal_pct)
+    FROM (
+        SELECT 
+            CAST(SUM(CASE WHEN lt2.abnormal_flag IN ('critical', 'high', 'low') THEN 1 ELSE 0 END) AS REAL) * 100.0 / COUNT(*) AS abnormal_pct
+        FROM lab_tests lt2
+        WHERE lt2.test_status = 'completed'
+        GROUP BY lt2.patient_id
+    )
+)",Filters to patients above the average abnormal rate instead of returning each patient's abnormal-test percentage.
+97,derived_metric,hard,PASS,INCORRECT,"For each medication class, calculate adverse-reaction rate among prescriptions.","SELECT ""prescriptions"".""drug_class"", COUNT(*) AS ""total_prescriptions"", SUM(""prescriptions"".""adverse_reaction_flag"") AS ""adverse_reaction_count"" FROM ""prescriptions"" GROUP BY ""prescriptions"".""drug_class""",Returns total and adverse-reaction counts but never divides them to produce a rate.
+98,derived_metric,hard,PASS,INCORRECT,"For each procedure category, calculate complication cost per completed procedure.","SELECT procedure_category, SUM(estimated_cost) / COUNT(*) AS complication_cost_per_completed_procedure
+FROM procedures
+WHERE procedure_status = 'completed'
+GROUP BY procedure_category",Averages all completed procedure cost; it does not isolate complication cost in the numerator.
+99,derived_metric,hard,PASS,CORRECT,"For each insurance plan type, calculate patient responsibility as a percentage of allowed claim amount.","SELECT 
+    ip.plan_type,
+    SUM(bc.patient_responsibility) * 100.0 / SUM(bc.allowed_amount) AS patient_responsibility_percentage
+FROM billing_claims bc
+JOIN insurance_policies ip ON bc.policy_id = ip.policy_id
+GROUP BY ip.plan_type",
+100,derived_metric,hard,PASS,CORRECT,"For each department, calculate claim revenue per occupied bed.","SELECT
+  d.department_id,
+  d.department_name,
+  d.current_occupancy,
+  SUM(bc.insurance_paid_amount + bc.patient_responsibility) / d.current_occupancy AS claim_revenue_per_occupied_bed
+FROM departments d
+JOIN billing_claims bc ON d.department_id = (
+  SELECT a.department_id
+  FROM appointments a
+  WHERE a.appointment_id = bc.appointment_id
+  LIMIT 1
+)
+GROUP BY d.department_id, d.department_name, d.current_occupancy
+HAVING d.current_occupancy > 0",
+101,distinct_count,easy,PASS,CORRECT,How many different department operating statuses are represented?,SELECT COUNT(DISTINCT operating_status) FROM departments,
+102,distinct_count,easy,PASS,CORRECT,How many distinct specialty categories do departments have?,SELECT COUNT(DISTINCT specialty_category) FROM departments,
+103,distinct_count,easy,PASS,CORRECT,How many different doctor specialties are represented?,SELECT COUNT(DISTINCT specialty) FROM doctors,
+104,distinct_count,easy,PASS,CORRECT,How many distinct doctor employment types are used?,SELECT COUNT(DISTINCT employment_type) FROM doctors,
+105,distinct_count,easy,PASS,CORRECT,How many different insurance providers appear?,SELECT COUNT(DISTINCT provider_name) FROM insurance_policies,
+106,distinct_count,easy,PASS,CORRECT,How many distinct insurance plan types are available?,SELECT COUNT(DISTINCT plan_type) FROM insurance_policies,
+107,distinct_count,easy,PASS,CORRECT,How many different patient blood types are represented?,SELECT COUNT(DISTINCT blood_type) FROM patients,
+108,distinct_count,easy,PASS,CORRECT,How many distinct patient languages are recorded?,SELECT COUNT(DISTINCT preferred_language) FROM patients,
+109,distinct_count,easy,PASS,CORRECT,How many different appointment types occur?,SELECT COUNT(DISTINCT appointment_type) FROM appointments,
+110,distinct_count,easy,PASS,CORRECT,How many distinct appointment statuses appear?,SELECT COUNT(DISTINCT appointment_status) FROM appointments,
+111,distinct_count,easy,PASS,CORRECT,How many different diagnosis categories are represented?,SELECT COUNT(DISTINCT diagnosis_category) FROM diagnoses,
+112,distinct_count,easy,PASS,CORRECT,How many distinct medication classes are prescribed?,SELECT COUNT(DISTINCT drug_class) FROM prescriptions,
+113,distinct_count,easy,PASS,CORRECT,How many different laboratory test categories appear?,SELECT COUNT(DISTINCT test_category) FROM lab_tests,
+114,distinct_count,easy,PASS,CORRECT,How many distinct procedure categories are recorded?,SELECT COUNT(DISTINCT procedure_category) FROM procedures,
+115,distinct_count,easy,PASS,CORRECT,How many different claim statuses appear?,SELECT COUNT(DISTINCT claim_status) FROM billing_claims,
+116,distinct_count,moderate,PASS,CORRECT,How many distinct doctors completed at least one appointment?,"SELECT COUNT(DISTINCT doctors.doctor_id)
+FROM doctors
+JOIN appointments ON doctors.doctor_id = appointments.doctor_id
+WHERE appointments.appointment_status = 'completed'",
+117,distinct_count,moderate,PASS,CORRECT,How many distinct patients had at least one completed appointment?,"SELECT COUNT(DISTINCT patients.patient_id)
+FROM appointments
+JOIN patients ON appointments.patient_id = patients.patient_id
+WHERE appointments.appointment_status = 'completed'",
+118,distinct_count,moderate,PASS,CORRECT,How many distinct departments handled urgent appointments?,"SELECT COUNT(DISTINCT department_id)
+FROM appointments
+WHERE appointment_type = 'urgent'",
+119,distinct_count,moderate,PASS,CORRECT,How many distinct insurance providers have active policies?,"SELECT COUNT(DISTINCT provider_name)
+FROM insurance_policies
+WHERE active_flag = 1",
+120,distinct_count,moderate,PASS,CORRECT,How many distinct patients received a confirmed diagnosis?,"SELECT COUNT(DISTINCT p.patient_id)
+FROM patients p
+JOIN diagnoses d ON p.patient_id = d.patient_id
+WHERE d.confirmed_flag = '1'",
+121,distinct_count,moderate,PASS,CORRECT,How many distinct doctors recorded a severe diagnosis?,"SELECT COUNT(DISTINCT doctors.doctor_id)
+FROM doctors
+JOIN diagnoses ON doctors.doctor_id = diagnoses.doctor_id
+WHERE diagnoses.severity = 'severe'",
+122,distinct_count,moderate,PASS,CORRECT,How many distinct patients received an active prescription?,"SELECT COUNT(DISTINCT patient_id)
+FROM prescriptions
+WHERE prescription_status = 'active'",
+123,distinct_count,moderate,PASS,CORRECT,How many distinct doctors prescribed a controlled substance?,"SELECT COUNT(DISTINCT doctor_id)
+FROM prescriptions
+WHERE controlled_substance_flag = '1'",
+124,distinct_count,moderate,PASS,CORRECT,How many distinct patients had an abnormal lab result?,"SELECT COUNT(DISTINCT patients.patient_id)
+FROM lab_tests
+JOIN patients ON lab_tests.patient_id = patients.patient_id
+WHERE lab_tests.abnormal_flag IN ('critical', 'high', 'low')",
+125,distinct_count,moderate,PASS,CORRECT,How many distinct laboratories produced a critical result?,"SELECT COUNT(DISTINCT laboratory_name)
+FROM lab_tests
+WHERE critical_flag = '1'",
+126,distinct_count,moderate,PASS,CORRECT,How many distinct doctors performed a completed procedure?,"SELECT COUNT(DISTINCT doctor_id)
+FROM procedures
+WHERE procedure_status = 'completed'",
+127,distinct_count,moderate,PASS,INCORRECT,How many distinct departments performed procedures requiring general anesthesia?,"SELECT DISTINCT COUNT(""procedures"".""department_id"") AS ""dept_count"" FROM ""procedures"" WHERE ""procedures"".""anesthesia_type"" = ?",Uses COUNT(department_id) rather than COUNT(DISTINCT department_id).
+128,distinct_count,moderate,PASS,CORRECT,How many distinct patients have a paid billing claim?,"SELECT COUNT(DISTINCT patients.patient_id)
+FROM billing_claims
+JOIN patients ON billing_claims.patient_id = patients.patient_id
+WHERE billing_claims.payment_status = 'paid'",
+129,distinct_count,moderate,PASS,CORRECT,How many distinct insurance policies were used on approved claims?,"SELECT COUNT(DISTINCT billing_claims.policy_id)
+FROM billing_claims
+JOIN insurance_policies ON billing_claims.policy_id = insurance_policies.policy_id
+WHERE billing_claims.claim_status = 'approved'",
+130,distinct_count,moderate,PASS,INCORRECT,How many distinct doctors treated patients with chronic conditions?,"SELECT COUNT(DISTINCT doctors.doctor_id)
+FROM doctors
+JOIN patients ON doctors.doctor_id = patients.primary_doctor_id
+WHERE patients.chronic_condition_flag = '1'",Uses the primary-doctor assignment instead of doctors who actually treated chronic-condition patients.
+131,distinct_count,moderate,PASS,CORRECT,How many distinct patients required an interpreter during an appointment?,"SELECT COUNT(DISTINCT patients.patient_id)
+FROM appointments
+JOIN patients ON appointments.patient_id = patients.patient_id
+WHERE appointments.interpreter_required = '1'",
+132,distinct_count,moderate,PASS,CORRECT,How many distinct doctors had a telehealth appointment?,"SELECT COUNT(DISTINCT doctor_id)
+FROM appointments
+WHERE telehealth_flag = '1'",
+133,distinct_count,moderate,PASS,CORRECT,How many distinct patients had both a diagnosis and a prescription?,"SELECT COUNT(DISTINCT p.patient_id)
+FROM patients p
+JOIN diagnoses d ON p.patient_id = d.patient_id
+JOIN prescriptions pr ON p.patient_id = pr.patient_id",
+134,distinct_count,moderate,PASS,CORRECT,How many distinct appointment types produced a lab test?,"SELECT COUNT(DISTINCT a.appointment_type) AS distinct_appointment_types
+FROM appointments a
+JOIN lab_tests l ON a.appointment_id = l.appointment_id",
+135,distinct_count,moderate,PASS,CORRECT,How many distinct procedure types resulted in a complication?,"SELECT COUNT(DISTINCT procedure_category)
+FROM procedures
+WHERE complication_flag = 1",
+136,distinct_count,hard,PASS,CORRECT,How many distinct patients had completed appointments in both 2024 and 2025?,"SELECT COUNT(DISTINCT p.patient_id) AS patient_count
+FROM patients p
+JOIN appointments a ON p.patient_id = a.patient_id
+WHERE a.appointment_status = 'completed'
+  AND a.appointment_date LIKE '2024%'
+  AND EXISTS (
+    SELECT 1
+    FROM appointments a2
+    WHERE a2.patient_id = p.patient_id
+      AND a2.appointment_status = 'completed'
+      AND a2.appointment_date LIKE '2025%'
+  )",
+137,distinct_count,hard,PASS,INCORRECT,How many distinct doctors both recorded a diagnosis and prescribed medication?,"SELECT COUNT(DISTINCT d.doctor_id)
+FROM doctors d
+JOIN diagnoses diag ON d.doctor_id = diag.doctor_id
+JOIN prescriptions p ON d.doctor_id = p.doctor_id
+JOIN billing_claims bc ON d.doctor_id = bc.doctor_id","Adds an unrequested billing-claim join, excluding doctors who diagnosed and prescribed without a claim."
+138,distinct_count,hard,PASS,INCORRECT,How many distinct departments had both completed procedures and abnormal lab tests?,"SELECT COUNT(DISTINCT d.department_id) AS department_count
+FROM departments d
+INNER JOIN procedures p ON d.department_id = p.department_id
+INNER JOIN lab_tests l ON p.appointment_id = l.appointment_id
+WHERE p.procedure_status = 'completed'
+  AND l.abnormal_flag = '1'","Uses abnormal_flag = '1' although the column stores low, high, critical, or normal, and requires both events on the same appointment."
+139,distinct_count,hard,PASS,CORRECT,How many distinct patients had both an abnormal lab result and a paid claim?,"SELECT COUNT(DISTINCT p.patient_id)
+FROM patients p
+WHERE EXISTS (
+    SELECT 1
+    FROM lab_tests lt
+    WHERE lt.patient_id = p.patient_id
+      AND lt.abnormal_flag IN ('critical', 'high', 'low')
+)
+AND EXISTS (
+    SELECT 1
+    FROM billing_claims bc
+    WHERE bc.patient_id = p.patient_id
+      AND bc.payment_status = 'paid'
+)",
+140,distinct_count,hard,PASS,INCORRECT,How many distinct doctors treated patients covered by more than one insurance provider?,"SELECT COUNT(*) FROM (
+    SELECT d.doctor_id
+    FROM doctors d
+    JOIN patients p ON d.doctor_id = p.primary_doctor_id
+    JOIN insurance_policies ip ON p.policy_id = ip.policy_id
+    GROUP BY d.doctor_id
+    HAVING COUNT(DISTINCT ip.policy_id) > 1
+)",Counts distinct policies rather than distinct insurance providers and uses primary-doctor assignment as treatment.
+141,distinct_count,hard,PASS,CORRECT,How many distinct patients received prescriptions from at least three different doctors?,"SELECT COUNT(*) FROM (
+  SELECT prescriptions.patient_id
+  FROM prescriptions
+  JOIN patients ON prescriptions.patient_id = patients.patient_id
+  GROUP BY prescriptions.patient_id
+  HAVING COUNT(DISTINCT prescriptions.doctor_id) >= 3
+)",
+142,distinct_count,hard,PASS,INCORRECT,How many distinct insurance providers paid claims for both procedures and prescriptions?,"SELECT DISTINCT ""insurance_policies"".""provider_name"", COUNT(*) AS ""claim_count"" FROM ""billing_claims"" INNER JOIN ""appointments"" ON ""billing_claims"".""appointment_id"" = ""appointments"".""appointment_id"" INNER JOIN ""insurance_policies"" ON ""billing_claims"".""policy_id"" = ""insurance_policies"".""policy_id"" INNER JOIN ""prescriptions"" ON ""appointments"".""appointment_id"" = ""prescriptions"".""appointment_id"" INNER JOIN ""procedures"" ON ""appointments"".""appointment_id"" = ""procedures"".""appointment_id"" GROUP BY ""insurance_policies"".""provider_name"" HAVING ""claim_count"" >= ?","Returns provider rows rather than one count, never filters paid claims, and requires procedures and prescriptions on the same appointment."
+143,distinct_count,hard,PASS,CORRECT,How many distinct patients had appointments in more than one department?,"SELECT COUNT(*) AS patient_count
+FROM (
+    SELECT p.patient_id
+    FROM patients p
+    JOIN appointments a ON p.patient_id = a.patient_id
+    JOIN departments d ON a.department_id = d.department_id
+    GROUP BY p.patient_id
+    HAVING COUNT(DISTINCT a.department_id) > 1
+)",
+144,distinct_count,hard,PASS,INCORRECT,How many distinct doctors both performed procedures and reviewed lab tests?,"SELECT COUNT(DISTINCT d.doctor_id)
+FROM doctors d
+JOIN procedures p ON d.doctor_id = p.doctor_id
+JOIN lab_tests l ON d.doctor_id = l.doctor_id
+WHERE l.reviewed_by_doctor IS NOT NULL","reviewed_by_doctor is a boolean flag, not a doctor identifier, so the SQL cannot identify which doctor reviewed the lab."
+145,distinct_count,hard,PASS,INCORRECT,How many distinct patients had both severe and mild diagnoses?,"SELECT DISTINCT ""diagnoses"".""patient_id"", COUNT(*) AS ""severe_count"", COUNT(*) AS ""mild_count"" FROM ""diagnoses"" GROUP BY ""diagnoses"".""patient_id"" HAVING ""severe_count"" > ? AND ""mild_count"" > ?",Uses identical unfiltered counts for severe and mild diagnoses and returns rows instead of one count.
+146,distinct_count,hard,PASS,INCORRECT,How many distinct departments handled both urgent and routine appointments?,"SELECT ""departments"".""department_id"", ""departments"".""department_name"", COUNT(""appointments"".""appointment_id"") AS ""urgent_count"", COUNT(""appointments"".""appointment_id"") AS ""routine_count"" FROM ""appointments"" INNER JOIN ""departments"" ON ""appointments"".""department_id"" = ""departments"".""department_id"" GROUP BY ""departments"".""department_id"", ""departments"".""department_name"" HAVING ""urgent_count"" > ? AND ""routine_count"" > ?",Uses identical unfiltered counts for urgent and routine appointments and returns rows instead of one count.
+147,distinct_count,hard,FAIL,INCORRECT,How many distinct doctors treated both chronic-condition and non-chronic-condition patients?,<NO SQL GENERATED>,No SQL was returned.
+148,distinct_count,hard,PASS,CORRECT,How many distinct patients underwent procedures with more than one anesthesia type?,"SELECT COUNT(*) AS patient_count
+FROM (
+    SELECT p.patient_id
+    FROM patients p
+    JOIN procedures pr ON p.patient_id = pr.patient_id
+    GROUP BY p.patient_id
+    HAVING COUNT(DISTINCT pr.anesthesia_type) > 1
+)",
+149,distinct_count,hard,PASS,CORRECT,How many distinct insurance policies were associated with both paid and denied claims?,"SELECT COUNT(DISTINCT bc.policy_id)
+FROM billing_claims bc
+JOIN insurance_policies ip ON bc.policy_id = ip.policy_id
+WHERE bc.policy_id IN (
+    SELECT policy_id
+    FROM billing_claims
+    WHERE claim_status = 'paid'
+)
+AND bc.policy_id IN (
+    SELECT policy_id
+    FROM billing_claims
+    WHERE claim_status = 'denied'
+)",
+150,distinct_count,hard,PASS,INCORRECT,How many distinct doctors had patients with both active and resolved diagnoses?,"SELECT COUNT(DISTINCT d.doctor_id)
+FROM doctors d
+JOIN diagnoses di ON d.doctor_id = di.doctor_id
+GROUP BY d.doctor_id
+HAVING SUM(CASE WHEN di.clinical_status = 'active' THEN 1 ELSE 0 END) > 0
+   AND SUM(CASE WHEN di.clinical_status = 'resolved' THEN 1 ELSE 0 END) > 0",Groups by doctor and returns one count row per doctor instead of one total count.
+151,group_by,easy,PASS,CORRECT,Count departments by operating status.,"SELECT operating_status, COUNT(*) AS department_count
+FROM departments
+GROUP BY operating_status",
+152,group_by,easy,PASS,CORRECT,Show average department quality rating by specialty category.,"SELECT departments.specialty_category, AVG(departments.quality_rating) AS avg_quality_rating
+FROM departments
+GROUP BY departments.specialty_category",
+153,group_by,easy,PASS,CORRECT,Count doctors by specialty.,"SELECT specialty, COUNT(doctor_id) AS doctor_count
+FROM doctors
+GROUP BY specialty",
+154,group_by,easy,PASS,CORRECT,Show average doctor salary by employment type.,"SELECT doctors.employment_type, AVG(doctors.salary) AS average_salary
+FROM doctors
+GROUP BY doctors.employment_type",
+155,group_by,easy,PASS,CORRECT,Count insurance policies by plan type.,"SELECT plan_type, COUNT(*) AS policy_count
+FROM insurance_policies
+GROUP BY plan_type",
+156,group_by,easy,PASS,INCORRECT,Show average deductible by insurance provider.,"SELECT ip.provider_name, AVG(bc.deductible_amount) AS average_deductible
+FROM billing_claims bc
+JOIN insurance_policies ip ON bc.policy_id = ip.policy_id
+GROUP BY ip.provider_name",Uses claim-level deductible amounts instead of policy deductible amounts.
+157,group_by,easy,PASS,CORRECT,Count patients by blood type.,"SELECT blood_type, COUNT(*) AS patient_count
+FROM patients
+GROUP BY blood_type",
+158,group_by,easy,PASS,CORRECT,Show average patient weight by gender.,"SELECT patients.gender, AVG(patients.weight_kg) AS average_weight
+FROM patients
+GROUP BY patients.gender",
+159,group_by,easy,PASS,CORRECT,Count appointments by appointment status.,"SELECT appointment_status, COUNT(*) AS appointment_count
+FROM appointments
+GROUP BY appointment_status",
+160,group_by,easy,PASS,CORRECT,Show average wait time by appointment type.,"SELECT appointment_type, AVG(wait_time_minutes) AS average_wait_time
+FROM appointments
+GROUP BY appointment_type",
+161,group_by,easy,PASS,CORRECT,Count diagnoses by severity.,"SELECT severity, COUNT(*) AS diagnosis_count
+FROM diagnoses
+GROUP BY severity",
+162,group_by,easy,PASS,CORRECT,Show average prescription cost by drug class.,"SELECT drug_class, AVG(estimated_cost) AS average_cost
+FROM prescriptions
+GROUP BY drug_class",
+163,group_by,easy,PASS,CORRECT,Count lab tests by test status.,"SELECT test_status, COUNT(*) AS test_count
+FROM lab_tests
+GROUP BY test_status",
+164,group_by,easy,PASS,CORRECT,Show average procedure cost by procedure category.,"SELECT procedure_category, AVG(estimated_cost) AS average_cost
+FROM procedures
+GROUP BY procedure_category",
+165,group_by,easy,PASS,CORRECT,Count billing claims by claim status.,"SELECT claim_status, COUNT(*) AS claim_count
+FROM billing_claims
+GROUP BY claim_status",
+166,group_by,moderate,PASS,CORRECT,Count active doctors by department.,"SELECT ""departments"".""department_name"", COUNT(*) AS ""doctor_count"" FROM ""doctors"" INNER JOIN ""departments"" ON ""doctors"".""department_id"" = ""departments"".""department_id"" WHERE ""doctors"".""active_flag"" = ? GROUP BY ""departments"".""department_name""",
+167,group_by,moderate,PASS,CORRECT,Show average doctor salary by department.,"SELECT d.department_name, AVG(do.salary) AS average_salary
+FROM departments d
+JOIN doctors do ON d.department_id = do.department_id
+GROUP BY d.department_name",
+168,group_by,moderate,PASS,CORRECT,Count patients by primary doctor.,"SELECT ""doctors"".""doctor_id"", ""doctors"".""first_name"", ""doctors"".""last_name"", COUNT(*) AS ""patient_count"" FROM ""doctors"" INNER JOIN ""patients"" ON ""doctors"".""doctor_id"" = ""patients"".""primary_doctor_id"" GROUP BY ""doctors"".""doctor_id"", ""doctors"".""first_name"", ""doctors"".""last_name""",
+169,group_by,moderate,PASS,CORRECT,Show patient count by insurance provider.,"SELECT ip.provider_name, COUNT(p.patient_id) AS patient_count
+FROM insurance_policies ip
+JOIN patients p ON ip.policy_id = p.policy_id
+GROUP BY ip.provider_name",
+170,group_by,moderate,PASS,CORRECT,Count completed appointments by doctor.,"SELECT ""doctors"".""doctor_id"", ""doctors"".""first_name"", ""doctors"".""last_name"", COUNT(*) AS ""appointment_count"" FROM ""appointments"" INNER JOIN ""doctors"" ON ""appointments"".""doctor_id"" = ""doctors"".""doctor_id"" WHERE ""appointments"".""appointment_status"" = ? GROUP BY ""doctors"".""doctor_id"", ""doctors"".""first_name"", ""doctors"".""last_name""",
+171,group_by,moderate,PASS,INCORRECT,Show average wait time by department.,"SELECT d.department_name
+FROM departments d
+JOIN appointments a ON d.department_id = a.department_id
+GROUP BY d.department_id
+HAVING AVG(a.wait_time_minutes) = (
+    SELECT AVG(wait_time_minutes)
+    FROM appointments
+)",Returns only departments whose average equals the global average; it never returns average wait time by department.
+172,group_by,moderate,PASS,CORRECT,Count appointments by priority level and appointment type.,"SELECT priority_level, appointment_type, COUNT(*) AS appointment_count
+FROM appointments
+GROUP BY priority_level, appointment_type",
+173,group_by,moderate,PASS,CORRECT,Show confirmed diagnosis count by diagnosis category.,"SELECT diagnosis_category, COUNT(*) AS confirmed_diagnosis_count
+FROM diagnoses
+WHERE confirmed_flag = '1'
+GROUP BY diagnosis_category",
+174,group_by,moderate,PASS,INCORRECT,Show active diagnosis count by doctor.,"SELECT ""doctors"".""doctor_id"", ""doctors"".""first_name"", ""doctors"".""last_name"", COUNT(*) AS ""diagnosis_count"" FROM ""doctors"" INNER JOIN ""diagnoses"" ON ""doctors"".""doctor_id"" = ""diagnoses"".""doctor_id"" WHERE ""doctors"".""active_flag"" = ? GROUP BY ""doctors"".""doctor_id"", ""doctors"".""first_name"", ""doctors"".""last_name""",Filters active doctors rather than diagnoses with clinical_status = 'active'.
+175,group_by,moderate,PASS,CORRECT,Show prescription count by medication and prescription status.,"SELECT medication_name, prescription_status, COUNT(*) AS prescription_count
+FROM prescriptions
+GROUP BY medication_name, prescription_status",
+176,group_by,moderate,PASS,CORRECT,Show total prescription cost by doctor.,"SELECT d.doctor_id, d.first_name, d.last_name, SUM(p.estimated_cost) AS total_prescription_cost
+FROM doctors d
+JOIN prescriptions p ON d.doctor_id = p.doctor_id
+GROUP BY d.doctor_id, d.first_name, d.last_name",
+177,group_by,moderate,PASS,INCORRECT,Count abnormal lab tests by laboratory.,"SELECT ""lab_tests"".""laboratory_name"", COUNT(*) AS ""abnormal_test_count"" FROM ""lab_tests"" WHERE ""lab_tests"".""abnormal_flag"" = ? GROUP BY ""lab_tests"".""laboratory_name""","Tests a single abnormal literal instead of counting low, high, and critical results."
+178,group_by,moderate,PASS,CORRECT,Show average lab result value by test name.,"SELECT test_name, AVG(result_value) AS average_result_value
+FROM lab_tests
+GROUP BY test_name",
+179,group_by,moderate,PASS,CORRECT,Count completed procedures by department.,"SELECT ""departments"".""department_name"", COUNT(*) AS ""procedure_count"" FROM ""procedures"" INNER JOIN ""departments"" ON ""procedures"".""department_id"" = ""departments"".""department_id"" WHERE ""procedures"".""procedure_status"" = ? GROUP BY ""departments"".""department_name""",
+180,group_by,moderate,PASS,CORRECT,Show average procedure cost by doctor.,"SELECT d.doctor_id, AVG(p.estimated_cost) AS average_cost
+FROM doctors d
+JOIN procedures p ON d.doctor_id = p.doctor_id
+GROUP BY d.doctor_id",
+181,group_by,moderate,PASS,INCORRECT,Show complication count by procedure category.,"SELECT procedure_category, COUNT(*) AS complication_count
+FROM procedures
+GROUP BY procedure_category
+HAVING SUM(complication_flag) > 0",Counts every procedure in categories having any complication rather than counting only complicated procedures.
+182,group_by,moderate,PASS,CORRECT,Show total billed amount by insurance provider.,"SELECT ip.provider_name, SUM(bc.billed_amount) AS total_billed_amount
+FROM billing_claims bc
+JOIN insurance_policies ip ON bc.policy_id = ip.policy_id
+GROUP BY ip.provider_name",
+183,group_by,moderate,PASS,CORRECT,Show total patient responsibility by payment status.,"SELECT billing_claims.payment_status, SUM(billing_claims.patient_responsibility)
+FROM billing_claims
+GROUP BY billing_claims.payment_status",
+184,group_by,moderate,PASS,CORRECT,Count claims by doctor and claim status.,"SELECT doctor_id, claim_status, COUNT(*) AS claim_count
+FROM billing_claims
+GROUP BY doctor_id, claim_status",
+185,group_by,moderate,PASS,CORRECT,Show average days to payment by insurance plan type.,"SELECT ip.plan_type, AVG(bc.days_to_payment) AS avg_days_to_payment
+FROM billing_claims bc
+JOIN insurance_policies ip ON bc.policy_id = ip.policy_id
+GROUP BY ip.plan_type",
+186,group_by,hard,PASS,CORRECT,Show completed appointment count by department and doctor specialty.,"SELECT d.department_name, doc.specialty, COUNT(a.appointment_id) AS completed_appointment_count
+FROM appointments a
+JOIN departments d ON a.department_id = d.department_id
+JOIN doctors doc ON a.doctor_id = doc.doctor_id
+WHERE a.appointment_status = 'completed'
+GROUP BY d.department_name, doc.specialty",
+187,group_by,hard,PASS,INCORRECT,Show average wait time by insurance provider and appointment priority.,"WITH appointment_policy AS (
+    SELECT 
+        a.appointment_id,
+        a.priority_level,
+        bc.policy_id
+    FROM appointments a
+    JOIN billing_claims bc ON a.appointment_id = bc.appointment_id
+),
+aggregated_wait AS (
+    SELECT 
+        ap.policy_id,
+        ap.priority_level,
+        AVG(a.wait_time_minutes) AS avg_wait_time
+    FROM appointment_policy ap
+    JOIN appointments a ON ap.appointment_id = a.appointment_id
+    GROUP BY ap.policy_id, ap.priority_level
+)
+SELECT 
+    ip.provider_name,
+    aw.priority_level,
+    aw.avg_wait_time
+FROM aggregated_wait aw
+JOIN insurance_policies ip ON aw.policy_id = ip.policy_id
+GROUP BY ip.provider_name, aw.priority_level, aw.avg_wait_time
+HAVING aw.avg_wait_time IS NOT NULL","Aggregates first by policy and then displays provider, yielding separate rows instead of provider-level averages."
+188,group_by,hard,PASS,CORRECT,Show confirmed diagnosis count by department and severity.,"SELECT d.department_name, diag.severity, COUNT(diag.diagnosis_id) AS confirmed_diagnosis_count
+FROM diagnoses diag
+JOIN appointments a ON diag.appointment_id = a.appointment_id
+JOIN departments d ON a.department_id = d.department_id
+WHERE diag.confirmed_flag = '1'
+GROUP BY d.department_name, diag.severity",
+189,group_by,hard,PASS,CORRECT,Show prescription cost by department and drug class.,"SELECT d.department_name, p.drug_class, SUM(p.estimated_cost) AS total_cost
+FROM prescriptions p
+JOIN appointments a ON p.appointment_id = a.appointment_id
+JOIN departments d ON a.department_id = d.department_id
+GROUP BY d.department_name, p.drug_class",
+190,group_by,hard,PASS,INCORRECT,Show abnormal lab-test count by doctor specialty and test category.,"SELECT d.specialty, lt.test_category, COUNT(lt.lab_test_id) AS abnormal_lab_test_count
+FROM doctors d
+JOIN lab_tests lt ON d.doctor_id = lt.doctor_id
+WHERE lt.abnormal_flag IN ('high', 'critical')
+GROUP BY d.specialty, lt.test_category
+HAVING COUNT(lt.lab_test_id) > 0",Counts only high and critical results and omits low abnormal results.
+191,group_by,hard,PASS,CORRECT,Show completed procedure count by department and anesthesia type.,"SELECT d.department_name, p.anesthesia_type, COUNT(p.procedure_id) AS procedure_count
+FROM procedures p
+JOIN departments d ON p.department_id = d.department_id
+WHERE p.procedure_status = 'completed'
+GROUP BY d.department_name, p.anesthesia_type",
+192,group_by,hard,PASS,CORRECT,Show total billed amount by department and insurance provider.,"SELECT ""departments"".""department_name"", ""insurance_policies"".""provider_name"", SUM(""billing_claims"".""billed_amount"") AS ""total_billed_amount"" FROM ""billing_claims"" INNER JOIN ""appointments"" ON ""billing_claims"".""appointment_id"" = ""appointments"".""appointment_id"" INNER JOIN ""departments"" ON ""appointments"".""department_id"" = ""departments"".""department_id"" INNER JOIN ""insurance_policies"" ON ""billing_claims"".""policy_id"" = ""insurance_policies"".""policy_id"" GROUP BY ""departments"".""department_name"", ""insurance_policies"".""provider_name""",
+193,group_by,hard,PASS,CORRECT,Show insurance-paid amount by appointment type and claim status.,"SELECT 
+  a.appointment_type, 
+  bc.claim_status, 
+  SUM(bc.insurance_paid_amount) AS total_insurance_paid
+FROM appointments a
+JOIN billing_claims bc ON a.appointment_id = bc.appointment_id
+GROUP BY a.appointment_type, bc.claim_status",
+194,group_by,hard,FAIL,INCORRECT,"Show patient count, appointment count, and billed amount by primary doctor.",<NO SQL GENERATED>,No SQL was returned.
+195,group_by,hard,PASS,CORRECT,Show average patient responsibility by diagnosis category and insurance plan type.,"SELECT d.diagnosis_category, i.plan_type, AVG(bc.patient_responsibility) AS avg_patient_responsibility
+FROM billing_claims bc
+JOIN diagnoses d ON bc.appointment_id = d.appointment_id
+JOIN insurance_policies i ON bc.policy_id = i.policy_id
+GROUP BY d.diagnosis_category, i.plan_type",
+196,group_by,hard,PASS,CORRECT,Show completed appointment count by patient language and appointment type.,"SELECT p.preferred_language, a.appointment_type, COUNT(a.appointment_id) AS completed_count
+FROM appointments a
+JOIN patients p ON a.patient_id = p.patient_id
+WHERE a.appointment_status = 'completed'
+GROUP BY p.preferred_language, a.appointment_type",
+197,group_by,hard,PASS,INCORRECT,Show diagnosis count and prescription cost by patient blood type.,"WITH diagnosis_counts AS (
+    SELECT 
+        patient_id,
+        COUNT(DISTINCT diagnosis_id) AS diagnosis_count
+    FROM diagnoses
+    GROUP BY patient_id
+),
+prescription_costs AS (
+    SELECT 
+        patient_id,
+        SUM(estimated_cost) AS total_prescription_cost
+    FROM prescriptions
+    GROUP BY patient_id
+)
+SELECT 
+    p.blood_type,
+    SUM(dc.diagnosis_count) AS diagnosis_count,
+    SUM(pc.total_prescription_cost) AS total_prescription_cost
+FROM patients p
+JOIN diagnosis_counts dc ON p.patient_id = dc.patient_id
+JOIN prescription_costs pc ON p.patient_id = pc.patient_id
+GROUP BY p.blood_type
+HAVING SUM(dc.diagnosis_count) > 0 AND SUM(pc.total_prescription_cost) > 0",Inner-joining the patient-level diagnosis and prescription aggregates excludes patients having only one of the two.
+198,group_by,hard,PASS,CORRECT,Show procedure count and average recovery time by doctor and department.,"SELECT procedures.doctor_id, procedures.department_id, COUNT(*) AS procedure_count, AVG(procedures.recovery_minutes) AS avg_recovery_time
+FROM procedures
+GROUP BY procedures.doctor_id, procedures.department_id",
+199,group_by,hard,PASS,INCORRECT,Show lab-test count and abnormal-result rate by department and laboratory.,"SELECT ""departments"".""department_name"", ""lab_tests"".""laboratory_name"", COUNT(*) AS ""lab_test_count"", AVG(""lab_tests"".""abnormal_flag"") AS ""abnormal_result_rate"" FROM ""lab_tests"" INNER JOIN ""appointments"" ON ""lab_tests"".""appointment_id"" = ""appointments"".""appointment_id"" INNER JOIN ""departments"" ON ""appointments"".""department_id"" = ""departments"".""department_id"" GROUP BY ""departments"".""department_name"", ""lab_tests"".""laboratory_name""",Applies AVG directly to text abnormal_flag instead of calculating a conditional abnormal rate.
+200,group_by,hard,PASS,CORRECT,"Show claim count, billed amount, and days to payment by provider and payment status.","SELECT 
+  ip.provider_name,
+  bc.payment_status,
+  COUNT(bc.claim_id) AS claim_count,
+  SUM(bc.billed_amount) AS total_billed_amount,
+  SUM(bc.days_to_payment) AS total_days_to_payment
+FROM billing_claims bc
+JOIN insurance_policies ip ON bc.policy_id = ip.policy_id
+GROUP BY ip.provider_name, bc.payment_status",
+201,having,easy,PASS,CORRECT,List department statuses represented by more than five departments.,"SELECT operating_status
+FROM departments
+GROUP BY operating_status
+HAVING COUNT(*) > 5",
+202,having,easy,PASS,CORRECT,List specialty categories with an average department quality rating above 4.,"SELECT specialty_category
+FROM departments
+GROUP BY specialty_category
+HAVING AVG(quality_rating) > 4",
+203,having,easy,PASS,CORRECT,List doctor specialties represented by more than five doctors.,"SELECT specialty
+FROM doctors
+GROUP BY specialty
+HAVING COUNT(doctor_id) > 5",
+204,having,easy,PASS,CORRECT,List employment types with an average doctor salary above 200000 dollars.,"SELECT doctors.employment_type
+FROM doctors
+GROUP BY doctors.employment_type
+HAVING AVG(doctors.salary) > 200000",
+205,having,easy,PASS,CORRECT,List insurance plan types with more than five policies.,"SELECT plan_type
+FROM insurance_policies
+GROUP BY plan_type
+HAVING COUNT(policy_id) > 5",
+206,having,easy,PASS,INCORRECT,List providers with an average deductible above 2000 dollars.,"SELECT policy_id, provider_name, plan_name
+FROM insurance_policies
+GROUP BY policy_id
+HAVING AVG(deductible_amount) > 2000","Groups by policy_id, so it tests individual policies instead of insurance providers."
+207,having,easy,PASS,CORRECT,List blood types represented by more than five patients.,"SELECT patients.blood_type
+FROM patients
+GROUP BY patients.blood_type
+HAVING COUNT(patients.patient_id) > 5",
+208,having,easy,PASS,CORRECT,List languages spoken by more than five patients.,"SELECT patients.preferred_language
+FROM patients
+GROUP BY patients.preferred_language
+HAVING COUNT(*) > 5",
+209,having,easy,PASS,CORRECT,List appointment statuses represented by more than ten appointments.,"SELECT appointments.appointment_status
+FROM appointments
+GROUP BY appointments.appointment_status
+HAVING COUNT(appointments.appointment_id) > 10",
+210,having,easy,PASS,CORRECT,List appointment types with an average wait time above 60 minutes.,"SELECT appointments.appointment_type
+FROM appointments
+GROUP BY appointments.appointment_type
+HAVING AVG(appointments.wait_time_minutes) > 60",
+211,having,easy,PASS,CORRECT,List diagnosis severities represented by more than ten diagnoses.,"SELECT severity
+FROM diagnoses
+GROUP BY severity
+HAVING COUNT(diagnosis_id) > 10",
+212,having,easy,PASS,CORRECT,List drug classes with an average prescription cost above 100 dollars.,"SELECT drug_class
+FROM prescriptions
+GROUP BY drug_class
+HAVING AVG(estimated_cost) > 100",
+213,having,easy,PASS,CORRECT,List laboratories with more than five completed tests.,"SELECT laboratory_name
+FROM lab_tests
+WHERE test_status = 'completed'
+GROUP BY laboratory_name
+HAVING COUNT(lab_test_id) > 5",
+214,having,easy,PASS,CORRECT,List procedure categories with an average cost above 5000 dollars.,"SELECT procedure_category
+FROM procedures
+GROUP BY procedure_category
+HAVING AVG(estimated_cost) > 5000",
+215,having,easy,PASS,CORRECT,List claim statuses with total billed amount above 50000 dollars.,"SELECT billing_claims.claim_status
+FROM billing_claims
+GROUP BY billing_claims.claim_status
+HAVING SUM(billing_claims.billed_amount) > 50000",
+216,having,moderate,PASS,CORRECT,List departments with more than three active doctors.,"SELECT d.department_id, d.department_name
+FROM departments d
+JOIN doctors doc ON d.department_id = doc.department_id
+WHERE doc.active_flag = '1'
+GROUP BY d.department_id, d.department_name
+HAVING COUNT(doc.doctor_id) > 3",
+217,having,moderate,PASS,CORRECT,List doctors who completed more than two appointments.,"SELECT d.doctor_id, d.first_name, d.last_name
+FROM doctors d
+JOIN appointments a ON d.doctor_id = a.doctor_id
+WHERE a.appointment_status = 'completed'
+GROUP BY d.doctor_id
+HAVING COUNT(a.appointment_id) > 2",
+218,having,moderate,PASS,INCORRECT,List doctors with more than two active patients.,"SELECT d.doctor_id, d.first_name, d.last_name
+FROM doctors d
+JOIN patients p ON d.doctor_id = p.primary_doctor_id
+GROUP BY d.doctor_id, d.first_name, d.last_name
+HAVING COUNT(p.patient_id) > 2","The query asks for active patients, but patients has no activity-status column and the SQL counts all assigned patients."
+219,having,moderate,PASS,CORRECT,List insurance providers with more than five active policies.,"SELECT provider_name
+FROM insurance_policies
+WHERE active_flag = 1
+GROUP BY provider_name
+HAVING COUNT(policy_id) > 5",
+220,having,moderate,PASS,CORRECT,List patients with more than two completed appointments.,"SELECT p.patient_id, p.first_name, p.last_name
+FROM patients p
+JOIN appointments a ON p.patient_id = a.patient_id
+WHERE a.appointment_status = 'completed'
+GROUP BY p.patient_id
+HAVING COUNT(a.appointment_id) > 2",
+221,having,moderate,PASS,CORRECT,List doctors who recorded more than two confirmed diagnoses.,"SELECT d.doctor_id, d.first_name, d.last_name
+FROM doctors d
+JOIN diagnoses diag ON d.doctor_id = diag.doctor_id
+WHERE diag.confirmed_flag = '1'
+GROUP BY d.doctor_id, d.first_name, d.last_name
+HAVING COUNT(diag.diagnosis_id) > 2",
+222,having,moderate,PASS,CORRECT,List patients with more than two prescriptions.,"SELECT p.patient_id, p.first_name, p.last_name
+FROM patients p
+JOIN prescriptions pr ON p.patient_id = pr.patient_id
+GROUP BY p.patient_id
+HAVING COUNT(pr.prescription_id) > 2",
+223,having,moderate,PASS,CORRECT,List medications prescribed more than five times.,"SELECT prescriptions.medication_name, prescriptions.generic_name
+FROM prescriptions
+GROUP BY prescriptions.medication_name
+HAVING COUNT(prescriptions.prescription_id) > 5",
+224,having,moderate,PASS,INCORRECT,List laboratories with more than two abnormal results.,"SELECT laboratory_name
+FROM lab_tests
+WHERE abnormal_flag IS NOT NULL
+GROUP BY laboratory_name
+HAVING COUNT(*) > 2","abnormal_flag IS NOT NULL includes normal results, so it counts all lab tests."
+225,having,moderate,PASS,CORRECT,List doctors who ordered more than three lab tests.,"SELECT d.doctor_id, d.first_name, d.last_name
+FROM doctors d
+JOIN lab_tests lt ON d.doctor_id = lt.doctor_id
+GROUP BY d.doctor_id, d.first_name, d.last_name
+HAVING COUNT(lt.lab_test_id) > 3",
+226,having,moderate,PASS,INCORRECT,List departments that completed more than two procedures.,"SELECT d.department_id, d.department_name
+FROM departments d
+JOIN procedures p ON d.department_id = p.department_id
+GROUP BY d.department_id
+HAVING COUNT(p.procedure_id) > 2",Never requires procedure_status = 'completed'.
+227,having,moderate,PASS,CORRECT,List doctors who performed more than two procedures.,"SELECT d.doctor_id, d.first_name, d.last_name
+FROM doctors d
+JOIN procedures p ON d.doctor_id = p.doctor_id
+GROUP BY d.doctor_id, d.first_name, d.last_name
+HAVING COUNT(p.procedure_id) > 2",
+228,having,moderate,PASS,CORRECT,List patients whose total billed amount exceeds 10000 dollars.,"SELECT p.patient_id, p.first_name, p.last_name
+FROM patients p
+JOIN billing_claims bc ON p.patient_id = bc.patient_id
+GROUP BY p.patient_id, p.first_name, p.last_name
+HAVING SUM(bc.billed_amount) > 10000",
+229,having,moderate,PASS,INCORRECT,List providers whose total insurance payments exceed 50000 dollars.,"SELECT doctor_id
+FROM billing_claims
+GROUP BY doctor_id
+HAVING SUM(insurance_paid_amount) > 50000",Groups and returns doctor_id instead of insurance provider.
+230,having,moderate,PASS,CORRECT,List appointment types with more than five follow-up-required visits.,"SELECT appointments.appointment_type
+FROM appointments
+WHERE appointments.follow_up_required = '1'
+GROUP BY appointments.appointment_type
+HAVING COUNT(appointments.appointment_id) > 5",
+231,having,moderate,PASS,CORRECT,List diagnosis categories with an average follow-up interval above 60 days.,"SELECT diagnosis_category
+FROM diagnoses
+GROUP BY diagnosis_category
+HAVING AVG(follow_up_interval_days) > 60",
+232,having,moderate,PASS,CORRECT,List drug classes with more than two adverse-reaction prescriptions.,"SELECT drug_class
+FROM prescriptions
+GROUP BY drug_class
+HAVING COUNT(CASE WHEN adverse_reaction_flag = '1' THEN 1 END) > 2",
+233,having,moderate,PASS,CORRECT,List procedure categories with more than two complications.,"SELECT procedure_category
+FROM procedures
+GROUP BY procedure_category
+HAVING SUM(complication_flag) > 2",
+234,having,moderate,PASS,CORRECT,List doctors whose patients have an average wait time above 60 minutes.,"SELECT d.doctor_id, d.first_name, d.last_name
+FROM doctors d
+JOIN appointments a ON d.doctor_id = a.doctor_id
+GROUP BY d.doctor_id, d.first_name, d.last_name
+HAVING AVG(a.wait_time_minutes) > 60",
+235,having,moderate,PASS,CORRECT,List departments whose total billed amount exceeds 100000 dollars.,"SELECT ""departments"".""department_id"", ""departments"".""department_name"", SUM(""billing_claims"".""billed_amount"") AS ""total_billed"" FROM ""departments"" INNER JOIN ""appointments"" ON ""departments"".""department_id"" = ""appointments"".""department_id"" INNER JOIN ""billing_claims"" ON ""appointments"".""appointment_id"" = ""billing_claims"".""appointment_id"" GROUP BY ""departments"".""department_id"", ""departments"".""department_name"" HAVING ""total_billed"" > ?",
+236,having,hard,PASS,CORRECT,List departments whose average doctor salary is above the hospital-wide average doctor salary.,"SELECT d.department_id, d.department_name
+FROM departments d
+JOIN doctors doc ON d.department_id = doc.department_id
+GROUP BY d.department_id, d.department_name
+HAVING AVG(doc.salary) > (SELECT AVG(salary) FROM doctors)",
+237,having,hard,PASS,CORRECT,List doctors whose completed appointment count is above the average doctor appointment count.,"SELECT d.doctor_id, d.first_name, d.last_name
+FROM doctors d
+JOIN appointments a ON d.doctor_id = a.doctor_id
+WHERE a.appointment_status = 'completed'
+GROUP BY d.doctor_id, d.first_name, d.last_name
+HAVING COUNT(a.appointment_id) > (
+    SELECT AVG(cnt)
+    FROM (
+        SELECT COUNT(a2.appointment_id) AS cnt
+        FROM doctors d2
+        JOIN appointments a2 ON d2.doctor_id = a2.doctor_id
+        WHERE a2.appointment_status = 'completed'
+        GROUP BY d2.doctor_id
+    )
+)",
+238,having,hard,PASS,CORRECT,List patients whose total billed amount is above the average patient billed amount.,"SELECT p.patient_id, p.first_name, p.last_name
+FROM patients p
+JOIN billing_claims bc ON p.patient_id = bc.patient_id
+GROUP BY p.patient_id, p.first_name, p.last_name
+HAVING SUM(bc.billed_amount) > (
+    SELECT AVG(patient_total)
+    FROM (
+        SELECT SUM(billed_amount) AS patient_total
+        FROM billing_claims
+        GROUP BY patient_id
+    )
+)",
+239,having,hard,PASS,INCORRECT,List insurance providers whose payment rate is above 70 percent.,"SELECT ip.provider_name
+FROM insurance_policies ip
+JOIN billing_claims bc ON ip.policy_id = bc.policy_id
+GROUP BY ip.provider_name
+HAVING AVG(bc.insurance_paid_amount * 1.0 / bc.billed_amount) > 0.70",Averages row-level payment ratios rather than total paid divided by total billed for each provider.
+240,having,hard,PASS,CORRECT,List doctors whose confirmed diagnosis rate is above 60 percent.,"SELECT d.doctor_id, d.first_name, d.last_name
+FROM doctors d
+JOIN diagnoses diag ON d.doctor_id = diag.doctor_id
+GROUP BY d.doctor_id, d.first_name, d.last_name
+HAVING SUM(CASE WHEN diag.confirmed_flag = '1' THEN 1 ELSE 0 END) * 1.0 / COUNT(*) > 0.6",
+241,having,hard,PASS,INCORRECT,List departments whose abnormal lab-result rate is above the hospital average.,"WITH overall_avg AS (
+    SELECT AVG(CASE WHEN abnormal_flag = 'critical' OR abnormal_flag = 'high' THEN 1.0 ELSE 0.0 END) AS avg_rate
+    FROM lab_tests
+),
+dept_stats AS (
+    SELECT 
+        d.department_id,
+        d.department_name,
+        AVG(CASE WHEN lt.abnormal_flag = 'critical' OR lt.abnormal_flag = 'high' THEN 1.0 ELSE 0.0 END) AS dept_abnormal_rate
+    FROM departments d
+    JOIN appointments a ON d.department_id = a.department_id
+    JOIN lab_tests lt ON a.appointment_id = lt.appointment_id
+    GROUP BY d.department_id, d.department_name
+)
+SELECT 
+    ds.department_id,
+    ds.department_name
+FROM dept_stats ds
+CROSS JOIN overall_avg oa
+WHERE ds.dept_abnormal_rate > oa.avg_rate",Defines abnormal as high or critical and omits low results.
+242,having,hard,PASS,CORRECT,List patients who received prescriptions from at least three different drug classes.,"SELECT p.patient_id, p.first_name, p.last_name
+FROM patients p
+JOIN prescriptions pr ON p.patient_id = pr.patient_id
+GROUP BY p.patient_id, p.first_name, p.last_name
+HAVING COUNT(DISTINCT pr.drug_class) >= 3",
+243,having,hard,PASS,INCORRECT,List doctors who treated patients from at least three insurance providers.,"SELECT d.doctor_id, d.first_name, d.last_name
+FROM doctors d
+JOIN billing_claims bc ON d.doctor_id = bc.doctor_id
+GROUP BY d.doctor_id, d.first_name, d.last_name
+HAVING COUNT(DISTINCT bc.policy_id) >= 3",Counts distinct policy IDs instead of distinct provider names.
+244,having,hard,PASS,CORRECT,List departments whose procedure complication rate is below 5 percent.,"SELECT d.department_id, d.department_name
+FROM departments d
+JOIN procedures p ON d.department_id = p.department_id
+GROUP BY d.department_id, d.department_name
+HAVING CAST(SUM(p.complication_flag) AS REAL) / COUNT(*) < 0.05",
+245,having,hard,PASS,CORRECT,List appointment types whose average wait time is above the overall appointment average.,"SELECT appointments.appointment_type
+FROM appointments
+GROUP BY appointments.appointment_type
+HAVING AVG(appointments.wait_time_minutes) > (SELECT AVG(wait_time_minutes) FROM appointments)",
+246,having,hard,PASS,INCORRECT,List diagnosis categories whose average treatment cost exceeds the overall diagnosis-category average.,"WITH category_totals AS (
+    SELECT d.diagnosis_category, SUM(p.estimated_cost) AS total_cost
+    FROM diagnoses d
+    JOIN procedures p ON d.appointment_id = p.appointment_id
+    GROUP BY d.diagnosis_category
+),
+overall_avg AS (
+    SELECT AVG(total_cost) AS avg_cost
+    FROM category_totals
+)
+SELECT ct.diagnosis_category
+FROM category_totals ct
+CROSS JOIN overall_avg oa
+WHERE ct.total_cost > oa.avg_cost",Uses procedure cost only and omits prescription cost from treatment cost.
+247,having,hard,PASS,CORRECT,List doctors whose procedure revenue is above the average doctor procedure revenue.,"SELECT d.doctor_id, d.first_name, d.last_name
+FROM doctors d
+JOIN procedures p ON d.doctor_id = p.doctor_id
+GROUP BY d.doctor_id, d.first_name, d.last_name
+HAVING SUM(p.estimated_cost) > (
+    SELECT AVG(total_cost)
+    FROM (
+        SELECT SUM(estimated_cost) AS total_cost
+        FROM procedures
+        GROUP BY doctor_id
+    )
+)",
+248,having,hard,PASS,INCORRECT,List insurance plan types whose average patient responsibility is below the overall plan average.,"SELECT ip.plan_type
+FROM billing_claims bc
+JOIN insurance_policies ip ON bc.policy_id = ip.policy_id
+GROUP BY ip.plan_type
+HAVING AVG(bc.patient_responsibility) < (
+    SELECT AVG(patient_responsibility)
+    FROM billing_claims
+)",Compares plan averages with the overall claim-row average rather than the average of plan-level averages.
+249,having,hard,PASS,CORRECT,List patients with claims from at least three different appointment types.,"SELECT p.patient_id, p.first_name, p.last_name
+FROM patients p
+JOIN billing_claims bc ON p.patient_id = bc.patient_id
+JOIN appointments a ON bc.appointment_id = a.appointment_id
+GROUP BY p.patient_id, p.first_name, p.last_name
+HAVING COUNT(DISTINCT a.appointment_type) >= 3",
+250,having,hard,PASS,CORRECT,List departments whose insurance-paid amount exceeds their total patient responsibility.,"SELECT ""departments"".""department_id"", ""departments"".""department_name"", SUM(""billing_claims"".""insurance_paid_amount"") AS ""total_insurance_paid"", SUM(""billing_claims"".""patient_responsibility"") AS ""total_patient_responsibility"" FROM ""departments"" INNER JOIN ""appointments"" ON ""departments"".""department_id"" = ""appointments"".""department_id"" INNER JOIN ""billing_claims"" ON ""appointments"".""appointment_id"" = ""billing_claims"".""appointment_id"" GROUP BY ""departments"".""department_id"", ""departments"".""department_name"" HAVING ""total_insurance_paid"" > ""total_patient_responsibility""",
+251,join,easy,PASS,CORRECT,Show each doctor with their department name.,"SELECT d.doctor_id, d.first_name, d.last_name, dept.department_name
+FROM doctors d
+JOIN departments dept ON d.department_id = dept.department_id",
+252,join,easy,PASS,CORRECT,Show each patient with their primary doctor's name.,"SELECT p.patient_id, p.first_name, p.last_name, d.first_name, d.last_name
+FROM patients p
+JOIN doctors d ON p.primary_doctor_id = d.doctor_id",
+253,join,easy,PASS,CORRECT,Show each patient with their insurance provider.,"SELECT p.patient_id, p.first_name, p.last_name, ip.provider_name
+FROM patients p
+JOIN insurance_policies ip ON p.policy_id = ip.policy_id",
+254,join,easy,PASS,CORRECT,Show each appointment with the patient's name.,"SELECT a.appointment_id, p.first_name, p.last_name
+FROM appointments a
+JOIN patients p ON a.patient_id = p.patient_id",
+255,join,easy,PASS,CORRECT,Show each appointment with the doctor's name.,"SELECT a.appointment_id, d.first_name, d.last_name
+FROM appointments a
+JOIN doctors d ON a.doctor_id = d.doctor_id",
+256,join,easy,PASS,CORRECT,Show each appointment with the department name.,"SELECT a.appointment_id, d.department_name
+FROM appointments a
+JOIN departments d ON a.department_id = d.department_id",
+257,join,easy,PASS,CORRECT,Show each diagnosis with the appointment number.,"SELECT d.diagnosis_id, a.appointment_number
+FROM diagnoses d
+JOIN appointments a ON d.appointment_id = a.appointment_id",
+258,join,easy,PASS,CORRECT,Show each diagnosis with the patient's name.,"SELECT d.diagnosis_id, d.diagnosis_name, p.first_name, p.last_name
+FROM diagnoses d
+JOIN patients p ON d.patient_id = p.patient_id",
+259,join,easy,PASS,CORRECT,Show each diagnosis with the doctor's name.,"SELECT d.diagnosis_id, d.diagnosis_name, d.diagnosis_code, dr.first_name, dr.last_name
+FROM diagnoses d
+JOIN doctors dr ON d.doctor_id = dr.doctor_id",
+260,join,easy,PASS,CORRECT,Show each prescription with the patient's name.,"SELECT p.prescription_id, p.medication_name, pa.first_name, pa.last_name
+FROM prescriptions p
+JOIN patients pa ON p.patient_id = pa.patient_id",
+261,join,easy,PASS,CORRECT,Show each prescription with the doctor's name.,"SELECT p.prescription_id, p.medication_name, d.first_name, d.last_name
+FROM prescriptions p
+JOIN doctors d ON p.doctor_id = d.doctor_id",
+262,join,easy,PASS,CORRECT,Show each lab test with the patient's name.,"SELECT lt.test_name, lt.test_code, p.first_name, p.last_name
+FROM lab_tests lt
+JOIN patients p ON lt.patient_id = p.patient_id",
+263,join,easy,PASS,CORRECT,Show each procedure with the doctor's name.,"SELECT p.procedure_id, p.procedure_name, d.first_name, d.last_name
+FROM procedures p
+JOIN doctors d ON p.doctor_id = d.doctor_id",
+264,join,easy,PASS,CORRECT,Show each procedure with the assisting doctor's name.,"SELECT p.procedure_id, p.procedure_name, d.first_name, d.last_name
+FROM procedures p
+JOIN doctors d ON p.assistant_doctor_id = d.doctor_id",
+265,join,easy,PASS,CORRECT,Show each billing claim with its insurance provider.,"SELECT bc.claim_id, bc.claim_number, ip.provider_name
+FROM billing_claims bc
+JOIN insurance_policies ip ON bc.policy_id = ip.policy_id",
+266,join,moderate,PASS,CORRECT,List active doctors with their department names and salaries.,"SELECT d.doctor_id, d.first_name, d.last_name, dept.department_name, d.salary
+FROM doctors d
+JOIN departments dept ON d.department_id = dept.department_id
+WHERE d.active_flag = '1'",
+267,join,moderate,PASS,CORRECT,List patients with their primary doctors and policy plan names.,"SELECT
+    p.patient_id,
+    p.first_name,
+    p.last_name,
+    d.first_name,
+    d.last_name,
+    ip.plan_name
+FROM patients p
+JOIN doctors d ON p.primary_doctor_id = d.doctor_id
+JOIN insurance_policies ip ON p.policy_id = ip.policy_id",
+268,join,moderate,PASS,CORRECT,List completed appointments with patient names and doctor names.,"SELECT a.appointment_id, p.first_name AS patient_first_name, p.last_name AS patient_last_name, d.first_name AS doctor_first_name, d.last_name AS doctor_last_name
+FROM appointments a
+JOIN patients p ON a.patient_id = p.patient_id
+JOIN doctors d ON a.doctor_id = d.doctor_id
+WHERE a.appointment_status = 'completed'",
+269,join,moderate,PASS,CORRECT,List urgent appointments with department names and wait times.,"SELECT a.appointment_id, d.department_name, a.wait_time_minutes
+FROM appointments a
+JOIN departments d ON a.department_id = d.department_id
+WHERE a.appointment_status = 'urgent' OR a.priority_level = 'urgent'",
+270,join,moderate,PASS,CORRECT,List confirmed diagnoses with patient names and severity.,"SELECT d.diagnosis_name, p.first_name, p.last_name, d.severity
+FROM diagnoses d
+JOIN patients p ON d.patient_id = p.patient_id
+WHERE d.confirmed_flag = '1'",
+271,join,moderate,PASS,CORRECT,List active prescriptions with patient names and medication costs.,"SELECT p.first_name, p.last_name, pr.medication_name, pr.estimated_cost
+FROM patients p
+JOIN prescriptions pr ON p.patient_id = pr.patient_id
+WHERE pr.prescription_status = 'active'",
+272,join,moderate,PASS,INCORRECT,List abnormal lab tests with patient names and laboratory names.,"SELECT ""patients"".""first_name"", ""patients"".""last_name"", ""lab_tests"".""test_name"", ""lab_tests"".""laboratory_name"" FROM ""lab_tests"" INNER JOIN ""patients"" ON ""lab_tests"".""patient_id"" = ""patients"".""patient_id"" WHERE ""lab_tests"".""abnormal_flag"" = 'high' OR ""lab_tests"".""abnormal_flag"" = 'critical'",Omits low abnormal lab results.
+273,join,moderate,PASS,CORRECT,List completed procedures with patient names and procedure costs.,"SELECT p.first_name, p.last_name, pr.estimated_cost
+FROM procedures pr
+JOIN patients p ON pr.patient_id = p.patient_id
+WHERE pr.procedure_status = 'completed'",
+274,join,moderate,PASS,CORRECT,List paid claims with patient names and insurance-paid amounts.,"SELECT p.first_name, p.last_name, bc.insurance_paid_amount
+FROM billing_claims bc
+JOIN patients p ON bc.patient_id = p.patient_id
+WHERE bc.claim_status = 'paid'",
+275,join,moderate,PASS,CORRECT,List patients covered by PPO plans with provider names.,"SELECT patients.patient_id, insurance_policies.provider_name
+FROM patients
+JOIN insurance_policies ON patients.policy_id = insurance_policies.policy_id
+WHERE insurance_policies.plan_type = 'PPO'",
+276,join,moderate,PASS,CORRECT,List doctors accepting new patients with department quality ratings.,"SELECT d.doctor_id, d.first_name, d.last_name, dept.quality_rating
+FROM doctors d
+JOIN departments dept ON d.department_id = dept.department_id
+WHERE d.accepting_new_patients = '1'",
+277,join,moderate,PASS,CORRECT,List appointments requiring interpreters with patient languages.,"SELECT a.appointment_id, p.first_name, p.last_name, p.preferred_language
+FROM appointments a
+JOIN patients p ON a.patient_id = p.patient_id
+WHERE a.interpreter_required = '1'",
+278,join,moderate,PASS,CORRECT,List severe diagnoses with doctor names and treatment plans.,"SELECT d.diagnosis_name, d.treatment_plan, doc.first_name, doc.last_name
+FROM diagnoses d
+JOIN doctors doc ON d.doctor_id = doc.doctor_id
+WHERE d.severity = 'severe'",
+279,join,moderate,PASS,CORRECT,List controlled-substance prescriptions with prescribing doctor names.,"SELECT p.prescription_id, p.medication_name, d.first_name, d.last_name
+FROM prescriptions p
+JOIN doctors d ON p.doctor_id = d.doctor_id
+WHERE p.controlled_substance_flag = '1'",
+280,join,moderate,PASS,INCORRECT,List critical lab tests with reviewing doctor names.,"SELECT lt.lab_test_id, lt.test_name, lt.result_value, d.first_name, d.last_name
+FROM lab_tests lt
+JOIN doctors d ON lt.doctor_id = d.doctor_id
+WHERE lt.critical_flag = 1",Uses the ordering doctor because reviewed_by_doctor is only a boolean; it cannot return the reviewing doctor's name.
+281,join,moderate,PASS,CORRECT,List procedures with complications and the performing doctor.,"SELECT p.procedure_id, p.procedure_name, p.procedure_code, d.first_name, d.last_name
+FROM procedures p
+JOIN doctors d ON p.doctor_id = d.doctor_id
+WHERE p.complication_flag = 1",
+282,join,moderate,PASS,CORRECT,List denied claims with patient names and denial reasons.,"SELECT p.first_name, p.last_name, bc.denial_reason
+FROM billing_claims bc
+JOIN patients p ON bc.patient_id = p.patient_id
+WHERE bc.claim_status = 'denied'",
+283,join,moderate,PASS,CORRECT,List patients whose primary doctor is on call.,"SELECT p.patient_id, p.first_name, p.last_name
+FROM patients p
+JOIN doctors d ON p.primary_doctor_id = d.doctor_id
+WHERE d.on_call_flag = '1'",
+284,join,moderate,PASS,CORRECT,List appointments handled by board-certified doctors.,"SELECT a.appointment_id, a.appointment_number, a.patient_id, a.doctor_id, a.appointment_date, a.appointment_status
+FROM appointments a
+JOIN doctors d ON a.doctor_id = d.doctor_id
+WHERE d.board_certified_flag = 1",
+285,join,moderate,PASS,CORRECT,List billing claims associated with active insurance policies.,"SELECT bc.claim_id, bc.claim_number, bc.patient_id, bc.doctor_id, bc.policy_id, bc.service_date, bc.claim_status, bc.billed_amount, bc.insurance_paid_amount, bc.patient_responsibility
+FROM billing_claims bc
+JOIN insurance_policies ip ON bc.policy_id = ip.policy_id
+WHERE ip.active_flag = 1",
+286,join,hard,PASS,INCORRECT,List appointments where the appointment department differs from the doctor's department.,"SELECT ""appointments"".""appointment_id"", ""appointments"".""department_id"", ""doctors"".""department_id"" FROM ""appointments"" INNER JOIN ""doctors"" ON ""appointments"".""doctor_id"" = ""doctors"".""doctor_id""",Returns both department IDs but never filters for inequality.
+287,join,hard,PASS,CORRECT,List diagnoses where the diagnosis doctor differs from the appointment doctor.,"SELECT d.diagnosis_id, d.diagnosis_code, d.diagnosis_name, d.diagnosis_date, d.doctor_id, a.doctor_id
+FROM diagnoses d
+JOIN appointments a ON d.appointment_id = a.appointment_id
+WHERE d.doctor_id != a.doctor_id",
+288,join,hard,PASS,CORRECT,List prescriptions where the prescribing doctor differs from the appointment doctor.,"SELECT p.prescription_id, p.patient_id, p.doctor_id, a.doctor_id
+FROM prescriptions p
+JOIN appointments a ON p.appointment_id = a.appointment_id
+WHERE p.doctor_id != a.doctor_id",
+289,join,hard,PASS,CORRECT,List lab tests where the ordering doctor differs from the appointment doctor.,"SELECT lt.lab_test_id, lt.test_name, lt.ordered_date, lt.doctor_id, a.doctor_id
+FROM lab_tests lt
+JOIN appointments a ON lt.appointment_id = a.appointment_id
+WHERE lt.doctor_id != (SELECT doctor_id FROM appointments WHERE appointment_id = lt.appointment_id)",
+290,join,hard,PASS,CORRECT,List procedures where the performing doctor differs from the appointment doctor.,"SELECT p.procedure_id, p.procedure_name, p.procedure_code, p.doctor_id, a.doctor_id
+FROM procedures p
+JOIN appointments a ON p.appointment_id = a.appointment_id
+WHERE p.doctor_id != a.doctor_id",
+291,join,hard,PASS,CORRECT,List billing claims where the claim doctor differs from the appointment doctor.,"SELECT bc.claim_id, bc.claim_number, bc.appointment_id, bc.doctor_id, a.doctor_id
+FROM billing_claims bc
+JOIN appointments a ON bc.appointment_id = a.appointment_id
+WHERE bc.doctor_id != a.doctor_id",
+292,join,hard,PASS,INCORRECT,List patients whose primary doctor works in a different department from their most recent appointment.,"SELECT p.patient_id, p.first_name, p.last_name
+FROM patients p
+JOIN doctors pd ON p.primary_doctor_id = pd.doctor_id
+JOIN appointments a ON p.patient_id = a.patient_id
+JOIN doctors ad ON a.doctor_id = ad.doctor_id
+WHERE pd.department_id != ad.department_id
+  AND a.appointment_date = (
+    SELECT MAX(a2.appointment_date)
+    FROM appointments a2
+    WHERE a2.patient_id = p.patient_id
+  )","Compares the primary doctor's department with the appointment doctor's department, not appointments.department_id."
+293,join,hard,PASS,CORRECT,List procedures where the assisting doctor belongs to a different department from the performing doctor.,"SELECT ""p"".""procedure_id"" AS ""procedure_id"", ""p"".""procedure_name"" AS ""procedure_name"", ""p"".""procedure_date"" AS ""procedure_date"" FROM ""procedures"" AS ""p"" INNER JOIN ""doctors"" AS ""d_performing"" ON ""p"".""doctor_id"" = ""d_performing"".""doctor_id"" INNER JOIN ""doctors"" AS ""d_assisting"" ON ""p"".""assistant_doctor_id"" = ""d_assisting"".""doctor_id"" WHERE ""d_performing"".""department_id"" != ""d_assisting"".""department_id""",
+294,join,hard,PASS,CORRECT,List patients whose policy was inactive on the service date of a claim.,"SELECT DISTINCT p.patient_id, p.first_name, p.last_name
+FROM patients p
+JOIN billing_claims bc ON p.patient_id = bc.patient_id
+JOIN insurance_policies ip ON bc.policy_id = ip.policy_id
+WHERE bc.service_date < ip.coverage_start_date
+   OR bc.service_date > ip.coverage_end_date",
+295,join,hard,PASS,INCORRECT,List completed appointments that have no completed procedure.,"SELECT a.appointment_id, a.appointment_number, a.patient_id, a.doctor_id, a.appointment_date, a.appointment_status
+FROM appointments a
+JOIN procedures p ON a.appointment_id = p.appointment_id
+WHERE a.appointment_status = 'completed'
+AND NOT EXISTS (
+    SELECT 1
+    FROM procedures p2
+    WHERE p2.appointment_id = a.appointment_id
+    AND p2.procedure_status = 'completed'
+)",The inner procedure join excludes completed appointments that have no procedure at all.
+296,join,hard,PASS,CORRECT,List diagnoses whose patient does not match the patient on the appointment.,"SELECT ""d"".""diagnosis_id"" AS ""diagnosis_id"", ""d"".""diagnosis_code"" AS ""diagnosis_code"", ""d"".""diagnosis_name"" AS ""diagnosis_name"" FROM ""diagnoses"" AS ""d"" INNER JOIN ""appointments"" AS ""a"" ON ""d"".""appointment_id"" = ""a"".""appointment_id"" WHERE ""d"".""patient_id"" != ""a"".""patient_id""",
+297,join,hard,PASS,CORRECT,List prescriptions whose patient does not match the patient on the appointment.,"SELECT p.prescription_id, p.patient_id, a.patient_id
+FROM prescriptions p
+JOIN appointments a ON p.appointment_id = a.appointment_id
+WHERE p.patient_id != a.patient_id",
+298,join,hard,PASS,CORRECT,List lab tests whose patient does not match the patient on the appointment.,"SELECT lt.lab_test_id, lt.patient_id, lt.appointment_id
+FROM lab_tests lt
+WHERE lt.patient_id != (
+    SELECT a.patient_id
+    FROM appointments a
+    WHERE a.appointment_id = lt.appointment_id
+)",
+299,join,hard,PASS,CORRECT,List claims whose policy does not match the patient's recorded policy.,"SELECT bc.claim_id, bc.claim_number, bc.patient_id, bc.policy_id, p.policy_id
+FROM billing_claims bc
+JOIN patients p ON bc.patient_id = p.patient_id
+WHERE bc.policy_id != p.policy_id",
+300,join,hard,PASS,CORRECT,List procedures whose department differs from the appointment department.,"SELECT p.procedure_id, p.procedure_name, p.procedure_code, p.department_id, a.department_id
+FROM procedures p
+JOIN appointments a ON p.appointment_id = a.appointment_id
+WHERE p.department_id IS NOT a.department_id",
+301,multi_table_join,easy,PASS,CORRECT,"Show each appointment with patient name, doctor name, and department name.","SELECT
+  a.appointment_id,
+  p.first_name AS patient_first_name,
+  p.last_name AS patient_last_name,
+  d.first_name AS doctor_first_name,
+  d.last_name AS doctor_last_name,
+  dept.department_name
+FROM appointments a
+JOIN patients p ON a.patient_id = p.patient_id
+JOIN doctors d ON a.doctor_id = d.doctor_id
+JOIN departments dept ON a.department_id = dept.department_id",
+302,multi_table_join,easy,PASS,CORRECT,"Show each patient with primary doctor, department, and insurance provider.","SELECT p.patient_id, p.first_name, p.last_name, d.first_name, d.last_name, dept.department_name, ip.provider_name
+FROM patients p
+JOIN doctors d ON p.primary_doctor_id = d.doctor_id
+JOIN departments dept ON d.department_id = dept.department_id
+JOIN insurance_policies ip ON p.policy_id = ip.policy_id",
+303,multi_table_join,easy,PASS,CORRECT,"Show each diagnosis with patient name, doctor name, and appointment number.","SELECT d.diagnosis_id, d.diagnosis_name, p.first_name, p.last_name, doc.first_name, doc.last_name, a.appointment_number
+FROM diagnoses d
+JOIN appointments a ON d.appointment_id = a.appointment_id
+JOIN patients p ON d.patient_id = p.patient_id
+JOIN doctors doc ON d.doctor_id = doc.doctor_id",
+304,multi_table_join,easy,PASS,CORRECT,"Show each prescription with patient name, doctor name, and appointment number.","SELECT p.prescription_id, pat.first_name, pat.last_name, d.first_name, d.last_name, a.appointment_number
+FROM prescriptions p
+JOIN patients pat ON p.patient_id = pat.patient_id
+JOIN doctors d ON p.doctor_id = d.doctor_id
+JOIN appointments a ON p.appointment_id = a.appointment_id",
+305,multi_table_join,easy,PASS,CORRECT,"Show each lab test with patient name, doctor name, and appointment number.","SELECT lt.lab_test_id, p.first_name, p.last_name, d.first_name, d.last_name, a.appointment_number
+FROM lab_tests lt
+JOIN appointments a ON lt.appointment_id = a.appointment_id
+JOIN patients p ON lt.patient_id = p.patient_id
+JOIN doctors d ON lt.doctor_id = d.doctor_id",
+306,multi_table_join,easy,PASS,CORRECT,"Show each procedure with patient name, performing doctor, and department.","SELECT p.procedure_id, pa.first_name, pa.last_name, d.first_name, d.last_name, dp.department_name
+FROM procedures p
+JOIN patients pa ON p.patient_id = pa.patient_id
+JOIN doctors d ON p.doctor_id = d.doctor_id
+JOIN departments dp ON p.department_id = dp.department_id",
+307,multi_table_join,easy,PASS,CORRECT,"Show each billing claim with patient name, doctor name, and provider.","SELECT bc.claim_id, p.first_name, p.last_name, d.first_name, d.last_name, ip.provider_name
+FROM billing_claims bc
+JOIN patients p ON bc.patient_id = p.patient_id
+JOIN doctors d ON bc.doctor_id = d.doctor_id
+JOIN insurance_policies ip ON bc.policy_id = ip.policy_id",
+308,multi_table_join,easy,PASS,CORRECT,Show each completed appointment with patient name and policy plan.,"SELECT a.appointment_id, p.first_name, p.last_name, i.plan_name
+FROM appointments a
+JOIN patients p ON a.patient_id = p.patient_id
+JOIN insurance_policies i ON p.policy_id = i.policy_id
+WHERE a.appointment_status = 'completed'",
+309,multi_table_join,easy,PASS,CORRECT,Show each patient with primary doctor specialty and department name.,"SELECT p.patient_id, d.specialty, dep.department_name
+FROM patients p
+JOIN doctors d ON p.primary_doctor_id = d.doctor_id
+JOIN departments dep ON d.department_id = dep.department_id",
+310,multi_table_join,easy,PASS,INCORRECT,Show each procedure with performing doctor and assisting doctor.,"SELECT p.procedure_id, p.procedure_name, p.procedure_code, p.procedure_date, d.first_name, d.last_name
+FROM procedures p
+JOIN doctors d ON p.doctor_id = d.doctor_id
+JOIN doctors da ON p.assistant_doctor_id = da.doctor_id",Joins the assisting doctor but never selects the assisting doctor's name.
+311,multi_table_join,easy,PASS,CORRECT,Show each prescription with patient policy and insurance provider.,"SELECT p.prescription_id, p.medication_name, pat.policy_id, ip.provider_name
+FROM prescriptions p
+JOIN patients pat ON p.patient_id = pat.patient_id
+JOIN insurance_policies ip ON pat.policy_id = ip.policy_id",
+312,multi_table_join,easy,PASS,CORRECT,Show each lab test with patient blood type and doctor specialty.,"SELECT lt.lab_test_id, lt.test_name, p.blood_type, d.specialty
+FROM lab_tests lt
+JOIN patients p ON lt.patient_id = p.patient_id
+JOIN doctors d ON lt.doctor_id = d.doctor_id",
+313,multi_table_join,easy,PASS,CORRECT,Show each diagnosis with department name and patient language.,"SELECT ""diagnoses"".""diagnosis_name"", ""departments"".""department_name"", ""patients"".""preferred_language"" FROM ""appointments"" INNER JOIN ""departments"" ON ""appointments"".""department_id"" = ""departments"".""department_id"" INNER JOIN ""diagnoses"" ON ""appointments"".""appointment_id"" = ""diagnoses"".""appointment_id"" INNER JOIN ""patients"" ON ""appointments"".""patient_id"" = ""patients"".""patient_id""",
+314,multi_table_join,easy,PASS,CORRECT,Show each claim with appointment type and patient name.,"SELECT bc.claim_id, a.appointment_type, p.first_name, p.last_name
+FROM billing_claims bc
+JOIN appointments a ON bc.appointment_id = a.appointment_id
+JOIN patients p ON bc.patient_id = p.patient_id",
+315,multi_table_join,easy,PASS,CORRECT,Show each appointment with patient policy plan and insurance provider.,"SELECT a.appointment_id, ip.plan_name, ip.provider_name
+FROM appointments a
+JOIN patients p ON a.patient_id = p.patient_id
+JOIN insurance_policies ip ON p.policy_id = ip.policy_id",
+316,multi_table_join,moderate,PASS,CORRECT,"List completed appointments with patient, doctor, department, and insurance provider.","SELECT a.appointment_id, p.first_name, p.last_name, d.first_name, d.last_name, dept.department_name, ip.provider_name
+FROM appointments a
+JOIN patients p ON a.patient_id = p.patient_id
+JOIN doctors d ON a.doctor_id = d.doctor_id
+JOIN departments dept ON a.department_id = dept.department_id
+JOIN insurance_policies ip ON p.policy_id = ip.policy_id
+WHERE a.appointment_status = 'completed'",
+317,multi_table_join,moderate,PASS,CORRECT,List chronic-condition patients with confirmed diagnoses and their primary doctors.,"SELECT p.patient_id, p.first_name, p.last_name, d.first_name, d.last_name
+FROM patients p
+JOIN diagnoses diag ON p.patient_id = diag.patient_id
+JOIN doctors d ON p.primary_doctor_id = d.doctor_id
+WHERE p.chronic_condition_flag = '1'
+  AND diag.confirmed_flag = '1'",
+318,multi_table_join,moderate,PASS,CORRECT,"List active prescriptions for patients covered by PPO policies, with doctor and provider.","SELECT p.prescription_id, p.medication_name, pa.first_name, pa.last_name, d.first_name, d.last_name, i.provider_name
+FROM prescriptions p
+JOIN patients pa ON p.patient_id = pa.patient_id
+JOIN doctors d ON p.doctor_id = d.doctor_id
+JOIN insurance_policies i ON pa.policy_id = i.policy_id
+WHERE p.prescription_status = 'active'
+  AND i.plan_type = 'PPO'",
+319,multi_table_join,moderate,PASS,CORRECT,"List abnormal lab tests with patient, ordering doctor, and appointment type.","SELECT lt.lab_test_id, p.first_name, p.last_name, d.first_name, d.last_name, a.appointment_type
+FROM lab_tests lt
+JOIN patients p ON lt.patient_id = p.patient_id
+JOIN doctors d ON lt.doctor_id = d.doctor_id
+JOIN appointments a ON lt.appointment_id = a.appointment_id
+WHERE lt.abnormal_flag IN ('critical', 'high', 'low')",
+320,multi_table_join,moderate,PASS,CORRECT,"List completed procedures with patient, doctor, department, and anesthesia type.","SELECT p.procedure_id, pat.first_name, pat.last_name, d.first_name, d.last_name, dept.department_name, p.anesthesia_type
+FROM procedures p
+JOIN patients pat ON p.patient_id = pat.patient_id
+JOIN doctors d ON p.doctor_id = d.doctor_id
+JOIN departments dept ON p.department_id = dept.department_id
+WHERE p.procedure_status = 'completed'",
+321,multi_table_join,moderate,PASS,CORRECT,"List paid claims with patient, doctor, provider, and appointment status.","SELECT bc.claim_id, p.first_name, p.last_name, d.first_name, d.last_name, ip.provider_name, a.appointment_status
+FROM billing_claims bc
+JOIN patients p ON bc.patient_id = p.patient_id
+JOIN doctors d ON bc.doctor_id = d.doctor_id
+JOIN insurance_policies ip ON bc.policy_id = ip.policy_id
+JOIN appointments a ON bc.appointment_id = a.appointment_id
+WHERE bc.payment_status = 'paid'",
+322,multi_table_join,moderate,PASS,CORRECT,List urgent appointments for chronic-condition patients with primary-doctor details.,"SELECT a.appointment_id, a.appointment_date, a.start_time, a.end_time, a.visit_reason, p.first_name, p.last_name, d.first_name, d.last_name, d.specialty
+FROM appointments a
+JOIN patients p ON a.patient_id = p.patient_id
+JOIN doctors d ON p.primary_doctor_id = d.doctor_id
+WHERE a.priority_level = 'urgent'
+  AND p.chronic_condition_flag = '1'",
+323,multi_table_join,moderate,PASS,CORRECT,"List severe diagnoses that resulted in active prescriptions, with patient and doctor.","SELECT d.diagnosis_name, d.severity, p.first_name, p.last_name, doc.first_name, doc.last_name
+FROM diagnoses d
+JOIN prescriptions pr ON d.appointment_id = pr.appointment_id
+JOIN patients p ON d.patient_id = p.patient_id
+JOIN doctors doc ON d.doctor_id = doc.doctor_id
+WHERE d.severity = 'severe'
+  AND pr.prescription_status = 'active'",
+324,multi_table_join,moderate,PASS,CORRECT,List procedures with complications and the related claim amount.,"SELECT p.procedure_id, p.procedure_name, bc.billed_amount
+FROM procedures p
+JOIN billing_claims bc ON p.appointment_id = bc.appointment_id
+WHERE p.complication_flag = 1",
+325,multi_table_join,moderate,PASS,INCORRECT,"List patients with completed appointments and denied claims, including provider.","SELECT DISTINCT ""patients"".""first_name"", ""patients"".""last_name"", ""doctors"".""first_name"", ""doctors"".""last_name"" FROM ""appointments"" INNER JOIN ""billing_claims"" ON ""appointments"".""appointment_id"" = ""billing_claims"".""appointment_id"" INNER JOIN ""doctors"" ON ""appointments"".""doctor_id"" = ""doctors"".""doctor_id"" INNER JOIN ""patients"" ON ""appointments"".""patient_id"" = ""patients"".""patient_id"" WHERE ""appointments"".""appointment_status"" = ? AND ""billing_claims"".""claim_status"" = ?",Omits the requested insurance provider and returns doctor names instead.
+326,multi_table_join,moderate,PASS,INCORRECT,List board-certified doctors who treated patients covered by active insurance policies.,"SELECT DISTINCT d.doctor_id, d.first_name, d.last_name
+FROM doctors d
+JOIN patients p ON d.doctor_id = p.primary_doctor_id
+JOIN insurance_policies ip ON p.policy_id = ip.policy_id
+WHERE d.board_certified_flag = '1'
+  AND ip.active_flag = '1'",Uses primary-doctor assignment rather than an actual treatment relationship.
+327,multi_table_join,moderate,PASS,CORRECT,List interpreter-required appointments with patient language and doctor specialty.,"SELECT a.appointment_id, p.preferred_language, d.specialty
+FROM appointments a
+JOIN patients p ON a.patient_id = p.patient_id
+JOIN doctors d ON a.doctor_id = d.doctor_id
+WHERE a.interpreter_required = '1'",
+328,multi_table_join,moderate,PASS,CORRECT,"List critical lab results from completed appointments, with patient and department.","SELECT ""lab_tests"".""result_value"", ""patients"".""first_name"", ""patients"".""last_name"", ""departments"".""department_name"" FROM ""appointments"" INNER JOIN ""departments"" ON ""appointments"".""department_id"" = ""departments"".""department_id"" INNER JOIN ""lab_tests"" ON ""appointments"".""appointment_id"" = ""lab_tests"".""appointment_id"" INNER JOIN ""patients"" ON ""appointments"".""patient_id"" = ""patients"".""patient_id"" WHERE ""lab_tests"".""critical_flag"" = ? AND ""appointments"".""appointment_status"" = ?",
+329,multi_table_join,moderate,PASS,CORRECT,List prescriptions requiring authorization with patient policy and provider.,"SELECT p.prescription_id, p.medication_name, pa.first_name, pa.last_name, i.policy_number, i.provider_name, d.first_name, d.last_name
+FROM prescriptions p
+JOIN patients pa ON p.patient_id = pa.patient_id
+JOIN insurance_policies i ON pa.policy_id = i.policy_id
+JOIN doctors d ON p.doctor_id = d.doctor_id
+WHERE p.prior_authorization_required = '1'",
+330,multi_table_join,moderate,PASS,INCORRECT,List procedures requiring general anesthesia with performing and assisting doctors.,"SELECT p.procedure_id, p.procedure_name, p.procedure_code, p.procedure_date
+FROM procedures p
+JOIN doctors d ON p.doctor_id = d.doctor_id
+JOIN doctors a ON p.assistant_doctor_id = a.doctor_id
+WHERE p.anesthesia_type = 'general'",Joins both doctors but returns neither the performing nor assisting doctor names.
+331,multi_table_join,moderate,PASS,CORRECT,List patients who had diagnoses and lab tests during the same appointment.,"SELECT DISTINCT p.patient_id, p.first_name, p.last_name
+FROM patients p
+JOIN appointments a ON p.patient_id = a.patient_id
+JOIN diagnoses d ON a.appointment_id = d.appointment_id
+JOIN lab_tests l ON a.appointment_id = l.appointment_id",
+332,multi_table_join,moderate,PASS,CORRECT,List appointments that produced both prescriptions and billing claims.,"SELECT DISTINCT a.appointment_id, a.appointment_number, a.patient_id, a.doctor_id, a.appointment_date
+FROM appointments a
+JOIN prescriptions p ON a.appointment_id = p.appointment_id
+JOIN billing_claims b ON a.appointment_id = b.appointment_id",
+333,multi_table_join,moderate,PASS,CORRECT,List doctors who recorded diagnoses and performed procedures for the same patient.,"SELECT d.doctor_id, d.first_name, d.last_name
+FROM doctors d
+JOIN diagnoses diag ON d.doctor_id = diag.doctor_id
+JOIN procedures proc ON d.doctor_id = proc.doctor_id
+JOIN patients p ON diag.patient_id = p.patient_id AND proc.patient_id = p.patient_id
+WHERE EXISTS (
+    SELECT 1
+    FROM diagnoses d2
+    JOIN procedures p2 ON d2.patient_id = p2.patient_id AND d2.doctor_id = p2.doctor_id
+    WHERE d2.doctor_id = d.doctor_id AND d2.patient_id = p.patient_id
+)
+GROUP BY d.doctor_id, d.first_name, d.last_name",
+334,multi_table_join,moderate,PASS,INCORRECT,"List departments with completed appointments, procedures, and billing claims.","SELECT d.department_id, d.department_name
+FROM departments d
+JOIN appointments a ON d.department_id = a.department_id
+JOIN procedures p ON a.appointment_id = p.appointment_id
+JOIN billing_claims bc ON a.appointment_id = bc.appointment_id
+WHERE a.appointment_status = 'completed'
+GROUP BY d.department_id, d.department_name
+HAVING COUNT(CASE WHEN p.procedure_status = 'completed' THEN 1 END) > 0
+   AND COUNT(CASE WHEN bc.claim_status = 'approved' THEN 1 END) > 0",Adds unrequested completed-procedure and approved-claim requirements.
+335,multi_table_join,moderate,PASS,CORRECT,"List insurance providers with patients, appointments, and paid claims.","SELECT DISTINCT ""insurance_policies"".""provider_name"" FROM ""patients"" INNER JOIN ""appointments"" ON ""patients"".""patient_id"" = ""appointments"".""patient_id"" INNER JOIN ""billing_claims"" ON ""appointments"".""appointment_id"" = ""billing_claims"".""appointment_id"" INNER JOIN ""insurance_policies"" ON ""patients"".""policy_id"" = ""insurance_policies"".""policy_id"" WHERE ""billing_claims"".""payment_status"" = ? GROUP BY ""insurance_policies"".""provider_name""",
+336,multi_table_join,hard,PASS,CORRECT,"List patients who had a confirmed diagnosis, an active prescription, and an abnormal lab result during the same appointment.","SELECT DISTINCT p.patient_id, p.first_name, p.last_name
+FROM patients p
+JOIN appointments a ON p.patient_id = a.patient_id
+JOIN diagnoses d ON a.appointment_id = d.appointment_id
+JOIN prescriptions pr ON a.appointment_id = pr.appointment_id
+JOIN lab_tests l ON a.appointment_id = l.appointment_id
+WHERE d.confirmed_flag = '1'
+  AND pr.prescription_status = 'active'
+  AND l.abnormal_flag IN ('critical', 'high', 'low')",
+337,multi_table_join,hard,PASS,INCORRECT,List doctors who treated chronic-condition patients and produced both procedures and paid claims.,"SELECT d.doctor_id, d.first_name, d.last_name
+FROM doctors d
+JOIN patients p ON d.doctor_id = p.primary_doctor_id
+JOIN procedures pr ON p.patient_id = pr.patient_id
+JOIN billing_claims bc ON pr.appointment_id = bc.appointment_id
+WHERE p.chronic_condition_flag = '1'
+  AND bc.claim_status = 'paid'
+GROUP BY d.doctor_id
+HAVING COUNT(DISTINCT pr.procedure_id) > 0
+   AND COUNT(DISTINCT CASE WHEN bc.claim_status = 'paid' THEN bc.claim_id END) > 0",Associates the result with the patient's primary doctor rather than the procedure or claim doctor.
+338,multi_table_join,hard,PASS,CORRECT,List departments where completed appointments led to procedures with no complications and fully paid claims.,"SELECT d.department_id, d.department_name
+FROM departments d
+JOIN appointments a ON d.department_id = a.department_id
+JOIN procedures p ON a.appointment_id = p.appointment_id
+JOIN billing_claims bc ON a.appointment_id = bc.appointment_id
+WHERE a.appointment_status = 'completed'
+  AND p.complication_flag = '0'
+  AND bc.payment_status = 'paid'
+GROUP BY d.department_id, d.department_name
+HAVING COUNT(*) > 0",
+339,multi_table_join,hard,PASS,INCORRECT,List patients with urgent appointments whose claims were denied despite active insurance coverage.,"SELECT DISTINCT p.patient_id, p.first_name, p.last_name
+FROM patients p
+JOIN appointments a ON p.patient_id = a.patient_id
+JOIN billing_claims bc ON a.appointment_id = bc.appointment_id
+JOIN insurance_policies ip ON p.policy_id = ip.policy_id
+WHERE a.appointment_type = 'urgent'
+  AND bc.claim_status = 'denied'
+  AND ip.active_flag = '1'",Checks the patient's current policy instead of the policy attached to the denied claim.
+340,multi_table_join,hard,PASS,INCORRECT,List doctors whose patients had both severe diagnoses and critical lab results.,"SELECT d.doctor_id, d.first_name, d.last_name
+FROM doctors d
+JOIN diagnoses diag ON d.doctor_id = diag.doctor_id
+JOIN lab_tests lt ON d.doctor_id = lt.doctor_id
+WHERE diag.severity = 'severe'
+  AND lt.critical_flag = '1'
+GROUP BY d.doctor_id, d.first_name, d.last_name
+HAVING COUNT(DISTINCT diag.diagnosis_id) > 0
+   AND COUNT(DISTINCT lt.lab_test_id) > 0","Joins diagnoses and lab tests only by doctor, so the two findings may belong to different patients."
+341,multi_table_join,hard,PASS,INCORRECT,List insurance providers that covered procedures performed by doctors outside the appointment department.,"SELECT DISTINCT ""insurance_policies"".""provider_name"" FROM ""appointments"" INNER JOIN ""billing_claims"" ON ""appointments"".""appointment_id"" = ""billing_claims"".""appointment_id"" INNER JOIN ""departments"" ON ""appointments"".""department_id"" = ""departments"".""department_id"" INNER JOIN ""insurance_policies"" ON ""billing_claims"".""policy_id"" = ""insurance_policies"".""policy_id"" INNER JOIN ""procedures"" ON ""appointments"".""appointment_id"" = ""procedures"".""appointment_id"" WHERE ""procedures"".""procedure_id"" IS NOT NULL AND ""procedures"".""department_id"" != ?",Compares procedure.department_id with a parameter instead of the performing doctor's department with the appointment department.
+342,multi_table_join,hard,PASS,CORRECT,List patients who received prescriptions and procedures from different doctors during the same appointment.,"SELECT p.patient_id, p.first_name, p.last_name
+FROM patients p
+JOIN appointments a ON p.patient_id = a.patient_id
+JOIN prescriptions pr ON a.appointment_id = pr.appointment_id
+JOIN procedures proc ON a.appointment_id = proc.appointment_id
+WHERE pr.doctor_id != proc.doctor_id
+GROUP BY p.patient_id, p.first_name, p.last_name
+HAVING COUNT(*) > 0",
+343,multi_table_join,hard,PASS,CORRECT,"List appointments where diagnosis, prescription, lab-test, and procedure doctors are not all the same.","WITH diag_doctors AS (
+    SELECT appointment_id, doctor_id
+    FROM diagnoses
+),
+lab_doctors AS (
+    SELECT appointment_id, doctor_id
+    FROM lab_tests
+),
+presc_doctors AS (
+    SELECT appointment_id, doctor_id
+    FROM prescriptions
+),
+proc_doctors AS (
+    SELECT appointment_id, doctor_id
+    FROM procedures
+)
+SELECT a.appointment_id, a.appointment_number, a.patient_id, a.doctor_id
+FROM appointments a
+WHERE EXISTS (
+    SELECT 1
+    FROM diag_doctors d
+    JOIN lab_doctors l ON d.appointment_id = l.appointment_id
+    JOIN presc_doctors p ON d.appointment_id = p.appointment_id
+    JOIN proc_doctors pr ON d.appointment_id = pr.appointment_id
+    WHERE d.appointment_id = a.appointment_id
+    AND (d.doctor_id != l.doctor_id OR l.doctor_id != p.doctor_id OR p.doctor_id != pr.doctor_id)
+)",
+344,multi_table_join,hard,PASS,INCORRECT,List patients whose primary doctor did not participate in any of their completed appointments.,"SELECT p.patient_id, p.first_name, p.last_name
+FROM patients p
+JOIN doctors d ON p.primary_doctor_id = d.doctor_id
+JOIN appointments a ON p.patient_id = a.patient_id
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM appointments a2
+    WHERE a2.patient_id = p.patient_id
+      AND a2.doctor_id = p.primary_doctor_id
+      AND a2.appointment_status = 'completed'
+)",Does not require a completed appointment and excludes patients with no appointment because of the outer inner join.
+345,multi_table_join,hard,PASS,INCORRECT,List doctors who both prescribed medication and performed a procedure for the same appointment.,"SELECT d.doctor_id, d.first_name, d.last_name
+FROM doctors d
+JOIN appointments a ON d.doctor_id = a.doctor_id
+JOIN prescriptions p ON a.appointment_id = p.appointment_id
+JOIN procedures pr ON a.appointment_id = pr.appointment_id
+GROUP BY d.doctor_id, d.first_name, d.last_name
+HAVING COUNT(DISTINCT a.appointment_id) > 0",Uses the appointment doctor but never requires that doctor to author the prescription and perform the procedure.
+346,multi_table_join,hard,PASS,INCORRECT,"List departments with abnormal lab tests, procedure complications, and denied claims.","SELECT d.department_id, d.department_name
+FROM departments d
+JOIN appointments a ON d.department_id = a.department_id
+JOIN lab_tests lt ON a.appointment_id = lt.appointment_id
+JOIN procedures p ON a.appointment_id = p.appointment_id
+JOIN billing_claims bc ON a.appointment_id = bc.appointment_id
+WHERE lt.abnormal_flag = '1'
+  AND p.complication_flag = '1'
+  AND bc.claim_status = 'denied'
+GROUP BY d.department_id, d.department_name
+HAVING COUNT(*) > 0","Uses abnormal_flag = '1', which is not a stored abnormal category."
+347,multi_table_join,hard,PASS,INCORRECT,List patients whose total procedure cost exceeded insurance payment on related claims.,"WITH procedure_costs AS (
+    SELECT patient_id, SUM(estimated_cost) AS total_cost
+    FROM procedures
+    GROUP BY patient_id
+),
+insurance_payments AS (
+    SELECT patient_id, SUM(insurance_paid_amount) AS total_paid
+    FROM billing_claims
+    GROUP BY patient_id
+)
+SELECT p.patient_id, p.first_name, p.last_name
+FROM patients p
+JOIN procedure_costs pc ON p.patient_id = pc.patient_id
+JOIN insurance_payments ip ON p.patient_id = ip.patient_id
+WHERE pc.total_cost > ip.total_paid",Aggregates all procedure costs and claim payments by patient instead of matching related appointments or claims.
+348,multi_table_join,hard,PASS,INCORRECT,List providers whose covered patients had both telehealth and in-person completed appointments.,"SELECT d.doctor_id, d.first_name, d.last_name
+FROM doctors d
+JOIN appointments a ON d.doctor_id = a.doctor_id
+JOIN patients p ON a.patient_id = p.patient_id
+JOIN insurance_policies ip ON p.policy_id = ip.policy_id
+WHERE a.appointment_status = 'completed'
+GROUP BY d.doctor_id
+HAVING COUNT(DISTINCT CASE WHEN a.telehealth_flag = '1' THEN a.appointment_id END) > 0
+   AND COUNT(DISTINCT CASE WHEN a.telehealth_flag = '0' THEN a.appointment_id END) > 0",Returns doctors rather than insurance providers.
+349,multi_table_join,hard,PASS,CORRECT,List doctors who treated patients with active policies from at least three providers and generated paid claims.,"WITH paid_claims AS (
+    SELECT bc.doctor_id, bc.policy_id
+    FROM billing_claims bc
+    WHERE bc.claim_status = 'paid'
+),
+active_policies AS (
+    SELECT ip.policy_id, ip.provider_name
+    FROM insurance_policies ip
+    WHERE ip.active_flag = '1'
+),
+doctor_provider_counts AS (
+    SELECT pc.doctor_id, COUNT(DISTINCT ap.provider_name) AS provider_count
+    FROM paid_claims pc
+    JOIN active_policies ap ON pc.policy_id = ap.policy_id
+    GROUP BY pc.doctor_id
+    HAVING COUNT(DISTINCT ap.provider_name) >= 3
+)
+SELECT d.doctor_id, d.first_name, d.last_name
+FROM doctors d
+JOIN doctor_provider_counts dpc ON d.doctor_id = dpc.doctor_id",
+350,multi_table_join,hard,PASS,CORRECT,"List appointments that generated a confirmed diagnosis, active prescription, completed lab test, completed procedure, and paid claim.","SELECT a.appointment_id, a.appointment_number, a.patient_id, a.doctor_id, a.appointment_date
+FROM appointments a
+JOIN diagnoses d ON a.appointment_id = d.appointment_id
+JOIN prescriptions p ON a.appointment_id = p.appointment_id
+JOIN lab_tests l ON a.appointment_id = l.appointment_id
+JOIN procedures pr ON a.appointment_id = pr.appointment_id
+JOIN billing_claims b ON a.appointment_id = b.appointment_id
+WHERE d.confirmed_flag = '1'
+  AND p.prescription_status = 'active'
+  AND l.test_status = 'completed'
+  AND pr.procedure_status = 'completed'
+  AND b.payment_status = 'paid'
+GROUP BY a.appointment_id, a.appointment_number, a.patient_id, a.doctor_id, a.appointment_date
+HAVING COUNT(DISTINCT d.diagnosis_id) > 0
+   AND COUNT(DISTINCT p.prescription_id) > 0
+   AND COUNT(DISTINCT l.lab_test_id) > 0
+   AND COUNT(DISTINCT pr.procedure_id) > 0
+   AND COUNT(DISTINCT b.claim_id) > 0",
+351,order_limit_topk,easy,PASS,CORRECT,Show the 5 departments with the largest annual budgets.,"SELECT department_name, annual_budget
+FROM departments
+ORDER BY annual_budget DESC
+LIMIT 5",
+352,order_limit_topk,easy,PASS,CORRECT,Show the 5 departments with the highest bed occupancy.,"SELECT department_name, current_occupancy, bed_capacity
+FROM departments
+ORDER BY current_occupancy DESC
+LIMIT 5",
+353,order_limit_topk,easy,PASS,CORRECT,Show the 10 doctors with the highest salaries.,"SELECT doctor_id, first_name, last_name, salary
+FROM doctors
+ORDER BY salary DESC
+LIMIT 10",
+354,order_limit_topk,easy,PASS,CORRECT,Show the 10 doctors with the most years of experience.,"SELECT doctor_id, first_name, last_name, years_experience
+FROM doctors
+ORDER BY years_experience DESC
+LIMIT 10",
+355,order_limit_topk,easy,PASS,CORRECT,Show the 10 insurance policies with the highest deductibles.,"SELECT policy_id, policy_number, deductible_amount
+FROM insurance_policies
+ORDER BY deductible_amount DESC
+LIMIT 10",
+356,order_limit_topk,easy,PASS,CORRECT,Show the 10 policies with the largest out-of-pocket maximums.,"SELECT policy_id, policy_number, out_of_pocket_max
+FROM insurance_policies
+ORDER BY out_of_pocket_max DESC
+LIMIT 10",
+357,order_limit_topk,easy,PASS,CORRECT,Show the 10 patients with the highest body weight.,"SELECT patients.patient_id, patients.first_name, patients.last_name, patients.weight_kg
+FROM patients
+ORDER BY patients.weight_kg DESC
+LIMIT 10",
+358,order_limit_topk,easy,PASS,CORRECT,Show the 10 appointments with the longest wait times.,"SELECT appointments.appointment_id, appointments.wait_time_minutes
+FROM appointments
+ORDER BY appointments.wait_time_minutes DESC
+LIMIT 10",
+359,order_limit_topk,easy,PASS,CORRECT,Show the 10 appointments with the highest copays.,"SELECT appointments.appointment_id, appointments.copay_amount
+FROM appointments
+ORDER BY appointments.copay_amount DESC
+LIMIT 10",
+360,order_limit_topk,easy,PASS,CORRECT,Show the 10 diagnoses with the longest follow-up intervals.,"SELECT diagnoses.diagnosis_id, diagnoses.diagnosis_name, diagnoses.follow_up_interval_days
+FROM diagnoses
+ORDER BY diagnoses.follow_up_interval_days DESC
+LIMIT 10",
+361,order_limit_topk,easy,PASS,CORRECT,Show the 10 prescriptions with the highest estimated costs.,"SELECT prescription_id, medication_name, estimated_cost
+FROM prescriptions
+ORDER BY estimated_cost DESC
+LIMIT 10",
+362,order_limit_topk,easy,PASS,CORRECT,Show the 10 lab tests with the highest result values.,"SELECT lab_test_id, test_name, result_value
+FROM lab_tests
+ORDER BY result_value DESC
+LIMIT 10",
+363,order_limit_topk,easy,PASS,CORRECT,Show the 10 procedures with the highest estimated costs.,"SELECT procedure_id, procedure_name, estimated_cost
+FROM procedures
+ORDER BY estimated_cost DESC
+LIMIT 10",
+364,order_limit_topk,easy,PASS,CORRECT,Show the 10 billing claims with the largest billed amounts.,"SELECT billing_claims.claim_id, billing_claims.billed_amount
+FROM billing_claims
+ORDER BY billing_claims.billed_amount DESC
+LIMIT 10",
+365,order_limit_topk,easy,PASS,CORRECT,Show the 10 claims with the longest time to payment.,"SELECT billing_claims.claim_id, billing_claims.claim_number, billing_claims.days_to_payment
+FROM billing_claims
+ORDER BY billing_claims.days_to_payment DESC
+LIMIT 10",
+366,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 departments by number of active doctors.,"SELECT d.department_name
+FROM departments d
+JOIN doctors doc ON d.department_id = doc.department_id
+WHERE doc.active_flag = '1'
+GROUP BY d.department_id
+ORDER BY COUNT(doc.doctor_id) DESC
+LIMIT 10",
+367,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 doctors by number of completed appointments.,"SELECT d.doctor_id, d.first_name, d.last_name
+FROM doctors d
+JOIN appointments a ON d.doctor_id = a.doctor_id
+WHERE a.appointment_status = 'completed'
+GROUP BY d.doctor_id, d.first_name, d.last_name
+ORDER BY COUNT(a.appointment_id) DESC
+LIMIT 10",
+368,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 primary doctors by number of patients.,"SELECT d.doctor_id, d.first_name, d.last_name
+FROM doctors d
+JOIN patients p ON d.doctor_id = p.primary_doctor_id
+GROUP BY d.doctor_id
+ORDER BY COUNT(p.patient_id) DESC
+LIMIT 10",
+369,order_limit_topk,moderate,PASS,CORRECT,Show the top 5 insurance providers by number of active policies.,"SELECT provider_name
+FROM insurance_policies
+WHERE active_flag = 1
+GROUP BY provider_name
+ORDER BY COUNT(policy_id) DESC
+LIMIT 5",
+370,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 patients by number of completed appointments.,"SELECT p.patient_id, p.first_name, p.last_name
+FROM patients p
+JOIN appointments a ON p.patient_id = a.patient_id
+WHERE a.appointment_status = 'completed'
+GROUP BY p.patient_id, p.first_name, p.last_name
+ORDER BY COUNT(a.appointment_id) DESC
+LIMIT 10",
+371,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 doctors by number of confirmed diagnoses.,"SELECT d.doctor_id, d.first_name, d.last_name
+FROM doctors d
+JOIN diagnoses diag ON d.doctor_id = diag.doctor_id
+WHERE diag.confirmed_flag = '1'
+GROUP BY d.doctor_id, d.first_name, d.last_name
+ORDER BY COUNT(diag.diagnosis_id) DESC
+LIMIT 10",
+372,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 patients by total prescription cost.,"SELECT p.patient_id, p.first_name, p.last_name
+FROM patients p
+JOIN prescriptions pr ON p.patient_id = pr.patient_id
+GROUP BY p.patient_id, p.first_name, p.last_name
+ORDER BY SUM(pr.estimated_cost) DESC
+LIMIT 10",
+373,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 medications by number of prescriptions.,"SELECT medication_name
+FROM prescriptions
+GROUP BY medication_name
+ORDER BY COUNT(prescription_id) DESC
+LIMIT 10",
+374,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 laboratories by number of abnormal results.,"SELECT laboratory_name
+FROM lab_tests
+WHERE abnormal_flag IN ('critical', 'high', 'low')
+GROUP BY laboratory_name
+ORDER BY COUNT(lab_test_id) DESC
+LIMIT 10",
+375,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 doctors by number of lab tests ordered.,"SELECT d.doctor_id, d.first_name, d.last_name
+FROM doctors d
+JOIN lab_tests lt ON d.doctor_id = lt.doctor_id
+GROUP BY d.doctor_id, d.first_name, d.last_name
+ORDER BY COUNT(lt.lab_test_id) DESC
+LIMIT 10",
+376,order_limit_topk,moderate,PASS,INCORRECT,Show the top 10 departments by completed procedure count.,"SELECT d.department_id, d.department_name
+FROM departments d
+JOIN procedures p ON d.department_id = p.department_id
+GROUP BY d.department_id, d.department_name
+ORDER BY COUNT(p.procedure_id) DESC
+LIMIT 10",Ranks departments by all procedures and never filters procedure_status = 'completed'.
+377,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 doctors by total procedure cost.,"SELECT d.doctor_id, d.first_name, d.last_name
+FROM doctors d
+JOIN procedures p ON d.doctor_id = p.doctor_id
+GROUP BY d.doctor_id, d.first_name, d.last_name
+ORDER BY SUM(p.estimated_cost) DESC
+LIMIT 10",
+378,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 patients by total billed amount.,"SELECT p.patient_id, p.first_name, p.last_name
+FROM patients p
+JOIN billing_claims bc ON p.patient_id = bc.patient_id
+GROUP BY p.patient_id, p.first_name, p.last_name
+ORDER BY SUM(bc.billed_amount) DESC
+LIMIT 10",
+379,order_limit_topk,moderate,PASS,INCORRECT,Show the top 5 providers by total insurance payments.,"SELECT doctor_id
+FROM billing_claims
+GROUP BY doctor_id
+ORDER BY SUM(insurance_paid_amount) DESC
+LIMIT 5",Ranks doctor_id rather than insurance provider.
+380,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 appointment types by average wait time.,"SELECT appointment_type, AVG(wait_time_minutes) AS avg_wait_time
+FROM appointments
+GROUP BY appointment_type
+ORDER BY avg_wait_time DESC
+LIMIT 10",
+381,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 diagnosis categories by average follow-up interval.,"SELECT diagnosis_category, AVG(follow_up_interval_days) AS avg_follow_up_interval
+FROM diagnoses
+GROUP BY diagnosis_category
+ORDER BY avg_follow_up_interval DESC
+LIMIT 10",
+382,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 drug classes by total prescription cost.,"SELECT drug_class, SUM(estimated_cost) AS total_cost
+FROM prescriptions
+GROUP BY drug_class
+ORDER BY total_cost DESC
+LIMIT 10",
+383,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 procedure categories by complication count.,"SELECT procedure_category
+FROM procedures
+GROUP BY procedure_category
+ORDER BY SUM(complication_flag) DESC
+LIMIT 10",
+384,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 doctors by total billed claim amount.,"SELECT d.doctor_id, d.first_name, d.last_name
+FROM doctors d
+JOIN billing_claims bc ON d.doctor_id = bc.doctor_id
+GROUP BY d.doctor_id, d.first_name, d.last_name
+ORDER BY SUM(bc.billed_amount) DESC
+LIMIT 10",
+385,order_limit_topk,moderate,PASS,CORRECT,Show the top 5 departments by total insurance-paid amount.,"SELECT ""departments"".""department_name"", SUM(""billing_claims"".""insurance_paid_amount"") AS ""total_insurance_paid"" FROM ""departments"" INNER JOIN ""appointments"" ON ""departments"".""department_id"" = ""appointments"".""department_id"" INNER JOIN ""billing_claims"" ON ""appointments"".""appointment_id"" = ""billing_claims"".""appointment_id"" GROUP BY ""departments"".""department_name"" ORDER BY ""total_insurance_paid"" DESC LIMIT 5",
+386,order_limit_topk,hard,PASS,CORRECT,Show the top 3 doctors by completed appointments within each department.,"WITH doctor_dept_counts AS (
+    SELECT 
+        d.doctor_id,
+        d.department_id,
+        d.first_name,
+        d.last_name,
+        dept.department_name,
+        COUNT(a.appointment_id) AS completed_count
+    FROM doctors d
+    JOIN departments dept ON d.department_id = dept.department_id
+    JOIN appointments a ON d.doctor_id = a.doctor_id
+    WHERE a.appointment_status = 'completed'
+    GROUP BY d.doctor_id, d.department_id, d.first_name, d.last_name, dept.department_name
+),
+ranked_doctors AS (
+    SELECT 
+        doctor_id,
+        department_id,
+        first_name,
+        last_name,
+        department_name,
+        completed_count,
+        ROW_NUMBER() OVER (PARTITION BY department_id ORDER BY completed_count DESC) AS rn
+    FROM doctor_dept_counts
+)
+SELECT 
+    doctor_id,
+    first_name,
+    last_name,
+    department_name
+FROM ranked_doctors
+WHERE rn <= 3",
+387,order_limit_topk,hard,PASS,CORRECT,Show the highest-paid doctor in each specialty.,"WITH RankedDoctors AS (
+    SELECT 
+        doctors.specialty,
+        doctors.first_name,
+        doctors.last_name,
+        doctors.salary,
+        ROW_NUMBER() OVER (PARTITION BY doctors.specialty ORDER BY doctors.salary DESC) AS rn
+    FROM doctors
+)
+SELECT 
+    specialty,
+    first_name,
+    last_name,
+    salary
+FROM RankedDoctors
+WHERE rn = 1",
+388,order_limit_topk,hard,PASS,CORRECT,Show the top 3 patients by total billed amount within each insurance provider.,"WITH patient_billed_totals AS (
+    SELECT
+        p.patient_id,
+        ip.provider_name,
+        SUM(bc.billed_amount) AS total_billed
+    FROM billing_claims bc
+    JOIN patients p ON bc.patient_id = p.patient_id
+    JOIN insurance_policies ip ON bc.policy_id = ip.policy_id
+    GROUP BY p.patient_id, ip.provider_name
+),
+ranked_patients AS (
+    SELECT
+        patient_id,
+        provider_name,
+        total_billed,
+        ROW_NUMBER() OVER (PARTITION BY provider_name ORDER BY total_billed DESC) AS rn
+    FROM patient_billed_totals
+)
+SELECT
+    provider_name,
+    patient_id
+FROM ranked_patients
+WHERE rn <= 3",
+389,order_limit_topk,hard,PASS,CORRECT,Show the top 3 departments by average patient wait time among departments with at least five completed appointments.,"SELECT ""departments"".""department_name"", ""departments"".""department_id"", AVG(""appointments"".""wait_time_minutes"") AS ""avg_wait_time"", COUNT(*) AS ""appointment_count"" FROM ""departments"" INNER JOIN ""appointments"" ON ""departments"".""department_id"" = ""appointments"".""department_id"" WHERE ""appointments"".""appointment_status"" = ? GROUP BY ""departments"".""department_id"", ""departments"".""department_name"" HAVING ""appointment_count"" >= ? ORDER BY ""avg_wait_time"" DESC LIMIT 3",
+390,order_limit_topk,hard,PASS,CORRECT,Show the top 3 doctors by confirmed diagnosis rate within each specialty.,"WITH doctor_stats AS (
+    SELECT 
+        d.doctor_id,
+        d.specialty,
+        d.first_name,
+        d.last_name,
+        SUM(CASE WHEN diag.confirmed_flag = '1' THEN 1 ELSE 0 END) AS confirmed_count,
+        COUNT(*) AS total_count
+    FROM doctors d
+    JOIN diagnoses diag ON d.doctor_id = diag.doctor_id
+    GROUP BY d.doctor_id, d.specialty, d.first_name, d.last_name
+),
+ranked_doctors AS (
+    SELECT 
+        specialty,
+        doctor_id,
+        first_name,
+        last_name,
+        confirmed_count,
+        total_count,
+        CAST(confirmed_count AS REAL) / total_count AS confirmed_rate,
+        ROW_NUMBER() OVER (PARTITION BY specialty ORDER BY CAST(confirmed_count AS REAL) / total_count DESC) AS rn
+    FROM doctor_stats
+)
+SELECT 
+    specialty,
+    doctor_id,
+    first_name,
+    last_name
+FROM ranked_doctors
+WHERE rn <= 3",
+391,order_limit_topk,hard,PASS,CORRECT,Show the top 5 patients by prescription cost among patients with at least three prescriptions.,"SELECT p.patient_id
+FROM patients p
+JOIN prescriptions pr ON p.patient_id = pr.patient_id
+GROUP BY p.patient_id
+HAVING COUNT(pr.prescription_id) >= 3
+ORDER BY SUM(pr.estimated_cost) DESC
+LIMIT 5",
+392,order_limit_topk,hard,PASS,INCORRECT,Show the top 3 laboratories by abnormal-result rate among laboratories with at least five completed tests.,"WITH lab_stats AS (
+    SELECT 
+        laboratory_name,
+        COUNT(*) AS total_tests,
+        SUM(CASE WHEN abnormal_flag IN ('critical', 'high') THEN 1 ELSE 0 END) AS abnormal_count
+    FROM lab_tests
+    WHERE test_status = 'completed'
+    GROUP BY laboratory_name
+    HAVING COUNT(*) >= 5
+),
+avg_abnormal_rate AS (
+    SELECT AVG(CAST(abnormal_count AS REAL) / total_tests) AS avg_rate
+    FROM lab_stats
+)
+SELECT laboratory_name
+FROM lab_stats
+WHERE CAST(abnormal_count AS REAL) / total_tests > (SELECT avg_rate FROM avg_abnormal_rate)
+ORDER BY CAST(abnormal_count AS REAL) / total_tests DESC
+LIMIT 3",Omits low abnormal results and adds an unrequested above-average-rate filter.
+393,order_limit_topk,hard,PASS,CORRECT,Show the top 3 doctors by procedure revenue within each department.,"WITH doctor_dept_costs AS (
+    SELECT
+        d.department_id,
+        doc.doctor_id,
+        doc.first_name,
+        doc.last_name,
+        SUM(p.estimated_cost) AS total_estimated_cost
+    FROM departments d
+    JOIN doctors doc ON d.department_id = doc.department_id
+    JOIN procedures p ON doc.doctor_id = p.doctor_id AND d.department_id = p.department_id
+    GROUP BY d.department_id, doc.doctor_id, doc.first_name, doc.last_name
+),
+ranked_doctors AS (
+    SELECT
+        department_id,
+        doctor_id,
+        first_name,
+        last_name,
+        total_estimated_cost,
+        ROW_NUMBER() OVER (PARTITION BY department_id ORDER BY total_estimated_cost DESC) AS rn
+    FROM doctor_dept_costs
+)
+SELECT
+    dept.department_name,
+    rd.doctor_id,
+    rd.first_name,
+    rd.last_name
+FROM ranked_doctors rd
+JOIN departments dept ON rd.department_id = dept.department_id
+WHERE rd.rn <= 3",
+394,order_limit_topk,hard,PASS,INCORRECT,Show the top 3 providers by insurance payment rate among providers with at least five claims.,"SELECT doctor_id, SUM(insurance_paid_amount) AS total_paid, SUM(billed_amount) AS total_billed, COUNT(*) AS claim_count, CAST(SUM(insurance_paid_amount) AS REAL) / SUM(billed_amount) AS payment_rate FROM billing_claims GROUP BY doctor_id HAVING COUNT(*) >= 5 ORDER BY payment_rate DESC LIMIT 3",Groups by doctor_id rather than insurance provider.
+395,order_limit_topk,hard,FAIL,INCORRECT,Show the top 5 patients by abnormal lab-test count within each blood type.,<NO SQL GENERATED>,No SQL was returned.
+396,order_limit_topk,hard,PASS,INCORRECT,Show the top 3 departments by successful-procedure rate.,"SELECT d.department_name, d.department_id
+FROM departments d
+JOIN procedures p ON d.department_id = p.department_id
+GROUP BY d.department_id, d.department_name
+ORDER BY 
+    CAST(SUM(CASE WHEN p.procedure_status = 'completed' THEN 1 ELSE 0 END) AS REAL) * 1.0 / COUNT(*) DESC
+LIMIT 3",Treats procedure_status = 'completed' as success instead of using outcome = 'successful'.
+397,order_limit_topk,hard,PASS,CORRECT,Show the top 5 doctors by average patient-responsibility amount.,"SELECT d.doctor_id, d.first_name, d.last_name, AVG(bc.patient_responsibility) AS avg_patient_responsibility
+FROM doctors d
+JOIN billing_claims bc ON d.doctor_id = bc.doctor_id
+GROUP BY d.doctor_id
+ORDER BY avg_patient_responsibility DESC
+LIMIT 5",
+398,order_limit_topk,hard,PASS,INCORRECT,Show the top 3 appointment types by paid-claim amount.,"SELECT a.appointment_type, SUM(bc.insurance_paid_amount) AS total_paid
+FROM appointments a
+JOIN billing_claims bc ON a.appointment_id = bc.appointment_id
+GROUP BY a.appointment_type
+ORDER BY total_paid DESC
+LIMIT 3",Sums insurance payments for all claims and never restricts to paid claims.
+399,order_limit_topk,hard,PASS,INCORRECT,Show the top 3 diagnosis categories by combined prescription and procedure cost.,"SELECT d.diagnosis_category
+FROM diagnoses d
+JOIN prescriptions p ON d.appointment_id = p.appointment_id
+JOIN procedures pr ON d.appointment_id = pr.appointment_id
+GROUP BY d.diagnosis_category
+ORDER BY SUM(p.estimated_cost + pr.estimated_cost) DESC
+LIMIT 3","Directly joins prescriptions and procedures, multiplying costs when an appointment has multiple rows."
+400,order_limit_topk,hard,PASS,CORRECT,Show the top 5 insurance plans by lowest average days to payment among plans with at least five claims.,"SELECT ip.policy_id, ip.plan_name
+FROM insurance_policies ip
+JOIN billing_claims bc ON ip.policy_id = bc.policy_id
+GROUP BY ip.policy_id, ip.plan_name
+HAVING COUNT(*) >= 5
+ORDER BY AVG(bc.days_to_payment) ASC
+LIMIT 5",
+401,set_operations,easy,PASS,INCORRECT,List doctor identifiers that appear either as primary doctors or appointment doctors.,"SELECT DISTINCT d.doctor_id
+FROM doctors d
+JOIN patients p ON d.doctor_id = p.primary_doctor_id
+JOIN appointments a ON d.doctor_id = a.doctor_id","Uses inner joins, returning doctors present in both sources instead of either source."
+402,set_operations,easy,PASS,INCORRECT,List doctor identifiers that appear either in diagnoses or prescriptions.,"SELECT DISTINCT d.doctor_id
+FROM doctors d
+JOIN diagnoses di ON d.doctor_id = di.doctor_id
+JOIN prescriptions p ON d.doctor_id = p.doctor_id","Uses inner joins, returning the intersection of diagnosis and prescription doctors instead of their union."
+403,set_operations,easy,PASS,INCORRECT,List patient identifiers that appear either in appointments or billing claims.,"SELECT DISTINCT ""patients"".""patient_id"", ""patients"".""first_name"" FROM ""appointments"" INNER JOIN ""billing_claims"" ON ""appointments"".""appointment_id"" = ""billing_claims"".""appointment_id"" INNER JOIN ""patients"" ON ""appointments"".""patient_id"" = ""patients"".""patient_id""","Uses an appointment-to-claim inner join, returning only patients appearing in both sources."
+404,set_operations,easy,PASS,INCORRECT,List appointment identifiers that appear either in diagnoses or lab tests.,"SELECT DISTINCT a.appointment_id
+FROM appointments a
+JOIN diagnoses d ON a.appointment_id = d.appointment_id
+JOIN lab_tests l ON a.appointment_id = l.appointment_id","Uses inner joins, returning appointments present in both diagnoses and lab tests instead of either source."
+405,set_operations,easy,PASS,INCORRECT,List appointment identifiers that appear either in prescriptions or procedures.,"SELECT DISTINCT a.appointment_id
+FROM appointments a
+JOIN prescriptions p ON a.appointment_id = p.appointment_id
+JOIN procedures pr ON a.appointment_id = pr.appointment_id","Uses inner joins, returning appointments present in both prescriptions and procedures instead of either source."
+406,set_operations,easy,PASS,INCORRECT,List policy identifiers that appear either in patient records or billing claims.,"SELECT DISTINCT ""insurance_policies"".""policy_id"" FROM ""billing_claims"" INNER JOIN ""insurance_policies"" ON ""billing_claims"".""policy_id"" = ""insurance_policies"".""policy_id"" INNER JOIN ""patients"" ON ""billing_claims"".""patient_id"" = ""patients"".""patient_id""","Uses inner joins, returning policies used in both patients and claims instead of either source."
+407,set_operations,easy,PASS,INCORRECT,List department identifiers that appear either in doctors or appointments.,"SELECT DISTINCT ""doctors"".""department_id"", ""appointments"".""department_id"" FROM ""doctors"" INNER JOIN ""appointments"" ON ""doctors"".""doctor_id"" = ""appointments"".""doctor_id""",Uses an inner join and returns two department columns instead of the union of department identifiers.
+408,set_operations,easy,PASS,CORRECT,List patients who either have a chronic condition or currently smoke.,"SELECT p.patient_id, p.first_name, p.last_name
+FROM patients p
+WHERE p.chronic_condition_flag = 1
+   OR p.smoking_status = 'current'",
+409,set_operations,easy,PASS,CORRECT,List doctors who are either board certified or accepting new patients.,"SELECT d.doctor_id, d.first_name, d.last_name
+FROM doctors d
+WHERE d.board_certified_flag = '1' OR d.accepting_new_patients = '1'",
+410,set_operations,easy,PASS,CORRECT,List policies that include either dental or vision coverage.,"SELECT policy_id, policy_number, provider_name, plan_name
+FROM insurance_policies
+WHERE dental_coverage = 1 OR vision_coverage = 1",
+411,set_operations,easy,PASS,CORRECT,List appointments that are either urgent or emergency priority.,"SELECT appointments.appointment_id, appointments.appointment_number, appointments.patient_id, appointments.doctor_id, appointments.appointment_date, appointments.appointment_status, appointments.priority_level
+FROM appointments
+WHERE appointments.priority_level IN ('urgent', 'emergency')",
+412,set_operations,easy,PASS,CORRECT,List diagnoses that are either severe or moderate.,"SELECT diagnoses.diagnosis_id, diagnoses.diagnosis_name, diagnoses.severity
+FROM diagnoses
+WHERE diagnoses.severity IN ('severe', 'moderate')",
+413,set_operations,easy,PASS,CORRECT,List prescriptions that are either active or completed.,"SELECT prescription_id, patient_id, doctor_id, medication_name, prescription_status
+FROM prescriptions
+WHERE prescription_status IN ('active', 'completed')",
+414,set_operations,easy,PASS,CORRECT,List lab tests that are either abnormal or critical.,"SELECT lab_test_id, test_name, result_value, abnormal_flag, critical_flag
+FROM lab_tests
+WHERE abnormal_flag IN ('high', 'low', 'critical') OR critical_flag = 1",
+415,set_operations,easy,PASS,CORRECT,List claims that are either paid or approved.,"SELECT billing_claims.claim_id, billing_claims.claim_number, billing_claims.claim_status
+FROM billing_claims
+WHERE billing_claims.claim_status IN ('paid', 'approved')",
+416,set_operations,moderate,PASS,CORRECT,List patients who have both a completed appointment and a confirmed diagnosis.,"SELECT DISTINCT ""patients"".""patient_id"", ""patients"".""first_name"", ""patients"".""last_name"" FROM ""appointments"" INNER JOIN ""diagnoses"" ON ""appointments"".""appointment_id"" = ""diagnoses"".""appointment_id"" INNER JOIN ""patients"" ON ""appointments"".""patient_id"" = ""patients"".""patient_id"" WHERE ""appointments"".""appointment_status"" = ? AND ""diagnoses"".""confirmed_flag"" = ?",
+417,set_operations,moderate,PASS,CORRECT,List doctors who both recorded a diagnosis and prescribed medication.,"SELECT d.doctor_id, d.first_name, d.last_name
+FROM doctors d
+JOIN diagnoses di ON d.doctor_id = di.doctor_id
+JOIN prescriptions p ON d.doctor_id = p.doctor_id
+GROUP BY d.doctor_id, d.first_name, d.last_name
+HAVING COUNT(DISTINCT di.diagnosis_id) > 0 AND COUNT(DISTINCT p.prescription_id) > 0",
+418,set_operations,moderate,PASS,CORRECT,List appointments that have both a lab test and a procedure.,"SELECT DISTINCT a.appointment_id, a.appointment_number, a.patient_id, a.doctor_id, a.appointment_date
+FROM appointments a
+JOIN lab_tests lt ON a.appointment_id = lt.appointment_id
+JOIN procedures p ON a.appointment_id = p.appointment_id",
+419,set_operations,moderate,PASS,CORRECT,List patients who have both a prescription and a billing claim.,"SELECT DISTINCT p.patient_id, p.first_name, p.last_name
+FROM patients p
+JOIN prescriptions pr ON p.patient_id = pr.patient_id
+JOIN billing_claims bc ON p.patient_id = bc.patient_id",
+420,set_operations,moderate,PASS,CORRECT,List departments that have both active doctors and completed procedures.,"SELECT d.department_id, d.department_name
+FROM departments d
+JOIN doctors doc ON d.department_id = doc.department_id
+JOIN procedures p ON d.department_id = p.department_id
+WHERE doc.active_flag = '1'
+  AND p.procedure_status = 'completed'
+GROUP BY d.department_id, d.department_name
+HAVING COUNT(DISTINCT doc.doctor_id) > 0
+   AND COUNT(DISTINCT p.procedure_id) > 0",
+421,set_operations,moderate,PASS,INCORRECT,List patients with completed appointments but no billing claims.,"SELECT DISTINCT p.patient_id, p.first_name, p.last_name
+FROM patients p
+JOIN appointments a ON p.patient_id = a.patient_id
+JOIN billing_claims bc ON p.patient_id = bc.patient_id
+WHERE a.appointment_status = 'completed'
+AND NOT EXISTS (
+    SELECT 1
+    FROM appointments a2
+    JOIN billing_claims bc2 ON a2.appointment_id = bc2.appointment_id
+    WHERE a2.patient_id = p.patient_id
+    AND a2.appointment_status = 'completed'
+)","The billing-claim inner join excludes patients with no claims, although they satisfy the absence condition."
+422,set_operations,moderate,PASS,CORRECT,List appointments with diagnoses but no prescriptions.,"SELECT ""appointments"".""appointment_id"", ""appointments"".""appointment_number"", ""appointments"".""appointment_date"" FROM ""appointments"" INNER JOIN ""diagnoses"" ON ""appointments"".""appointment_id"" = ""diagnoses"".""appointment_id"" WHERE NOT EXISTS (SELECT 1 FROM ""prescriptions"" WHERE ""prescriptions"".""appointment_id"" = ""appointments"".""appointment_id"")",
+423,set_operations,moderate,PASS,INCORRECT,List patients with prescriptions but no completed procedures.,"SELECT DISTINCT p.patient_id, p.first_name, p.last_name
+FROM patients p
+JOIN prescriptions pr ON p.patient_id = pr.patient_id
+JOIN appointments a ON pr.appointment_id = a.appointment_id
+JOIN procedures proc ON a.appointment_id = proc.appointment_id
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM procedures p2
+    JOIN appointments a2 ON p2.appointment_id = a2.appointment_id
+    WHERE p2.patient_id = p.patient_id
+    AND a2.appointment_status = 'completed'
+)","The procedure inner join excludes patients with prescriptions and no procedures, and checks appointment status rather than procedure status."
+424,set_operations,moderate,PASS,CORRECT,List doctors who ordered lab tests but performed no procedures.,"SELECT d.doctor_id, d.first_name, d.last_name
+FROM doctors d
+JOIN lab_tests lt ON d.doctor_id = lt.doctor_id
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM procedures p
+    WHERE p.doctor_id = d.doctor_id
+)",
+425,set_operations,moderate,PASS,CORRECT,List policies used by patients but never used on a billing claim.,"SELECT ip.policy_id, ip.policy_number, ip.provider_name, ip.plan_name
+FROM insurance_policies ip
+JOIN patients p ON ip.policy_id = p.policy_id
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM billing_claims bc
+    WHERE bc.policy_id = ip.policy_id
+)",
+426,set_operations,moderate,PASS,INCORRECT,List departments with completed appointments but no completed procedures.,"SELECT ""departments"".""department_id"", ""departments"".""department_name"" FROM ""appointments"" INNER JOIN ""departments"" ON ""appointments"".""department_id"" = ""departments"".""department_id"" INNER JOIN ""procedures"" ON ""appointments"".""appointment_id"" = ""procedures"".""appointment_id"" WHERE ""appointments"".""appointment_status"" = ? AND NOT EXISTS (SELECT 1 FROM ""procedures"" WHERE ""departments"".""department_id"" = ""procedures"".""department_id"" AND ""procedures"".""procedure_status"" = ""procedures"".""procedure_status"") GROUP BY ""departments"".""department_id"", ""departments"".""department_name""","The procedure inner join excludes departments with no procedures, and the NOT EXISTS self-comparison is invalid."
+427,set_operations,moderate,PASS,CORRECT,List patients with abnormal lab tests but no confirmed diagnosis.,"SELECT DISTINCT p.patient_id, p.first_name, p.last_name
+FROM patients p
+WHERE EXISTS (
+    SELECT 1
+    FROM lab_tests lt
+    WHERE lt.patient_id = p.patient_id
+      AND lt.abnormal_flag IN ('critical', 'high', 'low')
+)
+AND NOT EXISTS (
+    SELECT 1
+    FROM diagnoses d
+    WHERE d.patient_id = p.patient_id
+      AND d.confirmed_flag = '1'
+)",
+428,set_operations,moderate,PASS,INCORRECT,List doctors with completed appointments but no recorded diagnoses.,"SELECT d.doctor_id, d.first_name, d.last_name
+FROM doctors d
+WHERE EXISTS (
+    SELECT 1
+    FROM appointments a
+    WHERE a.doctor_id = d.doctor_id
+      AND a.appointment_status = 'completed'
+)
+AND NOT EXISTS (
+    SELECT 1
+    FROM appointments a
+    JOIN diagnoses diag ON a.appointment_id = diag.appointment_id
+    WHERE a.doctor_id = d.doctor_id
+      AND a.appointment_status = 'completed'
+)","Checks only diagnoses attached to completed appointments, not whether the doctor has any recorded diagnosis."
+429,set_operations,moderate,PASS,INCORRECT,List providers with active policies but no paid claims.,"SELECT ip.policy_id, ip.policy_number, ip.provider_name
+FROM insurance_policies ip
+WHERE ip.active_flag = '1'
+AND NOT EXISTS (
+    SELECT 1
+    FROM billing_claims bc
+    WHERE bc.policy_id = ip.policy_id
+    AND bc.payment_status = 'paid'
+)",Returns individual policies with no paid claim instead of provider-level results.
+430,set_operations,moderate,PASS,CORRECT,List appointments with procedures but no billing claim.,"SELECT ""appointments"".""appointment_id"", ""appointments"".""appointment_number"", ""appointments"".""appointment_date"" FROM ""appointments"" INNER JOIN ""procedures"" ON ""appointments"".""appointment_id"" = ""procedures"".""appointment_id"" WHERE NOT EXISTS (SELECT 1 FROM ""billing_claims"" WHERE ""appointments"".""appointment_id"" = ""billing_claims"".""appointment_id"")",
+431,set_operations,moderate,PASS,INCORRECT,List patients with paid claims but no active prescription.,"SELECT p.patient_id, p.first_name, p.last_name
+FROM patients p
+JOIN billing_claims bc ON p.patient_id = bc.patient_id
+JOIN prescriptions pr ON p.patient_id = pr.patient_id
+WHERE bc.payment_status = 'paid'
+  AND NOT EXISTS (
+    SELECT 1
+    FROM prescriptions pr2
+    WHERE pr2.patient_id = p.patient_id
+      AND pr2.prescription_status = 'active'
+  )
+GROUP BY p.patient_id, p.first_name, p.last_name",The prescription inner join excludes patients who have paid claims and no prescriptions.
+432,set_operations,moderate,FAIL,INCORRECT,List doctors who prescribed medication but never reviewed a lab test.,<NO SQL GENERATED>,No SQL was returned; the benchmark also treats reviewed_by_doctor as a doctor ID even though it is a boolean.
+433,set_operations,moderate,PASS,CORRECT,List appointment types associated with both diagnoses and prescriptions.,"SELECT a.appointment_type
+FROM appointments a
+JOIN diagnoses d ON a.appointment_id = d.appointment_id
+JOIN prescriptions p ON a.appointment_id = p.appointment_id
+GROUP BY a.appointment_type
+HAVING COUNT(DISTINCT d.diagnosis_id) > 0
+   AND COUNT(DISTINCT p.prescription_id) > 0",
+434,set_operations,moderate,PASS,CORRECT,List patients who had both telehealth and non-telehealth appointments.,"SELECT p.patient_id, p.first_name, p.last_name
+FROM patients p
+JOIN appointments a ON p.patient_id = a.patient_id
+GROUP BY p.patient_id
+HAVING SUM(CASE WHEN a.telehealth_flag = '1' THEN 1 ELSE 0 END) > 0
+   AND SUM(CASE WHEN a.telehealth_flag = '0' THEN 1 ELSE 0 END) > 0",
+435,set_operations,moderate,PASS,INCORRECT,List departments that handled both urgent and routine appointments.,"SELECT d.department_id, d.department_name
+FROM departments d
+JOIN appointments a ON d.department_id = a.department_id
+WHERE a.appointment_type IN ('urgent', 'annual_exam')
+GROUP BY d.department_id, d.department_name
+HAVING SUM(CASE WHEN a.appointment_type = 'urgent' THEN 1 ELSE 0 END) > 0
+   AND SUM(CASE WHEN a.appointment_type = 'annual_exam' THEN 1 ELSE 0 END) > 0","Uses annual_exam as routine appointment type, while routine is stored in priority_level."
+436,set_operations,hard,PASS,INCORRECT,List patients who had both confirmed diagnoses and active prescriptions but no completed procedure.,"SELECT DISTINCT p.patient_id, p.first_name, p.last_name
+FROM patients p
+JOIN diagnoses d ON p.patient_id = d.patient_id
+JOIN prescriptions pr ON p.patient_id = pr.patient_id
+JOIN procedures proc ON p.patient_id = proc.patient_id
+WHERE d.confirmed_flag = '1'
+  AND pr.prescription_status = 'active'
+  AND NOT EXISTS (
+    SELECT 1
+    FROM procedures p2
+    WHERE p2.patient_id = p.patient_id
+      AND p2.procedure_status = 'completed'
+  )",The procedure inner join excludes patients who have no procedures and therefore satisfy no completed procedure.
+437,set_operations,hard,FAIL,INCORRECT,List doctors who both prescribed medication and performed procedures but never reviewed a lab test.,<NO SQL GENERATED>,No SQL was returned; the benchmark also treats reviewed_by_doctor as a doctor ID even though it is a boolean.
+438,set_operations,hard,PASS,INCORRECT,List departments with both abnormal lab tests and completed procedures but no denied claims.,"SELECT ""departments"".""department_id"", ""departments"".""department_name"", COUNT(*) AS ""abnormal_lab_count"", COUNT(*) AS ""completed_proc_count"", COUNT(*) AS ""denied_claim_count"" FROM ""departments"" INNER JOIN ""appointments"" ON ""departments"".""department_id"" = ""appointments"".""department_id"" INNER JOIN ""billing_claims"" ON ""appointments"".""appointment_id"" = ""billing_claims"".""appointment_id"" INNER JOIN ""lab_tests"" ON ""appointments"".""appointment_id"" = ""lab_tests"".""appointment_id"" INNER JOIN ""procedures"" ON ""appointments"".""appointment_id"" = ""procedures"".""appointment_id"" GROUP BY ""departments"".""department_id"", ""departments"".""department_name"" HAVING ""abnormal_lab_count"" > ? AND ""completed_proc_count"" > ? AND ""denied_claim_count"" = ?","Uses identical unfiltered counts for abnormal labs, completed procedures, and denied claims."
+439,set_operations,hard,PASS,INCORRECT,List insurance providers with both paid and approved claims but no denied claims.,"SELECT ip.provider_name
+FROM billing_claims bc
+JOIN insurance_policies ip ON bc.policy_id = ip.policy_id
+GROUP BY ip.policy_id
+HAVING COUNT(CASE WHEN bc.claim_status = 'paid' THEN 1 END) > 0
+   AND COUNT(CASE WHEN bc.claim_status = 'approved' THEN 1 END) > 0
+   AND COUNT(CASE WHEN bc.claim_status = 'denied' THEN 1 END) = 0","Groups by policy_id rather than provider, so one provider's policies are evaluated independently."
+440,set_operations,hard,PASS,INCORRECT,List patients who had both urgent and routine appointments but no telehealth appointment.,"SELECT DISTINCT ""patients"".""patient_id"", ""patients"".""first_name"", ""patients"".""last_name"", COUNT(*) AS ""urgent_count"", COUNT(*) AS ""routine_count"" FROM ""patients"" INNER JOIN ""appointments"" ON ""patients"".""patient_id"" = ""appointments"".""patient_id"" WHERE ""appointments"".""telehealth_flag"" = ? GROUP BY ""patients"".""patient_id"" HAVING ""urgent_count"" >= ? AND ""routine_count"" >= ?",Uses identical unfiltered counts for urgent and routine appointments.
+441,set_operations,hard,PASS,INCORRECT,List doctors who treated both chronic-condition and non-chronic-condition patients but no smoking patients.,"SELECT d.doctor_id, d.first_name, d.last_name
+FROM doctors d
+JOIN diagnoses di ON d.doctor_id = di.doctor_id
+JOIN patients p ON di.patient_id = p.patient_id
+WHERE p.smoking_status IS NULL OR p.smoking_status = ''
+GROUP BY d.doctor_id, d.first_name, d.last_name
+HAVING COUNT(DISTINCT CASE WHEN p.chronic_condition_flag = '1' THEN p.patient_id END) >= 1
+   AND COUNT(DISTINCT CASE WHEN p.chronic_condition_flag = '0' THEN p.patient_id END) >= 1","Requires smoking_status to be null or empty, although non-smoking values are former or never."
+442,set_operations,hard,PASS,CORRECT,List appointments that produced both diagnoses and lab tests but no prescriptions.,"SELECT a.appointment_id, a.appointment_number, a.patient_id, a.doctor_id, a.appointment_date
+FROM appointments a
+WHERE EXISTS (
+    SELECT 1
+    FROM diagnoses d
+    WHERE d.appointment_id = a.appointment_id
+)
+AND EXISTS (
+    SELECT 1
+    FROM lab_tests l
+    WHERE l.appointment_id = a.appointment_id
+)
+AND NOT EXISTS (
+    SELECT 1
+    FROM prescriptions p
+    WHERE p.appointment_id = a.appointment_id
+)",
+443,set_operations,hard,PASS,CORRECT,List patients with claims from both PPO and HMO plans but no EPO plan.,"SELECT p.patient_id, p.first_name, p.last_name
+FROM patients p
+JOIN billing_claims bc ON p.patient_id = bc.patient_id
+JOIN insurance_policies ip ON bc.policy_id = ip.policy_id
+GROUP BY p.patient_id, p.first_name, p.last_name
+HAVING COUNT(DISTINCT CASE WHEN ip.plan_type = 'PPO' THEN bc.claim_id END) >= 1
+   AND COUNT(DISTINCT CASE WHEN ip.plan_type = 'HMO' THEN bc.claim_id END) >= 1
+   AND COUNT(DISTINCT CASE WHEN ip.plan_type = 'EPO' THEN bc.claim_id END) = 0",
+444,set_operations,hard,PASS,CORRECT,List departments with both general-anesthesia and local-anesthesia procedures but no complications.,"SELECT d.department_id, d.department_name
+FROM departments d
+JOIN procedures p ON d.department_id = p.department_id
+GROUP BY d.department_id, d.department_name
+HAVING SUM(CASE WHEN p.anesthesia_type = 'general' THEN 1 ELSE 0 END) > 0
+   AND SUM(CASE WHEN p.anesthesia_type = 'local' THEN 1 ELSE 0 END) > 0
+   AND SUM(p.complication_flag) = 0",
+445,set_operations,hard,PASS,CORRECT,List doctors who recorded both severe and mild diagnoses but no moderate diagnoses.,"SELECT d.doctor_id, d.first_name, d.last_name
+FROM doctors d
+JOIN diagnoses diag ON d.doctor_id = diag.doctor_id
+GROUP BY d.doctor_id, d.first_name, d.last_name
+HAVING SUM(CASE WHEN diag.severity = 'severe' THEN 1 ELSE 0 END) >= 1
+   AND SUM(CASE WHEN diag.severity = 'mild' THEN 1 ELSE 0 END) >= 1
+   AND SUM(CASE WHEN diag.severity = 'moderate' THEN 1 ELSE 0 END) = 0",
+446,set_operations,hard,PASS,CORRECT,List patients who received both controlled and non-controlled prescriptions but no adverse reaction.,"SELECT p.patient_id, p.first_name, p.last_name
+FROM patients p
+JOIN prescriptions pr ON p.patient_id = pr.patient_id
+GROUP BY p.patient_id, p.first_name, p.last_name
+HAVING SUM(CASE WHEN pr.controlled_substance_flag = '1' THEN 1 ELSE 0 END) > 0
+   AND SUM(CASE WHEN pr.controlled_substance_flag = '0' THEN 1 ELSE 0 END) > 0
+   AND SUM(CASE WHEN pr.adverse_reaction_flag = '1' THEN 1 ELSE 0 END) = 0",
+447,set_operations,hard,PASS,INCORRECT,List laboratories that produced both high and low abnormal results but no critical results.,"SELECT DISTINCT ""lab_tests"".""laboratory_name"", COUNT(*) AS ""high_count"", COUNT(*) AS ""low_count"", COUNT(*) AS ""critical_count"" FROM ""lab_tests"" GROUP BY ""lab_tests"".""laboratory_name"" HAVING ""high_count"" > ? AND ""low_count"" > ? AND ""critical_count"" = ?","Uses identical unfiltered counts for high, low, and critical results."
+448,set_operations,hard,PASS,INCORRECT,List procedure categories performed in both emergency and routine appointments but not urgent appointments.,"SELECT p.procedure_category
+FROM procedures p
+JOIN appointments a ON p.appointment_id = a.appointment_id
+GROUP BY p.procedure_category
+HAVING COUNT(DISTINCT CASE WHEN a.appointment_type = 'emergency' THEN 1 END) > 0
+   AND COUNT(DISTINCT CASE WHEN a.appointment_type = 'routine' THEN 1 END) > 0
+   AND COUNT(DISTINCT CASE WHEN a.appointment_type = 'urgent' THEN 1 END) = 0",Checks appointment_type for emergency and routine even though those values are stored in priority_level.
+449,set_operations,hard,PASS,INCORRECT,List providers that paid claims for both procedures and diagnoses but no denied claims.,"SELECT bc.doctor_id
+FROM billing_claims bc
+JOIN procedures p ON bc.appointment_id = p.appointment_id
+JOIN diagnoses d ON bc.appointment_id = d.appointment_id
+WHERE bc.claim_status = 'paid'
+GROUP BY bc.doctor_id
+HAVING COUNT(DISTINCT CASE WHEN p.procedure_id IS NOT NULL THEN bc.claim_id END) > 0
+   AND COUNT(DISTINCT CASE WHEN d.diagnosis_id IS NOT NULL THEN bc.claim_id END) > 0
+   AND SUM(CASE WHEN bc.claim_status = 'denied' THEN 1 ELSE 0 END) = 0",Returns doctor_id instead of provider and neutralizes the denied-claim test with WHERE claim_status = 'paid'.
+450,set_operations,hard,PASS,INCORRECT,List patients who had appointments in both medical and surgical departments but no diagnostic department.,"SELECT p.patient_id, p.first_name, p.last_name
+FROM patients p
+JOIN appointments a ON p.patient_id = a.patient_id
+JOIN departments d ON a.department_id = d.department_id
+WHERE d.specialty_category IN ('medical', 'surgical')
+GROUP BY p.patient_id, p.first_name, p.last_name
+HAVING COUNT(DISTINCT CASE WHEN d.specialty_category = 'medical' THEN d.department_id END) > 0
+   AND COUNT(DISTINCT CASE WHEN d.specialty_category = 'surgical' THEN d.department_id END) > 0
+   AND COUNT(DISTINCT CASE WHEN d.specialty_category = 'diagnostic' THEN d.department_id END) = 0","Filters out diagnostic departments before HAVING, making the no-diagnostic condition automatically true."
+451,subquery_cte,easy,PASS,CORRECT,List departments with annual budgets above the average department budget.,"SELECT d.department_id, d.department_name, d.annual_budget
+FROM departments d
+WHERE d.annual_budget > (SELECT AVG(annual_budget) FROM departments)",
+452,subquery_cte,easy,PASS,CORRECT,List departments with quality ratings above the average department quality rating.,"SELECT department_id, department_name, quality_rating
+FROM departments
+WHERE quality_rating > (SELECT AVG(quality_rating) FROM departments)",
+453,subquery_cte,easy,PASS,CORRECT,List doctors earning more than the average doctor salary.,"SELECT d.doctor_id, d.first_name, d.last_name, d.salary
+FROM doctors d
+WHERE d.salary > (SELECT AVG(salary) FROM doctors)",
+454,subquery_cte,easy,PASS,CORRECT,List doctors with more experience than the average doctor.,"SELECT d.doctor_id, d.first_name, d.last_name, d.years_experience
+FROM doctors d
+WHERE d.years_experience > (SELECT AVG(years_experience) FROM doctors)",
+455,subquery_cte,easy,PASS,CORRECT,List policies with deductibles above the average policy deductible.,"SELECT policy_id, policy_number, deductible_amount
+FROM insurance_policies
+WHERE deductible_amount > (SELECT AVG(deductible_amount) FROM insurance_policies)",
+456,subquery_cte,easy,PASS,CORRECT,List patients whose weight is above the average patient weight.,"SELECT p.patient_id, p.first_name, p.last_name, p.weight_kg
+FROM patients p
+WHERE p.weight_kg > (SELECT AVG(weight_kg) FROM patients)",
+457,subquery_cte,easy,PASS,CORRECT,List appointments with wait times above the average appointment wait time.,"SELECT a.appointment_id, a.appointment_number, a.wait_time_minutes
+FROM appointments a
+WHERE a.wait_time_minutes > (SELECT AVG(wait_time_minutes) FROM appointments)",
+458,subquery_cte,easy,PASS,CORRECT,List diagnoses with follow-up intervals above the average diagnosis follow-up interval.,"SELECT d.diagnosis_id, d.diagnosis_name, d.follow_up_interval_days
+FROM diagnoses d
+WHERE d.follow_up_interval_days > (
+    SELECT AVG(follow_up_interval_days)
+    FROM diagnoses
+)",
+459,subquery_cte,easy,PASS,CORRECT,List prescriptions costing more than the average prescription cost.,"SELECT prescription_id, medication_name, estimated_cost
+FROM prescriptions
+WHERE estimated_cost > (SELECT AVG(estimated_cost) FROM prescriptions)",
+460,subquery_cte,easy,PASS,CORRECT,List lab tests with result values above the average result value.,"SELECT lab_test_id, test_name, result_value
+FROM lab_tests
+WHERE result_value > (SELECT AVG(result_value) FROM lab_tests)",
+461,subquery_cte,easy,PASS,CORRECT,List procedures costing more than the average procedure cost.,"SELECT procedure_id, procedure_name, estimated_cost
+FROM procedures
+WHERE estimated_cost > (SELECT AVG(estimated_cost) FROM procedures)",
+462,subquery_cte,easy,PASS,CORRECT,List claims with billed amounts above the average claim amount.,"SELECT claim_id, billed_amount
+FROM billing_claims
+WHERE billed_amount > (SELECT AVG(billed_amount) FROM billing_claims)",
+463,subquery_cte,easy,PASS,CORRECT,List patients who have never had an appointment.,"SELECT p.patient_id, p.first_name, p.last_name
+FROM patients p
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM appointments a
+    WHERE a.patient_id = p.patient_id
+)",
+464,subquery_cte,easy,PASS,CORRECT,List doctors who have never completed an appointment.,"SELECT d.doctor_id, d.first_name, d.last_name
+FROM doctors d
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM appointments a
+    WHERE a.doctor_id = d.doctor_id
+      AND a.appointment_status = 'completed'
+)",
+465,subquery_cte,easy,PASS,CORRECT,List insurance policies that have never appeared on a billing claim.,"SELECT ip.policy_id, ip.policy_number, ip.provider_name, ip.plan_name
+FROM insurance_policies ip
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM billing_claims bc
+    WHERE bc.policy_id = ip.policy_id
+)",
+466,subquery_cte,moderate,PASS,CORRECT,List doctors earning more than the average salary in their department.,"SELECT d.doctor_id, d.first_name, d.last_name, d.salary, d.department_id
+FROM doctors d
+WHERE d.salary > (
+    SELECT AVG(d2.salary)
+    FROM doctors d2
+    WHERE d2.department_id = d.department_id
+)",
+467,subquery_cte,moderate,PASS,INCORRECT,List departments with active doctor counts above the average department active-doctor count.,"SELECT d.department_id, d.department_name
+FROM departments d
+JOIN doctors doc ON d.department_id = doc.department_id
+WHERE doc.active_flag = '1'
+GROUP BY d.department_id, d.department_name
+HAVING COUNT(doc.doctor_id) > (
+    SELECT AVG(active_doctor_count)
+    FROM (
+        SELECT COUNT(*) AS active_doctor_count
+        FROM doctors
+        WHERE active_flag = '1'
+        GROUP BY department_id
+    )
+)",The comparison average excludes departments with zero active doctors.
+468,subquery_cte,moderate,PASS,CORRECT,List patients with more completed appointments than the average patient with an appointment.,"WITH patient_counts AS (
+  SELECT 
+    p.patient_id,
+    p.first_name,
+    p.last_name,
+    COUNT(a.appointment_id) AS completed_count
+  FROM patients p
+  JOIN appointments a ON p.patient_id = a.patient_id
+  WHERE a.appointment_status = 'completed'
+  GROUP BY p.patient_id
+),
+avg_count AS (
+  SELECT AVG(completed_count) AS avg_completed
+  FROM patient_counts
+)
+SELECT 
+  pc.patient_id,
+  pc.first_name,
+  pc.last_name
+FROM patient_counts pc
+CROSS JOIN avg_count ac
+WHERE pc.completed_count > ac.avg_completed",
+469,subquery_cte,moderate,PASS,CORRECT,List doctors with more confirmed diagnoses than the average diagnosing doctor.,"SELECT d.doctor_id, d.first_name, d.last_name
+FROM doctors d
+JOIN diagnoses diag ON d.doctor_id = diag.doctor_id
+WHERE diag.confirmed_flag = '1'
+GROUP BY d.doctor_id, d.first_name, d.last_name
+HAVING COUNT(diag.diagnosis_id) > (
+    SELECT AVG(doc_count)
+    FROM (
+        SELECT d2.doctor_id, COUNT(diag2.diagnosis_id) AS doc_count
+        FROM doctors d2
+        JOIN diagnoses diag2 ON d2.doctor_id = diag2.doctor_id
+        WHERE diag2.confirmed_flag = '1'
+        GROUP BY d2.doctor_id
+    )
+)",
+470,subquery_cte,moderate,PASS,INCORRECT,List providers with more active policies than the average provider.,"SELECT provider_name
+FROM insurance_policies
+WHERE active_flag = 1
+GROUP BY provider_name
+HAVING COUNT(policy_id) > (
+    SELECT AVG(provider_count)
+    FROM (
+        SELECT COUNT(policy_id) AS provider_count
+        FROM insurance_policies
+        WHERE active_flag = 1
+        GROUP BY provider_name
+    )
+)",The comparison average excludes providers with zero active policies.
+471,subquery_cte,moderate,PASS,CORRECT,List patients whose total prescription cost is above the average patient prescription cost.,"SELECT p.patient_id, p.first_name, p.last_name
+FROM patients p
+JOIN prescriptions pr ON p.patient_id = pr.patient_id
+GROUP BY p.patient_id, p.first_name, p.last_name
+HAVING SUM(pr.estimated_cost) > (
+    SELECT AVG(total_cost)
+    FROM (
+        SELECT SUM(estimated_cost) AS total_cost
+        FROM prescriptions
+        GROUP BY patient_id
+    )
+)",
+472,subquery_cte,moderate,PASS,INCORRECT,List laboratories whose abnormal-result count is above the average laboratory count.,"SELECT laboratory_name
+FROM lab_tests
+WHERE abnormal_flag IN ('critical', 'high', 'low')
+GROUP BY laboratory_name
+HAVING COUNT(abnormal_flag) > (
+    SELECT AVG(abnormal_count)
+    FROM (
+        SELECT COUNT(abnormal_flag) AS abnormal_count
+        FROM lab_tests
+        WHERE abnormal_flag IN ('critical', 'high', 'low')
+        GROUP BY laboratory_name
+    )
+)",The comparison average excludes laboratories with zero abnormal results.
+473,subquery_cte,moderate,PASS,CORRECT,List doctors whose completed procedure count is above the average performing doctor.,"SELECT d.doctor_id, d.first_name, d.last_name
+FROM doctors d
+JOIN procedures p ON d.doctor_id = p.doctor_id
+WHERE p.procedure_status = 'completed'
+GROUP BY d.doctor_id, d.first_name, d.last_name
+HAVING COUNT(p.procedure_id) > (
+    SELECT AVG(proc_count)
+    FROM (
+        SELECT COUNT(p2.procedure_id) AS proc_count
+        FROM doctors d2
+        JOIN procedures p2 ON d2.doctor_id = p2.doctor_id
+        WHERE p2.procedure_status = 'completed'
+        GROUP BY d2.doctor_id
+    )
+)",
+474,subquery_cte,moderate,PASS,CORRECT,List patients whose combined claim charges exceed the average combined claim charges per patient.,"SELECT p.patient_id, p.first_name, p.last_name
+FROM patients p
+JOIN billing_claims bc ON p.patient_id = bc.patient_id
+GROUP BY p.patient_id, p.first_name, p.last_name
+HAVING SUM(bc.billed_amount) > (
+    SELECT AVG(total_billed)
+    FROM (
+        SELECT SUM(billed_amount) AS total_billed
+        FROM billing_claims
+        GROUP BY patient_id
+    )
+)",
+475,subquery_cte,moderate,PASS,INCORRECT,List providers whose total insurance payment is above the average provider payment.,"SELECT doctor_id
+FROM billing_claims
+GROUP BY doctor_id
+HAVING SUM(insurance_paid_amount) > (
+    SELECT AVG(total_payment)
+    FROM (
+        SELECT SUM(insurance_paid_amount) AS total_payment
+        FROM billing_claims
+        GROUP BY doctor_id
+    )
+)",Groups and returns doctor_id instead of insurance provider.
+476,subquery_cte,moderate,PASS,CORRECT,List appointments with wait times above the average for their appointment type.,"SELECT a.appointment_id, a.appointment_type, a.wait_time_minutes
+FROM appointments a
+WHERE a.wait_time_minutes > (
+    SELECT AVG(a2.wait_time_minutes)
+    FROM appointments a2
+    WHERE a2.appointment_type = a.appointment_type
+)",
+477,subquery_cte,moderate,PASS,CORRECT,List diagnoses with follow-up intervals above the average for their diagnosis category.,"SELECT d.diagnosis_id, d.diagnosis_name, d.diagnosis_category, d.follow_up_interval_days
+FROM diagnoses d
+WHERE d.follow_up_interval_days > (
+    SELECT AVG(d2.follow_up_interval_days)
+    FROM diagnoses d2
+    WHERE d2.diagnosis_category = d.diagnosis_category
+)",
+478,subquery_cte,moderate,PASS,CORRECT,List prescriptions costing more than the average for their drug class.,"SELECT p.prescription_id, p.medication_name, p.drug_class, p.estimated_cost
+FROM prescriptions p
+WHERE p.estimated_cost > (
+    SELECT AVG(p2.estimated_cost)
+    FROM prescriptions p2
+    WHERE p2.drug_class = p.drug_class
+)",
+479,subquery_cte,moderate,PASS,CORRECT,List procedures costing more than the average for their procedure category.,"SELECT procedure_id, procedure_name, procedure_category, estimated_cost
+FROM procedures
+WHERE estimated_cost > (
+    SELECT AVG(p2.estimated_cost)
+    FROM procedures p2
+    WHERE p2.procedure_category = procedures.procedure_category
+)",
+480,subquery_cte,moderate,PASS,CORRECT,List claims taking longer to pay than the average claim for the same provider.,"SELECT bc.claim_id, bc.claim_number, ip.provider_name, bc.days_to_payment
+FROM billing_claims bc
+JOIN insurance_policies ip ON bc.policy_id = ip.policy_id
+WHERE bc.days_to_payment > (
+    SELECT AVG(bc2.days_to_payment)
+    FROM billing_claims bc2
+    JOIN insurance_policies ip2 ON bc2.policy_id = ip2.policy_id
+    WHERE ip2.provider_name = ip.provider_name
+)",
+481,subquery_cte,moderate,PASS,CORRECT,List patients whose most recent appointment was completed.,"WITH ranked_appointments AS (
+    SELECT 
+        a.patient_id,
+        a.appointment_status,
+        a.appointment_date,
+        ROW_NUMBER() OVER (PARTITION BY a.patient_id ORDER BY a.appointment_date DESC) AS rn
+    FROM appointments a
+)
+SELECT 
+    p.patient_id,
+    p.first_name,
+    p.last_name
+FROM patients p
+JOIN ranked_appointments ra ON p.patient_id = ra.patient_id
+WHERE ra.rn = 1 AND ra.appointment_status = 'completed'",
+482,subquery_cte,moderate,PASS,INCORRECT,List doctors whose latest appointment was urgent.,"WITH ranked_appointments AS (
+    SELECT 
+        a.doctor_id,
+        a.appointment_status,
+        a.appointment_date,
+        ROW_NUMBER() OVER (PARTITION BY a.doctor_id ORDER BY a.appointment_date DESC) AS rn
+    FROM appointments a
+)
+SELECT 
+    d.doctor_id,
+    d.first_name,
+    d.last_name
+FROM doctors d
+JOIN ranked_appointments ra ON d.doctor_id = ra.doctor_id
+WHERE ra.rn = 1 AND ra.appointment_status = 'urgent'","Checks appointment_status = 'urgent', but urgent is an appointment type or priority, not a status."
+483,subquery_cte,moderate,PASS,CORRECT,List departments where every active doctor is board certified.,"SELECT d.department_id, d.department_name
+FROM departments d
+JOIN doctors doc ON d.department_id = doc.department_id
+GROUP BY d.department_id, d.department_name
+HAVING COUNT(CASE WHEN doc.active_flag = '1' AND doc.board_certified_flag = '0' THEN 1 END) = 0",
+484,subquery_cte,moderate,PASS,INCORRECT,List providers where every active policy includes prescription coverage.,"SELECT ""insurance_policies"".""provider_name"", COUNT(*) AS ""total_active"", COUNT(""insurance_policies"".""prescription_coverage"") AS ""covered_active"" FROM ""insurance_policies"" WHERE ""insurance_policies"".""active_flag"" = ? GROUP BY ""insurance_policies"".""provider_name"" HAVING ""total_active"" = ""covered_active""",COUNT(prescription_coverage) counts both 0 and 1 because the field is non-null.
+485,subquery_cte,moderate,PASS,CORRECT,List patients for whom every completed appointment produced a billing claim.,"SELECT p.patient_id, p.first_name, p.last_name
+FROM patients p
+JOIN appointments a ON p.patient_id = a.patient_id
+JOIN billing_claims bc ON a.appointment_id = bc.appointment_id
+WHERE a.appointment_status = 'completed'
+GROUP BY p.patient_id, p.first_name, p.last_name
+HAVING COUNT(DISTINCT a.appointment_id) = (
+    SELECT COUNT(DISTINCT a2.appointment_id)
+    FROM appointments a2
+    WHERE a2.patient_id = p.patient_id AND a2.appointment_status = 'completed'
+)",
+486,subquery_cte,hard,PASS,CORRECT,List the highest-paid doctor in each department.,"WITH RankedDoctors AS (
+    SELECT 
+        d.doctor_id,
+        d.department_id,
+        d.first_name,
+        d.last_name,
+        d.salary,
+        ROW_NUMBER() OVER (PARTITION BY d.department_id ORDER BY d.salary DESC) AS rn
+    FROM doctors d
+)
+SELECT 
+    doctor_id,
+    department_id,
+    first_name,
+    last_name,
+    salary
+FROM RankedDoctors
+WHERE rn = 1",
+487,subquery_cte,hard,PASS,INCORRECT,List the patient with the largest billed amount for each insurance provider.,"WITH RankedClaims AS (
+    SELECT
+        ip.provider_name,
+        bc.patient_id,
+        bc.billed_amount,
+        ROW_NUMBER() OVER (
+            PARTITION BY ip.provider_name
+            ORDER BY bc.billed_amount DESC
+        ) AS rn
+    FROM billing_claims bc
+    JOIN insurance_policies ip ON bc.policy_id = ip.policy_id
+)
+SELECT
+    provider_name,
+    patient_id,
+    billed_amount
+FROM RankedClaims
+WHERE rn = 1",Ranks individual claims rather than total billed amount per patient within each provider.
+488,subquery_cte,hard,PASS,CORRECT,List the most expensive procedure in each procedure category.,"WITH RankedProcedures AS (
+    SELECT 
+        procedure_category,
+        procedure_name,
+        estimated_cost,
+        ROW_NUMBER() OVER (PARTITION BY procedure_category ORDER BY estimated_cost DESC) AS rn
+    FROM procedures
+)
+SELECT 
+    procedure_category,
+    procedure_name,
+    estimated_cost
+FROM RankedProcedures
+WHERE rn = 1",
+489,subquery_cte,hard,PASS,CORRECT,List doctors whose completed-appointment count is above the average for their specialty.,"WITH doctor_counts AS (
+    SELECT 
+        d.doctor_id,
+        d.first_name,
+        d.last_name,
+        d.specialty,
+        COUNT(a.appointment_id) AS completed_count
+    FROM doctors d
+    JOIN appointments a ON d.doctor_id = a.doctor_id
+    WHERE a.appointment_status = 'completed'
+    GROUP BY d.doctor_id, d.first_name, d.last_name, d.specialty
+),
+specialty_averages AS (
+    SELECT 
+        specialty,
+        AVG(completed_count) AS avg_count
+    FROM doctor_counts
+    GROUP BY specialty
+)
+SELECT 
+    dc.doctor_id,
+    dc.first_name,
+    dc.last_name,
+    dc.specialty
+FROM doctor_counts dc
+JOIN specialty_averages sa ON dc.specialty = sa.specialty
+WHERE dc.completed_count > sa.avg_count",
+490,subquery_cte,hard,PASS,CORRECT,List patients whose billed amount is above the average for patients with the same primary doctor.,"SELECT p.patient_id, p.first_name, p.last_name
+FROM patients p
+JOIN billing_claims bc ON p.patient_id = bc.patient_id
+JOIN doctors d ON p.primary_doctor_id = d.doctor_id
+GROUP BY p.patient_id, p.first_name, p.last_name, p.primary_doctor_id
+HAVING SUM(bc.billed_amount) > (
+    SELECT AVG(total_billed)
+    FROM (
+        SELECT p2.primary_doctor_id, SUM(bc2.billed_amount) AS total_billed
+        FROM patients p2
+        JOIN billing_claims bc2 ON p2.patient_id = bc2.patient_id
+        GROUP BY p2.patient_id, p2.primary_doctor_id
+    ) AS patient_totals
+    WHERE patient_totals.primary_doctor_id = p.primary_doctor_id
+)",
+491,subquery_cte,hard,PASS,CORRECT,List departments whose procedure revenue is above the average for departments in the same specialty category.,"WITH dept_procedure_revenue AS (
+    SELECT 
+        p.department_id,
+        SUM(bc.billed_amount) AS total_revenue
+    FROM procedures p
+    JOIN billing_claims bc ON p.appointment_id = bc.appointment_id
+    GROUP BY p.department_id
+),
+dept_info AS (
+    SELECT 
+        d.department_id,
+        d.department_name,
+        d.specialty_category
+    FROM departments d
+),
+combined AS (
+    SELECT 
+        di.department_id,
+        di.department_name,
+        di.specialty_category,
+        COALESCE(dpr.total_revenue, 0) AS total_revenue
+    FROM dept_info di
+    LEFT JOIN dept_procedure_revenue dpr ON di.department_id = dpr.department_id
+),
+avg_by_category AS (
+    SELECT 
+        specialty_category,
+        AVG(total_revenue) AS avg_revenue
+    FROM combined
+    GROUP BY specialty_category
+)
+SELECT 
+    c.department_id,
+    c.department_name,
+    c.specialty_category
+FROM combined c
+JOIN avg_by_category a ON c.specialty_category = a.specialty_category
+WHERE c.total_revenue > a.avg_revenue",
+492,subquery_cte,hard,PASS,INCORRECT,List providers whose insurance payment rate is above the average provider payment rate.,"SELECT doctor_id
+FROM billing_claims
+GROUP BY doctor_id
+HAVING AVG(insurance_paid_amount) > (SELECT AVG(insurance_paid_amount) FROM billing_claims)",Groups by doctor_id and compares average payment amounts instead of provider payment rates.
+493,subquery_cte,hard,PASS,INCORRECT,List doctors whose confirmed-diagnosis rate is above the average rate in their department.,"WITH doctor_stats AS (
+    SELECT 
+        d.doctor_id,
+        d.department_id,
+        COUNT(CASE WHEN diag.confirmed_flag = '1' THEN 1 END) * 1.0 / COUNT(*) AS confirmed_rate
+    FROM doctors d
+    JOIN appointments a ON d.doctor_id = a.doctor_id
+    JOIN diagnoses diag ON a.appointment_id = diag.appointment_id
+    GROUP BY d.doctor_id, d.department_id
+),
+dept_avg AS (
+    SELECT 
+        department_id,
+        AVG(confirmed_rate) AS avg_rate
+    FROM doctor_stats
+    GROUP BY department_id
+)
+SELECT 
+    ds.doctor_id,
+    d.first_name,
+    d.last_name,
+    d.department_id
+FROM doctor_stats ds
+JOIN dept_avg da ON ds.department_id = da.department_id
+JOIN doctors d ON ds.doctor_id = d.doctor_id
+WHERE ds.confirmed_rate > da.avg_rate",Attributes diagnoses to the appointment doctor instead of diagnoses.doctor_id.
+494,subquery_cte,hard,PASS,INCORRECT,List patients who received every drug class prescribed during any of their appointments.,"SELECT p.patient_id, p.first_name, p.last_name
+FROM patients p
+JOIN prescriptions pr ON p.patient_id = pr.patient_id
+JOIN doctors d ON pr.doctor_id = d.doctor_id
+GROUP BY p.patient_id, p.first_name, p.last_name
+HAVING COUNT(DISTINCT pr.drug_class) = (
+    SELECT COUNT(DISTINCT pr2.drug_class)
+    FROM prescriptions pr2
+    JOIN patients p2 ON pr2.patient_id = p2.patient_id
+    JOIN doctors d2 ON pr2.doctor_id = d2.doctor_id
+    WHERE p2.patient_id = p.patient_id
+)","Compares each patient's drug classes with the same patient's drug classes, making the condition tautological."
+495,subquery_cte,hard,PASS,CORRECT,List doctors for whom every completed appointment has at least one diagnosis.,"SELECT d.doctor_id, d.first_name, d.last_name
+FROM doctors d
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM appointments a
+    LEFT JOIN diagnoses di ON a.appointment_id = di.appointment_id
+    WHERE a.doctor_id = d.doctor_id
+      AND a.appointment_status = 'completed'
+      AND di.diagnosis_id IS NULL
+)",
+496,subquery_cte,hard,PASS,CORRECT,List departments where every completed procedure had signed consent.,"SELECT d.department_id, d.department_name
+FROM departments d
+JOIN procedures p ON d.department_id = p.department_id
+GROUP BY d.department_id, d.department_name
+HAVING COUNT(CASE WHEN p.procedure_status = 'completed' THEN 1 END) = 
+       COUNT(CASE WHEN p.procedure_status = 'completed' AND p.consent_signed_flag = 1 THEN 1 END)",
+497,subquery_cte,hard,PASS,INCORRECT,List providers where every paid claim was paid within 90 days.,"SELECT doctor_id
+FROM billing_claims
+WHERE payment_status = 'paid'
+GROUP BY doctor_id
+HAVING MAX(days_to_payment) <= 90",Groups by doctor_id instead of provider.
+498,subquery_cte,hard,PASS,INCORRECT,List patients whose three most recent appointments had decreasing wait times.,"WITH ranked_appointments AS (
+    SELECT
+        a.patient_id,
+        a.wait_time_minutes,
+        a.appointment_date,
+        ROW_NUMBER() OVER (
+            PARTITION BY a.patient_id
+            ORDER BY a.appointment_date DESC, a.appointment_id DESC
+        ) AS rn
+    FROM appointments a
+    JOIN patients p ON a.patient_id = p.patient_id
+)
+SELECT
+    p.patient_id,
+    p.first_name,
+    p.last_name
+FROM patients p
+JOIN ranked_appointments r1 ON p.patient_id = r1.patient_id AND r1.rn = 1
+JOIN ranked_appointments r2 ON p.patient_id = r2.patient_id AND r2.rn = 2
+JOIN ranked_appointments r3 ON p.patient_id = r3.patient_id AND r3.rn = 3
+WHERE r1.wait_time_minutes > r2.wait_time_minutes
+  AND r2.wait_time_minutes > r3.wait_time_minutes","The newest-to-oldest comparison is reversed, selecting wait times that increased rather than decreased over time."
+499,subquery_cte,hard,FAIL,INCORRECT,List doctors whose 2025 completed appointment count exceeded their 2024 count.,<NO SQL GENERATED>,No SQL was returned.
+500,subquery_cte,hard,FAIL,INCORRECT,List departments whose abnormal-lab rate is above the overall department average and whose complication rate is below the overall department average.,<NO SQL GENERATED>,No SQL was returned.

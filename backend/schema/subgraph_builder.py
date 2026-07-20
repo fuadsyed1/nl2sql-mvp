@@ -8,8 +8,8 @@ so the pipeline never sees the full 100-200 table schema.
 
 - Columns for the selected tables are hydrated lazily via ensure_table_columns.
 - Stored relationships are included only when BOTH endpoints are selected.
-- Simple query-time name-based relationships among the selected tables are added
-  but NOT persisted.
+- No query-time relationship inference: only finalized stored edges whose
+  both endpoints are selected are included.
 """
 
 from db.database_service import (
@@ -18,7 +18,6 @@ from db.database_service import (
     get_relationships,
 )
 from schema.lazy_loader import ensure_table_columns
-from schema.schema_database_creator import infer_schema_name_relationships
 
 __all__ = ["build_subgraph"]
 
@@ -51,26 +50,9 @@ def build_subgraph(database_id, selected_tables):
         r for r in get_relationships(database_id)
         if r.get("from_table") in present and r.get("to_table") in present
     ]
-    seen_edges = {
-        (r.get("from_table"), r.get("from_column"),
-         r.get("to_table"), r.get("to_column"))
-        for r in rels
-    }
-
-    # Query-time name-based relationships among the selected tables (ephemeral —
-    # never persisted). Bounded to the few selected tables, so it is cheap.
-    db_path = db.get("db_path")
-    if db_path and len(present) > 1:
-        try:
-            for e in infer_schema_name_relationships(db_path, list(present)):
-                if (e.get("from_table") in present and e.get("to_table") in present):
-                    key = (e.get("from_table"), e.get("from_column"),
-                           e.get("to_table"), e.get("to_column"))
-                    if key not in seen_edges:
-                        seen_edges.add(key)
-                        rels.append(e)
-        except Exception:
-            pass
+    # Relationship lifecycle: NO query-time relationship inference. The subgraph
+    # carries only the finalized stored edges whose BOTH endpoints are selected.
+    # Relationship discovery happens exclusively at setup/redetection.
 
     graph = dict(db)
     graph["tables"] = tables

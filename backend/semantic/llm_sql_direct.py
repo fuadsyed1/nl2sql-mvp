@@ -99,6 +99,27 @@ def _checklist_block(checklist):
     return "\n".join(lines) + "\n\n"
 
 
+_DAY2_SEMANTIC_REMINDERS = (
+    "- If the question asks for a ratio, percentage, share, rate, difference or\n"
+    "  profit, COMPUTE that expression in the SELECT (e.g. a / b, a - b); returning\n"
+    "  the operands separately is NOT enough. For a percentage multiply by 100.\n"
+    "- Cast ratio operands to REAL and guard the denominator against zero so\n"
+    "  integer division does not truncate (e.g. CAST(a AS REAL) / NULLIF(b, 0)).\n"
+    "- Preserve EVERY explicit condition (status, year, threshold, literal). Put\n"
+    "  row-level conditions in WHERE and aggregate conditions in HAVING. Do NOT\n"
+    "  add filters the question does not state, and do not drop stated ones.\n"
+    "- 'either/or/at least one' -> UNION or OR or separate EXISTS; 'both' ->\n"
+    "  INTERSECT or two independent EXISTS; 'A but not B' -> EXCEPT or\n"
+    "  EXISTS(A) AND NOT EXISTS(B); 'without/no/never' -> NOT EXISTS (never an\n"
+    "  inner join to prove a row is absent).\n"
+    "- When two conditions may hold on DIFFERENT child rows (e.g. 'has X and has\n"
+    "  Y'), use TWO independent EXISTS clauses; do not force both onto one child\n"
+    "  row unless the question says the same record must satisfy both.\n"
+    "- Output EVERY explicitly requested value (identifier, name, attribute,\n"
+    "  aggregate, derived metric, ranking metric).\n"
+)
+
+
 def _direct_prompt(question, tables_block, fk_block, checklist, value_hints=""):
     hints = f"{value_hints}\n\n" if value_hints else ""
     return (
@@ -131,7 +152,8 @@ def _direct_prompt(question, tables_block, fk_block, checklist, value_hints=""):
         "- If the question needs absence, use NOT EXISTS; extremum-per-group,\n"
         "  use a window function or correlated subquery; a comparison against\n"
         "  a computed value, use a subquery or CTE and APPLY the comparison.\n\n"
-        f"Question: {question}\n"
+        + _DAY2_SEMANTIC_REMINDERS
+        + f"Question: {question}\n"
         "SQL:"
     )
 
@@ -179,7 +201,8 @@ def _grain_prompt(question, tables_block, fk_block, checklist, value_hints=""):
         "- If the question needs absence, use NOT EXISTS; extremum-per-group,\n"
         "  use a window function or correlated subquery; a comparison against\n"
         "  a computed value, use a subquery or CTE and APPLY the comparison.\n\n"
-        f"Question: {question}\n"
+        + _DAY2_SEMANTIC_REMINDERS
+        + f"Question: {question}\n"
         "SQL:"
     )
 
@@ -214,7 +237,8 @@ def _variant_prompt(question, tables_block, fk_block, checklist, value_hints="")
         "- Absence -> NOT EXISTS; top/bottom per group -> window or correlated\n"
         "  subquery; comparing to a computed value -> compute it in a subquery\n"
         "  or CTE and actually apply the comparison.\n\n"
-        f"Question: {question}\n"
+        + _DAY2_SEMANTIC_REMINDERS
+        + f"Question: {question}\n"
         "SQL:"
     )
 
@@ -251,6 +275,12 @@ def generate_direct_sql(question, graph, checklist=None, value_hints=""):
         )
         sql = _clean_sql((result.text or "").strip())
         print("DIRECT SQL:", sql, flush=True)
+        try:                                   # diagnostics only (full trace)
+            from diagnostics import full_trace
+            full_trace.note("layer5", "raw::llm_sql_direct",
+                            (result.text or "").strip())
+        except Exception:
+            pass
         return sql
     except ProviderError as exc:
         print(f"DIRECT SQL ERROR (provider): {exc}", flush=True)
@@ -274,6 +304,12 @@ def _run_direct(question, graph, checklist, value_hints, prompt_fn, options, tag
         result = get_provider().generate(prompt, options=options)
         sql = _clean_sql((result.text or "").strip())
         print(f"DIRECT SQL [{tag}]:", sql, flush=True)
+        try:                                   # diagnostics only (full trace)
+            from diagnostics import full_trace
+            full_trace.note("layer5", f"raw::llm_sql_direct_{tag}",
+                            (result.text or "").strip())
+        except Exception:
+            pass
         return sql
     except ProviderError as exc:
         print(f"DIRECT SQL ERROR [{tag}] (provider): {exc}", flush=True)

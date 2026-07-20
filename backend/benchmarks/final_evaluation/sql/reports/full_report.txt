@@ -1,0 +1,18 @@
+FINAL SQL BENCHMARK REPORT
+cases run: 2000
+correct: 737  (36.9%)
+controlled failures: 89
+safety accuracy ((correct+controlled)/all): 41.3%
+
+| Category | Total | Correct | Wrong | Controlled Failure | Error | Timeout | Strict Accuracy | Average Latency |
+|---|---|---|---|---|---|---|---|
+| aggregation | 200 | 123 | 43 | 6 | 28 | 0 | 0.615 | 11.4 |
+| derived_metric | 200 | 62 | 110 | 6 | 21 | 0 | 0.310 | 19.2 |
+| distinct_count | 200 | 107 | 53 | 29 | 8 | 0 | 0.535 | 15.5 |
+| group_by | 200 | 118 | 57 | 0 | 24 | 1 | 0.590 | 15.4 |
+| having | 200 | 27 | 148 | 12 | 13 | 0 | 0.135 | 15.1 |
+| join | 200 | 101 | 73 | 1 | 21 | 2 | 0.505 | 15.6 |
+| multi_table_join | 200 | 75 | 96 | 9 | 20 | 0 | 0.375 | 14.0 |
+| order_limit_topk | 200 | 16 | 152 | 2 | 30 | 0 | 0.080 | 13.7 |
+| set_operations | 200 | 62 | 104 | 17 | 9 | 5 | 0.310 | 22.0 |
+| subquery_cte | 200 | 46 | 127 | 7 | 18 | 0 | 0.230 | 16.9 |

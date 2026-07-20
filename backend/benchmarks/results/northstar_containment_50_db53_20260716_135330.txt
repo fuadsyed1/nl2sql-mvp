@@ -1,0 +1,3362 @@
+SpiderSQL Northstar Containment Benchmark - 50 Natural-Language Cases
+Started: 2026-07-16T13:53:30
+Database ID: 53
+Endpoint: http://127.0.0.1:8000/database/53/check_containment_batch
+Trace run ID: northstar_containment_50_db53_20260716_135330
+Selected case count: 50
+
+Manual correctness note:
+Endpoint success is not semantic correctness. Inspect generated SQL, relationships, hierarchy, and counterexamples.
+Contained/equivalent results are current-database evidence, not universal symbolic proofs.
+
+Selected category counts:
+  conjunctive_filters: 5
+  date_status: 5
+  equivalence_hierarchy: 5
+  existence_containment: 5
+  group_having: 5
+  join_containment: 5
+  multijoin_containment: 5
+  range_containment: 5
+  set_membership: 5
+  single_table_threshold: 5
+
+==============================================================================================================
+TEST 01: Customer risk-score threshold chain
+==============================================================================================================
+Category: single_table_threshold
+Difficulty: easy
+Expected note: Risk>90 should be contained in Risk>80, which should be contained in Risk>60, then Risk>40.
+HTTP status: 200
+Endpoint success: True
+Elapsed seconds: 63.36
+proof_type: live_database_except_pairwise | checked_on_current_database: True
+limitations: Live-database check only. Not-contained and incomparable results are backed by counterexample rows. Contained/equivalent results are only verified on the current database, not as full symbolic proofs.
+
+INPUT QUERIES
+  Q1: List customers whose risk score is greater than 80. Show customer ID, full name, and risk score.
+  Q2: List customers whose risk score is greater than 60. Show customer ID, full name, and risk score.
+  Q3: List customers whose risk score is greater than 40. Show customer ID, full name, and risk score.
+  Q4: List customers whose risk score is greater than 90. Show customer ID, full name, and risk score.
+
+GENERATED SQL / QUERY RESULTS
+Q1. List customers whose risk score is greater than 80. Show customer ID, full name, and risk score.
+   success=True | safe=True | rows=43 | empty=False | source=llm_sql_direct_variant | score=86.0
+   columns: ['customer_id', 'full_name', 'risk_score']
+   sql: SELECT customers.customer_id, customers.full_name, customers.risk_score
+FROM customers
+WHERE customers.risk_score > 80
+Q2. List customers whose risk score is greater than 60. Show customer ID, full name, and risk score.
+   success=True | safe=True | rows=99 | empty=False | source=llm_sql_direct_variant | score=86.0
+   columns: ['customer_id', 'full_name', 'risk_score']
+   sql: SELECT customers.customer_id, customers.full_name, customers.risk_score
+FROM customers
+WHERE customers.risk_score > 60
+Q3. List customers whose risk score is greater than 40. Show customer ID, full name, and risk score.
+   success=True | safe=True | rows=177 | empty=False | source=llm_sql_direct_variant | score=86.0
+   columns: ['customer_id', 'full_name', 'risk_score']
+   sql: SELECT customers.customer_id, customers.full_name, customers.risk_score
+FROM customers
+WHERE customers.risk_score > 40
+Q4. List customers whose risk score is greater than 90. Show customer ID, full name, and risk score.
+   success=True | safe=True | rows=10 | empty=False | source=llm_sql_direct_variant | score=86.0
+   columns: ['customer_id', 'full_name', 'risk_score']
+   sql: SELECT customers.customer_id, customers.full_name, customers.risk_score
+FROM customers
+WHERE customers.risk_score > 90
+
+RELATIONSHIP SUMMARY
+  Q1 | status=broader_and_narrower | empty=False | contained_in=[2, 3] | contains=[4] | equivalent_to=- | incomparable_with=- | unknown_with=-
+  Q1 | status=broader_and_narrower | empty=False | contained_in=[3] | contains=[1, 4] | equivalent_to=- | incomparable_with=- | unknown_with=-
+  Q1 | status=broader_query_for_some_queries | empty=False | contained_in=- | contains=[1, 2, 4] | equivalent_to=- | incomparable_with=- | unknown_with=-
+  Q1 | status=narrower_query | empty=False | contained_in=[1, 2, 3] | contains=- | equivalent_to=- | incomparable_with=- | unknown_with=-
+
+PAIRWISE RELATIONSHIPS
+  Q1 vs Q1: query_a_contained_in_query_b
+     Query 1 is contained in Query 2 on the current database.
+     Q1 minus Q1 sample: [[6, 'Adam Moore', 67], [14, 'Rafi Walker', 65], [21, 'Leo Hill', 79], [25, 'Daniel Wilson', 71], [31, 'Jonah Brown', 78]]
+  Q1 vs Q1: query_a_contained_in_query_b
+     Query 1 is contained in Query 3 on the current database.
+     Q1 minus Q1 sample: [[1, 'Daniel Perez', 58], [6, 'Adam Moore', 67], [8, 'Ethan Bell', 53], [9, 'Jack Cook', 54], [11, 'Ava Thompson', 48]]
+  Q1 vs Q1: query_b_contained_in_query_a
+     Query 4 is contained in Query 1 on the current database.
+     Q1 minus Q1 sample: [[7, 'Noah Sanchez', 81], [22, 'Emma Stewart', 90], [40, 'Sebastian Anderson', 86], [42, 'Jack Anderson', 81], [47, 'Diego Morris', 81]]
+  Q1 vs Q1: query_a_contained_in_query_b
+     Query 2 is contained in Query 3 on the current database.
+     Q1 minus Q1 sample: [[1, 'Daniel Perez', 58], [8, 'Ethan Bell', 53], [9, 'Jack Cook', 54], [11, 'Ava Thompson', 48], [12, 'Adam Davis', 46]]
+  Q1 vs Q1: query_b_contained_in_query_a
+     Query 4 is contained in Query 2 on the current database.
+     Q1 minus Q1 sample: [[6, 'Adam Moore', 67], [7, 'Noah Sanchez', 81], [14, 'Rafi Walker', 65], [21, 'Leo Hill', 79], [22, 'Emma Stewart', 90]]
+  Q1 vs Q1: query_b_contained_in_query_a
+     Query 4 is contained in Query 3 on the current database.
+     Q1 minus Q1 sample: [[1, 'Daniel Perez', 58], [6, 'Adam Moore', 67], [7, 'Noah Sanchez', 81], [8, 'Ethan Bell', 53], [9, 'Jack Cook', 54]]
+
+RAW RESPONSE JSON
+{
+  "success": true,
+  "database_id": 53,
+  "query_results": [
+    {
+      "question": "List customers whose risk score is greater than 80. Show customer ID, full name, and risk score.",
+      "success": true,
+      "sql": "SELECT customers.customer_id, customers.full_name, customers.risk_score\nFROM customers\nWHERE customers.risk_score > 80",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 86.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "customer_id",
+        "full_name",
+        "risk_score"
+      ],
+      "row_count": 43,
+      "query_id": 1,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "List customers whose risk score is greater than 60. Show customer ID, full name, and risk score.",
+      "success": true,
+      "sql": "SELECT customers.customer_id, customers.full_name, customers.risk_score\nFROM customers\nWHERE customers.risk_score > 60",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 86.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "customer_id",
+        "full_name",
+        "risk_score"
+      ],
+      "row_count": 99,
+      "query_id": 2,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "List customers whose risk score is greater than 40. Show customer ID, full name, and risk score.",
+      "success": true,
+      "sql": "SELECT customers.customer_id, customers.full_name, customers.risk_score\nFROM customers\nWHERE customers.risk_score > 40",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 86.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "customer_id",
+        "full_name",
+        "risk_score"
+      ],
+      "row_count": 177,
+      "query_id": 3,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "List customers whose risk score is greater than 90. Show customer ID, full name, and risk score.",
+      "success": true,
+      "sql": "SELECT customers.customer_id, customers.full_name, customers.risk_score\nFROM customers\nWHERE customers.risk_score > 90",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 86.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "customer_id",
+        "full_name",
+        "risk_score"
+      ],
+      "row_count": 10,
+      "query_id": 4,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    }
+  ],
+  "pairwise_relationships": [
+    {
+      "query_a": 1,
+      "query_b": 2,
+      "relationship": "query_a_contained_in_query_b",
+      "explanation": "Query 1 is contained in Query 2 on the current database.",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [
+        [
+          6,
+          "Adam Moore",
+          67
+        ],
+        [
+          14,
+          "Rafi Walker",
+          65
+        ],
+        [
+          21,
+          "Leo Hill",
+          79
+        ],
+        [
+          25,
+          "Daniel Wilson",
+          71
+        ],
+        [
+          31,
+          "Jonah Brown",
+          78
+        ],
+        [
+          34,
+          "Olivia Reed",
+          80
+        ],
+        [
+          43,
+          "Maya Garcia",
+          67
+        ],
+        [
+          53,
+          "Michael Thomas",
+          64
+        ],
+        [
+          57,
+          "Mia Edwards",
+          79
+        ],
+        [
+          59,
+          "Noah Bailey",
+          73
+        ],
+        [
+          65,
+          "Jonah Morgan",
+          80
+        ],
+        [
+          66,
+          "Fatima Thomas",
+          77
+        ],
+        [
+          72,
+          "Mason Wright",
+          64
+        ],
+        [
+          80,
+          "Nina Johnson",
+          66
+        ],
+        [
+          85,
+          "Elijah Evans",
+          77
+        ],
+        [
+          90,
+          "Sophia Bailey",
+          75
+        ],
+        [
+          97,
+          "Luna Lewis",
+          73
+        ],
+        [
+          98,
+          "Jonah Clark",
+          67
+        ],
+        [
+          102,
+          "Liam Perez",
+          78
+        ],
+        [
+          103,
+          "Michael Nelson",
+          61
+        ]
+      ],
+      "compared_on": "output_columns"
+    },
+    {
+      "query_a": 1,
+      "query_b": 3,
+      "relationship": "query_a_contained_in_query_b",
+      "explanation": "Query 1 is contained in Query 3 on the current database.",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [
+        [
+          1,
+          "Daniel Perez",
+          58
+        ],
+        [
+          6,
+          "Adam Moore",
+          67
+        ],
+        [
+          8,
+          "Ethan Bell",
+          53
+        ],
+        [
+          9,
+          "Jack Cook",
+          54
+        ],
+        [
+          11,
+          "Ava Thompson",
+          48
+        ],
+        [
+          12,
+          "Adam Davis",
+          46
+        ],
+        [
+          14,
+          "Rafi Walker",
+          65
+        ],
+        [
+          17,
+          "Evelyn Bailey",
+          56
+        ],
+        [
+          21,
+          "Leo Hill",
+          79
+        ],
+        [
+          25,
+          "Daniel Wilson",
+          71
+        ],
+        [
+          29,
+          "Jonah Young",
+          57
+        ],
+        [
+          31,
+          "Jonah Brown",
+          78
+        ],
+        [
+          32,
+          "Maya Smith",
+          46
+        ],
+        [
+          33,
+          "Leo Carter",
+          42
+        ],
+        [
+          34,
+          "Olivia Reed",
+          80
+        ],
+        [
+          36,
+          "Alexander Reed",
+          55
+        ],
+        [
+          39,
+          "Elena Harris",
+          55
+        ],
+        [
+          43,
+          "Maya Garcia",
+          67
+        ],
+        [
+          44,
+          "Sara Miller",
+          49
+        ],
+        [
+          46,
+          "Adam Robinson",
+          52
+        ]
+      ],
+      "compared_on": "output_columns"
+    },
+    {
+      "query_a": 1,
+      "query_b": 4,
+      "relationship": "query_b_contained_in_query_a",
+      "explanation": "Query 4 is contained in Query 1 on the current database.",
+      "a_minus_b_rows": [
+        [
+          7,
+          "Noah Sanchez",
+          81
+        ],
+        [
+          22,
+          "Emma Stewart",
+          90
+        ],
+        [
+          40,
+          "Sebastian Anderson",
+          86
+        ],
+        [
+          42,
+          "Jack Anderson",
+          81
+        ],
+        [
+          47,
+          "Diego Morris",
+          81
+        ],
+        [
+          61,
+          "Elijah Young",
+          81
+        ],
+        [
+          73,
+          "Rafi Green",
+          90
+        ],
+        [
+          75,
+          "Jack Campbell",
+          90
+        ],
+        [
+          78,
+          "Fatima Martin",
+          81
+        ],
+        [
+          89,
+          "Kai Baker",
+          81
+        ],
+        [
+          93,
+          "Minh Smith",
+          81
+        ],
+        [
+          96,
+          "Priya White",
+          82
+        ],
+        [
+          99,
+          "Henry Bell",
+          84
+        ],
+        [
+          100,
+          "Harper Murphy",
+          85
+        ],
+        [
+          122,
+          "Nora Reed",
+          84
+        ],
+        [
+          127,
+          "Leo Clark",
+          82
+        ],
+        [
+          136,
+          "Rafi Phillips",
+          83
+        ],
+        [
+          140,
+          "Fatima Jackson",
+          90
+        ],
+        [
+          159,
+          "Henry Johnson",
+          84
+        ],
+        [
+          161,
+          "Diego White",
+          85
+        ]
+      ],
+      "b_minus_a_rows": [],
+      "compared_on": "output_columns"
+    },
+    {
+      "query_a": 2,
+      "query_b": 3,
+      "relationship": "query_a_contained_in_query_b",
+      "explanation": "Query 2 is contained in Query 3 on the current database.",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [
+        [
+          1,
+          "Daniel Perez",
+          58
+        ],
+        [
+          8,
+          "Ethan Bell",
+          53
+        ],
+        [
+          9,
+          "Jack Cook",
+          54
+        ],
+        [
+          11,
+          "Ava Thompson",
+          48
+        ],
+        [
+          12,
+          "Adam Davis",
+          46
+        ],
+        [
+          17,
+          "Evelyn Bailey",
+          56
+        ],
+        [
+          29,
+          "Jonah Young",
+          57
+        ],
+        [
+          32,
+          "Maya Smith",
+          46
+        ],
+        [
+          33,
+          "Leo Carter",
+          42
+        ],
+        [
+          36,
+          "Alexander Reed",
+          55
+        ],
+        [
+          39,
+          "Elena Harris",
+          55
+        ],
+        [
+          44,
+          "Sara Miller",
+          49
+        ],
+        [
+          46,
+          "Adam Robinson",
+          52
+        ],
+        [
+          52,
+          "Jonah Jackson",
+          56
+        ],
+        [
+          60,
+          "Nina Morgan",
+          44
+        ],
+        [
+          63,
+          "Noah Garcia",
+          44
+        ],
+        [
+          67,
+          "Sara Miller",
+          49
+        ],
+        [
+          69,
+          "Amelia Mitchell",
+          48
+        ],
+        [
+          74,
+          "Isabella Robinson",
+          54
+        ],
+        [
+          82,
+          "Zoe Taylor",
+          50
+        ]
+      ],
+      "compared_on": "output_columns"
+    },
+    {
+      "query_a": 2,
+      "query_b": 4,
+      "relationship": "query_b_contained_in_query_a",
+      "explanation": "Query 4 is contained in Query 2 on the current database.",
+      "a_minus_b_rows": [
+        [
+          6,
+          "Adam Moore",
+          67
+        ],
+        [
+          7,
+          "Noah Sanchez",
+          81
+        ],
+        [
+          14,
+          "Rafi Walker",
+          65
+        ],
+        [
+          21,
+          "Leo Hill",
+          79
+        ],
+        [
+          22,
+          "Emma Stewart",
+          90
+        ],
+        [
+          25,
+          "Daniel Wilson",
+          71
+        ],
+        [
+          31,
+          "Jonah Brown",
+          78
+        ],
+        [
+          34,
+          "Olivia Reed",
+          80
+        ],
+        [
+          40,
+          "Sebastian Anderson",
+          86
+        ],
+        [
+          42,
+          "Jack Anderson",
+          81
+        ],
+        [
+          43,
+          "Maya Garcia",
+          67
+        ],
+        [
+          47,
+          "Diego Morris",
+          81
+        ],
+        [
+          53,
+          "Michael Thomas",
+          64
+        ],
+        [
+          57,
+          "Mia Edwards",
+          79
+        ],
+        [
+          59,
+          "Noah Bailey",
+          73
+        ],
+        [
+          61,
+          "Elijah Young",
+          81
+        ],
+        [
+          65,
+          "Jonah Morgan",
+          80
+        ],
+        [
+          66,
+          "Fatima Thomas",
+          77
+        ],
+        [
+          72,
+          "Mason Wright",
+          64
+        ],
+        [
+          73,
+          "Rafi Green",
+          90
+        ]
+      ],
+      "b_minus_a_rows": [],
+      "compared_on": "output_columns"
+    },
+    {
+      "query_a": 3,
+      "query_b": 4,
+      "relationship": "query_b_contained_in_query_a",
+      "explanation": "Query 4 is contained in Query 3 on the current database.",
+      "a_minus_b_rows": [
+        [
+          1,
+          "Daniel Perez",
+          58
+        ],
+        [
+          6,
+          "Adam Moore",
+          67
+        ],
+        [
+          7,
+          "Noah Sanchez",
+          81
+        ],
+        [
+          8,
+          "Ethan Bell",
+          53
+        ],
+        [
+          9,
+          "Jack Cook",
+          54
+        ],
+        [
+          11,
+          "Ava Thompson",
+          48
+        ],
+        [
+          12,
+          "Adam Davis",
+          46
+        ],
+        [
+          14,
+          "Rafi Walker",
+          65
+        ],
+        [
+          17,
+          "Evelyn Bailey",
+          56
+        ],
+        [
+          21,
+          "Leo Hill",
+          79
+        ],
+        [
+          22,
+          "Emma Stewart",
+          90
+        ],
+        [
+          25,
+          "Daniel Wilson",
+          71
+        ],
+        [
+          29,
+          "Jonah Young",
+          57
+        ],
+        [
+          31,
+          "Jonah Brown",
+          78
+        ],
+        [
+          32,
+          "Maya Smith",
+          46
+        ],
+        [
+          33,
+          "Leo Carter",
+          42
+        ],
+        [
+          34,
+          "Olivia Reed",
+          80
+        ],
+        [
+          36,
+          "Alexander Reed",
+          55
+        ],
+        [
+          39,
+          "Elena Harris",
+          55
+        ],
+        [
+          40,
+          "Sebastian Anderson",
+          86
+        ]
+      ],
+      "b_minus_a_rows": [],
+      "compared_on": "output_columns"
+    }
+  ],
+  "query_summaries": [
+    {
+      "query_id": 1,
+      "contained_in": [
+        2,
+        3
+      ],
+      "contains": [
+        4
+      ],
+      "equivalent_to": [],
+      "incomparable_with": [],
+      "unknown_with": [],
+      "status": "broader_and_narrower",
+      "empty_result": false
+    },
+    {
+      "query_id": 2,
+      "contained_in": [
+        3
+      ],
+      "contains": [
+        1,
+        4
+      ],
+      "equivalent_to": [],
+      "incomparable_with": [],
+      "unknown_with": [],
+      "status": "broader_and_narrower",
+      "empty_result": false
+    },
+    {
+      "query_id": 3,
+      "contained_in": [],
+      "contains": [
+        1,
+        2,
+        4
+      ],
+      "equivalent_to": [],
+      "incomparable_with": [],
+      "unknown_with": [],
+      "status": "broader_query_for_some_queries",
+      "empty_result": false
+    },
+    {
+      "query_id": 4,
+      "contained_in": [
+        1,
+        2,
+        3
+      ],
+      "contains": [],
+      "equivalent_to": [],
+      "incomparable_with": [],
+      "unknown_with": [],
+      "status": "narrower_query",
+      "empty_result": false
+    }
+  ],
+  "analysis": {
+    "query_count": 4,
+    "main_queries": [
+      {
+        "index": 3,
+        "equivalent_to": [],
+        "contains": [
+          1,
+          2,
+          4
+        ],
+        "contained_by": []
+      }
+    ],
+    "equivalent_groups": [],
+    "containment_edges": [
+      {
+        "superset": 2,
+        "subset": 1,
+        "relationship_source": "pairwise"
+      },
+      {
+        "superset": 3,
+        "subset": 1,
+        "relationship_source": "pairwise"
+      },
+      {
+        "superset": 1,
+        "subset": 4,
+        "relationship_source": "pairwise"
+      },
+      {
+        "superset": 3,
+        "subset": 2,
+        "relationship_source": "pairwise"
+      },
+      {
+        "superset": 2,
+        "subset": 4,
+        "relationship_source": "pairwise"
+      },
+      {
+        "superset": 3,
+        "subset": 4,
+        "relationship_source": "pairwise"
+      }
+    ],
+    "independent_queries": [],
+    "unknown_pairs": [],
+    "incomparable_pairs": [],
+    "empty_queries": [],
+    "summary_text": "Query 3 is a main (broadest) query; it contains Query 1, Query 2, Query 4."
+  },
+  "checked_on_current_database": true,
+  "proof_type": "live_database_except_pairwise",
+  "limitations": "Live-database check only. Not-contained and incomparable results are backed by counterexample rows. Contained/equivalent results are only verified on the current database, not as full symbolic proofs.",
+  "warnings": [],
+  "_http_status": 200
+}
+
+==============================================================================================================
+TEST 02: Product list-price threshold chain
+==============================================================================================================
+Category: single_table_threshold
+Difficulty: easy
+Expected note: Price>750 is narrowest; Price>100 is broadest.
+HTTP status: 200
+Endpoint success: True
+Elapsed seconds: 60.32
+proof_type: live_database_except_pairwise | checked_on_current_database: True
+limitations: Live-database check only. Not-contained and incomparable results are backed by counterexample rows. Contained/equivalent results are only verified on the current database, not as full symbolic proofs.
+
+INPUT QUERIES
+  Q1: List products with a list price greater than 500. Show product ID, product name, and list price.
+  Q2: List products with a list price greater than 250. Show product ID, product name, and list price.
+  Q3: List products with a list price greater than 100. Show product ID, product name, and list price.
+  Q4: List products with a list price greater than 750. Show product ID, product name, and list price.
+
+GENERATED SQL / QUERY RESULTS
+Q1. List products with a list price greater than 500. Show product ID, product name, and list price.
+   success=True | safe=True | rows=306 | empty=False | source=llm_sql_direct_variant | score=86.0
+   columns: ['product_id', 'product_name', 'list_price']
+   sql: SELECT products.product_id, products.product_name, products.list_price
+FROM products
+WHERE products.list_price > 500
+Q2. List products with a list price greater than 250. Show product ID, product name, and list price.
+   success=True | safe=True | rows=417 | empty=False | source=llm_sql_direct_variant | score=86.0
+   columns: ['product_id', 'product_name', 'list_price']
+   sql: SELECT products.product_id, products.product_name, products.list_price
+FROM products
+WHERE products.list_price > 250
+Q3. List products with a list price greater than 100. Show product ID, product name, and list price.
+   success=True | safe=True | rows=466 | empty=False | source=llm_sql_direct_variant | score=86.0
+   columns: ['product_id', 'product_name', 'list_price']
+   sql: SELECT products.product_id, products.product_name, products.list_price
+FROM products
+WHERE products.list_price > 100
+Q4. List products with a list price greater than 750. Show product ID, product name, and list price.
+   success=True | safe=True | rows=209 | empty=False | source=llm_sql_direct_variant | score=86.0
+   columns: ['product_id', 'product_name', 'list_price']
+   sql: SELECT products.product_id, products.product_name, products.list_price
+FROM products
+WHERE products.list_price > 750
+
+RELATIONSHIP SUMMARY
+  Q1 | status=broader_and_narrower | empty=False | contained_in=[2, 3] | contains=[4] | equivalent_to=- | incomparable_with=- | unknown_with=-
+  Q1 | status=broader_and_narrower | empty=False | contained_in=[3] | contains=[1, 4] | equivalent_to=- | incomparable_with=- | unknown_with=-
+  Q1 | status=broader_query_for_some_queries | empty=False | contained_in=- | contains=[1, 2, 4] | equivalent_to=- | incomparable_with=- | unknown_with=-
+  Q1 | status=narrower_query | empty=False | contained_in=[1, 2, 3] | contains=- | equivalent_to=- | incomparable_with=- | unknown_with=-
+
+PAIRWISE RELATIONSHIPS
+  Q1 vs Q1: query_a_contained_in_query_b
+     Query 1 is contained in Query 2 on the current database.
+     Q1 minus Q1 sample: [[2, 'MetroWorks Premium Mat 2', 289.14], [9, 'BluePeak Portable Cleaner 9', 413.92], [19, 'Lumina Ultra Box 19', 450.34], [20, 'Evergreen Deluxe Bottle 20', 307.63], [23, 'Nova Everyday Notebook 23', 258.01]]
+  Q1 vs Q1: query_a_contained_in_query_b
+     Query 1 is contained in Query 3 on the current database.
+     Q1 minus Q1 sample: [[2, 'MetroWorks Premium Mat 2', 289.14], [6, 'Northstar Professional Pack 6', 227.14], [9, 'BluePeak Portable Cleaner 9', 413.92], [14, 'SilverLine Pro Jacket 14', 152.52], [19, 'Lumina Ultra Box 19', 450.34]]
+  Q1 vs Q1: query_b_contained_in_query_a
+     Query 4 is contained in Query 1 on the current database.
+     Q1 minus Q1 sample: [[3, 'Vertex Classic Monitor 3', 501.34], [4, 'Northstar Premium Adapter 4', 683.42], [5, 'Nova Compact Speaker 5', 671.07], [7, 'Northstar Eco Helmet 7', 684.2], [8, 'Northstar Ultra Bottle 8', 528.04]]
+  Q1 vs Q1: query_a_contained_in_query_b
+     Query 2 is contained in Query 3 on the current database.
+     Q1 minus Q1 sample: [[6, 'Northstar Professional Pack 6', 227.14], [14, 'SilverLine Pro Jacket 14', 152.52], [29, 'MetroWorks Premium Chair 29', 216.02], [34, 'Apex Lightweight Case 34', 134.32], [35, 'Redwood Ultra Helmet 35', 222.45]]
+  Q1 vs Q1: query_b_contained_in_query_a
+     Query 4 is contained in Query 2 on the current database.
+     Q1 minus Q1 sample: [[2, 'MetroWorks Premium Mat 2', 289.14], [3, 'Vertex Classic Monitor 3', 501.34], [4, 'Northstar Premium Adapter 4', 683.42], [5, 'Nova Compact Speaker 5', 671.07], [7, 'Northstar Eco Helmet 7', 684.2]]
+  Q1 vs Q1: query_b_contained_in_query_a
+     Query 4 is contained in Query 3 on the current database.
+     Q1 minus Q1 sample: [[2, 'MetroWorks Premium Mat 2', 289.14], [3, 'Vertex Classic Monitor 3', 501.34], [4, 'Northstar Premium Adapter 4', 683.42], [5, 'Nova Compact Speaker 5', 671.07], [6, 'Northstar Professional Pack 6', 227.14]]
+
+RAW RESPONSE JSON
+{
+  "success": true,
+  "database_id": 53,
+  "query_results": [
+    {
+      "question": "List products with a list price greater than 500. Show product ID, product name, and list price.",
+      "success": true,
+      "sql": "SELECT products.product_id, products.product_name, products.list_price\nFROM products\nWHERE products.list_price > 500",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 86.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "product_id",
+        "product_name",
+        "list_price"
+      ],
+      "row_count": 306,
+      "query_id": 1,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "List products with a list price greater than 250. Show product ID, product name, and list price.",
+      "success": true,
+      "sql": "SELECT products.product_id, products.product_name, products.list_price\nFROM products\nWHERE products.list_price > 250",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 86.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "product_id",
+        "product_name",
+        "list_price"
+      ],
+      "row_count": 417,
+      "query_id": 2,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "List products with a list price greater than 100. Show product ID, product name, and list price.",
+      "success": true,
+      "sql": "SELECT products.product_id, products.product_name, products.list_price\nFROM products\nWHERE products.list_price > 100",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 86.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "product_id",
+        "product_name",
+        "list_price"
+      ],
+      "row_count": 466,
+      "query_id": 3,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "List products with a list price greater than 750. Show product ID, product name, and list price.",
+      "success": true,
+      "sql": "SELECT products.product_id, products.product_name, products.list_price\nFROM products\nWHERE products.list_price > 750",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 86.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "product_id",
+        "product_name",
+        "list_price"
+      ],
+      "row_count": 209,
+      "query_id": 4,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    }
+  ],
+  "pairwise_relationships": [
+    {
+      "query_a": 1,
+      "query_b": 2,
+      "relationship": "query_a_contained_in_query_b",
+      "explanation": "Query 1 is contained in Query 2 on the current database.",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [
+        [
+          2,
+          "MetroWorks Premium Mat 2",
+          289.14
+        ],
+        [
+          9,
+          "BluePeak Portable Cleaner 9",
+          413.92
+        ],
+        [
+          19,
+          "Lumina Ultra Box 19",
+          450.34
+        ],
+        [
+          20,
+          "Evergreen Deluxe Bottle 20",
+          307.63
+        ],
+        [
+          23,
+          "Nova Everyday Notebook 23",
+          258.01
+        ],
+        [
+          24,
+          "MetroWorks Classic System 24",
+          254.67
+        ],
+        [
+          31,
+          "BluePeak Everyday Cable 31",
+          379.71
+        ],
+        [
+          43,
+          "Summit Ultra Speaker 43",
+          466.12
+        ],
+        [
+          56,
+          "Summit Portable Notebook 56",
+          323.77
+        ],
+        [
+          77,
+          "Redwood Advanced Printer 77",
+          418.37
+        ],
+        [
+          78,
+          "Summit Portable Printer 78",
+          455.7
+        ],
+        [
+          82,
+          "SilverLine Deluxe Box 82",
+          288.77
+        ],
+        [
+          85,
+          "Summit Compact Adapter 85",
+          310.26
+        ],
+        [
+          91,
+          "Apex Ultra Mat 91",
+          288.57
+        ],
+        [
+          92,
+          "Northstar Ultra Box 92",
+          444.9
+        ],
+        [
+          93,
+          "Prairie Portable Rack 93",
+          275.4
+        ],
+        [
+          96,
+          "Redwood Professional Printer 96",
+          298.2
+        ],
+        [
+          100,
+          "Vertex Portable Stand 100",
+          489.64
+        ],
+        [
+          105,
+          "Redwood Deluxe Kit 105",
+          316.31
+        ],
+        [
+          108,
+          "Terra Pro Cable 108",
+          369.78
+        ]
+      ],
+      "compared_on": "output_columns"
+    },
+    {
+      "query_a": 1,
+      "query_b": 3,
+      "relationship": "query_a_contained_in_query_b",
+      "explanation": "Query 1 is contained in Query 3 on the current database.",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [
+        [
+          2,
+          "MetroWorks Premium Mat 2",
+          289.14
+        ],
+        [
+          6,
+          "Northstar Professional Pack 6",
+          227.14
+        ],
+        [
+          9,
+          "BluePeak Portable Cleaner 9",
+          413.92
+        ],
+        [
+          14,
+          "SilverLine Pro Jacket 14",
+          152.52
+        ],
+        [
+          19,
+          "Lumina Ultra Box 19",
+          450.34
+        ],
+        [
+          20,
+          "Evergreen Deluxe Bottle 20",
+          307.63
+        ],
+        [
+          23,
+          "Nova Everyday Notebook 23",
+          258.01
+        ],
+        [
+          24,
+          "MetroWorks Classic System 24",
+          254.67
+        ],
+        [
+          29,
+          "MetroWorks Premium Chair 29",
+          216.02
+        ],
+        [
+          31,
+          "BluePeak Everyday Cable 31",
+          379.71
+        ],
+        [
+          34,
+          "Apex Lightweight Case 34",
+          134.32
+        ],
+        [
+          35,
+          "Redwood Ultra Helmet 35",
+          222.45
+        ],
+        [
+          42,
+          "Vertex Deluxe Monitor 42",
+          153.01
+        ],
+        [
+          43,
+          "Summit Ultra Speaker 43",
+          466.12
+        ],
+        [
+          53,
+          "Lumina Lightweight Station 53",
+          227.83
+        ],
+        [
+          54,
+          "Northstar Classic Station 54",
+          219.7
+        ],
+        [
+          56,
+          "Summit Portable Notebook 56",
+          323.77
+        ],
+        [
+          73,
+          "Harbor Portable Helmet 73",
+          110.76
+        ],
+        [
+          77,
+          "Redwood Advanced Printer 77",
+          418.37
+        ],
+        [
+          78,
+          "Summit Portable Printer 78",
+          455.7
+        ]
+      ],
+      "compared_on": "output_columns"
+    },
+    {
+      "query_a": 1,
+      "query_b": 4,
+      "relationship": "query_b_contained_in_query_a",
+      "explanation": "Query 4 is contained in Query 1 on the current database.",
+      "a_minus_b_rows": [
+        [
+          3,
+          "Vertex Classic Monitor 3",
+          501.34
+        ],
+        [
+          4,
+          "Northstar Premium Adapter 4",
+          683.42
+        ],
+        [
+          5,
+          "Nova Compact Speaker 5",
+          671.07
+        ],
+        [
+          7,
+          "Northstar Eco Helmet 7",
+          684.2
+        ],
+        [
+          8,
+          "Northstar Ultra Bottle 8",
+          528.04
+        ],
+        [
+          13,
+          "Northstar Essential Helmet 13",
+          616.74
+        ],
+        [
+          17,
+          "Terra Essential Rack 17",
+          675.18
+        ],
+        [
+          21,
+          "Nova Essential Cleaner 21",
+          543.0
+        ],
+        [
+          28,
+          "Evergreen Professional Notebook 28",
+          625.94
+        ],
+        [
+          32,
+          "Northstar Portable Chair 32",
+          650.05
+        ],
+        [
+          36,
+          "Nova Essential Cleaner 36",
+          551.9
+        ],
+        [
+          41,
+          "Nova Premium Chair 41",
+          544.29
+        ],
+        [
+          50,
+          "Harbor Professional Tool 50",
+          725.2
+        ],
+        [
+          57,
+          "Lumina Everyday Mat 57",
+          658.73
+        ],
+        [
+          61,
+          "Cascade Compact Organizer 61",
+          693.35
+        ],
+        [
+          66,
+          "Harbor Heavy-Duty Chair 66",
+          563.4
+        ],
+        [
+          72,
+          "Terra Eco Stand 72",
+          500.85
+        ],
+        [
+          76,
+          "Evergreen Heavy-Duty Printer 76",
+          578.93
+        ],
+        [
+          80,
+          "MetroWorks Lightweight System 80",
+          644.31
+        ],
+        [
+          84,
+          "SilverLine Ultra Cleaner 84",
+          576.4
+        ]
+      ],
+      "b_minus_a_rows": [],
+      "compared_on": "output_columns"
+    },
+    {
+      "query_a": 2,
+      "query_b": 3,
+      "relationship": "query_a_contained_in_query_b",
+      "explanation": "Query 2 is contained in Query 3 on the current database.",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [
+        [
+          6,
+          "Northstar Professional Pack 6",
+          227.14
+        ],
+        [
+          14,
+          "SilverLine Pro Jacket 14",
+          152.52
+        ],
+        [
+          29,
+          "MetroWorks Premium Chair 29",
+          216.02
+        ],
+        [
+          34,
+          "Apex Lightweight Case 34",
+          134.32
+        ],
+        [
+          35,
+          "Redwood Ultra Helmet 35",
+          222.45
+        ],
+        [
+          42,
+          "Vertex Deluxe Monitor 42",
+          153.01
+        ],
+        [
+          53,
+          "Lumina Lightweight Station 53",
+          227.83
+        ],
+        [
+          54,
+          "Northstar Classic Station 54",
+          219.7
+        ],
+        [
+          73,
+          "Harbor Portable Helmet 73",
+          110.76
+        ],
+        [
+          116,
+          "Terra Essential Bag 116",
+          217.4
+        ],
+        [
+          133,
+          "Redwood Ultra Set 133",
+          207.3
+        ],
+        [
+          135,
+          "SilverLine Professional Pack 135",
+          101.23
+        ],
+        [
+          138,
+          "Terra Ultra Device 138",
+          176.93
+        ],
+        [
+          153,
+          "Harbor Deluxe Cable 153",
+          221.34
+        ],
+        [
+          154,
+          "Terra Advanced Kit 154",
+          221.38
+        ],
+        [
+          159,
+          "SilverLine Everyday Chair 159",
+          182.27
+        ],
+        [
+          161,
+          "Prairie Everyday Bag 161",
+          247.85
+        ],
+        [
+          179,
+          "Nova Portable Jacket 179",
+          130.86
+        ],
+        [
+          186,
+          "Harbor Essential Speaker 186",
+          223.06
+        ],
+        [
+          191,
+          "SilverLine Premium Device 191",
+          195.24
+        ]
+      ],
+      "compared_on": "output_columns"
+    },
+    {
+      "query_a": 2,
+      "query_b": 4,
+      "relationship": "query_b_contained_in_query_a",
+      "explanation": "Query 4 is contained in Query 2 on the current database.",
+      "a_minus_b_rows": [
+        [
+          2,
+          "MetroWorks Premium Mat 2",
+          289.14
+        ],
+        [
+          3,
+          "Vertex Classic Monitor 3",
+          501.34
+        ],
+        [
+          4,
+          "Northstar Premium Adapter 4",
+          683.42
+        ],
+        [
+          5,
+          "Nova Compact Speaker 5",
+          671.07
+        ],
+        [
+          7,
+          "Northstar Eco Helmet 7",
+          684.2
+        ],
+        [
+          8,
+          "Northstar Ultra Bottle 8",
+          528.04
+        ],
+        [
+          9,
+          "BluePeak Portable Cleaner 9",
+          413.92
+        ],
+        [
+          13,
+          "Northstar Essential Helmet 13",
+          616.74
+        ],
+        [
+          17,
+          "Terra Essential Rack 17",
+          675.18
+        ],
+        [
+          19,
+          "Lumina Ultra Box 19",
+          450.34
+        ],
+        [
+          20,
+          "Evergreen Deluxe Bottle 20",
+          307.63
+        ],
+        [
+          21,
+          "Nova Essential Cleaner 21",
+          543.0
+        ],
+        [
+          23,
+          "Nova Everyday Notebook 23",
+          258.01
+        ],
+        [
+          24,
+          "MetroWorks Classic System 24",
+          254.67
+        ],
+        [
+          28,
+          "Evergreen Professional Notebook 28",
+          625.94
+        ],
+        [
+          31,
+          "BluePeak Everyday Cable 31",
+          379.71
+        ],
+        [
+          32,
+          "Northstar Portable Chair 32",
+          650.05
+        ],
+        [
+          36,
+          "Nova Essential Cleaner 36",
+          551.9
+        ],
+        [
+          41,
+          "Nova Premium Chair 41",
+          544.29
+        ],
+        [
+          43,
+          "Summit Ultra Speaker 43",
+          466.12
+        ]
+      ],
+      "b_minus_a_rows": [],
+      "compared_on": "output_columns"
+    },
+    {
+      "query_a": 3,
+      "query_b": 4,
+      "relationship": "query_b_contained_in_query_a",
+      "explanation": "Query 4 is contained in Query 3 on the current database.",
+      "a_minus_b_rows": [
+        [
+          2,
+          "MetroWorks Premium Mat 2",
+          289.14
+        ],
+        [
+          3,
+          "Vertex Classic Monitor 3",
+          501.34
+        ],
+        [
+          4,
+          "Northstar Premium Adapter 4",
+          683.42
+        ],
+        [
+          5,
+          "Nova Compact Speaker 5",
+          671.07
+        ],
+        [
+          6,
+          "Northstar Professional Pack 6",
+          227.14
+        ],
+        [
+          7,
+          "Northstar Eco Helmet 7",
+          684.2
+        ],
+        [
+          8,
+          "Northstar Ultra Bottle 8",
+          528.04
+        ],
+        [
+          9,
+          "BluePeak Portable Cleaner 9",
+          413.92
+        ],
+        [
+          13,
+          "Northstar Essential Helmet 13",
+          616.74
+        ],
+        [
+          14,
+          "SilverLine Pro Jacket 14",
+          152.52
+        ],
+        [
+          17,
+          "Terra Essential Rack 17",
+          675.18
+        ],
+        [
+          19,
+          "Lumina Ultra Box 19",
+          450.34
+        ],
+        [
+          20,
+          "Evergreen Deluxe Bottle 20",
+          307.63
+        ],
+        [
+          21,
+          "Nova Essential Cleaner 21",
+          543.0
+        ],
+        [
+          23,
+          "Nova Everyday Notebook 23",
+          258.01
+        ],
+        [
+          24,
+          "MetroWorks Classic System 24",
+          254.67
+        ],
+        [
+          28,
+          "Evergreen Professional Notebook 28",
+          625.94
+        ],
+        [
+          29,
+          "MetroWorks Premium Chair 29",
+          216.02
+        ],
+        [
+          31,
+          "BluePeak Everyday Cable 31",
+          379.71
+        ],
+        [
+          32,
+          "Northstar Portable Chair 32",
+          650.05
+        ]
+      ],
+      "b_minus_a_rows": [],
+      "compared_on": "output_columns"
+    }
+  ],
+  "query_summaries": [
+    {
+      "query_id": 1,
+      "contained_in": [
+        2,
+        3
+      ],
+      "contains": [
+        4
+      ],
+      "equivalent_to": [],
+      "incomparable_with": [],
+      "unknown_with": [],
+      "status": "broader_and_narrower",
+      "empty_result": false
+    },
+    {
+      "query_id": 2,
+      "contained_in": [
+        3
+      ],
+      "contains": [
+        1,
+        4
+      ],
+      "equivalent_to": [],
+      "incomparable_with": [],
+      "unknown_with": [],
+      "status": "broader_and_narrower",
+      "empty_result": false
+    },
+    {
+      "query_id": 3,
+      "contained_in": [],
+      "contains": [
+        1,
+        2,
+        4
+      ],
+      "equivalent_to": [],
+      "incomparable_with": [],
+      "unknown_with": [],
+      "status": "broader_query_for_some_queries",
+      "empty_result": false
+    },
+    {
+      "query_id": 4,
+      "contained_in": [
+        1,
+        2,
+        3
+      ],
+      "contains": [],
+      "equivalent_to": [],
+      "incomparable_with": [],
+      "unknown_with": [],
+      "status": "narrower_query",
+      "empty_result": false
+    }
+  ],
+  "analysis": {
+    "query_count": 4,
+    "main_queries": [
+      {
+        "index": 3,
+        "equivalent_to": [],
+        "contains": [
+          1,
+          2,
+          4
+        ],
+        "contained_by": []
+      }
+    ],
+    "equivalent_groups": [],
+    "containment_edges": [
+      {
+        "superset": 2,
+        "subset": 1,
+        "relationship_source": "pairwise"
+      },
+      {
+        "superset": 3,
+        "subset": 1,
+        "relationship_source": "pairwise"
+      },
+      {
+        "superset": 1,
+        "subset": 4,
+        "relationship_source": "pairwise"
+      },
+      {
+        "superset": 3,
+        "subset": 2,
+        "relationship_source": "pairwise"
+      },
+      {
+        "superset": 2,
+        "subset": 4,
+        "relationship_source": "pairwise"
+      },
+      {
+        "superset": 3,
+        "subset": 4,
+        "relationship_source": "pairwise"
+      }
+    ],
+    "independent_queries": [],
+    "unknown_pairs": [],
+    "incomparable_pairs": [],
+    "empty_queries": [],
+    "summary_text": "Query 3 is a main (broadest) query; it contains Query 1, Query 2, Query 4."
+  },
+  "checked_on_current_database": true,
+  "proof_type": "live_database_except_pairwise",
+  "limitations": "Live-database check only. Not-contained and incomparable results are backed by counterexample rows. Contained/equivalent results are only verified on the current database, not as full symbolic proofs.",
+  "warnings": [],
+  "_http_status": 200
+}
+
+==============================================================================================================
+TEST 03: Employee salary threshold chain
+==============================================================================================================
+Category: single_table_threshold
+Difficulty: easy
+Expected note: Salary>150000 should be contained in >120000, >100000, and >80000.
+HTTP status: 200
+Endpoint success: True
+Elapsed seconds: 77.31
+proof_type: live_database_except_pairwise | checked_on_current_database: True
+limitations: Live-database check only. Not-contained and incomparable results are backed by counterexample rows. Contained/equivalent results are only verified on the current database, not as full symbolic proofs.
+
+INPUT QUERIES
+  Q1: List employees whose salary is greater than 120000. Show employee ID, full name, and salary.
+  Q2: List employees whose salary is greater than 100000. Show employee ID, full name, and salary.
+  Q3: List employees whose salary is greater than 80000. Show employee ID, full name, and salary.
+  Q4: List employees whose salary is greater than 150000. Show employee ID, full name, and salary.
+
+GENERATED SQL / QUERY RESULTS
+Q1. List employees whose salary is greater than 120000. Show employee ID, full name, and salary.
+   success=True | safe=True | rows=24 | empty=False | source=llm_sql_direct_variant | score=86.0
+   columns: ['employee_id', 'full_name', 'salary']
+   sql: SELECT employees.employee_id, employees.full_name, employees.salary
+FROM employees
+WHERE employees.salary > 120000
+Q2. List employees whose salary is greater than 100000. Show employee ID, full name, and salary.
+   success=True | safe=True | rows=41 | empty=False | source=llm_sql_direct_variant | score=86.0
+   columns: ['employee_id', 'full_name', 'salary']
+   sql: SELECT employees.employee_id, employees.full_name, employees.salary
+FROM employees
+WHERE employees.salary > 100000
+Q3. List employees whose salary is greater than 80000. Show employee ID, full name, and salary.
+   success=True | safe=True | rows=79 | empty=False | source=llm_sql_direct_variant | score=86.0
+   columns: ['employee_id', 'full_name', 'salary']
+   sql: SELECT employees.employee_id, employees.full_name, employees.salary
+FROM employees
+WHERE employees.salary > 80000
+Q4. List employees whose salary is greater than 150000. Show employee ID, full name, and salary.
+   success=True | safe=True | rows=8 | empty=False | source=llm_sql_direct_variant | score=86.0
+   columns: ['employee_id', 'full_name', 'salary']
+   sql: SELECT employees.employee_id, employees.full_name, employees.salary
+FROM employees
+WHERE employees.salary > 150000
+
+RELATIONSHIP SUMMARY
+  Q1 | status=broader_and_narrower | empty=False | contained_in=[2, 3] | contains=[4] | equivalent_to=- | incomparable_with=- | unknown_with=-
+  Q1 | status=broader_and_narrower | empty=False | contained_in=[3] | contains=[1, 4] | equivalent_to=- | incomparable_with=- | unknown_with=-
+  Q1 | status=broader_query_for_some_queries | empty=False | contained_in=- | contains=[1, 2, 4] | equivalent_to=- | incomparable_with=- | unknown_with=-
+  Q1 | status=narrower_query | empty=False | contained_in=[1, 2, 3] | contains=- | equivalent_to=- | incomparable_with=- | unknown_with=-
+
+PAIRWISE RELATIONSHIPS
+  Q1 vs Q1: query_a_contained_in_query_b
+     Query 1 is contained in Query 2 on the current database.
+     Q1 minus Q1 sample: [[5, 'Layla Mitchell', 105039.16], [8, 'Ava Brown', 114085.16], [29, 'Noah Morgan', 102956.0], [32, 'Liam Turner', 112702.4], [36, 'Daniel Young', 113503.17]]
+  Q1 vs Q1: query_a_contained_in_query_b
+     Query 1 is contained in Query 3 on the current database.
+     Q1 minus Q1 sample: [[5, 'Layla Mitchell', 105039.16], [6, 'Layla Wright', 85969.14], [8, 'Ava Brown', 114085.16], [10, 'Jack Edwards', 85112.39], [17, 'Elijah Campbell', 86710.8]]
+  Q1 vs Q1: query_b_contained_in_query_a
+     Query 4 is contained in Query 1 on the current database.
+     Q1 minus Q1 sample: [[1, 'Camila Campbell', 137062.07], [9, 'Charlotte Baker', 123342.6], [12, 'Camila Harris', 138361.18], [13, 'Leo Collins', 131326.93], [21, 'Elena Green', 142586.17]]
+  Q1 vs Q1: query_a_contained_in_query_b
+     Query 2 is contained in Query 3 on the current database.
+     Q1 minus Q1 sample: [[6, 'Layla Wright', 85969.14], [10, 'Jack Edwards', 85112.39], [17, 'Elijah Campbell', 86710.8], [18, 'Benjamin Bell', 85035.81], [19, 'Ethan Bailey', 80452.05]]
+  Q1 vs Q1: query_b_contained_in_query_a
+     Query 4 is contained in Query 2 on the current database.
+     Q1 minus Q1 sample: [[1, 'Camila Campbell', 137062.07], [5, 'Layla Mitchell', 105039.16], [8, 'Ava Brown', 114085.16], [9, 'Charlotte Baker', 123342.6], [12, 'Camila Harris', 138361.18]]
+  Q1 vs Q1: query_b_contained_in_query_a
+     Query 4 is contained in Query 3 on the current database.
+     Q1 minus Q1 sample: [[1, 'Camila Campbell', 137062.07], [5, 'Layla Mitchell', 105039.16], [6, 'Layla Wright', 85969.14], [8, 'Ava Brown', 114085.16], [9, 'Charlotte Baker', 123342.6]]
+
+RAW RESPONSE JSON
+{
+  "success": true,
+  "database_id": 53,
+  "query_results": [
+    {
+      "question": "List employees whose salary is greater than 120000. Show employee ID, full name, and salary.",
+      "success": true,
+      "sql": "SELECT employees.employee_id, employees.full_name, employees.salary\nFROM employees\nWHERE employees.salary > 120000",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 86.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "employee_id",
+        "full_name",
+        "salary"
+      ],
+      "row_count": 24,
+      "query_id": 1,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "List employees whose salary is greater than 100000. Show employee ID, full name, and salary.",
+      "success": true,
+      "sql": "SELECT employees.employee_id, employees.full_name, employees.salary\nFROM employees\nWHERE employees.salary > 100000",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 86.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "employee_id",
+        "full_name",
+        "salary"
+      ],
+      "row_count": 41,
+      "query_id": 2,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "List employees whose salary is greater than 80000. Show employee ID, full name, and salary.",
+      "success": true,
+      "sql": "SELECT employees.employee_id, employees.full_name, employees.salary\nFROM employees\nWHERE employees.salary > 80000",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 86.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "employee_id",
+        "full_name",
+        "salary"
+      ],
+      "row_count": 79,
+      "query_id": 3,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "List employees whose salary is greater than 150000. Show employee ID, full name, and salary.",
+      "success": true,
+      "sql": "SELECT employees.employee_id, employees.full_name, employees.salary\nFROM employees\nWHERE employees.salary > 150000",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 86.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "employee_id",
+        "full_name",
+        "salary"
+      ],
+      "row_count": 8,
+      "query_id": 4,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    }
+  ],
+  "pairwise_relationships": [
+    {
+      "query_a": 1,
+      "query_b": 2,
+      "relationship": "query_a_contained_in_query_b",
+      "explanation": "Query 1 is contained in Query 2 on the current database.",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [
+        [
+          5,
+          "Layla Mitchell",
+          105039.16
+        ],
+        [
+          8,
+          "Ava Brown",
+          114085.16
+        ],
+        [
+          29,
+          "Noah Morgan",
+          102956.0
+        ],
+        [
+          32,
+          "Liam Turner",
+          112702.4
+        ],
+        [
+          36,
+          "Daniel Young",
+          113503.17
+        ],
+        [
+          41,
+          "Lucas Thomas",
+          103878.28
+        ],
+        [
+          45,
+          "Omar Wright",
+          109951.78
+        ],
+        [
+          56,
+          "Isabella Garcia",
+          102929.49
+        ],
+        [
+          58,
+          "Henry Thomas",
+          106939.94
+        ],
+        [
+          60,
+          "Camila Sanchez",
+          100526.66
+        ],
+        [
+          65,
+          "Liam Smith",
+          102889.38
+        ],
+        [
+          70,
+          "Daniel Young",
+          102093.37
+        ],
+        [
+          80,
+          "Elena Anderson",
+          105893.93
+        ],
+        [
+          92,
+          "Maya Jackson",
+          103560.71
+        ],
+        [
+          106,
+          "Aisha Cook",
+          116814.14
+        ],
+        [
+          107,
+          "Alexander Wright",
+          102055.7
+        ],
+        [
+          116,
+          "Liam Martin",
+          111683.96
+        ]
+      ],
+      "compared_on": "output_columns"
+    },
+    {
+      "query_a": 1,
+      "query_b": 3,
+      "relationship": "query_a_contained_in_query_b",
+      "explanation": "Query 1 is contained in Query 3 on the current database.",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [
+        [
+          5,
+          "Layla Mitchell",
+          105039.16
+        ],
+        [
+          6,
+          "Layla Wright",
+          85969.14
+        ],
+        [
+          8,
+          "Ava Brown",
+          114085.16
+        ],
+        [
+          10,
+          "Jack Edwards",
+          85112.39
+        ],
+        [
+          17,
+          "Elijah Campbell",
+          86710.8
+        ],
+        [
+          18,
+          "Benjamin Bell",
+          85035.81
+        ],
+        [
+          19,
+          "Ethan Bailey",
+          80452.05
+        ],
+        [
+          20,
+          "Maya Thomas",
+          90659.28
+        ],
+        [
+          23,
+          "Minh Reed",
+          99940.3
+        ],
+        [
+          29,
+          "Noah Morgan",
+          102956.0
+        ],
+        [
+          31,
+          "Nina Roberts",
+          80592.86
+        ],
+        [
+          32,
+          "Liam Turner",
+          112702.4
+        ],
+        [
+          34,
+          "Sara Martin",
+          99283.94
+        ],
+        [
+          36,
+          "Daniel Young",
+          113503.17
+        ],
+        [
+          38,
+          "Camila Wright",
+          91917.24
+        ],
+        [
+          39,
+          "Michael Collins",
+          82095.08
+        ],
+        [
+          41,
+          "Lucas Thomas",
+          103878.28
+        ],
+        [
+          42,
+          "Nina Turner",
+          85717.87
+        ],
+        [
+          44,
+          "Aisha Roberts",
+          99931.07
+        ],
+        [
+          45,
+          "Omar Wright",
+          109951.78
+        ]
+      ],
+      "compared_on": "output_columns"
+    },
+    {
+      "query_a": 1,
+      "query_b": 4,
+      "relationship": "query_b_contained_in_query_a",
+      "explanation": "Query 4 is contained in Query 1 on the current database.",
+      "a_minus_b_rows": [
+        [
+          1,
+          "Camila Campbell",
+          137062.07
+        ],
+        [
+          9,
+          "Charlotte Baker",
+          123342.6
+        ],
+        [
+          12,
+          "Camila Harris",
+          138361.18
+        ],
+        [
+          13,
+          "Leo Collins",
+          131326.93
+        ],
+        [
+          21,
+          "Elena Green",
+          142586.17
+        ],
+        [
+          24,
+          "Camila Brown",
+          122509.12
+        ],
+        [
+          33,
+          "Evelyn Wilson",
+          143442.59
+        ],
+        [
+          48,
+          "Elijah Green",
+          132916.08
+        ],
+        [
+          57,
+          "Leo Moore",
+          123905.12
+        ],
+        [
+          81,
+          "Leo Roberts",
+          139364.03
+        ],
+        [
+          84,
+          "Harper Taylor",
+          128322.74
+        ],
+        [
+          93,
+          "Omar Thompson",
+          131087.05
+        ],
+        [
+          96,
+          "Aria Roberts",
+          121258.31
+        ],
+        [
+          105,
+          "Sebastian Johnson",
+          122991.7
+        ],
+        [
+          117,
+          "Jack Green",
+          138998.85
+        ],
+        [
+          120,
+          "Maya Reed",
+          130125.16
+        ]
+      ],
+      "b_minus_a_rows": [],
+      "compared_on": "output_columns"
+    },
+    {
+      "query_a": 2,
+      "query_b": 3,
+      "relationship": "query_a_contained_in_query_b",
+      "explanation": "Query 2 is contained in Query 3 on the current database.",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [
+        [
+          6,
+          "Layla Wright",
+          85969.14
+        ],
+        [
+          10,
+          "Jack Edwards",
+          85112.39
+        ],
+        [
+          17,
+          "Elijah Campbell",
+          86710.8
+        ],
+        [
+          18,
+          "Benjamin Bell",
+          85035.81
+        ],
+        [
+          19,
+          "Ethan Bailey",
+          80452.05
+        ],
+        [
+          20,
+          "Maya Thomas",
+          90659.28
+        ],
+        [
+          23,
+          "Minh Reed",
+          99940.3
+        ],
+        [
+          31,
+          "Nina Roberts",
+          80592.86
+        ],
+        [
+          34,
+          "Sara Martin",
+          99283.94
+        ],
+        [
+          38,
+          "Camila Wright",
+          91917.24
+        ],
+        [
+          39,
+          "Michael Collins",
+          82095.08
+        ],
+        [
+          42,
+          "Nina Turner",
+          85717.87
+        ],
+        [
+          44,
+          "Aisha Roberts",
+          99931.07
+        ],
+        [
+          46,
+          "Amelia Lewis",
+          94496.09
+        ],
+        [
+          51,
+          "Lucas Perez",
+          87122.2
+        ],
+        [
+          53,
+          "Sofia White",
+          80194.69
+        ],
+        [
+          62,
+          "Sophia Young",
+          82221.23
+        ],
+        [
+          63,
+          "Adam Cook",
+          88100.69
+        ],
+        [
+          67,
+          "Sara Hill",
+          92701.51
+        ],
+        [
+          68,
+          "Sofia Cook",
+          99641.86
+        ]
+      ],
+      "compared_on": "output_columns"
+    },
+    {
+      "query_a": 2,
+      "query_b": 4,
+      "relationship": "query_b_contained_in_query_a",
+      "explanation": "Query 4 is contained in Query 2 on the current database.",
+      "a_minus_b_rows": [
+        [
+          1,
+          "Camila Campbell",
+          137062.07
+        ],
+        [
+          5,
+          "Layla Mitchell",
+          105039.16
+        ],
+        [
+          8,
+          "Ava Brown",
+          114085.16
+        ],
+        [
+          9,
+          "Charlotte Baker",
+          123342.6
+        ],
+        [
+          12,
+          "Camila Harris",
+          138361.18
+        ],
+        [
+          13,
+          "Leo Collins",
+          131326.93
+        ],
+        [
+          21,
+          "Elena Green",
+          142586.17
+        ],
+        [
+          24,
+          "Camila Brown",
+          122509.12
+        ],
+        [
+          29,
+          "Noah Morgan",
+          102956.0
+        ],
+        [
+          32,
+          "Liam Turner",
+          112702.4
+        ],
+        [
+          33,
+          "Evelyn Wilson",
+          143442.59
+        ],
+        [
+          36,
+          "Daniel Young",
+          113503.17
+        ],
+        [
+          41,
+          "Lucas Thomas",
+          103878.28
+        ],
+        [
+          45,
+          "Omar Wright",
+          109951.78
+        ],
+        [
+          48,
+          "Elijah Green",
+          132916.08
+        ],
+        [
+          56,
+          "Isabella Garcia",
+          102929.49
+        ],
+        [
+          57,
+          "Leo Moore",
+          123905.12
+        ],
+        [
+          58,
+          "Henry Thomas",
+          106939.94
+        ],
+        [
+          60,
+          "Camila Sanchez",
+          100526.66
+        ],
+        [
+          65,
+          "Liam Smith",
+          102889.38
+        ]
+      ],
+      "b_minus_a_rows": [],
+      "compared_on": "output_columns"
+    },
+    {
+      "query_a": 3,
+      "query_b": 4,
+      "relationship": "query_b_contained_in_query_a",
+      "explanation": "Query 4 is contained in Query 3 on the current database.",
+      "a_minus_b_rows": [
+        [
+          1,
+          "Camila Campbell",
+          137062.07
+        ],
+        [
+          5,
+          "Layla Mitchell",
+          105039.16
+        ],
+        [
+          6,
+          "Layla Wright",
+          85969.14
+        ],
+        [
+          8,
+          "Ava Brown",
+          114085.16
+        ],
+        [
+          9,
+          "Charlotte Baker",
+          123342.6
+        ],
+        [
+          10,
+          "Jack Edwards",
+          85112.39
+        ],
+        [
+          12,
+          "Camila Harris",
+          138361.18
+        ],
+        [
+          13,
+          "Leo Collins",
+          131326.93
+        ],
+        [
+          17,
+          "Elijah Campbell",
+          86710.8
+        ],
+        [
+          18,
+          "Benjamin Bell",
+          85035.81
+        ],
+        [
+          19,
+          "Ethan Bailey",
+          80452.05
+        ],
+        [
+          20,
+          "Maya Thomas",
+          90659.28
+        ],
+        [
+          21,
+          "Elena Green",
+          142586.17
+        ],
+        [
+          23,
+          "Minh Reed",
+          99940.3
+        ],
+        [
+          24,
+          "Camila Brown",
+          122509.12
+        ],
+        [
+          29,
+          "Noah Morgan",
+          102956.0
+        ],
+        [
+          31,
+          "Nina Roberts",
+          80592.86
+        ],
+        [
+          32,
+          "Liam Turner",
+          112702.4
+        ],
+        [
+          33,
+          "Evelyn Wilson",
+          143442.59
+        ],
+        [
+          34,
+          "Sara Martin",
+          99283.94
+        ]
+      ],
+      "b_minus_a_rows": [],
+      "compared_on": "output_columns"
+    }
+  ],
+  "query_summaries": [
+    {
+      "query_id": 1,
+      "contained_in": [
+        2,
+        3
+      ],
+      "contains": [
+        4
+      ],
+      "equivalent_to": [],
+      "incomparable_with": [],
+      "unknown_with": [],
+      "status": "broader_and_narrower",
+      "empty_result": false
+    },
+    {
+      "query_id": 2,
+      "contained_in": [
+        3
+      ],
+      "contains": [
+        1,
+        4
+      ],
+      "equivalent_to": [],
+      "incomparable_with": [],
+      "unknown_with": [],
+      "status": "broader_and_narrower",
+      "empty_result": false
+    },
+    {
+      "query_id": 3,
+      "contained_in": [],
+      "contains": [
+        1,
+        2,
+        4
+      ],
+      "equivalent_to": [],
+      "incomparable_with": [],
+      "unknown_with": [],
+      "status": "broader_query_for_some_queries",
+      "empty_result": false
+    },
+    {
+      "query_id": 4,
+      "contained_in": [
+        1,
+        2,
+        3
+      ],
+      "contains": [],
+      "equivalent_to": [],
+      "incomparable_with": [],
+      "unknown_with": [],
+      "status": "narrower_query",
+      "empty_result": false
+    }
+  ],
+  "analysis": {
+    "query_count": 4,
+    "main_queries": [
+      {
+        "index": 3,
+        "equivalent_to": [],
+        "contains": [
+          1,
+          2,
+          4
+        ],
+        "contained_by": []
+      }
+    ],
+    "equivalent_groups": [],
+    "containment_edges": [
+      {
+        "superset": 2,
+        "subset": 1,
+        "relationship_source": "pairwise"
+      },
+      {
+        "superset": 3,
+        "subset": 1,
+        "relationship_source": "pairwise"
+      },
+      {
+        "superset": 1,
+        "subset": 4,
+        "relationship_source": "pairwise"
+      },
+      {
+        "superset": 3,
+        "subset": 2,
+        "relationship_source": "pairwise"
+      },
+      {
+        "superset": 2,
+        "subset": 4,
+        "relationship_source": "pairwise"
+      },
+      {
+        "superset": 3,
+        "subset": 4,
+        "relationship_source": "pairwise"
+      }
+    ],
+    "independent_queries": [],
+    "unknown_pairs": [],
+    "incomparable_pairs": [],
+    "empty_queries": [],
+    "summary_text": "Query 3 is a main (broadest) query; it contains Query 1, Query 2, Query 4."
+  },
+  "checked_on_current_database": true,
+  "proof_type": "live_database_except_pairwise",
+  "limitations": "Live-database check only. Not-contained and incomparable results are backed by counterexample rows. Contained/equivalent results are only verified on the current database, not as full symbolic proofs.",
+  "warnings": [],
+  "_http_status": 200
+}
+
+==============================================================================================================
+TEST 04: Warehouse utilization threshold chain
+==============================================================================================================
+Category: single_table_threshold
+Difficulty: easy
+Expected note: Utilization>95 is narrowest; >50 is broadest.
+HTTP status: 200
+Endpoint success: True
+Elapsed seconds: 68.03
+proof_type: live_database_except_pairwise | checked_on_current_database: True
+limitations: Live-database check only. Not-contained and incomparable results are backed by counterexample rows. Contained/equivalent results are only verified on the current database, not as full symbolic proofs.
+
+INPUT QUERIES
+  Q1: List warehouses whose current utilization percentage is greater than 85. Show warehouse ID, warehouse name, and utilization percentage.
+  Q2: List warehouses whose current utilization percentage is greater than 70. Show warehouse ID, warehouse name, and utilization percentage.
+  Q3: List warehouses whose current utilization percentage is greater than 50. Show warehouse ID, warehouse name, and utilization percentage.
+  Q4: List warehouses whose current utilization percentage is greater than 95. Show warehouse ID, warehouse name, and utilization percentage.
+
+GENERATED SQL / QUERY RESULTS
+Q1. List warehouses whose current utilization percentage is greater than 85. Show warehouse ID, warehouse name, and utilization percentage.
+   success=True | safe=True | rows=2 | empty=False | source=llm_sql_direct_variant | score=86.0
+   columns: ['warehouse_id', 'warehouse_name', 'current_utilization_pct']
+   sql: SELECT warehouse_id, warehouse_name, current_utilization_pct
+FROM warehouses
+WHERE current_utilization_pct > 85
+Q2. List warehouses whose current utilization percentage is greater than 70. Show warehouse ID, warehouse name, and utilization percentage.
+   success=True | safe=True | rows=7 | empty=False | source=llm_sql_direct_variant | score=86.0
+   columns: ['warehouse_id', 'warehouse_name', 'current_utilization_pct']
+   sql: SELECT warehouse_id, warehouse_name, current_utilization_pct
+FROM warehouses
+WHERE current_utilization_pct > 70
+Q3. List warehouses whose current utilization percentage is greater than 50. Show warehouse ID, warehouse name, and utilization percentage.
+   success=True | safe=True | rows=12 | empty=False | source=llm_sql_direct_variant | score=86.0
+   columns: ['warehouse_id', 'warehouse_name', 'current_utilization_pct']
+   sql: SELECT warehouse_id, warehouse_name, current_utilization_pct
+FROM warehouses
+WHERE current_utilization_pct > 50
+Q4. List warehouses whose current utilization percentage is greater than 95. Show warehouse ID, warehouse name, and utilization percentage.
+   success=True | safe=True | rows=0 | empty=True | source=llm_sql_repair | score=83.0
+   columns: ['warehouse_id', 'warehouse_name', 'current_utilization_pct']
+   sql: SELECT warehouse_id, warehouse_name, current_utilization_pct
+FROM warehouses
+WHERE current_utilization_pct > 95
+
+RELATIONSHIP SUMMARY
+  Q1 | status=broader_and_narrower | empty=False | contained_in=[2, 3] | contains=[4] | equivalent_to=- | incomparable_with=- | unknown_with=-
+  Q1 | status=broader_and_narrower | empty=False | contained_in=[3] | contains=[1, 4] | equivalent_to=- | incomparable_with=- | unknown_with=-
+  Q1 | status=broader_query_for_some_queries | empty=False | contained_in=- | contains=[1, 2, 4] | equivalent_to=- | incomparable_with=- | unknown_with=-
+  Q1 | status=empty_result_query | empty=True | contained_in=[1, 2, 3] | contains=- | equivalent_to=- | incomparable_with=- | unknown_with=-
+
+PAIRWISE RELATIONSHIPS
+  Q1 vs Q1: query_a_contained_in_query_b
+     Query 1 is contained in Query 2 on the current database.
+     Q1 minus Q1 sample: [[2, 'Phoenix Distribution Center 2', 72.09], [4, 'New York Distribution Center 4', 78.99], [6, 'Moscow Distribution Center 6', 72.37], [7, 'Phoenix Distribution Center 7', 76.02], [11, 'Moscow Distribution Center 11', 81.53]]
+  Q1 vs Q1: query_a_contained_in_query_b
+     Query 1 is contained in Query 3 on the current database.
+     Q1 minus Q1 sample: [[1, 'Moscow Distribution Center 1', 59.49], [2, 'Phoenix Distribution Center 2', 72.09], [4, 'New York Distribution Center 4', 78.99], [5, 'Spokane Distribution Center 5', 58.48], [6, 'Moscow Distribution Center 6', 72.37]]
+  Q1 vs Q1: query_b_contained_in_query_a
+     Query 4 is contained in Query 1 on the current database.
+     Q1 minus Q1 sample: [[3, 'Chicago Distribution Center 3', 85.14], [12, 'Phoenix Distribution Center 12', 93.99]]
+  Q1 vs Q1: query_a_contained_in_query_b
+     Query 2 is contained in Query 3 on the current database.
+     Q1 minus Q1 sample: [[1, 'Moscow Distribution Center 1', 59.49], [5, 'Spokane Distribution Center 5', 58.48], [8, 'Chicago Distribution Center 8', 54.88], [9, 'New York Distribution Center 9', 68.14], [10, 'Spokane Distribution Center 10', 66.69]]
+  Q1 vs Q1: query_b_contained_in_query_a
+     Query 4 is contained in Query 2 on the current database.
+     Q1 minus Q1 sample: [[2, 'Phoenix Distribution Center 2', 72.09], [3, 'Chicago Distribution Center 3', 85.14], [4, 'New York Distribution Center 4', 78.99], [6, 'Moscow Distribution Center 6', 72.37], [7, 'Phoenix Distribution Center 7', 76.02]]
+  Q1 vs Q1: query_b_contained_in_query_a
+     Query 4 is contained in Query 3 on the current database.
+     Q1 minus Q1 sample: [[1, 'Moscow Distribution Center 1', 59.49], [2, 'Phoenix Distribution Center 2', 72.09], [3, 'Chicago Distribution Center 3', 85.14], [4, 'New York Distribution Center 4', 78.99], [5, 'Spokane Distribution Center 5', 58.48]]
+
+RAW RESPONSE JSON
+{
+  "success": true,
+  "database_id": 53,
+  "query_results": [
+    {
+      "question": "List warehouses whose current utilization percentage is greater than 85. Show warehouse ID, warehouse name, and utilization percentage.",
+      "success": true,
+      "sql": "SELECT warehouse_id, warehouse_name, current_utilization_pct\nFROM warehouses\nWHERE current_utilization_pct > 85",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 86.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "warehouse_id",
+        "warehouse_name",
+        "current_utilization_pct"
+      ],
+      "row_count": 2,
+      "query_id": 1,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "List warehouses whose current utilization percentage is greater than 70. Show warehouse ID, warehouse name, and utilization percentage.",
+      "success": true,
+      "sql": "SELECT warehouse_id, warehouse_name, current_utilization_pct\nFROM warehouses\nWHERE current_utilization_pct > 70",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 86.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "warehouse_id",
+        "warehouse_name",
+        "current_utilization_pct"
+      ],
+      "row_count": 7,
+      "query_id": 2,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "List warehouses whose current utilization percentage is greater than 50. Show warehouse ID, warehouse name, and utilization percentage.",
+      "success": true,
+      "sql": "SELECT warehouse_id, warehouse_name, current_utilization_pct\nFROM warehouses\nWHERE current_utilization_pct > 50",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 86.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "warehouse_id",
+        "warehouse_name",
+        "current_utilization_pct"
+      ],
+      "row_count": 12,
+      "query_id": 3,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "List warehouses whose current utilization percentage is greater than 95. Show warehouse ID, warehouse name, and utilization percentage.",
+      "success": true,
+      "sql": "SELECT warehouse_id, warehouse_name, current_utilization_pct\nFROM warehouses\nWHERE current_utilization_pct > 95",
+      "params": [],
+      "selected_candidate_source": "llm_sql_repair",
+      "selected_candidate_score": 83.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "warehouse_id",
+        "warehouse_name",
+        "current_utilization_pct"
+      ],
+      "row_count": 0,
+      "query_id": 4,
+      "empty_result": true,
+      "safe": true,
+      "safety_reason": null
+    }
+  ],
+  "pairwise_relationships": [
+    {
+      "query_a": 1,
+      "query_b": 2,
+      "relationship": "query_a_contained_in_query_b",
+      "explanation": "Query 1 is contained in Query 2 on the current database.",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [
+        [
+          2,
+          "Phoenix Distribution Center 2",
+          72.09
+        ],
+        [
+          4,
+          "New York Distribution Center 4",
+          78.99
+        ],
+        [
+          6,
+          "Moscow Distribution Center 6",
+          72.37
+        ],
+        [
+          7,
+          "Phoenix Distribution Center 7",
+          76.02
+        ],
+        [
+          11,
+          "Moscow Distribution Center 11",
+          81.53
+        ]
+      ],
+      "compared_on": "output_columns"
+    },
+    {
+      "query_a": 1,
+      "query_b": 3,
+      "relationship": "query_a_contained_in_query_b",
+      "explanation": "Query 1 is contained in Query 3 on the current database.",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [
+        [
+          1,
+          "Moscow Distribution Center 1",
+          59.49
+        ],
+        [
+          2,
+          "Phoenix Distribution Center 2",
+          72.09
+        ],
+        [
+          4,
+          "New York Distribution Center 4",
+          78.99
+        ],
+        [
+          5,
+          "Spokane Distribution Center 5",
+          58.48
+        ],
+        [
+          6,
+          "Moscow Distribution Center 6",
+          72.37
+        ],
+        [
+          7,
+          "Phoenix Distribution Center 7",
+          76.02
+        ],
+        [
+          8,
+          "Chicago Distribution Center 8",
+          54.88
+        ],
+        [
+          9,
+          "New York Distribution Center 9",
+          68.14
+        ],
+        [
+          10,
+          "Spokane Distribution Center 10",
+          66.69
+        ],
+        [
+          11,
+          "Moscow Distribution Center 11",
+          81.53
+        ]
+      ],
+      "compared_on": "output_columns"
+    },
+    {
+      "query_a": 1,
+      "query_b": 4,
+      "relationship": "query_b_contained_in_query_a",
+      "explanation": "Query 4 is contained in Query 1 on the current database.",
+      "a_minus_b_rows": [
+        [
+          3,
+          "Chicago Distribution Center 3",
+          85.14
+        ],
+        [
+          12,
+          "Phoenix Distribution Center 12",
+          93.99
+        ]
+      ],
+      "b_minus_a_rows": [],
+      "compared_on": "output_columns"
+    },
+    {
+      "query_a": 2,
+      "query_b": 3,
+      "relationship": "query_a_contained_in_query_b",
+      "explanation": "Query 2 is contained in Query 3 on the current database.",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [
+        [
+          1,
+          "Moscow Distribution Center 1",
+          59.49
+        ],
+        [
+          5,
+          "Spokane Distribution Center 5",
+          58.48
+        ],
+        [
+          8,
+          "Chicago Distribution Center 8",
+          54.88
+        ],
+        [
+          9,
+          "New York Distribution Center 9",
+          68.14
+        ],
+        [
+          10,
+          "Spokane Distribution Center 10",
+          66.69
+        ]
+      ],
+      "compared_on": "output_columns"
+    },
+    {
+      "query_a": 2,
+      "query_b": 4,
+      "relationship": "query_b_contained_in_query_a",
+      "explanation": "Query 4 is contained in Query 2 on the current database.",
+      "a_minus_b_rows": [
+        [
+          2,
+          "Phoenix Distribution Center 2",
+          72.09
+        ],
+        [
+          3,
+          "Chicago Distribution Center 3",
+          85.14
+        ],
+        [
+          4,
+          "New York Distribution Center 4",
+          78.99
+        ],
+        [
+          6,
+          "Moscow Distribution Center 6",
+          72.37
+        ],
+        [
+          7,
+          "Phoenix Distribution Center 7",
+          76.02
+        ],
+        [
+          11,
+          "Moscow Distribution Center 11",
+          81.53
+        ],
+        [
+          12,
+          "Phoenix Distribution Center 12",
+          93.99
+        ]
+      ],
+      "b_minus_a_rows": [],
+      "compared_on": "output_columns"
+    },
+    {
+      "query_a": 3,
+      "query_b": 4,
+      "relationship": "query_b_contained_in_query_a",
+      "explanation": "Query 4 is contained in Query 3 on the current database.",
+      "a_minus_b_rows": [
+        [
+          1,
+          "Moscow Distribution Center 1",
+          59.49
+        ],
+        [
+          2,
+          "Phoenix Distribution Center 2",
+          72.09
+        ],
+        [
+          3,
+          "Chicago Distribution Center 3",
+          85.14
+        ],
+        [
+          4,
+          "New York Distribution Center 4",
+          78.99
+        ],
+        [
+          5,
+          "Spokane Distribution Center 5",
+          58.48
+        ],
+        [
+          6,
+          "Moscow Distribution Center 6",
+          72.37
+        ],
+        [
+          7,
+          "Phoenix Distribution Center 7",
+          76.02
+        ],
+        [
+          8,
+          "Chicago Distribution Center 8",
+          54.88
+        ],
+        [
+          9,
+          "New York Distribution Center 9",
+          68.14
+        ],
+        [
+          10,
+          "Spokane Distribution Center 10",
+          66.69
+        ],
+        [
+          11,
+          "Moscow Distribution Center 11",
+          81.53
+        ],
+        [
+          12,
+          "Phoenix Distribution Center 12",
+          93.99
+        ]
+      ],
+      "b_minus_a_rows": [],
+      "compared_on": "output_columns"
+    }
+  ],
+  "query_summaries": [
+    {
+      "query_id": 1,
+      "contained_in": [
+        2,
+        3
+      ],
+      "contains": [
+        4
+      ],
+      "equivalent_to": [],
+      "incomparable_with": [],
+      "unknown_with": [],
+      "status": "broader_and_narrower",
+      "empty_result": false
+    },
+    {
+      "query_id": 2,
+      "contained_in": [
+        3
+      ],
+      "contains": [
+        1,
+        4
+      ],
+      "equivalent_to": [],
+      "incomparable_with": [],
+      "unknown_with": [],
+      "status": "broader_and_narrower",
+      "empty_result": false
+    },
+    {
+      "query_id": 3,
+      "contained_in": [],
+      "contains": [
+        1,
+        2,
+        4
+      ],
+      "equivalent_to": [],
+      "incomparable_with": [],
+      "unknown_with": [],
+      "status": "broader_query_for_some_queries",
+      "empty_result": false
+    },
+    {
+      "query_id": 4,
+      "contained_in": [
+        1,
+        2,
+        3
+      ],
+      "contains": [],
+      "equivalent_to": [],
+      "incomparable_with": [],
+      "unknown_with": [],
+      "status": "empty_result_query",
+      "empty_result": true
+    }
+  ],
+  "analysis": {
+    "query_count": 4,
+    "main_queries": [
+      {
+        "index": 3,
+        "equivalent_to": [],
+        "contains": [
+          1,
+          2,
+          4
+        ],
+        "contained_by": []
+      }
+    ],
+    "equivalent_groups": [],
+    "containment_edges": [
+      {
+        "superset": 2,
+        "subset": 1,
+        "relationship_source": "pairwise"
+      },
+      {
+        "superset": 3,
+        "subset": 1,
+        "relationship_source": "pairwise"
+      },
+      {
+        "superset": 1,
+        "subset": 4,
+        "relationship_source": "pairwise"
+      },
+      {
+        "superset": 3,
+        "subset": 2,
+        "relationship_source": "pairwise"
+      },
+      {
+        "superset": 2,
+        "subset": 4,
+        "relationship_source": "pairwise"
+      },
+      {
+        "superset": 3,
+        "subset": 4,
+        "relationship_source": "pairwise"
+      }
+    ],
+    "independent_queries": [],
+    "unknown_pairs": [],
+    "incomparable_pairs": [],
+    "empty_queries": [
+      4
+    ],
+    "summary_text": "Query 3 is a main (broadest) query; it contains Query 1, Query 2, Query 4. Empty-result queries: Query 4."
+  },
+  "checked_on_current_database": true,
+  "proof_type": "live_database_except_pairwise",
+  "limitations": "Live-database check only. Not-contained and incomparable results are backed by counterexample rows. Contained/equivalent results are only verified on the current database, not as full symbolic proofs.",
+  "warnings": [],
+  "_http_status": 200
+}

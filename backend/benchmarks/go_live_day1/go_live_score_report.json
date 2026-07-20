@@ -1,0 +1,119 @@
+{
+  "generated_at": "2026-07-19T22:16:52",
+  "config_schema_version": "day1.v2",
+  "nl_to_sql": {
+    "execution": {
+      "successes": 1985,
+      "total": 2000,
+      "min_target": 1985,
+      "meets_target": true
+    },
+    "semantic_correct": {
+      "correct": 1606,
+      "total": 2000,
+      "measured_accuracy": 0.803,
+      "engineering_target": 1738,
+      "meets_target": false,
+      "gap_to_target": 132,
+      "category_rollup_correct": 1606,
+      "target_reconciliation": "Presented-accuracy target is internally inconsistent: a category rollup implies 1737 correct while a per-database percentage rollup implies 1738. Engineering target is fixed at 1738. Measured semantic-correct counts are taken verbatim from the audit files and never adjusted to hit this number."
+    },
+    "failures": {
+      "total": 394,
+      "by_source": {
+        "executed_semantically_wrong": 379,
+        "controlled_no_sql": 15
+      },
+      "by_semantic_pattern": {
+        "grain_mismatch": 30,
+        "aggregation_or_formula_error": 43,
+        "needs_manual_review": 116,
+        "controlled_no_sql": 15,
+        "wrong_entity_or_role": 29,
+        "missing_metric_or_output": 61,
+        "wrong_filter_or_placement": 62,
+        "set_logic_error": 38
+      },
+      "controlled_root_cause_layers": {
+        "grain_contract": 9,
+        "other": 2,
+        "relationship": 4
+      },
+      "needs_manual_review": 116
+    },
+    "candidate_oracle": {
+      "candidate_rows": 2265,
+      "failed_queries": 394,
+      "executed_semantically_wrong": 379,
+      "no_selected_sql": 15,
+      "selected_candidate_coverage": {
+        "executed_wrong_total": 379,
+        "executed_wrong_with_selected": 379,
+        "coverage_pct": 100.0
+      },
+      "query_dispositions": {
+        "only_selected_candidate_available": 1,
+        "plausible_clean_alternative_available": 358,
+        "no_clean_different_alternative": 20,
+        "unresolved_manual_review": 0
+      },
+      "manual_review_rows": 1102
+    }
+  },
+  "containment": {
+    "weighted_recovered": 705,
+    "weighted_total": 1000,
+    "weighted_accuracy": 0.705,
+    "unweighted_db_average": 0.7121,
+    "weighted_recovered_target": 795,
+    "meets_weighted_target": false,
+    "by_database": {
+      "54": {
+        "designed_edges": 300,
+        "recovered": 220,
+        "accuracy": 0.7333,
+        "config_recovered_target": 250
+      },
+      "55": {
+        "designed_edges": 200,
+        "recovered": 154,
+        "accuracy": 0.77,
+        "config_recovered_target": 174
+      },
+      "56": {
+        "designed_edges": 200,
+        "recovered": 145,
+        "accuracy": 0.725,
+        "config_recovered_target": 155
+      },
+      "57": {
+        "designed_edges": 300,
+        "recovered": 186,
+        "accuracy": 0.62,
+        "config_recovered_target": 216
+      }
+    },
+    "failure_causes": {
+      "definite_wrong_relationship": 44,
+      "distinct_groupby_normalization": 14,
+      "group_key_mismatch": 64,
+      "sql_generation_failure": 13,
+      "canonical_key_failure": 47,
+      "base_entity_recovery": 104,
+      "limit_orderby_normalization": 5,
+      "aggregate_normalization": 4
+    },
+    "required_causes_present": [
+      "aggregate_normalization",
+      "base_entity_recovery",
+      "canonical_key_failure",
+      "definite_wrong_relationship",
+      "distinct_groupby_normalization",
+      "group_key_mismatch",
+      "sql_generation_failure"
+    ],
+    "required_causes_missing": []
+  },
+  "missing_artifacts": [],
+  "warnings": []
+}

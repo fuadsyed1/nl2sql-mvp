@@ -1,0 +1,16 @@
+1. Query:
+Show every product's ID, name, product number, color, standard cost, and list price, but include only products that are currently for sale.
+
+SQL:
+(no SQL generated)
+
+----------------------------------------------------------------------------------------------------
+
+2. Query:
+List employees with their full names, job titles, hire dates, vacation hours, and current employment status.
+
+SQL:
+(no SQL generated)
+
+----------------------------------------------------------------------------------------------------
+

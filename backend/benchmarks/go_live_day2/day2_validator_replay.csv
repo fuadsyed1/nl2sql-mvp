@@ -1,0 +1,374 @@
+database_id,test_id,verdict,rule,severity,message
+54,7,CORRECT,missing_requested_derived_expression,warning,question requests a calculated add but no output expression computes it (only operands returned)
+54,12,CORRECT,missing_requested_derived_expression,warning,question requests a calculated percentage but no output expression computes it (only operands returned)
+54,15,CORRECT,missing_requested_derived_expression,warning,question requests a calculated add but no output expression computes it (only operands returned)
+54,32,CORRECT,missing_requested_derived_expression,warning,question requests a calculated add but no output expression computes it (only operands returned)
+54,35,INCORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+54,42,CORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+54,48,INCORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+54,53,CORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+54,53,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+54,54,CORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+54,54,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+54,55,CORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+54,55,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+54,56,CORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+54,56,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+54,59,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+54,60,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+54,62,INCORRECT,missing_requested_derived_expression,warning,question requests a calculated percentage but no output expression computes it (only operands returned)
+54,63,CORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+54,63,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+54,67,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+54,68,INCORRECT,missing_requested_derived_expression,warning,question requests a calculated percentage but no output expression computes it (only operands returned)
+54,69,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+54,70,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+54,71,CORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+54,71,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+54,72,INCORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+54,72,INCORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+54,73,CORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+54,73,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+54,75,CORRECT,missing_requested_derived_expression,warning,question requests a calculated percentage but no output expression computes it (only operands returned)
+54,76,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+54,77,CORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+54,77,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+54,78,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+54,78,INCORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+54,78,INCORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+54,79,CORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+54,80,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+54,85,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+54,86,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+54,87,INCORRECT,missing_requested_derived_expression,warning,question requests a calculated difference but no output expression computes it (only operands returned)
+54,89,CORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+54,89,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+54,90,INCORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+54,93,CORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+54,93,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+54,94,CORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+54,94,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+54,95,INCORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+54,96,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+54,97,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+54,99,INCORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+54,99,INCORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+54,127,CORRECT,missing_requested_derived_expression,warning,question requests a calculated percentage but no output expression computes it (only operands returned)
+54,149,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+54,194,CORRECT,missing_requested_derived_expression,warning,question requests a calculated percentage but no output expression computes it (only operands returned)
+54,199,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+54,204,CORRECT,missing_requested_derived_expression,warning,question requests a calculated percentage but no output expression computes it (only operands returned)
+54,211,INCORRECT,missing_requested_derived_expression,warning,question requests a calculated percentage but no output expression computes it (only operands returned)
+54,211,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+54,229,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+54,234,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+54,237,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+54,240,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+54,242,CORRECT,missing_requested_derived_expression,warning,question requests a calculated percentage but no output expression computes it (only operands returned)
+54,242,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+54,249,CORRECT,missing_requested_derived_expression,warning,question requests a calculated percentage but no output expression computes it (only operands returned)
+54,249,CORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+54,249,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+54,277,CORRECT,missing_requested_derived_expression,warning,question requests a calculated percentage but no output expression computes it (only operands returned)
+54,300,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+54,360,CORRECT,missing_requested_derived_expression,warning,question requests a calculated percentage but no output expression computes it (only operands returned)
+54,375,INCORRECT,missing_requested_derived_expression,warning,question requests a calculated difference but no output expression computes it (only operands returned)
+54,390,CORRECT,missing_requested_derived_expression,warning,question requests a calculated difference but no output expression computes it (only operands returned)
+54,394,CORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+54,395,CORRECT,missing_requested_derived_expression,warning,question requests a calculated percentage but no output expression computes it (only operands returned)
+54,395,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+54,416,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+54,417,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+54,420,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+54,421,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+54,423,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+54,424,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+54,424,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+54,436,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+54,437,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+54,438,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+54,438,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+54,439,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+54,440,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+54,441,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+54,441,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+54,443,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+54,443,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+54,444,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+54,444,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+54,446,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+54,446,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+54,449,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+54,449,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+54,452,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+54,474,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+54,493,CORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+54,499,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+55,5,CORRECT,missing_requested_derived_expression,warning,question requests a calculated add but no output expression computes it (only operands returned)
+55,15,CORRECT,missing_requested_derived_expression,warning,question requests a calculated percentage but no output expression computes it (only operands returned)
+55,21,CORRECT,missing_requested_derived_expression,warning,question requests a calculated add but no output expression computes it (only operands returned)
+55,50,CORRECT,missing_requested_derived_expression,warning,question requests a calculated percentage but no output expression computes it (only operands returned)
+55,51,INCORRECT,missing_requested_derived_expression,warning,question requests a calculated add but no output expression computes it (only operands returned)
+55,55,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+55,57,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+55,59,INCORRECT,missing_requested_derived_expression,warning,question requests a calculated percentage but no output expression computes it (only operands returned)
+55,61,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+55,63,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+55,64,CORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+55,64,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+55,65,CORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+55,66,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+55,68,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+55,70,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+55,73,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+55,73,INCORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+55,73,INCORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+55,75,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+55,77,CORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+55,77,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+55,79,INCORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+55,79,INCORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+55,85,INCORRECT,missing_requested_derived_expression,warning,question requests a calculated percentage but no output expression computes it (only operands returned)
+55,85,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+55,85,INCORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+55,85,INCORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+55,86,CORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+55,86,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+55,87,INCORRECT,missing_requested_derived_expression,warning,question requests a calculated ratio but no output expression computes it (only operands returned)
+55,89,CORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+55,89,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+55,91,CORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+55,91,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+55,93,INCORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+55,95,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+55,96,CORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+55,96,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+55,97,CORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+55,98,INCORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+55,98,INCORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+55,99,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+55,100,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+55,135,CORRECT,missing_requested_derived_expression,warning,question requests a calculated percentage but no output expression computes it (only operands returned)
+55,139,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+55,144,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+55,145,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+55,150,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+55,176,CORRECT,missing_requested_derived_expression,warning,question requests a calculated percentage but no output expression computes it (only operands returned)
+55,199,CORRECT,missing_requested_derived_expression,warning,question requests a calculated percentage but no output expression computes it (only operands returned)
+55,222,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+55,224,CORRECT,missing_requested_derived_expression,warning,question requests a calculated percentage but no output expression computes it (only operands returned)
+55,228,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+55,236,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+55,239,INCORRECT,missing_requested_derived_expression,warning,question requests a calculated percentage but no output expression computes it (only operands returned)
+55,241,INCORRECT,missing_requested_derived_expression,warning,question requests a calculated ratio but no output expression computes it (only operands returned)
+55,241,INCORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+55,241,INCORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+55,247,CORRECT,missing_requested_derived_expression,warning,question requests a calculated percentage but no output expression computes it (only operands returned)
+55,247,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+55,248,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+55,249,CORRECT,missing_requested_derived_expression,warning,question requests a calculated percentage but no output expression computes it (only operands returned)
+55,249,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+55,249,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+55,294,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+55,296,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+55,297,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+55,343,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+55,380,CORRECT,missing_requested_derived_expression,warning,question requests a calculated percentage but no output expression computes it (only operands returned)
+55,393,INCORRECT,missing_requested_derived_expression,warning,question requests a calculated percentage but no output expression computes it (only operands returned)
+55,393,INCORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+55,417,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+55,422,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+55,422,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+55,429,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+55,429,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+55,430,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+55,431,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+55,436,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+55,436,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+55,438,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+55,438,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+55,439,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+55,439,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+55,440,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+55,440,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+55,441,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+55,441,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+55,442,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+55,442,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+55,444,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+55,444,INCORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+55,445,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+55,445,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+55,447,INCORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+55,448,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+55,448,INCORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+55,449,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+55,449,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+55,450,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+55,450,INCORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+55,474,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+55,494,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+55,495,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+56,50,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+56,51,INCORRECT,missing_requested_derived_expression,warning,question requests a calculated difference but no output expression computes it (only operands returned)
+56,52,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+56,53,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+56,55,INCORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+56,55,INCORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+56,60,INCORRECT,missing_requested_derived_expression,warning,question requests a calculated ratio but no output expression computes it (only operands returned)
+56,66,INCORRECT,missing_requested_derived_expression,warning,question requests a calculated percentage but no output expression computes it (only operands returned)
+56,66,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+56,68,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+56,69,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+56,70,CORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+56,70,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+56,71,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+56,72,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+56,73,CORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+56,76,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+56,78,INCORRECT,missing_requested_derived_expression,warning,question requests a calculated ratio but no output expression computes it (only operands returned)
+56,79,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+56,84,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+56,85,INCORRECT,missing_requested_derived_expression,warning,question requests a calculated percentage but no output expression computes it (only operands returned)
+56,86,CORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+56,86,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+56,90,INCORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+56,95,INCORRECT,missing_requested_derived_expression,warning,question requests a calculated percentage but no output expression computes it (only operands returned)
+56,96,INCORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+56,98,INCORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+56,99,CORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+56,99,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+56,100,CORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+56,142,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+56,145,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+56,146,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+56,150,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+56,232,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+56,235,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+56,239,INCORRECT,missing_requested_derived_expression,warning,question requests a calculated percentage but no output expression computes it (only operands returned)
+56,239,INCORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+56,240,CORRECT,missing_requested_derived_expression,warning,question requests a calculated percentage but no output expression computes it (only operands returned)
+56,240,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+56,240,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+56,244,CORRECT,missing_requested_derived_expression,warning,question requests a calculated percentage but no output expression computes it (only operands returned)
+56,244,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+56,250,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+56,296,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+56,297,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+56,299,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+56,334,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+56,337,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+56,338,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+56,343,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+56,348,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+56,389,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+56,399,INCORRECT,missing_requested_derived_expression,warning,question requests a calculated add but no output expression computes it (only operands returned)
+56,434,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+56,435,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+56,438,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+56,438,INCORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+56,439,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+56,439,INCORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+56,440,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+56,440,INCORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+56,441,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+56,443,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+56,443,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+56,444,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+56,444,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+56,445,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+56,445,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+56,446,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+56,446,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+56,447,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+56,448,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+56,448,INCORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+56,449,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+56,450,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+56,450,INCORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+56,457,CORRECT,missing_requested_derived_expression,warning,question requests a calculated multiply but no output expression computes it (only operands returned)
+56,474,CORRECT,missing_requested_derived_expression,warning,question requests a calculated add but no output expression computes it (only operands returned)
+56,476,CORRECT,missing_requested_derived_expression,warning,question requests a calculated multiply but no output expression computes it (only operands returned)
+56,483,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+56,484,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+56,496,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+57,33,CORRECT,missing_requested_derived_expression,warning,question requests a calculated ratio but no output expression computes it (only operands returned)
+57,50,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+57,55,CORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+57,55,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+57,56,INCORRECT,missing_requested_derived_expression,warning,question requests a calculated percentage but no output expression computes it (only operands returned)
+57,59,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+57,61,CORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+57,61,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+57,63,INCORRECT,missing_requested_derived_expression,warning,question requests a calculated difference but no output expression computes it (only operands returned)
+57,66,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+57,68,INCORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+57,69,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+57,69,INCORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+57,69,INCORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+57,70,INCORRECT,missing_requested_derived_expression,warning,question requests a calculated percentage but no output expression computes it (only operands returned)
+57,71,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+57,71,INCORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+57,72,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+57,74,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+57,75,INCORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+57,77,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+57,78,INCORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+57,78,INCORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+57,79,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+57,80,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+57,85,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+57,86,CORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+57,86,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+57,87,INCORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+57,88,CORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+57,89,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+57,92,INCORRECT,missing_requested_derived_expression,warning,question requests a calculated percentage but no output expression computes it (only operands returned)
+57,93,INCORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+57,93,INCORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+57,98,CORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+57,98,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+57,100,CORRECT,unsafe_integer_division,warning,integer division without REAL cast may truncate a ratio
+57,100,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+57,147,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+57,149,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+57,182,CORRECT,missing_requested_derived_expression,warning,question requests a calculated ratio but no output expression computes it (only operands returned)
+57,214,CORRECT,missing_requested_derived_expression,warning,question requests a calculated ratio but no output expression computes it (only operands returned)
+57,216,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+57,239,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+57,240,INCORRECT,missing_requested_derived_expression,warning,question requests a calculated percentage but no output expression computes it (only operands returned)
+57,297,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+57,298,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+57,337,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+57,344,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+57,347,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+57,349,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+57,350,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+57,364,CORRECT,missing_requested_derived_expression,warning,question requests a calculated ratio but no output expression computes it (only operands returned)
+57,385,INCORRECT,missing_requested_derived_expression,warning,question requests a calculated add but no output expression computes it (only operands returned)
+57,392,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+57,396,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+57,398,CORRECT,missing_requested_derived_expression,warning,question requests a calculated percentage but no output expression computes it (only operands returned)
+57,398,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+57,400,INCORRECT,missing_requested_derived_expression,warning,question requests a calculated add but no output expression computes it (only operands returned)
+57,431,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+57,431,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+57,439,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+57,439,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+57,440,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+57,440,INCORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+57,441,INCORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+57,442,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+57,442,INCORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+57,444,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+57,444,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+57,445,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+57,445,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+57,446,INCORRECT,both_as_union,fatal,question expresses 'both' but SQL uses UNION
+57,446,INCORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+57,447,CORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)
+57,447,CORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+57,448,INCORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+57,449,INCORRECT,negative_existence_inner_join,warning,question expresses absence (never/without/no) but SQL uses an inner join instead of NOT EXISTS / anti-join
+57,495,CORRECT,missing_zero_denominator_handling,diagnostic,division denominator is not guarded against zero (NULLIF/CASE)
+57,497,INCORRECT,row_level_predicate_in_having,warning,row-level predicate on a non-grouped column placed in HAVING (belongs in WHERE)

@@ -1,0 +1,112 @@
+{
+  "generated_at": "2026-07-20T11:35:26",
+  "protected_total": 1606,
+  "incorrect_total": 394,
+  "per_rule": {
+    "missing_requested_derived_expression": {
+      "severity": "warning",
+      "protected_flagged": 35,
+      "incorrect_flagged": 27,
+      "precision_estimate": 0.4355,
+      "coverage_incorrect": 0.0685,
+      "fatal_eligible": false
+    },
+    "missing_required_output": {
+      "severity": "diagnostic",
+      "protected_flagged": 0,
+      "incorrect_flagged": 0,
+      "precision_estimate": null,
+      "coverage_incorrect": 0.0,
+      "fatal_eligible": false
+    },
+    "missing_explicit_filter": {
+      "severity": "diagnostic",
+      "protected_flagged": 0,
+      "incorrect_flagged": 0,
+      "precision_estimate": null,
+      "coverage_incorrect": 0.0,
+      "fatal_eligible": false
+    },
+    "unrequested_filter": {
+      "severity": "diagnostic",
+      "protected_flagged": 0,
+      "incorrect_flagged": 0,
+      "precision_estimate": null,
+      "coverage_incorrect": 0.0,
+      "fatal_eligible": false
+    },
+    "row_level_predicate_in_having": {
+      "severity": "warning",
+      "protected_flagged": 62,
+      "incorrect_flagged": 46,
+      "precision_estimate": 0.4259,
+      "coverage_incorrect": 0.1168,
+      "fatal_eligible": false
+    },
+    "aggregate_predicate_in_where": {
+      "severity": "warning",
+      "protected_flagged": 0,
+      "incorrect_flagged": 0,
+      "precision_estimate": null,
+      "coverage_incorrect": 0.0,
+      "fatal_eligible": false
+    },
+    "either_or_as_intersection": {
+      "severity": "warning",
+      "protected_flagged": 0,
+      "incorrect_flagged": 0,
+      "precision_estimate": null,
+      "coverage_incorrect": 0.0,
+      "fatal_eligible": false
+    },
+    "both_as_union": {
+      "severity": "fatal",
+      "protected_flagged": 0,
+      "incorrect_flagged": 1,
+      "precision_estimate": 1.0,
+      "coverage_incorrect": 0.0025,
+      "fatal_eligible": true
+    },
+    "negative_existence_inner_join": {
+      "severity": "warning",
+      "protected_flagged": 41,
+      "incorrect_flagged": 15,
+      "precision_estimate": 0.2679,
+      "coverage_incorrect": 0.0381,
+      "fatal_eligible": false
+    },
+    "independent_exists_collapsed": {
+      "severity": "diagnostic",
+      "protected_flagged": 0,
+      "incorrect_flagged": 0,
+      "precision_estimate": null,
+      "coverage_incorrect": 0.0,
+      "fatal_eligible": false
+    },
+    "unsafe_integer_division": {
+      "severity": "warning",
+      "protected_flagged": 35,
+      "incorrect_flagged": 17,
+      "precision_estimate": 0.3269,
+      "coverage_incorrect": 0.0431,
+      "fatal_eligible": false
+    },
+    "missing_zero_denominator_handling": {
+      "severity": "diagnostic",
+      "protected_flagged": 73,
+      "incorrect_flagged": 21,
+      "precision_estimate": 0.2234,
+      "coverage_incorrect": 0.0533,
+      "fatal_eligible": false
+    }
+  },
+  "fatal_eligible_rules": [
+    "both_as_union"
+  ],
+  "currently_fatal_rules": [
+    "both_as_union"
+  ],
+  "fatal_rules_flagging_protected": [],
+  "acceptance_fatal_zero_protected": true,
+  "note": "A rule may be FATAL only when protected_flagged == 0. Rules that flag any protected query stay warning/diagnostic."
+}

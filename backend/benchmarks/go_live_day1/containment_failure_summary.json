@@ -1,0 +1,59 @@
+{
+  "by_database": {
+    "54": {
+      "failed": 80,
+      "designed": 300,
+      "recovered": 220,
+      "accuracy": 0.7333
+    },
+    "55": {
+      "failed": 46,
+      "designed": 200,
+      "recovered": 154,
+      "accuracy": 0.77
+    },
+    "56": {
+      "failed": 55,
+      "designed": 200,
+      "recovered": 145,
+      "accuracy": 0.725
+    },
+    "57": {
+      "failed": 114,
+      "designed": 300,
+      "recovered": 186,
+      "accuracy": 0.62
+    }
+  },
+  "by_failure_cause": {
+    "definite_wrong_relationship": 44,
+    "distinct_groupby_normalization": 14,
+    "group_key_mismatch": 64,
+    "sql_generation_failure": 13,
+    "canonical_key_failure": 47,
+    "base_entity_recovery": 104,
+    "limit_orderby_normalization": 5,
+    "aggregate_normalization": 4
+  },
+  "by_failure_subtype": {
+    "reverse_containment": 7,
+    "incomparable_rows_missing": 37
+  },
+  "failed_total": 295,
+  "needs_manual_review": 0,
+  "designed_total": 1000,
+  "recovered_total": 705,
+  "weighted_accuracy": 0.705,
+  "required_causes_present": [
+    "aggregate_normalization",
+    "base_entity_recovery",
+    "canonical_key_failure",
+    "definite_wrong_relationship",
+    "distinct_groupby_normalization",
+    "group_key_mismatch",
+    "sql_generation_failure"
+  ],
+  "required_causes_missing": [],
+  "cross_check_warnings": [],
+  "generated_at": "2026-07-19T21:28:39"
+}

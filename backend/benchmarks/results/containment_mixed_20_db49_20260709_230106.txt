@@ -1,0 +1,5584 @@
+SpiderSQL Lahman Mixed Containment Benchmark
+Generated: 20260709_230106
+Database ID: 49
+Endpoint: http://127.0.0.1:8000/database/49/check_containment_batch
+Selected case count: 10
+Cases 01-10 are structured natural language.
+Cases 11-20 are normal SQL.
+
+====================================================================================================
+CASE 01: Single-season batting threshold containment
+TYPE: structured_nl
+EXPECTED NOTE: HR>50 and RBI>120 should be contained in HR>50, RBI>120, and usually HR>40/RBI>100.
+HTTP STATUS: 200
+SUCCESS: True
+ELAPSED SECONDS: 66.57
+
+INPUT QUERIES:
+  Q1: List batting seasons where a player hit more than 50 home runs and had more than 120 RBIs. Show player, year, team, home runs, and RBIs.
+  Q2: List batting seasons where a player hit more than 50 home runs. Show player, year, team, home runs, and RBIs.
+  Q3: List batting seasons where a player had more than 120 RBIs. Show player, year, team, home runs, and RBIs.
+  Q4: List batting seasons where a player hit more than 40 home runs and had more than 100 RBIs. Show player, year, team, home runs, and RBIs.
+
+FULL RESPONSE PREVIEW:
+{
+  "success": true,
+  "database_id": 49,
+  "query_results": [
+    {
+      "question": "List batting seasons where a player hit more than 50 home runs and had more than 120 RBIs. Show player, year, team, home runs, and RBIs.",
+      "success": true,
+      "sql": "SELECT p.nameFirst, p.nameLast, b.yearID, b.teamID, b.HR, b.RBI\nFROM batting b\nJOIN people p ON b.playerID = p.playerID\nWHERE b.HR > 50 AND b.RBI > 120",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 97.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "teamID",
+        "HR",
+        "RBI"
+      ],
+      "row_count": 35,
+      "query_id": 1,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "List batting seasons where a player hit more than 50 home runs. Show player, year, team, home runs, and RBIs.",
+      "success": true,
+      "sql": "SELECT p.nameFirst, p.nameLast, b.yearID, b.teamID, b.HR, b.RBI\nFROM batting b\nJOIN people p ON b.playerID = p.playerID\nWHERE b.HR > 50",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 97.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "teamID",
+        "HR",
+        "RBI"
+      ],
+      "row_count": 40,
+      "query_id": 2,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "List batting seasons where a player had more than 120 RBIs. Show player, year, team, home runs, and RBIs.",
+      "success": true,
+      "sql": "SELECT p.nameFirst, p.nameLast, b.yearID, b.teamID, b.HR, b.RBI\nFROM batting b\nJOIN people p ON b.playerID = p.playerID\nWHERE b.RBI > 120",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 97.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "teamID",
+        "HR",
+        "RBI"
+      ],
+      "row_count": 480,
+      "query_id": 3,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "List batting seasons where a player hit more than 40 home runs and had more than 100 RBIs. Show player, year, team, home runs, and RBIs.",
+      "success": true,
+      "sql": "SELECT p.nameFirst, p.nameLast, b.yearID, b.teamID, b.HR, b.RBI\nFROM batting b\nJOIN people p ON b.playerID = p.playerID\nWHERE b.HR > 40 AND b.RBI > 100",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 97.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "teamID",
+        "HR",
+        "RBI"
+      ],
+      "row_count": 277,
+      "query_id": 4,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    }
+  ],
+  "pairwise_relationships": [
+    {
+      "query_a": 1,
+      "query_b": 2,
+      "relationship": "query_a_contained_in_query_b",
+      "explanation": "Query 1 is contained in Query 2 on the current database.",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [
+        [
+          "Aaron",
+          "Judge",
+          2017,
+          "NYA",
+          52,
+          114
+        ],
+        [
+          "Jim",
+          "Thome",
+          2002,
+          "CLE",
+          52,
+          118
+        ],
+        [
+          "Mark",
+          "McGwire",
+          1996,
+          "OAK",
+          52,
+          113
+        ],
+        [
+          "Pete",
+          "Alonso",
+          2019,
+          "NYN",
+          53,
+          120
+        ],
+        [
+          "Willie",
+          "Mays",
+          1965,
+          "SFN",
+          52,
+          112
+        ]
+      ],
+      "compared_on": "output_columns"
+    },
+    {
+      "query_a": 1,
+      "query_b": 3,
+      "relationship": "query_a_contained_in_query_b",
+      "explanation": "Query 1 is contained in Query 3 on the current database.",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [
+        [
+          "Adrian",
+          "Beltre",
+          2004,
+          "LAN",
+          48,
+          121
+        ],
+        [
+          "Al",
+          "Kaline",
+          1956,
+          "DET",
+          27,
+          128
+        ],
+        [
+          "Al",
+          "Rosen",
+          1953,
+          "CLE",
+          43,
+          145
+        ],
+        [
+          "Al",
+          "Simmons",
+          1925,
+          "PHA",
+          24,
+          129
+        ],
+        [
+          "Al",
+          "Simmons",
+          1929,
+          "PHA",
+          34,
+          157
+        ],
+        [
+          "Al",
+          "Simmons",
+          1930,
+          "PHA",
+          36,
+          165
+        ],
+        [
+          "Al",
+          "Simmons",
+          1931,
+          "PHA",
+          22,
+          128
+        ],
+        [
+          "Al",
+          "Simmons",
+          1932,
+          "PHA",
+          35,
+          151
+        ],
+        [
+          "Albert",
+          "Belle",
+          1993,
+          "CLE",
+          38,
+          129
+        ],
+        [
+          "Albert",
+          "Belle",
+          1995,
+          "CLE",
+          50,
+          126
+        ],
+        [
+          "Albert",
+          "Belle",
+          1996,
+          "CLE",
+          48,
+          148
+        ],
+        [
+          "Albert",
+          "Belle",
+          1998,
+          "CHA",
+          49,
+          152
+        ],
+        [
+          "Albert",
+          "Pujols",
+          2001,
+          "SLN",
+          37,
+          130
+        ],
+        [
+          "Albert",
+          "Pujols",
+          2002,
+          "SLN",
+          34,
+          127
+        ],
+        [
+          "Albert",
+          "Pujols",
+          2003,
+          "SLN",
+          43,
+          124
+        ],
+        [
+          "Albert",
+          "Pujols",
+          2004,
+          "SLN",
+          46,
+          123
+        ],
+        [
+          "Albert",
+          "Pujols",
+          2006,
+          "SLN",
+          49,
+          137
+        ],
+        [
+          "Albert",
+          "Pujols",
+          2009,
+          "SLN",
+          47,
+          135
+        ],
+        [
+          "Alex",
+          "Rodriguez",
+          1996,
+          "SEA",
+          36,
+          123
+        ],
+        [
+          "Alex",
+          "Rodriguez",
+          1998,
+          "SEA",
+          42,
+          124
+        ]
+      ],
+      "compared_on": "output_columns"
+    },
+    {
+      "query_a": 1,
+      "query_b": 4,
+      "relationship": "query_a_contained_in_query_b",
+      "explanation": "Query 1 is contained in Query 4 on the current database.",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [
+        [
+          "Aaron",
+          "Judge",
+          2017,
+          "NYA",
+          52,
+          114
+        ],
+        [
+          "Adam",
+          "Dunn",
+          2004,
+          "CIN",
+          46,
+          102
+        ],
+        [
+          "Adrian",
+          "Beltre",
+          2004,
+          "LAN",
+          48,
+          121
+        ],
+        [
+          "Al",
+          "Rosen",
+          1953,
+          "CLE",
+          43,
+          145
+        ],
+        [
+          "Albert",
+          "Belle",
+          1995,
+          "CLE",
+          50,
+          126
+        ],
+        [
+          "Albert",
+          "Belle",
+          1996,
+          "CLE",
+          48,
+          148
+        ],
+        [
+          "Albert",
+          "Belle",
+          1998,
+          "CHA",
+          49,
+          152
+        ],
+        [
+          "Albert",
+          "Pujols",
+          2003,
+          "SLN",
+          43,
+          124
+        ],
+        [
+          "Albert",
+          "Pujols",
+          2004,
+          "SLN",
+          46,
+          123
+        ],
+        [
+          "Albert",
+          "Pujols",
+          2005,
+          "SLN",
+          41,
+          117
+        ],
+        [
+          "Albert",
+          "Pujols",
+          2006,
+          "SLN",
+          49,
+          137
+        ],
+        [
+          "Albert",
+          "Pujols",
+          2009,
+          "SLN",
+          47,
+          135
+        ],
+        [
+          "Albert",
+          "Pujols",
+          2010,
+          "SLN",
+          42,
+          118
+        ],
+        [
+          "Alex",
+          "Bregman",
+          2019,
+          "HOU",
+          41,
+          112
+        ],
+        [
+          "Alex",
+          "Rodriguez",
+          1998,
+          "SEA",
+          42,
+          124
+        ],
+        [
+          "Alex",
+          "Rodriguez",
+          1999,
+          "SEA",
+          42,
+          111
+        ],
+        [
+          "Alex",
+          "Rodriguez",
+          2000,
+          "SEA",
+          41,
+          132
+        ],
+        [
+          "Alex",
+          "Rodriguez",
+          2003,
+          "TEX",
+          47,
+          118
+        ],
+        [
+          "Alex",
+          "Rodriguez",
+          2005,
+          "NYA",
+          48,
+          130
+        ],
+        [
+          "Andre",
+          "Dawson",
+          1987,
+          "CHN",
+          49,
+          137
+        ]
+      ],
+      "compared_on": "output_columns"
+    },
+    {
+      "query_a": 2,
+      "query_b": 3,
+      "relationship": "incomparable_on_current_database",
+      "explanation": "Query 2 and Query 3 are incomparable on the current database; each returned rows missing from the other.",
+      "a_minus_b_rows": [
+        [
+          "Aaron",
+          "Judge",
+          2017,
+          "NYA",
+          52,
+          114
+        ],
+        [
+          "Jim",
+          "Thome",
+          2002,
+          "CLE",
+          52,
+          118
+        ],
+        [
+          "Mark",
+          "McGwire",
+          1996,
+          "OAK",
+          52,
+          113
+        ],
+        [
+          "Pete",
+          "Alonso",
+          2019,
+          "NYN",
+          53,
+          120
+        ],
+        [
+          "Willie",
+          "Mays",
+          1965,
+          "SFN",
+          52,
+          112
+        ]
+      ],
+      "b_minus_a_rows": [
+        [
+          "Adrian",
+          "Beltre",
+          2004,
+          "LAN",
+          48,
+          121
+        ],
+        [
+          "Al",
+          "Kaline",
+          1956,
+          "DET",
+          27,
+          128
+        ],
+        [
+          "Al",
+          "Rosen",
+          1953,
+          "CLE",
+          43,
+          145
+        ],
+        [
+          "Al",
+          "Simmons",
+          1925,
+          "PHA",
+          24,
+          129
+        ],
+        [
+          "Al",
+          "Simmons",
+          1929,
+          "PHA",
+          34,
+          157
+        ],
+        [
+          "Al",
+          "Simmons",
+          1930,
+          "PHA",
+          36,
+          165
+        ],
+        [
+          "Al",
+          "Simmons",
+          1931,
+          "PHA",
+          22,
+          128
+        ],
+        [
+          "Al",
+          "Simmons",
+          1932,
+          "PHA",
+          35,
+          151
+        ],
+        [
+          "Albert",
+          "Belle",
+          1993,
+          "CLE",
+          38,
+          129
+        ],
+        [
+          "Albert",
+          "Belle",
+          1995,
+          "CLE",
+          50,
+          126
+        ],
+        [
+          "Albert",
+          "Belle",
+          1996,
+          "CLE",
+          48,
+          148
+        ],
+        [
+          "Albert",
+          "Belle",
+          1998,
+          "CHA",
+          49,
+          152
+      
+...<truncated>...
+
+====================================================================================================
+CASE 02: Career batting aggregate containment
+TYPE: structured_nl
+EXPECTED NOTE: Career HR>500/RBI>1500 is narrower than HR>500 and RBI>1500. HR>500 is contained in HR>300.
+HTTP STATUS: 200
+SUCCESS: True
+ELAPSED SECONDS: 73.47
+
+INPUT QUERIES:
+  Q1: Find players with more than 500 career home runs and more than 1500 career RBIs. Show player and career totals.
+  Q2: Find players with more than 500 career home runs. Show player and career home runs.
+  Q3: Find players with more than 1500 career RBIs. Show player and career RBIs.
+  Q4: Find players with more than 300 career home runs. Show player and career home runs.
+
+FULL RESPONSE PREVIEW:
+{
+  "success": true,
+  "database_id": 49,
+  "query_results": [
+    {
+      "question": "Find players with more than 500 career home runs and more than 1500 career RBIs. Show player and career totals.",
+      "success": true,
+      "sql": "SELECT p.nameFirst, p.nameLast, SUM(b.HR) AS total_HR, SUM(b.RBI) AS total_RBI\nFROM batting b\nJOIN people p ON b.playerID = p.playerID\nGROUP BY p.playerID\nHAVING SUM(b.HR) > 500 AND SUM(b.RBI) > 1500",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_grain",
+      "selected_candidate_score": 100.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "nameFirst",
+        "nameLast",
+        "total_HR",
+        "total_RBI"
+      ],
+      "row_count": 26,
+      "query_id": 1,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "Find players with more than 500 career home runs. Show player and career home runs.",
+      "success": true,
+      "sql": "SELECT p.nameFirst, p.nameLast, SUM(b.HR) AS career_hr\nFROM batting b\nJOIN people p ON b.playerID = p.playerID\nGROUP BY b.playerID\nHAVING SUM(b.HR) > 500",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 100.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "nameFirst",
+        "nameLast",
+        "career_hr"
+      ],
+      "row_count": 28,
+      "query_id": 2,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "Find players with more than 1500 career RBIs. Show player and career RBIs.",
+      "success": true,
+      "sql": "SELECT p.nameFirst, p.nameLast, SUM(b.RBI) AS career_rbi\nFROM batting b\nJOIN people p ON b.playerID = p.playerID\nGROUP BY p.playerID\nHAVING SUM(b.RBI) > 1500",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 100.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "nameFirst",
+        "nameLast",
+        "career_rbi"
+      ],
+      "row_count": 56,
+      "query_id": 3,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "Find players with more than 300 career home runs. Show player and career home runs.",
+      "success": true,
+      "sql": "SELECT p.nameFirst, p.nameLast, SUM(b.HR) AS career_hr\nFROM batting b\nJOIN people p ON b.playerID = p.playerID\nGROUP BY b.playerID\nHAVING SUM(b.HR) > 300",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 100.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "nameFirst",
+        "nameLast",
+        "career_hr"
+      ],
+      "row_count": 152,
+      "query_id": 4,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    }
+  ],
+  "pairwise_relationships": [
+    {
+      "query_a": 1,
+      "query_b": 2,
+      "relationship": "query_a_contained_in_query_b",
+      "explanation": "Query 1 is contained in Query 2 on the current database. (compared on group key playerid)",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [
+        [
+          "matheed01"
+        ],
+        [
+          "mcgwima01"
+        ]
+      ],
+      "compared_on": "group_key:playerid"
+    },
+    {
+      "query_a": 1,
+      "query_b": 3,
+      "relationship": "query_a_contained_in_query_b",
+      "explanation": "Query 1 is contained in Query 3 on the current database. (compared on group key playerid)",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [
+        [
+          "ansonca01"
+        ],
+        [
+          "bagweje01"
+        ],
+        [
+          "baineha01"
+        ],
+        [
+          "becklja01"
+        ],
+        [
+          "beltrad01"
+        ],
+        [
+          "beltrca01"
+        ],
+        [
+          "brettge01"
+        ],
+        [
+          "cobbty01"
+        ],
+        [
+          "crawfsa01"
+        ],
+        [
+          "dawsoan01"
+        ],
+        [
+          "delgaca01"
+        ],
+        [
+          "dimagjo01"
+        ],
+        [
+          "gehrilo01"
+        ],
+        [
+          "gosligo01"
+        ],
+        [
+          "heilmha01"
+        ],
+        [
+          "hornsro01"
+        ],
+        [
+          "jonesch06"
+        ],
+        [
+          "kalinal01"
+        ],
+        [
+          "kentje01"
+        ],
+        [
+          "lajoina01"
+        ]
+      ],
+      "compared_on": "group_key:playerid"
+    },
+    {
+      "query_a": 1,
+      "query_b": 4,
+      "relationship": "query_a_contained_in_query_b",
+      "explanation": "Query 1 is contained in Query 4 on the current database. (compared on group key playerid)",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [
+        [
+          "adcocjo01"
+        ],
+        [
+          "allendi01"
+        ],
+        [
+          "aloumo01"
+        ],
+        [
+          "bagweje01"
+        ],
+        [
+          "baineha01"
+        ],
+        [
+          "bautijo02"
+        ],
+        [
+          "baylodo01"
+        ],
+        [
+          "belleal01"
+        ],
+        [
+          "beltrad01"
+        ],
+        [
+          "beltrca01"
+        ],
+        [
+          "benchjo01"
+        ],
+        [
+          "berkmla01"
+        ],
+        [
+          "berrayo01"
+        ],
+        [
+          "bondsbo01"
+        ],
+        [
+          "braunry02"
+        ],
+        [
+          "brettge01"
+        ],
+        [
+          "bruceja01"
+        ],
+        [
+          "buhneja01"
+        ],
+        [
+          "burksel01"
+        ],
+        [
+          "burnije01"
+        ]
+      ],
+      "compared_on": "group_key:playerid"
+    },
+    {
+      "query_a": 2,
+      "query_b": 3,
+      "relationship": "incomparable_on_current_database",
+      "explanation": "Query 2 and Query 3 are incomparable on the current database; each returned rows missing from the other. (compared on group key playerid)",
+      "a_minus_b_rows": [
+        [
+          "matheed01"
+        ],
+        [
+          "mcgwima01"
+        ]
+      ],
+      "b_minus_a_rows": [
+        [
+          "ansonca01"
+        ],
+        [
+          "bagweje01"
+        ],
+        [
+          "baineha01"
+        ],
+        [
+          "becklja01"
+        ],
+        [
+          "beltrad01"
+        ],
+        [
+          "beltrca01"
+        ],
+        [
+          "brettge01"
+        ],
+        [
+          "cobbty01"
+        ],
+        [
+          "crawfsa01"
+        ],
+        [
+          "dawsoan01"
+        ],
+        [
+          "delgaca01"
+        ],
+        [
+          "dimagjo01"
+        ],
+        [
+          "gehrilo01"
+        ],
+        [
+          "gosligo01"
+        ],
+        [
+          "heilmha01"
+        ],
+        [
+          "hornsro01"
+        ],
+        [
+          "jonesch06"
+        ],
+        [
+          "kalinal01"
+        ],
+        [
+          "kentje01"
+        ],
+        [
+          "lajoina01"
+        ]
+      ],
+      "compared_on": "group_key:playerid"
+    },
+    {
+      "query_a": 2,
+      "query_b": 4,
+      "relationship": "query_a_contained_in_query_b",
+      "explanation": "Query 2 is contained in Query 4 on the current database. (compared on group key playerid)",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [
+        [
+          "adcocjo01"
+        ],
+        [
+          "allendi01"
+        ],
+        [
+          "aloumo01"
+        ],
+        [
+          "bagweje01"
+        ],
+        [
+          "baineha01"
+        ],
+        [
+          "bautijo02"
+        ],
+        [
+          "baylodo01"
+        ],
+        [
+          "belleal01"
+        ],
+        [
+          "beltrad01"
+        ],
+        [
+          "beltrca01"
+        ],
+        [
+          "benchjo01"
+        ],
+        [
+          "berkmla01"
+        ],
+        [
+          "berrayo01"
+        ],
+        [
+          "bondsbo01"
+        ],
+        [
+          "braunry02"
+        ],
+        [
+          "brettge01"
+        ],
+        [
+          "bruceja01"
+        ],
+        [
+          "buhneja01"
+        ],
+        [
+          "burksel01"
+        ],
+        [
+          "burnije01"
+        ]
+      ],
+      "compared_on": "group_key:playerid"
+    },
+    {
+      "query_a": 3,
+      "query_b": 4,
+      "relationship": "incomparable_on_current_database",
+      "explanation": "Query 3 and Query 4 are incomparable on the current database; each returned rows missing from the other. (compared on group key playerid)",
+      "a_minus_b_rows": [
+        [
+          "ansonca01"
+        ],
+        [
+          "becklja01"
+        ],
+        [
+          "cobbty01"
+        ],
+        [
+          "crawfsa01"
+        ],
+        [
+          "gosligo01"
+        ],
+        [
+          "heilmha01"
+        ],
+        [
+          "lajoina01"
+        ],
+        [
+          "speaktr01"
+        ],
+        [
+          "wagneho01"
+        ]
+      ],
+      "b_minus_a_rows": [
+        [
+          "adcocjo01"
+        ],
+        [
+          "allendi01"
+        ],
+        [
+          "aloumo01"
+        ],
+        [
+          "bautijo02"
+        ],
+        [
+          "baylodo01"
+        ],
+        [
+          "belleal01"
+        ],
+        [
+          "benchjo01"
+        ],
+        [
+          "berkmla01"
+        ],
+        [
+          "berrayo01"
+        ],
+        [
+          "bondsbo01"
+        ],
+        [
+          "braunry02"
+        ],
+        [
+          "bruceja01"
+        ],
+        [
+          "buhneja01"
+        ],
+        [
+          "burksel01"
+        ],
+        [
+          "burnije01"
+        ],
+        [
+          "canoro01"
+        ],
+        [
+          "cansejo01"
+        ],
+        [
+          "cartega01"
+        ],
+        [
+          "cartejo01"
+        ],
+        [
+          "cashno01"
+        ]
+      ],
+      "compared_on": "group_key:playerid"
+    }
+  ],
+  "query_summaries": [
+    {
+      "query_id": 1,
+      "contained_in": [
+        2,
+        3,
+        4
+      ],
+      "contains": [],
+      "equivalent_to": [],
+      "incomparable_with": [],
+      "unknown_with": [],
+      "status": "narrower_query",
+      "empty_result": false
+    },
+    {
+      "query_id": 2,
+      "contained_in": [
+        4
+      ],
+      "contains": [
+        1
+      ],
+      "equivalent_to": [],
+      "incomparable_with": [
+        3
+      ],
+      "unknown_with": [],
+      "status": "broader_and_narrower",
+      "empty_result": false
+    },
+    {
+      "query_id": 3,
+      "contained_in": [],
+      "contains": [
+        1
+      ],
+      "equivalent_to": [],
+      "incomparable_with": [
+        2,
+        4
+      ],
+      "unknown_with": [],
+      "status": "broader_query_for_some_queries",
+      "empty_result": false
+    },
+    {
+      "query_id": 4,
+      "contained_in": [],
+      "contains": [
+        1,
+        2
+      ],
+      "equivalent_to": [],
+      "incomparable_with": [
+        3
+      ],
+      "unknown_with": [],
+      "status": "broader_query_for_some_queries",
+      "empty_result": false
+    }
+  ],
+  "analysis": {
+    "query_count": 4,
+    "main_queries": [
+      {
+        "index": 3,
+        "equivalent_to": [],
+        "contains": [
+          1
+        ],
+        "contained_by": []
+      },
+      {
+        "index": 4,
+        "equivalent_to": [],
+        "contains": [
+          1,
+          2
+        ],
+        "contained_by": []
+      }
+    ],
+    "equivalent_groups": [],
+    "containment_edges": [
+      {
+        "superset": 2,
+        "subset": 1,
+        "relationship_source": "pairwise"
+      },
+      {
+        "superset": 3,
+        "subset": 1,
+        "relationship_source": "pairwise"
+      },
+      {
+        "superset": 4,
+        "subset": 1,
+        "relationship_source": "pairwise"
+      },
+      {
+        "superset": 4,
+...<truncated>...
+
+====================================================================================================
+CASE 03: Pitching strikeout and win threshold containment
+TYPE: structured_nl
+EXPECTED NOTE: SO>250/W>20 should be contained in SO>250, W>20, and SO>200/W>15.
+HTTP STATUS: 200
+SUCCESS: True
+ELAPSED SECONDS: 72.87
+
+INPUT QUERIES:
+  Q1: List pitching seasons where a pitcher had more than 250 strikeouts and more than 20 wins. Show pitcher, year, team, wins, and strikeouts.
+  Q2: List pitching seasons where a pitcher had more than 250 strikeouts. Show pitcher, year, team, wins, and strikeouts.
+  Q3: List pitching seasons where a pitcher had more than 20 wins. Show pitcher, year, team, wins, and strikeouts.
+  Q4: List pitching seasons where a pitcher had more than 200 strikeouts and more than 15 wins. Show pitcher, year, team, wins, and strikeouts.
+
+FULL RESPONSE PREVIEW:
+{
+  "success": true,
+  "database_id": 49,
+  "query_results": [
+    {
+      "question": "List pitching seasons where a pitcher had more than 250 strikeouts and more than 20 wins. Show pitcher, year, team, wins, and strikeouts.",
+      "success": true,
+      "sql": "SELECT p.nameFirst, p.nameLast, pi.yearID, t.name, pi.W, pi.SO\nFROM pitching pi\nJOIN people p ON pi.playerID = p.playerID\nJOIN teams t ON pi.yearID = t.yearID AND pi.teamID = t.teamID AND pi.lgID = t.lgID\nWHERE pi.SO > 250 AND pi.W > 20",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 100.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "name",
+        "W",
+        "SO"
+      ],
+      "row_count": 95,
+      "query_id": 1,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "List pitching seasons where a pitcher had more than 250 strikeouts. Show pitcher, year, team, wins, and strikeouts.",
+      "success": true,
+      "sql": "SELECT p.nameFirst, p.nameLast, pi.yearID, t.name, pi.W, pi.SO\nFROM pitching pi\nJOIN people p ON pi.playerID = p.playerID\nJOIN teams t ON pi.yearID = t.yearID AND pi.teamID = t.teamID AND pi.lgID = t.lgID\nWHERE pi.SO > 250",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 100.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "name",
+        "W",
+        "SO"
+      ],
+      "row_count": 180,
+      "query_id": 2,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "List pitching seasons where a pitcher had more than 20 wins. Show pitcher, year, team, wins, and strikeouts.",
+      "success": true,
+      "sql": "SELECT p.nameFirst, p.nameLast, pi.yearID, t.name, pi.W, pi.SO\nFROM pitching pi\nJOIN people p ON pi.playerID = p.playerID\nJOIN teams t ON pi.yearID = t.yearID AND pi.teamID = t.teamID AND pi.lgID = t.lgID\nWHERE pi.W > 20",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 100.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "name",
+        "W",
+        "SO"
+      ],
+      "row_count": 913,
+      "query_id": 3,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "List pitching seasons where a pitcher had more than 200 strikeouts and more than 15 wins. Show pitcher, year, team, wins, and strikeouts.",
+      "success": true,
+      "sql": "SELECT p.nameFirst, p.nameLast, pi.yearID, t.name, pi.W, pi.SO\nFROM people p\nJOIN pitching pi ON p.playerID = pi.playerID\nJOIN teams t ON pi.yearID = t.yearID AND pi.teamID = t.teamID AND pi.lgID = t.lgID\nWHERE pi.SO > 200 AND pi.W > 15",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 100.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "name",
+        "W",
+        "SO"
+      ],
+      "row_count": 453,
+      "query_id": 4,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    }
+  ],
+  "pairwise_relationships": [
+    {
+      "query_a": 1,
+      "query_b": 2,
+      "relationship": "query_a_contained_in_query_b",
+      "explanation": "Query 1 is contained in Query 2 on the current database.",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [
+        [
+          "Ben",
+          "Sheets",
+          2004,
+          "Milwaukee Brewers",
+          12,
+          264
+        ],
+        [
+          "Bert",
+          "Blyleven",
+          1973,
+          "Minnesota Twins",
+          20,
+          258
+        ],
+        [
+          "Bill",
+          "Stoneman",
+          1971,
+          "Montreal Expos",
+          17,
+          251
+        ],
+        [
+          "Bob",
+          "Gibson",
+          1965,
+          "St. Louis Cardinals",
+          20,
+          270
+        ],
+        [
+          "Bob",
+          "Gibson",
+          1969,
+          "St. Louis Cardinals",
+          20,
+          269
+        ],
+        [
+          "Bob",
+          "Veale",
+          1965,
+          "Pittsburgh Pirates",
+          17,
+          276
+        ],
+        [
+          "Chris",
+          "Archer",
+          2015,
+          "Tampa Bay Rays",
+          12,
+          252
+        ],
+        [
+          "Chris",
+          "Sale",
+          2015,
+          "Chicago White Sox",
+          13,
+          274
+        ],
+        [
+          "Chris",
+          "Sale",
+          2017,
+          "Boston Red Sox",
+          17,
+          308
+        ],
+        [
+          "Clayton",
+          "Kershaw",
+          2015,
+          "Los Angeles Dodgers",
+          16,
+          301
+        ],
+        [
+          "Corey",
+          "Kluber",
+          2014,
+          "Cleveland Indians",
+          18,
+          269
+        ],
+        [
+          "Corey",
+          "Kluber",
+          2017,
+          "Cleveland Indians",
+          18,
+          265
+        ],
+        [
+          "Curt",
+          "Schilling",
+          1997,
+          "Philadelphia Phillies",
+          17,
+          319
+        ],
+        [
+          "Curt",
+          "Schilling",
+          1998,
+          "Philadelphia Phillies",
+          15,
+          300
+        ],
+        [
+          "Don",
+          "Drysdale",
+          1963,
+          "Los Angeles Dodgers",
+          19,
+          251
+        ],
+        [
+          "Dwight",
+          "Gooden",
+          1984,
+          "New York Mets",
+          17,
+          276
+        ],
+        [
+          "Ed",
+          "Walsh",
+          1910,
+          "Chicago White Sox",
+          18,
+          258
+        ],
+        [
+          "Fergie",
+          "Jenkins",
+          1968,
+          "Chicago Cubs",
+          20,
+          260
+        ],
+        [
+          "Frank",
+          "Tanana",
+          1975,
+          "California Angels",
+          16,
+          269
+        ],
+        [
+          "Frank",
+          "Tanana",
+          1976,
+          "California Angels",
+          19,
+          261
+        ]
+      ],
+      "compared_on": "output_columns"
+    },
+    {
+      "query_a": 1,
+      "query_b": 3,
+      "relationship": "query_a_contained_in_query_b",
+      "explanation": "Query 1 is contained in Query 3 on the current database.",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [
+        [
+          "Ad",
+          "Gumbert",
+          1890,
+          "Boston Reds",
+          23,
+          82
+        ],
+        [
+          "Ad",
+          "Gumbert",
+          1892,
+          "Chicago Colts",
+          22,
+          118
+        ],
+        [
+          "Addie",
+          "Joss",
+          1906,
+          "Cleveland Naps",
+          21,
+          106
+        ],
+        [
+          "Addie",
+          "Joss",
+          1907,
+          "Cleveland Naps",
+          27,
+          127
+        ],
+        [
+          "Addie",
+          "Joss",
+          1908,
+          "Cleveland Naps",
+          24,
+          130
+        ],
+        [
+          "Adonis",
+          "Terry",
+          1889,
+          "Brooklyn Bridegrooms",
+          22,
+          186
+        ],
+        [
+          "Adonis",
+          "Terry",
+          1890,
+          "Brooklyn Bridegrooms",
+          26,
+          185
+        ],
+        [
+          "Adonis",
+          "Terry",
+          1895,
+          "Chicago Colts",
+          21,
+          88
+        ],
+        [
+          "Al",
+          "Atkinson",
+          1886,
+          "Philadelphia Athletics",
+          25,
+          154
+        ],
+        [
+          "Al",
+          "Mamaux",
+          1915,
+          "Pittsburgh Pirates",
+          21,
+          152
+        ],
+        [
+          "Al",
+          "Mamaux",
+          1916,
+          "Pittsburgh Pirates",
+          21,
+          163
+        ],
+        [
+          "Al",
+          "Orth",
+          1906,
+          "New York Highlanders",
+          27,
+          133
+        ],
+        [
+          "Al",
+          "Schulz",
+          1915,
+          "Buffalo Blues",
+          21,
+          160
+        ],
+        [
+          "Al",
+          "Spalding",
+          1872,
+          "Boston Red Stockings",
+          38,
+          28
+        ],
+        [
+          "Al",
+          "Spalding",
+          1873,
+          "Boston Red Stockings",
+          41,
+          50
+        ],
+        [
+          "Al",
+          "Spalding",
+          1874,
+          "Boston Red Stockings",
+          52,
+          31
+        ],
+        [
+          "Al",
+          "Spalding",
+          1875,
+          "Boston Red Stockings",
+          54,
+          75
+        ],
+        [
+          "Al",
+          "Spalding",
+          1876,
+          "Chicago White Stockings",
+          47,
+          39
+        ],
+        [
+          "Amos",
+          "Rusie",
+          1893,
+          "New York Giants",
+          33,
+          208
+        ],
+        [
+          "Amos",
+          "Rusie",
+          1894,
+          "New York Giants",
+          36,
+          195
+        ]
+      ],
+      "compared_on": "output_columns"
+    },
+    {
+      "query_a": 1,
+      "query_b": 4,
+      "relationship": "query_a_contained_in_query_b",
+      "explanation": "Query 1 is contained in Query 4 on the current database.",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [
+        [
+          "A. J.",
+          "Burnett",
+          2008,
+          "Toronto Blue Jays",
+          18,
+          231
+        ],
+        [
+          "Aaron",
+          "Harang",
+          2006,
+          "Cincinnati Reds",
+          16,
+          216
+        ],
+        [
+          "Aaron",
+          "Harang",
+          2007,
+          "Cincinnati Reds",
+          16,
+          218
+        ],
+        [
+          "Aaron",
+          "Nola",
+          2018,
+          "Philadelphia Phillies",
+          17,
+          224
+        ],
+        [
+          "Adam",
+          "Wainwright",
+          2009,
+          "St. Louis Cardinals",
+          19,
+          212
+        ],
+        [
+          "Adam",
+          "Wainwright",
+          2010,
+          "St. Louis Cardinals",
+          20,
+          213
+        ],
+        [
+          "Adam",
+          "Wainwright",
+          2013,
+          "St. Louis Cardinals",
+          19,
+          219
+        ],
+        [
+          "Adonis",
+          "Terry",
+          1884,
+          "Brooklyn Atlantics",
+          19,
+          230
+        ],
+        [
+          "Amos",
+          "Rusie",
+          1893,
+          "New York Giants",
+          33,
+          208
+        ],
+        [
+          "Amos",
+          "Rusie",
+          1895,
+          "New York Giants",
+          23,
+          201
+        ],
+        [
+          "Andy",
+          "Messersmith",
+          1969,
+          "California Angels",
+          16,
+          211
+        ],
+        [
+          "Andy",
+          "Messersmith",
+          1974,
+          "Los Angeles Dodgers",
+          20,
+          221
+        ],
+        [
+          "Andy",
+          "Messersmith",
+          1975,
+          "Los Angeles Dodgers",
+          19,
+          213
+        ],
+        [
+          "Barry",
+          "Zito",
+          2001,
+          "Oakland Athletics",
+          17,
+          205
+        ],
+        [
+          "Bert",
+          "Blyleven",
+          1971,
+          "Minnesota Twins",
+          16,
+          224
+        ],
+        [
+          "Bert",
+          "Blyleven",
+          1972,
+         
+...<truncated>...
+
+====================================================================================================
+CASE 04: Team season wins, year, and rank containment
+TYPE: structured_nl
+EXPECTED NOTE: After-1990/W>100/rank=1 should be contained in after-1990/W>100, after-1990/rank=1, and after-1990/W>90.
+HTTP STATUS: 200
+SUCCESS: True
+ELAPSED SECONDS: 72.37
+
+INPUT QUERIES:
+  Q1: List teams after 1990 that won more than 100 games and finished rank 1. Show year, team, league, wins, losses, and rank.
+  Q2: List teams after 1990 that won more than 100 games. Show year, team, league, wins, losses, and rank.
+  Q3: List teams after 1990 that finished rank 1. Show year, team, league, wins, losses, and rank.
+  Q4: List teams after 1990 that won more than 90 games. Show year, team, league, wins, losses, and rank.
+
+FULL RESPONSE PREVIEW:
+{
+  "success": true,
+  "database_id": 49,
+  "query_results": [
+    {
+      "question": "List teams after 1990 that won more than 100 games and finished rank 1. Show year, team, league, wins, losses, and rank.",
+      "success": true,
+      "sql": "SELECT teams.yearid, teams.name, teams.lgid, teams.w, teams.l, teams.rank\nFROM teams\nWHERE teams.yearid > 1990\n  AND teams.w > 100\n  AND teams.rank = 1",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 90.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "yearID",
+        "name",
+        "lgID",
+        "W",
+        "L",
+        "Rank"
+      ],
+      "row_count": 30,
+      "query_id": 1,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "List teams after 1990 that won more than 100 games. Show year, team, league, wins, losses, and rank.",
+      "success": true,
+      "sql": "SELECT teams.yearid, teams.name, teams.lgid, teams.w, teams.l, teams.rank\nFROM teams\nWHERE teams.yearid > 1990 AND teams.w > 100",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 90.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "yearID",
+        "name",
+        "lgID",
+        "W",
+        "L",
+        "Rank"
+      ],
+      "row_count": 34,
+      "query_id": 2,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "List teams after 1990 that finished rank 1. Show year, team, league, wins, losses, and rank.",
+      "success": true,
+      "sql": "SELECT teams.yearid, teams.name, teams.lgid, teams.w, teams.l, teams.rank\nFROM teams\nWHERE teams.yearid > 1990 AND teams.rank = 1",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 90.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "yearID",
+        "name",
+        "lgID",
+        "W",
+        "L",
+        "Rank"
+      ],
+      "row_count": 187,
+      "query_id": 3,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "List teams after 1990 that won more than 90 games. Show year, team, league, wins, losses, and rank.",
+      "success": true,
+      "sql": "SELECT teams.yearid, teams.name, teams.lgid, teams.w, teams.l, teams.rank\nFROM teams\nWHERE teams.yearid > 1990 AND teams.w > 90",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 90.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "yearID",
+        "name",
+        "lgID",
+        "W",
+        "L",
+        "Rank"
+      ],
+      "row_count": 200,
+      "query_id": 4,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    }
+  ],
+  "pairwise_relationships": [
+    {
+      "query_a": 1,
+      "query_b": 2,
+      "relationship": "query_a_contained_in_query_b",
+      "explanation": "Query 1 is contained in Query 2 on the current database.",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [
+        [
+          1993,
+          "San Francisco Giants",
+          "NL",
+          103,
+          59,
+          2
+        ],
+        [
+          2001,
+          "Oakland Athletics",
+          "AL",
+          102,
+          60,
+          2
+        ],
+        [
+          2021,
+          "Los Angeles Dodgers",
+          "NL",
+          106,
+          56,
+          2
+        ],
+        [
+          2022,
+          "New York Mets",
+          "NL",
+          101,
+          61,
+          2
+        ]
+      ],
+      "compared_on": "output_columns"
+    },
+    {
+      "query_a": 1,
+      "query_b": 3,
+      "relationship": "query_a_contained_in_query_b",
+      "explanation": "Query 1 is contained in Query 3 on the current database.",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [
+        [
+          1991,
+          "Atlanta Braves",
+          "NL",
+          94,
+          68,
+          1
+        ],
+        [
+          1991,
+          "Minnesota Twins",
+          "AL",
+          95,
+          67,
+          1
+        ],
+        [
+          1991,
+          "Pittsburgh Pirates",
+          "NL",
+          98,
+          64,
+          1
+        ],
+        [
+          1991,
+          "Toronto Blue Jays",
+          "AL",
+          91,
+          71,
+          1
+        ],
+        [
+          1992,
+          "Atlanta Braves",
+          "NL",
+          98,
+          64,
+          1
+        ],
+        [
+          1992,
+          "Oakland Athletics",
+          "AL",
+          96,
+          66,
+          1
+        ],
+        [
+          1992,
+          "Pittsburgh Pirates",
+          "NL",
+          96,
+          66,
+          1
+        ],
+        [
+          1992,
+          "Toronto Blue Jays",
+          "AL",
+          96,
+          66,
+          1
+        ],
+        [
+          1993,
+          "Chicago White Sox",
+          "AL",
+          94,
+          68,
+          1
+        ],
+        [
+          1993,
+          "Philadelphia Phillies",
+          "NL",
+          97,
+          65,
+          1
+        ],
+        [
+          1993,
+          "Toronto Blue Jays",
+          "AL",
+          95,
+          67,
+          1
+        ],
+        [
+          1994,
+          "Chicago White Sox",
+          "AL",
+          67,
+          46,
+          1
+        ],
+        [
+          1994,
+          "Cincinnati Reds",
+          "NL",
+          66,
+          48,
+          1
+        ],
+        [
+          1994,
+          "Los Angeles Dodgers",
+          "NL",
+          58,
+          56,
+          1
+        ],
+        [
+          1994,
+          "Montreal Expos",
+          "NL",
+          74,
+          40,
+          1
+        ],
+        [
+          1994,
+          "New York Yankees",
+          "AL",
+          70,
+          43,
+          1
+        ],
+        [
+          1994,
+          "Texas Rangers",
+          "AL",
+          52,
+          62,
+          1
+        ],
+        [
+          1995,
+          "Atlanta Braves",
+          "NL",
+          90,
+          54,
+          1
+        ],
+        [
+          1995,
+          "Boston Red Sox",
+          "AL",
+          86,
+          58,
+          1
+        ],
+        [
+          1995,
+          "Cincinnati Reds",
+          "NL",
+          85,
+          59,
+          1
+        ]
+      ],
+      "compared_on": "output_columns"
+    },
+    {
+      "query_a": 1,
+      "query_b": 4,
+      "relationship": "query_a_contained_in_query_b",
+      "explanation": "Query 1 is contained in Query 4 on the current database.",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [
+        [
+          1991,
+          "Atlanta Braves",
+          "NL",
+          94,
+          68,
+          1
+        ],
+        [
+          1991,
+          "Los Angeles Dodgers",
+          "NL",
+          93,
+          69,
+          2
+        ],
+        [
+          1991,
+          "Minnesota Twins",
+          "AL",
+          95,
+          67,
+          1
+        ],
+        [
+          1991,
+          "Pittsburgh Pirates",
+          "NL",
+          98,
+          64,
+          1
+        ],
+        [
+          1991,
+          "Toronto Blue Jays",
+          "AL",
+          91,
+          71,
+          1
+        ],
+        [
+          1992,
+          "Atlanta Braves",
+          "NL",
+          98,
+          64,
+          1
+        ],
+        [
+          1992,
+          "Milwaukee Brewers",
+          "AL",
+          92,
+          70,
+          2
+        ],
+        [
+          1992,
+          "Oakland Athletics",
+          "AL",
+          96,
+          66,
+          1
+        ],
+        [
+          1992,
+          "Pittsburgh Pirates",
+          "NL",
+          96,
+          66,
+          1
+        ],
+        [
+          1992,
+          "Toronto Blue Jays",
+          "AL",
+          96,
+          66,
+          1
+        ],
+        [
+          1993,
+          "Chicago White Sox",
+          "AL",
+          94,
+          68,
+          1
+        ],
+        [
+          1993,
+          "Montreal Expos",
+          "NL",
+          94,
+          68,
+          2
+        ],
+        [
+          1993,
+          "Philadelphia Phillies",
+          "NL",
+          97,
+          65,
+          1
+        ],
+        [
+          1993,
+          "San Francisco Giants",
+          "NL",
+          103,
+          59,
+          2
+        ],
+        [
+          1993,
+          "Toronto Blue Jays",
+          "AL",
+          95,
+          67,
+          1
+        ],
+        [
+          1995,
+          "Cleveland Indians",
+          "AL",
+          100,
+          44,
+          1
+        ],
+        [
+          1996,
+          "Atlanta Braves",
+          "NL",
+          96,
+          66,
+          1
+        ],
+        [
+          1996,
+          "Cleveland Indians",
+          "AL",
+          99,
+          62,
+          1
+        ],
+        [
+          1996,
+          "New York Yankees",
+          "AL",
+          92,
+          70,
+          1
+        ],
+        [
+          1996,
+          "San Diego Padres",
+          "NL",
+          91,
+          71,
+          1
+        ]
+      ],
+      "compared_on": "output_columns"
+    },
+    {
+      "query_a": 2,
+      "query_b": 3,
+      "relationship": "incomparable_on_current_database",
+      "explanation": "Query 2 and Query 3 are incomparable on the current database; each returned rows missing from the other.",
+      "a_minus_b_rows": [
+        [
+          1993,
+          "San Francisco Giants",
+          "NL",
+          103,
+          59,
+          2
+        ],
+        [
+          2001,
+          "Oakland Athletics",
+          "AL",
+          102,
+          60,
+          2
+        ],
+        [
+          2021,
+          "Los Angeles Dodgers",
+          "NL",
+          106,
+          56,
+          2
+        ],
+        [
+          2022,
+          "New York Mets",
+          "NL",
+          101,
+          61,
+          2
+        ]
+      ],
+      "b_minus_a_rows": [
+        [
+          1991,
+          "Atlanta Braves",
+          "NL",
+          94,
+          68,
+          1
+        ],
+        [
+          1991,
+          "Minnesota Twins",
+          "AL",
+          95,
+          67,
+          1
+        ],
+        [
+          1991,
+          "Pittsburgh Pirates",
+          "NL",
+          98,
+          64,
+          1
+        ],
+        [
+          1991,
+          "Toronto Blue Jays",
+          "AL",
+          91,
+          71,
+          1
+        ],
+        [
+          1992,
+          "Atlanta Braves",
+          "NL",
+          98,
+          64,
+          1
+        ],
+        [
+          1992,
+          "Oakland Athletics",
+          "AL",
+          96,
+          66,
+          1
+        ],
+        [
+          1992,
+          "Pittsburgh Pirates",
+          "NL",
+          96,
+          66,
+          1
+        ],
+        [
+          1992,
+          "Toronto Blue Jays",
+          "AL",
+          96,
+          66,
+          1
+        ],
+        [
+          1993,
+          "Chicago White Sox",
+          "AL",
+          94,
+          68,
+          1
+        ],
+        [
+          1993,
+          "Philadelphia Phillies",
+          "NL",
+          97,
+          65,
+          1
+        ],
+        [
+          1993,
+          "Toronto Blue Jays",
+          "AL",
+          95,
+          67,
+          1
+        ],
+        [
+          1994,
+          "Chicago White Sox",
+          "AL",
+          67,
+          46,
+          1
+        ],
+        [
+          1994,
+          "Cincinnati Reds",
+          "NL",
+          66,
+          48,
+          1
+        ],
+        [
+          1994,
+          "Los Angeles Dodgers",
+          "NL",
+          58,
+      
+...<truncated>...
+
+====================================================================================================
+CASE 05: Player/team season join containment
+TYPE: structured_nl
+EXPECTED NOTE: HR>40/team wins>90 is narrower than HR>40, team wins>90, and HR>30/team wins>80.
+HTTP STATUS: 200
+SUCCESS: True
+ELAPSED SECONDS: 81.10
+
+INPUT QUERIES:
+  Q1: Find 2001 batting seasons where a player hit more than 40 home runs and his team won more than 90 games. Show player, team, team wins, and home runs.
+  Q2: Find 2001 batting seasons where a player hit more than 40 home runs. Show player, team, and home runs.
+  Q3: Find 2001 batting seasons for players whose teams won more than 90 games. Show player, team, and team wins.
+  Q4: Find 2001 batting seasons where a player hit more than 30 home runs and his team won more than 80 games. Show player, team, team wins, and home runs.
+
+FULL RESPONSE PREVIEW:
+{
+  "success": true,
+  "database_id": 49,
+  "query_results": [
+    {
+      "question": "Find 2001 batting seasons where a player hit more than 40 home runs and his team won more than 90 games. Show player, team, team wins, and home runs.",
+      "success": true,
+      "sql": "SELECT p.nameFirst, p.nameLast, t.name, t.W, b.HR\nFROM batting b\nJOIN people p ON b.playerID = p.playerID\nJOIN teams t ON b.yearID = t.yearID AND b.teamID = t.teamID AND b.lgID = t.lgID\nWHERE b.yearID = 2001\n  AND b.HR > 40\n  AND t.W > 90",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 100.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "nameFirst",
+        "nameLast",
+        "name",
+        "W",
+        "HR"
+      ],
+      "row_count": 2,
+      "query_id": 1,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "Find 2001 batting seasons where a player hit more than 40 home runs. Show player, team, and home runs.",
+      "success": true,
+      "sql": "SELECT p.nameFirst, p.nameLast, t.name, b.HR\nFROM Batting b\nJOIN People p ON b.playerID = p.playerID\nJOIN Teams t ON b.yearID = t.yearID AND b.teamID = t.teamID AND b.lgID = t.lgID\nWHERE b.yearID = 2001 AND b.HR > 40",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_grain",
+      "selected_candidate_score": 100.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "nameFirst",
+        "nameLast",
+        "name",
+        "HR"
+      ],
+      "row_count": 12,
+      "query_id": 2,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "Find 2001 batting seasons for players whose teams won more than 90 games. Show player, team, and team wins.",
+      "success": true,
+      "sql": "SELECT p.nameFirst, p.nameLast, t.name, t.W\nFROM Batting b\nJOIN People p ON b.playerID = p.playerID\nJOIN Teams t ON b.yearID = t.yearID AND b.teamID = t.teamID AND b.lgID = t.lgID\nWHERE b.yearID = 2001 AND t.W > 90",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 100.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "nameFirst",
+        "nameLast",
+        "name",
+        "W"
+      ],
+      "row_count": 300,
+      "query_id": 3,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "Find 2001 batting seasons where a player hit more than 30 home runs and his team won more than 80 games. Show player, team, team wins, and home runs.",
+      "success": true,
+      "sql": "SELECT p.nameFirst, p.nameLast, t.name, t.W, b.HR\nFROM Batting b\nJOIN People p ON b.playerID = p.playerID\nJOIN Teams t ON b.yearID = t.yearID AND b.teamID = t.teamID AND b.lgID = t.lgID\nWHERE b.yearID = 2001\n  AND b.HR > 30\n  AND t.W > 80",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 100.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "nameFirst",
+        "nameLast",
+        "name",
+        "W",
+        "HR"
+      ],
+      "row_count": 24,
+      "query_id": 4,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    }
+  ],
+  "pairwise_relationships": [
+    {
+      "query_a": 1,
+      "query_b": 2,
+      "relationship": "query_a_contained_in_query_b",
+      "explanation": "Query 1 is contained in Query 2 on the current database. (compared on canonical key lgid,playerid,teamid,yearid)",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [
+        [
+          "bondsba01",
+          2001,
+          "SFN",
+          "NL"
+        ],
+        [
+          "glaustr01",
+          2001,
+          "ANA",
+          "AL"
+        ],
+        [
+          "greensh01",
+          2001,
+          "LAN",
+          "NL"
+        ],
+        [
+          "heltoto01",
+          2001,
+          "COL",
+          "NL"
+        ],
+        [
+          "nevinph01",
+          2001,
+          "SDN",
+          "NL"
+        ],
+        [
+          "palmera01",
+          2001,
+          "TEX",
+          "AL"
+        ],
+        [
+          "ramirma02",
+          2001,
+          "BOS",
+          "AL"
+        ],
+        [
+          "rodrial01",
+          2001,
+          "TEX",
+          "AL"
+        ],
+        [
+          "sexsori01",
+          2001,
+          "MIL",
+          "NL"
+        ],
+        [
+          "sosasa01",
+          2001,
+          "CHN",
+          "NL"
+        ]
+      ],
+      "compared_on": "canonical_key:lgid,playerid,teamid,yearid"
+    },
+    {
+      "query_a": 1,
+      "query_b": 3,
+      "relationship": "query_a_contained_in_query_b",
+      "explanation": "Query 1 is contained in Query 3 on the current database. (compared on canonical key lgid,playerid,teamid,yearid)",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [
+        [
+          "abadan01",
+          2001,
+          "OAK",
+          "AL"
+        ],
+        [
+          "abbotpa01",
+          2001,
+          "SEA",
+          "AL"
+        ],
+        [
+          "almanca01",
+          2001,
+          "NYA",
+          "AL"
+        ],
+        [
+          "almoner01",
+          2001,
+          "NYA",
+          "AL"
+        ],
+        [
+          "alomaro01",
+          2001,
+          "CLE",
+          "AL"
+        ],
+        [
+          "aloumo01",
+          2001,
+          "HOU",
+          "NL"
+        ],
+        [
+          "anderbr02",
+          2001,
+          "ARI",
+          "NL"
+        ],
+        [
+          "ankieri01",
+          2001,
+          "SLN",
+          "NL"
+        ],
+        [
+          "astacpe01",
+          2001,
+          "HOU",
+          "NL"
+        ],
+        [
+          "ausmubr01",
+          2001,
+          "HOU",
+          "NL"
+        ],
+        [
+          "bacsimi02",
+          2001,
+          "CLE",
+          "AL"
+        ],
+        [
+          "baezda01",
+          2001,
+          "CLE",
+          "AL"
+        ],
+        [
+          "bagweje01",
+          2001,
+          "HOU",
+          "NL"
+        ],
+        [
+          "barajro01",
+          2001,
+          "ARI",
+          "NL"
+        ],
+        [
+          "barkegl01",
+          2001,
+          "HOU",
+          "NL"
+        ],
+        [
+          "batismi01",
+          2001,
+          "ARI",
+          "NL"
+        ],
+        [
+          "bautida01",
+          2001,
+          "ARI",
+          "NL"
+        ],
+        [
+          "bellda01",
+          2001,
+          "SEA",
+          "AL"
+        ],
+        [
+          "bellhma01",
+          2001,
+          "OAK",
+          "AL"
+        ],
+        [
+          "bellicl01",
+          2001,
+          "NYA",
+          "AL"
+        ]
+      ],
+      "compared_on": "canonical_key:lgid,playerid,teamid,yearid"
+    },
+    {
+      "query_a": 1,
+      "query_b": 4,
+      "relationship": "query_a_contained_in_query_b",
+      "explanation": "Query 1 is contained in Query 4 on the current database.",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [
+        [
+          "Albert",
+          "Pujols",
+          "St. Louis Cardinals",
+          93,
+          37
+        ],
+        [
+          "Andruw",
+          "Jones",
+          "Atlanta Braves",
+          88,
+          34
+        ],
+        [
+          "Barry",
+          "Bonds",
+          "San Francisco Giants",
+          90,
+          73
+        ],
+        [
+          "Bobby",
+          "Abreu",
+          "Philadelphia Phillies",
+          86,
+          31
+        ],
+        [
+          "Bret",
+          "Boone",
+          "Seattle Mariners",
+          116,
+          37
+        ],
+        [
+          "Chipper",
+          "Jones",
+          "Atlanta Braves",
+          88,
+          38
+        ],
+        [
+          "Eric",
+          "Chavez",
+          "Oakland Athletics",
+          102,
+          32
+        ],
+        [
+          "Gary",
+          "Sheffield",
+          "Los Angeles Dodgers",
+          86,
+          36
+        ],
+        [
+          "Jason",
+          "Giambi",
+          "Oakland Athletics",
+          102,
+          38
+        ],
+        [
+          "Jeff",
+          "Bagwell",
+          "Houston Astros",
+          93,
+          39
+        ],
+        [
+          "Juan",
+          "Gonzalez",
+          "Cleveland Indians",
+          91,
+          35
+        ],
+        [
+          "Lance",
+          "Berkman",
+          "Houston Astros",
+          93,
+          34
+        ],
+        [
+          "Magglio",
+          "Ordonez",
+          "Chicago White Sox",
+          83,
+          31
+        ],
+        [
+          "Manny",
+          "Ramirez",
+          "Boston Red Sox",
+          82,
+          41
+        ],
+        [
+          "Miguel",
+          "Tejada",
+          "Oakland Athletics",
+          102,
+          31
+        ],
+        [
+          "Mike",
+          "Piazza",
+          "New York Mets",
+          82,
+          36
+        ],
+        [
+          "Paul",
+          "Konerko",
+          "Chicago White Sox",
+          83,
+          32
+        ],
+        [
+          "Reggie",
+          "Sanders",
+          "Arizona Diamondbacks",
+          92,
+          33
+        ],
+        [
+          "Rich",
+          "Aurilia",
+          "San Francisco Giants",
+          90,
+          37
+        ],
+        [
+          "Sammy",
+          "Sosa",
+          "Chicago Cubs",
+          88,
+          64
+        ]
+      ],
+      "compared_on": "output_columns"
+    },
+    {
+      "query_a": 2,
+      "query_b": 3,
+      "relationship": "incomparable_on_current_database",
+      "explanation": "Query 2 and Query 3 are incomparable on the current database; each returned rows missing from the other. (compared on canonical key lgid,playerid,teamid,yearid)",
+      "a_minus_b_rows": [
+        [
+          "bondsba01",
+          2001,
+          "SFN",
+          "NL"
+        ],
+        [
+          "glaustr01",
+          2001,
+          "ANA",
+          "AL"
+        ],
+        [
+          "greensh01",
+          2001,
+          "LAN",
+          "NL"
+        ],
+        [
+          "heltoto01",
+          2001,
+          "COL",
+          "NL"
+        ],
+        [
+          "nevinph01",
+          2001,
+          "SDN",
+          "NL"
+        ],
+        [
+          "palmera01",
+          2001,
+          "TEX",
+          "AL"
+        ],
+        [
+          "ramirma02",
+          2001,
+          "BOS",
+          "AL"
+        ],
+        [
+          "rodrial01",
+          2001,
+          "TEX",
+          "AL"
+        ],
+        [
+          "sexsori01",
+          2001,
+          "MIL",
+          "NL"
+        ],
+        [
+          "sosasa01",
+          2001,
+          "CHN",
+          "NL"
+        ]
+      ],
+      "b_minus_a_rows": [
+        [
+          "abadan01",
+          2001,
+          "OAK",
+          "AL"
+        ],
+        [
+          "abbotpa01",
+          2001,
+          "SEA",
+          "AL"
+        ],
+        [
+          "almanca01",
+          2001,
+          "NYA",
+          "AL"
+        ],
+        [
+          "almoner01",
+          2001,
+          "NYA",
+          "AL"
+        ],
+        [
+          "alomaro01",
+          2001,
+          "CLE",
+          "AL"
+        ],
+        [
+          "aloumo01",
+          2001,
+          "HOU",
+          "NL"
+        ],
+        [
+          "anderbr02",
+          2001,
+          "ARI",
+          "NL"
+        ],
+        [
+          "ankieri01",
+          2001,
+          "SLN",
+          "NL"
+        ],
+        [
+          "astacpe01",
+          2001,
+          "HOU",
+          "NL"
+        ],
+        [
+          "ausmubr01",
+          2001,
+          "HOU",
+          "NL"
+        ],
+        [
+          "bacsimi02",
+          2001,
+  
+...<truncated>...
+
+====================================================================================================
+CASE 06: Award and batting performance containment
+TYPE: structured_nl
+EXPECTED NOTE: MVP+HR>40 same-year should be contained in MVP winners, HR>40 seasons, and award+HR>40 seasons if generated on compatible player-year keys.
+HTTP STATUS: 200
+SUCCESS: True
+ELAPSED SECONDS: 85.88
+
+INPUT QUERIES:
+  Q1: List players who won a Most Valuable Player award and hit more than 40 home runs in the same year. Show player, year, team, award, and home runs.
+  Q2: List players who won a Most Valuable Player award. Show player, year, and award.
+  Q3: List players who hit more than 40 home runs in a season. Show player, year, team, and home runs.
+  Q4: List players who won any player award and hit more than 40 home runs in the same year. Show player, year, award, and home runs.
+
+FULL RESPONSE PREVIEW:
+{
+  "success": true,
+  "database_id": 49,
+  "query_results": [
+    {
+      "question": "List players who won a Most Valuable Player award and hit more than 40 home runs in the same year. Show player, year, team, award, and home runs.",
+      "success": true,
+      "sql": "SELECT p.nameFirst, p.nameLast, asp.yearID, b.teamID, asp.awardID, b.HR\nFROM AwardsSharePlayers asp\nJOIN People p ON asp.playerID = p.playerID\nJOIN Batting b ON asp.playerID = b.playerID AND asp.yearID = b.yearID\nWHERE asp.awardID = 'MVP'\n  AND b.HR > 40",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct",
+      "selected_candidate_score": 84.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "teamID",
+        "awardID",
+        "HR"
+      ],
+      "row_count": 249,
+      "query_id": 1,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "List players who won a Most Valuable Player award. Show player, year, and award.",
+      "success": true,
+      "sql": "SELECT p.nameFirst, p.nameLast, ap.yearID, ap.awardID\nFROM awardsplayers ap\nJOIN people p ON ap.playerID = p.playerID\nWHERE ap.awardID = 'MVP'",
+      "params": [],
+      "selected_candidate_source": "llm_sql_repair",
+      "selected_candidate_score": 98.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "awardID"
+      ],
+      "row_count": 0,
+      "query_id": 2,
+      "empty_result": true,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "List players who hit more than 40 home runs in a season. Show player, year, team, and home runs.",
+      "success": true,
+      "sql": "SELECT p.nameFirst, p.nameLast, b.yearID, t.name, b.HR\nFROM Batting b\nJOIN People p ON b.playerID = p.playerID\nJOIN Teams t ON b.yearID = t.yearID AND b.teamID = t.teamID AND b.lgID = t.lgID\nWHERE b.HR > 40",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 100.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "name",
+        "HR"
+      ],
+      "row_count": 295,
+      "query_id": 3,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "List players who won any player award and hit more than 40 home runs in the same year. Show player, year, award, and home runs.",
+      "success": true,
+      "sql": "SELECT p.nameFirst, p.nameLast, ap.yearID, ap.awardID, b.HR\nFROM AwardsPlayers ap\nJOIN People p ON ap.playerID = p.playerID\nJOIN Batting b ON ap.playerID = b.playerID AND ap.yearID = b.yearID\nWHERE b.HR > 40",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 94.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "awardID",
+        "HR"
+      ],
+      "row_count": 569,
+      "query_id": 4,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    }
+  ],
+  "pairwise_relationships": [
+    {
+      "query_a": 1,
+      "query_b": 2,
+      "relationship": "query_b_contained_in_query_a",
+      "explanation": "Query 2 is contained in Query 1 on the current database. (compared on canonical key awardid,playerid,yearid)",
+      "a_minus_b_rows": [
+        [
+          "aaronha01",
+          "MVP",
+          1957
+        ],
+        [
+          "aaronha01",
+          "MVP",
+          1962
+        ],
+        [
+          "aaronha01",
+          "MVP",
+          1963
+        ],
+        [
+          "aaronha01",
+          "MVP",
+          1966
+        ],
+        [
+          "aaronha01",
+          "MVP",
+          1969
+        ],
+        [
+          "aaronha01",
+          "MVP",
+          1971
+        ],
+        [
+          "anderbr01",
+          "MVP",
+          1996
+        ],
+        [
+          "arenano01",
+          "MVP",
+          2015
+        ],
+        [
+          "arenano01",
+          "MVP",
+          2016
+        ],
+        [
+          "armasto01",
+          "MVP",
+          1984
+        ],
+        [
+          "bagweje01",
+          "MVP",
+          1997
+        ],
+        [
+          "bagweje01",
+          "MVP",
+          1999
+        ],
+        [
+          "bagweje01",
+          "MVP",
+          2000
+        ],
+        [
+          "bankser01",
+          "MVP",
+          1955
+        ],
+        [
+          "bankser01",
+          "MVP",
+          1957
+        ],
+        [
+          "bankser01",
+          "MVP",
+          1958
+        ],
+        [
+          "bankser01",
+          "MVP",
+          1959
+        ],
+        [
+          "bankser01",
+          "MVP",
+          1960
+        ],
+        [
+          "bautijo02",
+          "MVP",
+          2010
+        ],
+        [
+          "bautijo02",
+          "MVP",
+          2011
+        ]
+      ],
+      "b_minus_a_rows": [],
+      "compared_on": "canonical_key:awardid,playerid,yearid"
+    },
+    {
+      "query_a": 1,
+      "query_b": 3,
+      "relationship": "unknown",
+      "explanation": "Cannot compare: queries do not expose a common comparable key (key awardid,playerid,yearid vs lgid,playerid,teamid,yearid).",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [],
+      "compared_on": null
+    },
+    {
+      "query_a": 1,
+      "query_b": 4,
+      "relationship": "incomparable_on_current_database",
+      "explanation": "Query 1 and Query 4 are incomparable on the current database; each returned rows missing from the other. (compared on canonical key awardid,playerid,yearid)",
+      "a_minus_b_rows": [
+        [
+          "aaronha01",
+          "MVP",
+          1957
+        ],
+        [
+          "aaronha01",
+          "MVP",
+          1962
+        ],
+        [
+          "aaronha01",
+          "MVP",
+          1963
+        ],
+        [
+          "aaronha01",
+          "MVP",
+          1966
+        ],
+        [
+          "aaronha01",
+          "MVP",
+          1969
+        ],
+        [
+          "aaronha01",
+          "MVP",
+          1971
+        ],
+        [
+          "anderbr01",
+          "MVP",
+          1996
+        ],
+        [
+          "arenano01",
+          "MVP",
+          2015
+        ],
+        [
+          "arenano01",
+          "MVP",
+          2016
+        ],
+        [
+          "armasto01",
+          "MVP",
+          1984
+        ],
+        [
+          "bagweje01",
+          "MVP",
+          1997
+        ],
+        [
+          "bagweje01",
+          "MVP",
+          1999
+        ],
+        [
+          "bagweje01",
+          "MVP",
+          2000
+        ],
+        [
+          "bankser01",
+          "MVP",
+          1955
+        ],
+        [
+          "bankser01",
+          "MVP",
+          1957
+        ],
+        [
+          "bankser01",
+          "MVP",
+          1958
+        ],
+        [
+          "bankser01",
+          "MVP",
+          1959
+        ],
+        [
+          "bankser01",
+          "MVP",
+          1960
+        ],
+        [
+          "bautijo02",
+          "MVP",
+          2010
+        ],
+        [
+          "bautijo02",
+          "MVP",
+          2011
+        ]
+      ],
+      "b_minus_a_rows": [
+        [
+          "aaronha01",
+          "Most Valuable Player",
+          1957
+        ],
+        [
+          "aaronha01",
+          "TSN All-Star",
+          1963
+        ],
+        [
+          "aaronha01",
+          "TSN All-Star",
+          1969
+        ],
+        [
+          "aaronha01",
+          "TSN All-Star",
+          1971
+        ],
+        [
+          "aaronha01",
+          "TSN Player of the Year",
+          1963
+        ],
+        [
+          "acunaro01",
+          "Silver Slugger",
+          2019
+        ],
+        [
+          "acunaro01",
+          "TSN All-Star",
+          2019
+        ],
+        [
+          "alonspe01",
+          "Rookie of the Year",
+          2019
+        ],
+        [
+          "arenano01",
+          "Gold Glove",
+          2015
+        ],
+        [
+          "arenano01",
+          "Gold Glove",
+          2016
+        ],
+        [
+          "arenano01",
+          "Gold Glove",
+          2019
+        ],
+        [
+          "arenano01",
+          "Silver Slugger",
+          2015
+        ],
+        [
+          "arenano01",
+          "Silver Slugger",
+          2016
+        ],
+        [
+          "armasto01",
+          "Silver Slugger",
+          1984
+        ],
+        [
+          "armasto01",
+          "TSN All-Star",
+          1984
+        ],
+        [
+          "bagweje01",
+          "Silver Slugger",
+          1997
+        ],
+        [
+          "bagweje01",
+          "Silver Slugger",
+          1999
+        ],
+        [
+          "bagweje01",
+          "TSN All-Star",
+          1997
+        ],
+        [
+          "bagweje01",
+          "TSN All-Star",
+          1999
+        ],
+        [
+          "bankser01",
+          "Gold Glove",
+          1960
+        ]
+      ],
+      "compared_on": "canonical_key:awardid,playerid,yearid"
+    },
+    {
+      "query_a": 2,
+      "query_b": 3,
+      "relationship": "unknown",
+      "explanation": "Cannot compare: queries do not expose a common comparable key (key awardid,playerid,yearid vs lgid,playerid,teamid,yearid).",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [],
+      "compared_on": null
+    },
+    {
+      "query_a": 2,
+      "query_b": 4,
+      "relationship": "query_a_contained_in_query_b",
+      "explanation": "Query 2 is contained in Query 4 on the current database. (compared on canonical key awardid,playerid,yearid)",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [
+        [
+          "aaronha01",
+          "Most Valuable Player",
+          1957
+        ],
+        [
+          "aaronha01",
+          "TSN All-Star",
+          1963
+        ],
+        [
+          "aaronha01",
+          "TSN All-Star",
+          1969
+        ],
+        [
+          "aaronha01",
+          "TSN All-Star",
+          1971
+        ],
+        [
+          "aaronha01",
+          "TSN Player of the Year",
+          1963
+        ],
+        [
+          "acunaro01",
+          "Silver Slugger",
+          2019
+        ],
+        [
+          "acunaro01",
+          "TSN All-Star",
+          2019
+        ],
+        [
+          "alonspe01",
+          "Rookie of the Year",
+          2019
+        ],
+        [
+          "arenano01",
+          "Gold Glove",
+          2015
+        ],
+        [
+          "arenano01",
+          "Gold Glove",
+          2016
+        ],
+        [
+          "arenano01",
+          "Gold Glove",
+          2019
+        ],
+        [
+          "arenano01",
+          "Silver Slugger",
+          2015
+        ],
+        [
+          "arenano01",
+          "Silver Slugger",
+          2016
+        ],
+        [
+          "armasto01",
+          "Silver Slugger",
+          1984
+        ],
+        [
+          "armasto01",
+          "TSN All-Star",
+          1984
+        ],
+        [
+          "bagweje01",
+          "Silver Slugger",
+          1997
+        ],
+        [
+          "bagweje01",
+          "Silver Slugger",
+          1999
+        ],
+        [
+          "bagweje01",
+          "TSN All-Star",
+          1997
+        ],
+        [
+          "bagweje01",
+          "TSN All-Star",
+          1999
+        ],
+        [
+          "bankser01",
+          "Gold Glove",
+          1960
+        ]
+      ],
+      "compared_on": "canonical_key:awardid,playerid,yearid"
+    },
+    {
+      "query_a": 3,
+      "query_b": 4,
+      "relationship": "unknown",
+      "explanation": "Cannot compare: queries do not expose a common comparable key (key lgid,playerid,teamid,yearid vs awardid,playerid,yearid).
+...<truncated>...
+
+====================================================================================================
+CASE 07: Hall of Fame and career batting containment
+TYPE: structured_nl
+EXPECTED NOTE: Inducted+HR>500 should be contained in inducted players, HR>500 players, and inducted+HR>300.
+HTTP STATUS: 200
+SUCCESS: True
+ELAPSED SECONDS: 79.98
+
+INPUT QUERIES:
+  Q1: Find Hall of Fame inducted players with more than 500 career home runs. Show player and total career home runs.
+  Q2: Find Hall of Fame inducted players. Show player and induction year.
+  Q3: Find players with more than 500 career home runs. Show player and total career home runs.
+  Q4: Find Hall of Fame players with more than 300 career home runs. Show player and total career home runs.
+
+FULL RESPONSE PREVIEW:
+{
+  "success": true,
+  "database_id": 49,
+  "query_results": [
+    {
+      "question": "Find Hall of Fame inducted players with more than 500 career home runs. Show player and total career home runs.",
+      "success": true,
+      "sql": "SELECT p.nameFirst, p.nameLast, SUM(b.HR) AS total_career_hr\nFROM HallOfFame h\nJOIN People p ON h.playerID = p.playerID\nJOIN Batting b ON p.playerID = b.playerID\nWHERE h.inducted = 'Y'\nGROUP BY p.playerID\nHAVING SUM(b.HR) > 500",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 90.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [
+        "selected SQL: possible join fanout aggregate inflation"
+      ],
+      "execution_columns": [
+        "nameFirst",
+        "nameLast",
+        "total_career_hr"
+      ],
+      "row_count": 19,
+      "query_id": 1,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "Find Hall of Fame inducted players. Show player and induction year.",
+      "success": true,
+      "sql": "SELECT p.nameFirst, p.nameLast, h.yearID\nFROM HallOfFame h\nJOIN People p ON h.playerID = p.playerID\nWHERE h.inducted = 'Y' AND h.category = 'Player'",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 99.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearid"
+      ],
+      "row_count": 270,
+      "query_id": 2,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "Find players with more than 500 career home runs. Show player and total career home runs.",
+      "success": true,
+      "sql": "SELECT p.nameFirst, p.nameLast, SUM(b.HR) AS total_career_hr\nFROM batting b\nJOIN people p ON b.playerID = p.playerID\nGROUP BY p.playerID\nHAVING SUM(b.HR) > 500",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 100.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "nameFirst",
+        "nameLast",
+        "total_career_hr"
+      ],
+      "row_count": 28,
+      "query_id": 3,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "Find Hall of Fame players with more than 300 career home runs. Show player and total career home runs.",
+      "success": true,
+      "sql": "SELECT p.nameFirst, p.nameLast, SUM(b.HR) AS total_career_hr\nFROM HallOfFame h\nJOIN People p ON h.playerID = p.playerID\nJOIN Batting b ON h.playerID = b.playerID\nGROUP BY h.playerID, p.nameFirst, p.nameLast\nHAVING SUM(b.HR) > 300",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 90.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [
+        "selected SQL: possible join fanout aggregate inflation"
+      ],
+      "execution_columns": [
+        "nameFirst",
+        "nameLast",
+        "total_career_hr"
+      ],
+      "row_count": 282,
+      "query_id": 4,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    }
+  ],
+  "pairwise_relationships": [
+    {
+      "query_a": 1,
+      "query_b": 2,
+      "relationship": "unknown",
+      "explanation": "Cannot compare: Query 1 (aggregate/group-by/distinct/set-op cannot be key-normalized).",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [],
+      "compared_on": null
+    },
+    {
+      "query_a": 1,
+      "query_b": 3,
+      "relationship": "query_a_contained_in_query_b",
+      "explanation": "Query 1 is contained in Query 3 on the current database. (compared on group key playerid)",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [
+        [
+          "bondsba01"
+        ],
+        [
+          "cabremi01"
+        ],
+        [
+          "mcgwima01"
+        ],
+        [
+          "palmera01"
+        ],
+        [
+          "pujolal01"
+        ],
+        [
+          "ramirma02"
+        ],
+        [
+          "rodrial01"
+        ],
+        [
+          "sheffga01"
+        ],
+        [
+          "sosasa01"
+        ]
+      ],
+      "compared_on": "group_key:playerid"
+    },
+    {
+      "query_a": 1,
+      "query_b": 4,
+      "relationship": "unknown",
+      "explanation": "Cannot compare grouped queries: different group keys (['playerid'] vs ['playerid', 'namefirst', 'namelast']).",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [],
+      "compared_on": null
+    },
+    {
+      "query_a": 2,
+      "query_b": 3,
+      "relationship": "unknown",
+      "explanation": "Cannot compare: Query 3 (aggregate/group-by/distinct/set-op cannot be key-normalized).",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [],
+      "compared_on": null
+    },
+    {
+      "query_a": 2,
+      "query_b": 4,
+      "relationship": "unknown",
+      "explanation": "Cannot compare: Query 4 (aggregate/group-by/distinct/set-op cannot be key-normalized).",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [],
+      "compared_on": null
+    },
+    {
+      "query_a": 3,
+      "query_b": 4,
+      "relationship": "unknown",
+      "explanation": "Cannot compare grouped queries: different group keys (['playerid'] vs ['playerid', 'namefirst', 'namelast']).",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [],
+      "compared_on": null
+    }
+  ],
+  "query_summaries": [
+    {
+      "query_id": 1,
+      "contained_in": [
+        3
+      ],
+      "contains": [],
+      "equivalent_to": [],
+      "incomparable_with": [],
+      "unknown_with": [
+        2,
+        4
+      ],
+      "status": "narrower_query",
+      "empty_result": false
+    },
+    {
+      "query_id": 2,
+      "contained_in": [],
+      "contains": [],
+      "equivalent_to": [],
+      "incomparable_with": [],
+      "unknown_with": [
+        1,
+        3,
+        4
+      ],
+      "status": "no_containment_relationship",
+      "empty_result": false
+    },
+    {
+      "query_id": 3,
+      "contained_in": [],
+      "contains": [
+        1
+      ],
+      "equivalent_to": [],
+      "incomparable_with": [],
+      "unknown_with": [
+        2,
+        4
+      ],
+      "status": "broader_query_for_some_queries",
+      "empty_result": false
+    },
+    {
+      "query_id": 4,
+      "contained_in": [],
+      "contains": [],
+      "equivalent_to": [],
+      "incomparable_with": [],
+      "unknown_with": [
+        1,
+        2,
+        3
+      ],
+      "status": "no_containment_relationship",
+      "empty_result": false
+    }
+  ],
+  "analysis": {
+    "query_count": 4,
+    "main_queries": [
+      {
+        "index": 2,
+        "equivalent_to": [],
+        "contains": [],
+        "contained_by": []
+      },
+      {
+        "index": 3,
+        "equivalent_to": [],
+        "contains": [
+          1
+        ],
+        "contained_by": []
+      },
+      {
+        "index": 4,
+        "equivalent_to": [],
+        "contains": [],
+        "contained_by": []
+      }
+    ],
+    "equivalent_groups": [],
+    "containment_edges": [
+      {
+        "superset": 3,
+        "subset": 1,
+        "relationship_source": "pairwise"
+      }
+    ],
+    "independent_queries": [
+      2,
+      4
+    ],
+    "unknown_pairs": [
+      {
+        "left": 1,
+        "right": 2,
+        "reason": "Cannot compare: Query 1 (aggregate/group-by/distinct/set-op cannot be key-normalized)."
+      },
+      {
+        "left": 1,
+        "right": 4,
+        "reason": "Cannot compare grouped queries: different group keys (['playerid'] vs ['playerid', 'namefirst', 'namelast'])."
+      },
+      {
+        "left": 2,
+        "right": 3,
+        "reason": "Cannot compare: Query 3 (aggregate/group-by/distinct/set-op cannot be key-normalized)."
+      },
+      {
+        "left": 2,
+        "right": 4,
+        "reason": "Cannot compare: Query 4 (aggregate/group-by/distinct/set-op cannot be key-normalized)."
+      },
+      {
+        "left": 3,
+        "right": 4,
+        "reason": "Cannot compare grouped queries: different group keys (['playerid'] vs ['playerid', 'namefirst', 'namelast'])."
+      }
+    ],
+    "incomparable_pairs": [],
+    "empty_queries": [],
+    "summary_text": "Query 2 is a main (broadest) query. Query 3 is a main (broadest) query; it contains Query 1. Query 4 is a main (broadest) query. Independent (no proven containment): Query 2, Query 4. 5 pair(s) could not be compared (unknown)."
+  },
+  "checked_on_current_database": true,
+  "proof_type": "live_database_except_pairwise",
+  "limitations": "Live-database check only. Not-contained and incomparable results are backed by counterexample rows. Contained/equivalent results are only verified on the current database, not as full symbolic proofs.",
+  "warnings": [],
+  "_http_status": 200
+}
+
+====================================================================================================
+CASE 08: College school and career batting containment
+TYPE: structured_nl
+EXPECTED NOTE: California school + HR>100 should be contained in California school players, HR>100 players, and US school + HR>100 players if state/country mapping is correct.
+HTTP STATUS: 200
+SUCCESS: True
+ELAPSED SECONDS: 76.46
+
+INPUT QUERIES:
+  Q1: List players who attended a school in California and later had more than 100 career home runs. Show player, school, state, and career home runs.
+  Q2: List players who attended a school in California. Show player, school, and state.
+  Q3: List players with more than 100 career home runs. Show player and career home runs.
+  Q4: List players who attended a school in the United States and later had more than 100 career home runs. Show player, school, country, and career home runs.
+
+FULL RESPONSE PREVIEW:
+{
+  "success": true,
+  "database_id": 49,
+  "query_results": [
+    {
+      "question": "List players who attended a school in California and later had more than 100 career home runs. Show player, school, state, and career home runs.",
+      "success": true,
+      "sql": "SELECT p.nameFirst, p.nameLast, s.name_full, s.state\nFROM people p\nJOIN collegeplaying cp ON p.playerID = cp.playerID\nJOIN schools s ON cp.schoolID = s.schoolID\nJOIN batting b ON p.playerID = b.playerID\nWHERE s.state = 'California'\nGROUP BY p.playerID, s.schoolID\nHAVING SUM(b.HR) > 100",
+      "params": [],
+      "selected_candidate_source": "llm_sql_repair",
+      "selected_candidate_score": 100.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "nameFirst",
+        "nameLast",
+        "name_full",
+        "state"
+      ],
+      "row_count": 0,
+      "query_id": 1,
+      "empty_result": true,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "List players who attended a school in California. Show player, school, and state.",
+      "success": true,
+      "sql": "SELECT DISTINCT \"people\".\"namefirst\", \"people\".\"namelast\", \"schools\".\"name_full\", \"schools\".\"state\" FROM \"collegeplaying\" INNER JOIN \"people\" ON \"collegeplaying\".\"playerid\" = \"people\".\"playerid\" INNER JOIN \"schools\" ON \"collegeplaying\".\"schoolid\" = \"schools\".\"schoolid\" WHERE \"schools\".\"state\" = ?",
+      "params": [
+        "CA"
+      ],
+      "selected_candidate_source": "llm_primary",
+      "selected_candidate_score": 89.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "nameFirst",
+        "nameLast",
+        "name_full",
+        "state"
+      ],
+      "row_count": 1000,
+      "query_id": 2,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "List players with more than 100 career home runs. Show player and career home runs.",
+      "success": true,
+      "sql": "SELECT p.nameFirst, p.nameLast, SUM(b.HR) AS career_hr\nFROM batting b\nJOIN people p ON b.playerID = p.playerID\nGROUP BY p.playerID\nHAVING SUM(b.HR) > 100",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 100.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "nameFirst",
+        "nameLast",
+        "career_hr"
+      ],
+      "row_count": 960,
+      "query_id": 3,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "List players who attended a school in the United States and later had more than 100 career home runs. Show player, school, country, and career home runs.",
+      "success": true,
+      "sql": "SELECT \"people\".\"playerid\", \"people\".\"namefirst\", \"people\".\"namelast\", \"schools\".\"name_full\", \"schools\".\"country\", \"batting\".\"hr\", SUM(\"batting\".\"hr\") AS \"career_hr\" FROM \"people\" INNER JOIN \"batting\" ON \"people\".\"playerid\" = \"batting\".\"playerid\" INNER JOIN \"collegeplaying\" ON \"people\".\"playerid\" = \"collegeplaying\".\"playerid\" INNER JOIN \"schools\" ON \"collegeplaying\".\"schoolid\" = \"schools\".\"schoolid\" WHERE \"schools\".\"country\" = ? GROUP BY \"people\".\"playerid\", \"people\".\"namefirst\", \"people\".\"namelast\", \"schools\".\"name_full\", \"schools\".\"country\" HAVING \"career_hr\" > ?",
+      "params": [
+        "USA",
+        100
+      ],
+      "selected_candidate_source": "llm_primary",
+      "selected_candidate_score": 100.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "playerID",
+        "nameFirst",
+        "nameLast",
+        "name_full",
+        "country",
+        "HR",
+        "career_hr"
+      ],
+      "row_count": 668,
+      "query_id": 4,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    }
+  ],
+  "pairwise_relationships": [
+    {
+      "query_a": 1,
+      "query_b": 2,
+      "relationship": "query_a_contained_in_query_b",
+      "explanation": "Query 1 is contained in Query 2 on the current database.",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [
+        [
+          "A. J.",
+          "Griffin",
+          "University of San Diego",
+          "CA"
+        ],
+        [
+          "A. J.",
+          "Hinch",
+          "Stanford University",
+          "CA"
+        ],
+        [
+          "Aaron",
+          "Bates",
+          "San Jose State University",
+          "CA"
+        ],
+        [
+          "Aaron",
+          "Boone",
+          "University of Southern California",
+          "CA"
+        ],
+        [
+          "Aaron",
+          "Harang",
+          "San Diego State University",
+          "CA"
+        ],
+        [
+          "Aaron",
+          "Ledesma",
+          "Chabot College",
+          "CA"
+        ],
+        [
+          "Aaron",
+          "Pointer",
+          "University of San Francisco",
+          "CA"
+        ],
+        [
+          "Aaron",
+          "Poreda",
+          "University of San Francisco",
+          "CA"
+        ],
+        [
+          "Aaron",
+          "Rowand",
+          "California State University Fullerton",
+          "CA"
+        ],
+        [
+          "Abe",
+          "Alvarez",
+          "California State University Long Beach",
+          "CA"
+        ],
+        [
+          "Adam",
+          "Bernero",
+          "Sacramento City College",
+          "CA"
+        ],
+        [
+          "Adam",
+          "Johnson",
+          "California State University Fullerton",
+          "CA"
+        ],
+        [
+          "Adam",
+          "Kennedy",
+          "California State University Northridge",
+          "CA"
+        ],
+        [
+          "Adam",
+          "Melhuse",
+          "Santa Clara University",
+          "CA"
+        ],
+        [
+          "Adam",
+          "Melhuse",
+          "University of California, Los Angeles",
+          "CA"
+        ],
+        [
+          "Adam",
+          "Pettyjohn",
+          "California State University Fresno",
+          "CA"
+        ],
+        [
+          "Adam",
+          "Wilk",
+          "California State University Long Beach",
+          "CA"
+        ],
+        [
+          "Addison",
+          "Reed",
+          "San Diego State University",
+          "CA"
+        ],
+        [
+          "Al",
+          "Gallagher",
+          "Santa Clara University",
+          "CA"
+        ],
+        [
+          "Al",
+          "Hrabosky",
+          "Fullerton College",
+          "CA"
+        ]
+      ],
+      "compared_on": "output_columns"
+    },
+    {
+      "query_a": 1,
+      "query_b": 3,
+      "relationship": "unknown",
+      "explanation": "Cannot compare grouped queries: different group keys (['playerid', 'schoolid'] vs ['playerid']).",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [],
+      "compared_on": null
+    },
+    {
+      "query_a": 1,
+      "query_b": 4,
+      "relationship": "unknown",
+      "explanation": "Cannot compare grouped queries: different group keys (['playerid', 'schoolid'] vs ['playerid', 'namefirst', 'namelast', 'name_full', 'country']).",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [],
+      "compared_on": null
+    },
+    {
+      "query_a": 2,
+      "query_b": 3,
+      "relationship": "unknown",
+      "explanation": "Cannot compare: Query 3 (aggregate/group-by/distinct/set-op cannot be key-normalized).",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [],
+      "compared_on": null
+    },
+    {
+      "query_a": 2,
+      "query_b": 4,
+      "relationship": "unknown",
+      "explanation": "Cannot compare: Query 4 (aggregate/group-by/distinct/set-op cannot be key-normalized).",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [],
+      "compared_on": null
+    },
+    {
+      "query_a": 3,
+      "query_b": 4,
+      "relationship": "unknown",
+      "explanation": "Cannot compare grouped queries: different group keys (['playerid'] vs ['playerid', 'namefirst', 'namelast', 'name_full', 'country']).",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [],
+      "compared_on": null
+    }
+  ],
+  "query_summaries": [
+    {
+      "query_id": 1,
+      "contained_in": [
+        2
+      ],
+      "contains": [],
+      "equivalent_to": [],
+      "incomparable_with": [],
+      "unknown_with": [
+        3,
+        4
+      ],
+      "status": "empty_result_query",
+      "empty_result": true
+    },
+    {
+      "query_id": 2,
+      "contained_in": [],
+      "contains": [
+        1
+      ],
+      "equivalent_to": [],
+      "incomparable_with": [],
+      "unknown_with": [
+        3,
+        4
+      ],
+      "status": "broader_query_for_some_queries",
+      "empty_result": false
+    },
+    {
+      "query_id": 3,
+      "contained_in": [],
+      "contains": [],
+      "equivalent_to": [],
+      "incomparable_with": [],
+      "unknown_with": [
+        1,
+        2,
+        4
+      ],
+      "status": "no_containment_relationship",
+      "empty_result": false
+    },
+    {
+      "query_id": 4,
+      "contained_in": [],
+      "contains": [],
+      "equivalent_to": [],
+      "incomparable_with": [],
+      "unknown_with": [
+        1,
+        2,
+        3
+      ],
+      "status": "no_containment_relationship",
+      "empty_result": false
+    }
+  ],
+  "analysis": {
+    "query_count": 4,
+    "main_queries": [
+      {
+        "index": 2,
+        "equivalent_to": [],
+        "contains": [
+          1
+        ],
+        "contained_by": []
+      },
+      {
+        "index": 3,
+        "equivalent_to": [],
+        "contains": [],
+        "contained_by": []
+      },
+      {
+        "index": 4,
+        "equivalent_to": [],
+        "contains": [],
+        "contained_by": []
+      }
+    ],
+    "equivalent_groups": [],
+    "containment_edges": [
+      {
+        "superset": 2,
+        "subset": 1,
+        "relationship_source": "pairwise"
+      }
+    ],
+    "independent_queries": [
+      3,
+      4
+    ],
+    "unknown_pairs": [
+      {
+        "left": 1,
+        "right": 3,
+        "reason": "Cannot compare grouped queries: different group keys (['playerid', 'schoolid'] vs ['playerid'])."
+      },
+      {
+        "left": 1,
+        "right": 4,
+        "reason": "Cannot compare grouped queries: different group keys (['playerid', 'schoolid'] vs ['playerid', 'namefirst', 'namelast', 'name_full', 'country'])."
+      },
+      {
+        "left": 2,
+        "right": 3,
+        "reason": "Cannot compare: Query 3 (aggregate/group-by/distinct/set-op cannot be key-normalized)."
+      },
+      {
+        "left": 2,
+        "right": 4,
+        "reason": "Cannot compare: Query 4 (aggregate/group-by/distinct/set-op cannot be key-normalized)."
+      },
+      {
+        "left": 3,
+        "right": 4,
+        "reason": "Cannot compare grouped queries: different group keys (['playerid'] vs ['playerid', 'namefirst', 'namelast', 'name_full', 'country'])."
+      }
+    ],
+    "incomparable_pairs": [],
+    "empty_queries": [
+      1
+    ],
+    "summary_text": "Query 2 is a main (broadest) query; it contains Query 1. Query 3 is a main (broadest) query. Query 4 is a main (broadest) query. Independent (no proven containment): Query 3, Query 4. Empty-result queries: Query 1. 5 pair(s) could not be compared (unknown)."
+  },
+  "checked_on_current_database": true,
+  "proof_type": "live_database_except_pairwise",
+  "limitations": "Live-database check only. Not-contained and incomparable results are backed by counterexample rows. Contained/equivalent results are only verified on the current database, not as full symbolic proofs.",
+  "warnings": [],
+  "_http_status": 200
+}
+
+====================================================================================================
+CASE 09: Salary and batting same-season containment
+TYPE: structured_nl
+EXPECTED NOTE: Salary>20M/HR>30 after 2000 should be contained in salary>20M, HR>30, and salary>10M/HR>20.
+HTTP STATUS: 200
+SUCCESS: True
+ELAPSED SECONDS: 72.93
+
+INPUT QUERIES:
+  Q1: List player seasons after 2000 where the player salary was more than 20000000 and the player hit more than 30 home runs. Show player, year, team, salary, and home runs.
+  Q2: List player seasons after 2000 where the player salary was more than 20000000. Show player, year, team, and salary.
+  Q3: List batting seasons after 2000 where the player hit more than 30 home runs. Show player, year, team, and home runs.
+  Q4: List player seasons after 2000 where the player salary was more than 10000000 and the player hit more than 20 home runs. Show player, year, team, salary, and home runs.
+
+FULL RESPONSE PREVIEW:
+{
+  "success": true,
+  "database_id": 49,
+  "query_results": [
+    {
+      "question": "List player seasons after 2000 where the player salary was more than 20000000 and the player hit more than 30 home runs. Show player, year, team, salary, and home runs.",
+      "success": true,
+      "sql": "SELECT p.nameFirst, p.nameLast, b.yearID, t.name, s.salary, b.HR\nFROM batting b\nJOIN people p ON b.playerID = p.playerID\nJOIN salaries s ON b.playerID = s.playerID AND b.yearID = s.yearID AND b.teamID = s.teamID AND b.lgID = s.lgID\nJOIN teams t ON b.yearID = t.yearID AND b.teamID = t.teamID AND b.lgID = t.lgID\nWHERE b.yearID > 2000\n  AND s.salary > 20000000\n  AND b.HR > 30",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 100.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "name",
+        "salary",
+        "HR"
+      ],
+      "row_count": 26,
+      "query_id": 1,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "List player seasons after 2000 where the player salary was more than 20000000. Show player, year, team, and salary.",
+      "success": true,
+      "sql": "SELECT p.nameFirst, p.nameLast, s.yearID, s.teamID, s.salary\nFROM people p\nJOIN salaries s ON p.playerID = s.playerID\nWHERE s.yearID > 2000\n  AND s.salary > 20000000",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 97.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "teamID",
+        "salary"
+      ],
+      "row_count": 136,
+      "query_id": 2,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "List batting seasons after 2000 where the player hit more than 30 home runs. Show player, year, team, and home runs.",
+      "success": true,
+      "sql": "SELECT p.nameFirst, p.nameLast, b.yearID, t.name, b.HR\nFROM batting b\nJOIN people p ON b.playerID = p.playerID\nJOIN teams t ON b.yearID = t.yearID AND b.teamID = t.teamID AND b.lgID = t.lgID\nWHERE b.yearID > 2000 AND b.HR > 30",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 100.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "name",
+        "HR"
+      ],
+      "row_count": 529,
+      "query_id": 3,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "List player seasons after 2000 where the player salary was more than 10000000 and the player hit more than 20 home runs. Show player, year, team, salary, and home runs.",
+      "success": true,
+      "sql": "SELECT \"people\".\"namefirst\", \"people\".\"namelast\", \"salaries\".\"yearid\", \"salaries\".\"teamid\", \"salaries\".\"salary\", \"batting\".\"hr\" FROM \"people\" INNER JOIN \"batting\" ON \"people\".\"playerid\" = \"batting\".\"playerid\" INNER JOIN \"salaries\" ON \"people\".\"playerid\" = \"salaries\".\"playerid\" WHERE \"salaries\".\"yearid\" > ? AND \"salaries\".\"salary\" > ? AND \"batting\".\"hr\" > ?",
+      "params": [
+        2000,
+        10000000,
+        20
+      ],
+      "selected_candidate_source": "llm_primary",
+      "selected_candidate_score": 97.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "nameFirst",
+        "nameLast",
+        "yearID",
+        "teamID",
+        "salary",
+        "HR"
+      ],
+      "row_count": 1000,
+      "query_id": 4,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    }
+  ],
+  "pairwise_relationships": [
+    {
+      "query_a": 1,
+      "query_b": 2,
+      "relationship": "unknown",
+      "explanation": "Cannot compare: queries do not expose a common comparable key (key lgid,playerid,teamid,yearid vs playerid).",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [],
+      "compared_on": null
+    },
+    {
+      "query_a": 1,
+      "query_b": 3,
+      "relationship": "query_a_contained_in_query_b",
+      "explanation": "Query 1 is contained in Query 3 on the current database. (compared on canonical key lgid,playerid,teamid,yearid)",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [
+        [
+          "abreubo01",
+          2001,
+          "PHI",
+          "NL"
+        ],
+        [
+          "abreujo02",
+          2014,
+          "CHA",
+          "AL"
+        ],
+        [
+          "abreujo02",
+          2017,
+          "CHA",
+          "AL"
+        ],
+        [
+          "abreujo02",
+          2019,
+          "CHA",
+          "AL"
+        ],
+        [
+          "acunaro01",
+          2019,
+          "ATL",
+          "NL"
+        ],
+        [
+          "adamewi01",
+          2022,
+          "MIL",
+          "NL"
+        ],
+        [
+          "aguilje01",
+          2018,
+          "MIL",
+          "NL"
+        ],
+        [
+          "alonspe01",
+          2019,
+          "NYN",
+          "NL"
+        ],
+        [
+          "alonspe01",
+          2021,
+          "NYN",
+          "NL"
+        ],
+        [
+          "alonspe01",
+          2022,
+          "NYN",
+          "NL"
+        ],
+        [
+          "aloumo01",
+          2004,
+          "CHN",
+          "NL"
+        ],
+        [
+          "altuvjo01",
+          2019,
+          "HOU",
+          "AL"
+        ],
+        [
+          "altuvjo01",
+          2021,
+          "HOU",
+          "AL"
+        ],
+        [
+          "alvarpe01",
+          2013,
+          "PIT",
+          "NL"
+        ],
+        [
+          "alvaryo01",
+          2021,
+          "HOU",
+          "AL"
+        ],
+        [
+          "alvaryo01",
+          2022,
+          "HOU",
+          "AL"
+        ],
+        [
+          "arenano01",
+          2015,
+          "COL",
+          "NL"
+        ],
+        [
+          "arenano01",
+          2016,
+          "COL",
+          "NL"
+        ],
+        [
+          "arenano01",
+          2017,
+          "COL",
+          "NL"
+        ],
+        [
+          "arenano01",
+          2018,
+          "COL",
+          "NL"
+        ]
+      ],
+      "compared_on": "canonical_key:lgid,playerid,teamid,yearid"
+    },
+    {
+      "query_a": 1,
+      "query_b": 4,
+      "relationship": "unknown",
+      "explanation": "Cannot compare: queries do not expose a common comparable key (key lgid,playerid,teamid,yearid vs playerid).",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [],
+      "compared_on": null
+    },
+    {
+      "query_a": 2,
+      "query_b": 3,
+      "relationship": "unknown",
+      "explanation": "Cannot compare: queries do not expose a common comparable key (key playerid vs lgid,playerid,teamid,yearid).",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [],
+      "compared_on": null
+    },
+    {
+      "query_a": 2,
+      "query_b": 4,
+      "relationship": "incomparable_on_current_database",
+      "explanation": "Query 2 and Query 4 are incomparable on the current database; each returned rows missing from the other. (compared on canonical key playerid)",
+      "a_minus_b_rows": [
+        [
+          "cainma01"
+        ],
+        [
+          "crawfca02"
+        ],
+        [
+          "greinza01"
+        ],
+        [
+          "hamelco01"
+        ],
+        [
+          "hernafe02"
+        ],
+        [
+          "kershcl01"
+        ],
+        [
+          "leecl02"
+        ],
+        [
+          "lestejo01"
+        ],
+        [
+          "linceti01"
+        ],
+        [
+          "porceri01"
+        ],
+        [
+          "priceda01"
+        ],
+        [
+          "reyesjo01"
+        ],
+        [
+          "sabatcc01"
+        ],
+        [
+          "santajo01"
+        ],
+        [
+          "scherma01"
+        ],
+        [
+          "shielja02"
+        ],
+        [
+          "tanakma01"
+        ],
+        [
+          "verlaju01"
+        ],
+        [
+          "weaveje02"
+        ],
+        [
+          "wilsocj01"
+        ]
+      ],
+      "b_minus_a_rows": [
+        [
+          "abreubo01"
+        ],
+        [
+          "abreujo02"
+        ],
+        [
+          "anderga01"
+        ],
+        [
+          "bagweje01"
+        ],
+        [
+          "bautijo02"
+        ],
+        [
+          "bayja01"
+        ],
+        [
+          "belleal01"
+        ],
+        [
+          "beltrad01"
+        ],
+        [
+          "beltrca01"
+        ],
+        [
+          "berkmla01"
+        ],
+        [
+          "bradlmi01"
+        ],
+        [
+          "braunry02"
+        ],
+        [
+          "bruceja01"
+        ],
+        [
+          "burnije01"
+        ],
+        [
+          "burrepa01"
+        ],
+        [
+          "butlebi03"
+        ],
+        [
+          "byrneer01"
+        ],
+        [
+          "chaveer01"
+        ],
+        [
+          "choosh01"
+        ],
+        [
+          "crispco01"
+        ]
+      ],
+      "compared_on": "canonical_key:playerid"
+    },
+    {
+      "query_a": 3,
+      "query_b": 4,
+      "relationship": "unknown",
+      "explanation": "Cannot compare: queries do not expose a common comparable key (key lgid,playerid,teamid,yearid vs playerid).",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [],
+      "compared_on": null
+    }
+  ],
+  "query_summaries": [
+    {
+      "query_id": 1,
+      "contained_in": [
+        3
+      ],
+      "contains": [],
+      "equivalent_to": [],
+      "incomparable_with": [],
+      "unknown_with": [
+        2,
+        4
+      ],
+      "status": "narrower_query",
+      "empty_result": false
+    },
+    {
+      "query_id": 2,
+      "contained_in": [],
+      "contains": [],
+      "equivalent_to": [],
+      "incomparable_with": [
+        4
+      ],
+      "unknown_with": [
+        1,
+        3
+      ],
+      "status": "incomparable_with_all_tested",
+      "empty_result": false
+    },
+    {
+      "query_id": 3,
+      "contained_in": [],
+      "contains": [
+        1
+      ],
+      "equivalent_to": [],
+      "incomparable_with": [],
+      "unknown_with": [
+        2,
+        4
+      ],
+      "status": "broader_query_for_some_queries",
+      "empty_result": false
+    },
+    {
+      "query_id": 4,
+      "contained_in": [],
+      "contains": [],
+      "equivalent_to": [],
+      "incomparable_with": [
+        2
+      ],
+      "unknown_with": [
+        1,
+        3
+      ],
+      "status": "incomparable_with_all_tested",
+      "empty_result": false
+    }
+  ],
+  "analysis": {
+    "query_count": 4,
+    "main_queries": [
+      {
+        "index": 2,
+        "equivalent_to": [],
+        "contains": [],
+        "contained_by": []
+      },
+      {
+        "index": 3,
+        "equivalent_to": [],
+        "contains": [
+          1
+        ],
+        "contained_by": []
+      },
+      {
+        "index": 4,
+        "equivalent_to": [],
+        "contains": [],
+        "contained_by": []
+      }
+    ],
+    "equivalent_groups": [],
+    "containment_edges": [
+      {
+        "superset": 3,
+        "subset": 1,
+        "relationship_source": "pairwise"
+      }
+    ],
+    "independent_queries": [
+      2,
+      4
+    ],
+    "unknown_pairs": [
+      {
+        "left": 1,
+        "right": 2,
+        "reason": "Cannot compare: queries do not expose a common comparable key (key lgid,playerid,teamid,yearid vs playerid)."
+      },
+      {
+        "left": 1,
+        "right": 4,
+        "reason": "Cannot compare: queries do not expose a common comparable key (key lgid,playerid,teamid,yearid vs playerid)."
+      },
+      {
+        "left": 2,
+        "right": 3,
+        "reason": "Cannot compare: queries do not expose a common comparable key (key playerid vs lgid,playerid,teamid,yearid)."
+      }
+...<truncated>...
+
+====================================================================================================
+CASE 10: Team attendance and winning season containment
+TYPE: structured_nl
+EXPECTED NOTE: Attendance>3M/W>90 after 1990 should be contained in each single condition and the weaker combined threshold.
+HTTP STATUS: 200
+SUCCESS: True
+ELAPSED SECONDS: 78.36
+
+INPUT QUERIES:
+  Q1: List team seasons after 1990 where attendance was above 3000000 and the team won more than 90 games. Show year, team, attendance, wins, and losses.
+  Q2: List team seasons after 1990 where attendance was above 3000000. Show year, team, attendance, wins, and losses.
+  Q3: List team seasons after 1990 where the team won more than 90 games. Show year, team, attendance, wins, and losses.
+  Q4: List team seasons after 1990 where attendance was above 2000000 and the team won more than 80 games. Show year, team, attendance, wins, and losses.
+
+FULL RESPONSE PREVIEW:
+{
+  "success": true,
+  "database_id": 49,
+  "query_results": [
+    {
+      "question": "List team seasons after 1990 where attendance was above 3000000 and the team won more than 90 games. Show year, team, attendance, wins, and losses.",
+      "success": true,
+      "sql": "SELECT teams.yearid, teams.name, teams.attendance, teams.w, teams.l\nFROM teams\nWHERE teams.yearid > 1990\n  AND teams.attendance > 3000000\n  AND teams.w > 90",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 90.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "yearID",
+        "name",
+        "attendance",
+        "W",
+        "L"
+      ],
+      "row_count": 88,
+      "query_id": 1,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "List team seasons after 1990 where attendance was above 3000000. Show year, team, attendance, wins, and losses.",
+      "success": true,
+      "sql": "SELECT teams.yearid, teams.name, teams.attendance, teams.w, teams.l\nFROM teams\nWHERE teams.attendance > 3000000 AND teams.yearid > 1990",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 90.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "yearID",
+        "name",
+        "attendance",
+        "W",
+        "L"
+      ],
+      "row_count": 194,
+      "query_id": 2,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "List team seasons after 1990 where the team won more than 90 games. Show year, team, attendance, wins, and losses.",
+      "success": true,
+      "sql": "SELECT teams.yearid, teams.name, teams.attendance, teams.w, teams.l\nFROM teams\nWHERE teams.yearid > 1990 AND teams.w > 90",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 90.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "yearID",
+        "name",
+        "attendance",
+        "W",
+        "L"
+      ],
+      "row_count": 200,
+      "query_id": 3,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    },
+    {
+      "question": "List team seasons after 1990 where attendance was above 2000000 and the team won more than 80 games. Show year, team, attendance, wins, and losses.",
+      "success": true,
+      "sql": "SELECT teams.yearid, teams.name, teams.attendance, teams.w, teams.l\nFROM teams\nWHERE teams.yearid > 1990\n  AND teams.attendance > 2000000\n  AND teams.w > 80",
+      "params": [],
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_score": 90.0,
+      "low_confidence": false,
+      "has_fatal_validation": false,
+      "warnings": [],
+      "execution_columns": [
+        "yearID",
+        "name",
+        "attendance",
+        "W",
+        "L"
+      ],
+      "row_count": 364,
+      "query_id": 4,
+      "empty_result": false,
+      "safe": true,
+      "safety_reason": null
+    }
+  ],
+  "pairwise_relationships": [
+    {
+      "query_a": 1,
+      "query_b": 2,
+      "relationship": "query_a_contained_in_query_b",
+      "explanation": "Query 1 is contained in Query 2 on the current database.",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [
+        [
+          1992,
+          "Baltimore Orioles",
+          3567819,
+          89,
+          73
+        ],
+        [
+          1993,
+          "Baltimore Orioles",
+          3644965,
+          85,
+          77
+        ],
+        [
+          1993,
+          "Colorado Rockies",
+          4483350,
+          67,
+          95
+        ],
+        [
+          1993,
+          "Florida Marlins",
+          3064847,
+          64,
+          98
+        ],
+        [
+          1993,
+          "Los Angeles Dodgers",
+          3170393,
+          81,
+          81
+        ],
+        [
+          1994,
+          "Colorado Rockies",
+          3281511,
+          53,
+          64
+        ],
+        [
+          1995,
+          "Baltimore Orioles",
+          3098475,
+          71,
+          73
+        ],
+        [
+          1995,
+          "Colorado Rockies",
+          3390037,
+          77,
+          67
+        ],
+        [
+          1996,
+          "Baltimore Orioles",
+          3646950,
+          88,
+          74
+        ],
+        [
+          1996,
+          "Colorado Rockies",
+          3891014,
+          83,
+          79
+        ],
+        [
+          1996,
+          "Los Angeles Dodgers",
+          3188454,
+          90,
+          72
+        ],
+        [
+          1997,
+          "Cleveland Indians",
+          3404750,
+          86,
+          75
+        ],
+        [
+          1997,
+          "Colorado Rockies",
+          3888453,
+          83,
+          79
+        ],
+        [
+          1997,
+          "Los Angeles Dodgers",
+          3319504,
+          88,
+          74
+        ],
+        [
+          1997,
+          "Seattle Mariners",
+          3192237,
+          90,
+          72
+        ],
+        [
+          1998,
+          "Arizona Diamondbacks",
+          3610290,
+          65,
+          97
+        ],
+        [
+          1998,
+          "Baltimore Orioles",
+          3684650,
+          79,
+          83
+        ],
+        [
+          1998,
+          "Cleveland Indians",
+          3467299,
+          89,
+          73
+        ],
+        [
+          1998,
+          "Colorado Rockies",
+          3792683,
+          77,
+          85
+        ],
+        [
+          1998,
+          "Los Angeles Dodgers",
+          3089222,
+          83,
+          79
+        ]
+      ],
+      "compared_on": "output_columns"
+    },
+    {
+      "query_a": 1,
+      "query_b": 3,
+      "relationship": "query_a_contained_in_query_b",
+      "explanation": "Query 1 is contained in Query 3 on the current database.",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [
+        [
+          1991,
+          "Atlanta Braves",
+          2140217,
+          94,
+          68
+        ],
+        [
+          1991,
+          "Minnesota Twins",
+          2293842,
+          95,
+          67
+        ],
+        [
+          1991,
+          "Pittsburgh Pirates",
+          2065302,
+          98,
+          64
+        ],
+        [
+          1992,
+          "Milwaukee Brewers",
+          1857351,
+          92,
+          70
+        ],
+        [
+          1992,
+          "Oakland Athletics",
+          2494160,
+          96,
+          66
+        ],
+        [
+          1992,
+          "Pittsburgh Pirates",
+          1829395,
+          96,
+          66
+        ],
+        [
+          1993,
+          "Chicago White Sox",
+          2581091,
+          94,
+          68
+        ],
+        [
+          1993,
+          "Montreal Expos",
+          1641437,
+          94,
+          68
+        ],
+        [
+          1993,
+          "San Francisco Giants",
+          2606354,
+          103,
+          59
+        ],
+        [
+          1995,
+          "Cleveland Indians",
+          2842745,
+          100,
+          44
+        ],
+        [
+          1996,
+          "Atlanta Braves",
+          2901242,
+          96,
+          66
+        ],
+        [
+          1996,
+          "New York Yankees",
+          2250877,
+          92,
+          70
+        ],
+        [
+          1996,
+          "San Diego Padres",
+          2187886,
+          91,
+          71
+        ],
+        [
+          1997,
+          "Florida Marlins",
+          2364387,
+          92,
+          70
+        ],
+        [
+          1997,
+          "New York Yankees",
+          2580325,
+          96,
+          66
+        ],
+        [
+          1998,
+          "Boston Red Sox",
+          2314704,
+          92,
+          70
+        ],
+        [
+          1998,
+          "Houston Astros",
+          2458451,
+          102,
+          60
+        ],
+        [
+          1998,
+          "New York Yankees",
+          2955193,
+          114,
+          48
+        ],
+        [
+          1998,
+          "San Diego Padres",
+          2555874,
+          98,
+          64
+        ],
+        [
+          1999,
+          "Boston Red Sox",
+          2446162,
+          94,
+          68
+        ]
+      ],
+      "compared_on": "output_columns"
+    },
+    {
+      "query_a": 1,
+      "query_b": 4,
+      "relationship": "query_a_contained_in_query_b",
+      "explanation": "Query 1 is contained in Query 4 on the current database.",
+      "a_minus_b_rows": [],
+      "b_minus_a_rows": [
+        [
+          1991,
+          "Atlanta Braves",
+          2140217,
+          94,
+          68
+        ],
+        [
+          1991,
+          "Boston Red Sox",
+          2562435,
+          84,
+          78
+        ],
+        [
+          1991,
+          "California Angels",
+          2416236,
+          81,
+          81
+        ],
+        [
+          1991,
+          "Chicago White Sox",
+          2934154,
+          87,
+          75
+        ],
+        [
+          1991,
+          "Kansas City Royals",
+          2161537,
+          82,
+          80
+        ],
+        [
+          1991,
+          "Minnesota Twins",
+          2293842,
+          95,
+          67
+        ],
+        [
+          1991,
+          "Oakland Athletics",
+          2713493,
+          84,
+          78
+        ],
+        [
+          1991,
+          "Pittsburgh Pirates",
+          2065302,
+          98,
+          64
+        ],
+        [
+          1991,
+          "Seattle Mariners",
+          2147905,
+          83,
+          79
+        ],
+        [
+          1991,
+          "St. Louis Cardinals",
+          2448699,
+          84,
+          78
+        ],
+        [
+          1991,
+          "Texas Rangers",
+          2297720,
+          85,
+          77
+        ],
+        [
+          1992,
+          "Baltimore Orioles",
+          3567819,
+          89,
+          73
+        ],
+        [
+          1992,
+          "Chicago White Sox",
+          2681156,
+          86,
+          76
+        ],
+        [
+          1992,
+          "Cincinnati Reds",
+          2315946,
+          90,
+          72
+        ],
+        [
+          1992,
+          "Minnesota Twins",
+          2482428,
+          90,
+          72
+        ],
+        [
+          1992,
+          "Oakland Athletics",
+          2494160,
+          96,
+          66
+        ],
+        [
+          1992,
+          "St. Louis Cardinals",
+          2418483,
+          83,
+          79
+        ],
+        [
+          1993,
+          "Baltimore Orioles",
+          3644965,
+          85,
+          77
+        ],
+        [
+          1993,
+          "Chicago Cubs",
+          2653763,
+          84,
+          78
+        ],
+        [
+          1993,
+          "Chicago White Sox",
+          2581091,
+          94,
+          68
+        ]
+      ],
+      "compared_on": "output_columns"
+    },
+    {
+      "query_a": 2,
+      "query_b": 3,
+      "relationship": "incomparable_on_current_database",
+      "explanation": "Query 2 and Query 3 are incomparable on the current database; each returned rows missing from the other.",
+      "a_minus_b_rows": [
+        [
+          1992,
+          "Baltimore Orioles",
+          3567819,
+          89,
+          73
+        ],
+        [
+          1993,
+          "Baltimore Orioles",
+          3644965,
+          85,
+          77
+        ],
+        [
+          1993,
+          "Colorado Rockies",
+          4483350,
+          67,
+          95
+        ],
+        [
+          1993,
+          "Florida Marlins",
+          3064847,
+          64,
+          98
+        ],
+        [
+          1993,
+          "Los Angeles Dodgers",
+          3170393,
+          81,
+          81
+        ],
+        [
+          1994,
+          "Colorado Rockies",
+          3281511,
+          53,
+          64
+        ],
+        [
+          1995,
+          "Baltimore Orioles",
+          3098475,
+        
+...<truncated>...
+

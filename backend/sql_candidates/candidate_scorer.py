@@ -33,13 +33,15 @@ join legality and concept checks) rather than duplicating them.
 import re
 
 from query_families import slot_extractor as se
+from schema.table_mention import explicit_table_mentions
 from query_families.family_guard import (
     _join_edges,
     _collect,
     _wants_count_distinct,
     _COLUMN_CONCEPTS,
 )
-from semantic.semantic_checklist import checklist_alignment, grain_alignment
+from semantic.semantic_checklist import (checklist_alignment, grain_alignment,
+                                          literal_group_violations)
 from sql_candidates.semantic_relationship_verifier import (
     verify_semantic_relationships,
 )
@@ -49,6 +51,10 @@ from sql_candidates.semantic_join_discovery import (
 from sql_candidates.explicit_table_lock import table_lock_penalty
 from schema.value_profiler import literal_check
 from sql_candidates.shape_verifier import verify_shape
+from sql_candidates.semantic_sql_guards import sql_guard_violations
+from validators.grain_validator import validate_grain
+from validators.fanout_validator import validate_fanout
+from validators.temporal_validator import validate_temporal
 
 __all__ = ["score_candidate", "BASE_SCORE", "LOW_SCORE_THRESHOLD"]
 
@@ -76,6 +82,9 @@ _NO_OUTPUT_COLUMNS = -10
 _GUARD_INVALID = -15
 _BARE_CTE = -20
 _UNSEEN_LITERAL = -12       # per literal not among sampled column values, max 2
+_OUTSIDE_TABLE = -18        # per schema table joined outside must_use_tables, max 3
+_SEMANTIC_GUARD = -35       # per fatal semantic-guard violation (Cartesian, etc.)
+_GRAIN_VIOLATION = -35      # per provable typed-contract grain violation
 
 # Comparison/superlative intent: a bare `WITH cte AS (...) SELECT * FROM cte`
 # that computes per-entity values but never APPLIES the comparison must not win.
@@ -200,6 +209,47 @@ def _scan_sql(sql: str, idx):
     return out
 
 
+def _fk_reachable(allowed, idx, max_hops=3):
+    """Tables reachable from `allowed` along the graph's relationship edges
+    (undirected), within max_hops. These are legitimate join-path / bridge /
+    measure tables, so using them is NOT 'outside' the intended scope."""
+    adj = {}
+    for r in (idx.get("relationships") or []):
+        a = str(r.get("from_table") or "").lower()
+        b = str(r.get("to_table") or "").lower()
+        if not a or not b or a == b:
+            continue
+        adj.setdefault(a, set()).add(b)
+        adj.setdefault(b, set()).add(a)
+    reach = set(allowed)
+    frontier = set(allowed)
+    for _ in range(max_hops):
+        nxt = set()
+        for t in frontier:
+            nxt |= adj.get(t, set())
+        nxt -= reach
+        if not nxt:
+            break
+        reach |= nxt
+        frontier = nxt
+    return reach
+
+
+def _sql_schema_tables(sql, idx):
+    """Set of real schema tables referenced in FROM/JOIN (CTE/alias names that
+    are not schema tables are ignored)."""
+    tables = set()
+    if not sql:
+        return tables
+    text = _strip_strings(sql)
+    schema_tables = set(idx["tables"])
+    for m in _DEF_RE.finditer(text):
+        t = m.group(2).lower()
+        if t in schema_tables:
+            tables.add(t)
+    return tables
+
+
 # ---------------------------------------------------------------------------
 # extraction helpers
 # ---------------------------------------------------------------------------
@@ -307,7 +357,7 @@ def _bare_cte_final(sql):
 # entry point
 # ---------------------------------------------------------------------------
 def score_candidate(question, candidate, graph, checklist=None,
-                    value_profile=None):
+                    value_profile=None, contract=None):
     """Score one candidate in place. Never raises.
 
     Also populates candidate.validation["fatal"] — hard-disqualification
@@ -389,8 +439,11 @@ def score_candidate(question, candidate, graph, checklist=None,
     except Exception:
         pass
     sql_lower = sql.lower()
+    # Only penalize omission of tables the question EXPLICITLY names (schema-like
+    # name or an explicit table cue), not ordinary business nouns or a child
+    # table matched through a parent concept. Uses the strict shared detector.
     missing_tables = []
-    for t in se.mentioned_tables(question, idx):
+    for t in explicit_table_mentions(question, list(idx["tables"].keys())):
         if t not in used_tables and not re.search(
                 r"(?<![a-z0-9_])" + re.escape(t) + r"(?![a-z0-9_])", sql_lower):
             missing_tables.append(t)
@@ -524,6 +577,31 @@ def score_candidate(question, candidate, graph, checklist=None,
     except Exception as exc:
         checks["table_lock"] = {"error": f"{type(exc).__name__}: {exc}"}
 
+    # 9f) focused-table lock (fatal): on big / local-benchmark schemas a
+    #     candidate must not join in schema tables OUTSIDE the checklist's
+    #     must_use_tables. Shared keys (playerID, teamID, ...) otherwise invite
+    #     huge, wrong, timeout-prone joins. Any table used beyond must_use_tables
+    #     is penalized heavily and marked fatal — so a People-only query that
+    #     JOINs another table is rejected.
+    if checklist and (checklist.get("must_use_tables") or []):
+        allowed = {str(t).lower() for t in checklist.get("must_use_tables") or []}
+        # FK-reachable tables (bridges / measure / lookup on the join path) are
+        # legitimate, not "outside": a query about Customer+Product may correctly
+        # traverse SalesOrderHeader/Detail. Only a table with NO relationship path
+        # to must_use_tables is a genuine out-of-scope join.
+        reachable = _fk_reachable(allowed, idx)
+        used = _sql_schema_tables(sql, idx)
+        extra = sorted(t for t in used if t not in reachable)
+        for t in extra[:3]:
+            score += _OUTSIDE_TABLE
+            reasons.append(
+                f"joins table '{t}' with no relationship path to must_use_tables "
+                f"{sorted(allowed)} — unnecessary for the requested columns")
+        if extra:
+            fatal.append(f"joins tables outside must_use_tables: {extra}")
+        checks["outside_tables"] = extra
+        checks["outside_tables_allowed_reachable"] = sorted(reachable - allowed)
+
     # 10) value grounding: literals not among a profiled column's values ------
     if value_profile:
         try:
@@ -549,6 +627,89 @@ def score_candidate(question, candidate, graph, checklist=None,
     reasons.extend(s_reasons)
     fatal.extend(s_fatal)
     checks["shape"] = s_checks
+
+    # 12) generic FATAL semantic guards (Cartesian join, uncorrelated absence
+    #     NOT EXISTS, constant used as a monetary measure, ranking by an id /
+    #     metadata date when a value ranking was asked). These catch
+    #     executes-but-nonsense candidates the shape/execution scores reward.
+    try:
+        guard_reasons = sql_guard_violations(question, sql, checklist, idx)
+    except Exception as exc:
+        guard_reasons = []
+        checks["semantic_guards_error"] = f"{type(exc).__name__}: {exc}"
+    for gr in guard_reasons:
+        score += _SEMANTIC_GUARD
+        reasons.append(gr)
+        fatal.append(gr)
+    checks["semantic_guards"] = guard_reasons
+
+    # 12a) categorical literal completeness (final stabilization, Part E,
+    #      FATAL): a high-confidence resolved literal group ("abnormal" ->
+    #      ['high','low','critical']) must be applied; substituting the
+    #      unresolved category word as a literal is provably wrong.
+    try:
+        lg_reasons = literal_group_violations(checklist, sql,
+                                              params=candidate.params)
+    except Exception as exc:
+        lg_reasons = []
+        checks["literal_groups_error"] = f"{type(exc).__name__}: {exc}"
+    for gr in lg_reasons:
+        score += _SEMANTIC_GUARD
+        reasons.append(gr)
+        fatal.append(gr)
+    checks["literal_groups"] = lg_reasons
+
+    # 12c) Stage 2 — cardinality-aware FANOUT validation (FATAL only on
+    #      provable inflation: a measure aggregated in a scope where a
+    #      one-to-many join multiplies its source rows, with no DISTINCT /
+    #      preaggregation protection; unknown cardinality is never fatal).
+    try:
+        f = validate_fanout(sql, idx)
+        for gr in f.fatal:
+            score += _GRAIN_VIOLATION
+            reasons.append(gr)
+            fatal.append(gr)
+        reasons.extend(f.warnings)
+        checks["fanout"] = {"fatal": f.fatal, "warnings": f.warnings,
+                            **f.checks}
+    except Exception as exc:
+        checks["fanout"] = {"error": f"{type(exc).__name__}: {exc}"}
+
+    # 12b) typed-contract GRAIN validation (semantic-contract Stage 1).
+    #      sqlglot AST analysis vs the typed GrainContract. FATAL only for
+    #      provable, high-confidence grain violations (raw child-row value
+    #      where a per-entity total was required; aggregate over raw rows
+    #      where an aggregate of entity totals was required; bare child
+    #      measure under entity grouping). A missing / low-confidence
+    #      contract, parse failure, or any uncertain finding is skip/warning
+    #      only — prior behavior is fully preserved in those cases.
+    try:
+        g = validate_grain(contract, sql, idx)
+        for gr in g.fatal:
+            score += _GRAIN_VIOLATION
+            reasons.append(gr)
+            fatal.append(gr)
+        reasons.extend(g.warnings)
+        checks["grain_contract"] = {"fatal": g.fatal, "warnings": g.warnings,
+                                    "skipped": g.skipped, **g.checks}
+    except Exception as exc:
+        checks["grain_contract"] = {"error": f"{type(exc).__name__}: {exc}"}
+
+    # 12e) temporal latest-event qualification (final temporal patch, FATAL
+    #      only for provable, high-confidence after_extremum violations: the
+    #      qualifier filters the rows the extremum is computed from).
+    try:
+        tv = validate_temporal(contract, sql, idx)
+        for gr in tv.fatal:
+            score += _GRAIN_VIOLATION
+            reasons.append(gr)
+            fatal.append(gr)
+        reasons.extend(tv.warnings)
+        checks["temporal_contract"] = {"fatal": tv.fatal,
+                                       "warnings": tv.warnings,
+                                       "skipped": tv.skipped, **tv.checks}
+    except Exception as exc:
+        checks["temporal_contract"] = {"error": f"{type(exc).__name__}: {exc}"}
 
     checks["fatal"] = fatal
     candidate.score = max(0.0, min(100.0, round(score, 1)))

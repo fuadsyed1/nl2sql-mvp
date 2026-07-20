@@ -1,0 +1,1463 @@
+RC5 LIVE end-to-end API smoke test  (2026-07-16T23:56:05)
+endpoint: http://127.0.0.1:8001/database/53/execute_sql
+==============================================================================
+
+[128] bucket=RC1_RC2  outcome=executed_pending_semantic_review
+  question              : How many distinct suppliers have products with a sale price above 500?
+  http_status           : 200
+  application_success   : True
+  execution.executed    : True   row_count=1
+  execution.error       : None
+  result_signature      : [1, 1, -5235494878069051348]
+  generated candidates  :
+     - llm_primary              src=llm_primary          score=37.0  elig=fatal       fatal=True
+         fatal_reasons: ['fanout violation: COUNT("suppliers"."supplier_id") is aggregated after a one-to-many join multiplies its rows (many side: [\'products\']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [suppliers 1->N products (via products.supplier_id)]']
+         warnings: ['distinct-count intent but no COUNT(DISTINCT)', "checklist requires shape 'count_distinct' but the SQL lacks it", 'fanout violation: COUNT("suppliers"."supplier_id") is aggregated after a one-to-many join multiplies its rows (many side: [\'products\']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [suppliers 1->N products (via products.supplier_id)]', 'grain note: COUNT(suppliers.supplier_id) per suppliers.supplier_id is computed, but a raw suppliers.supplier_id also appears in a comparison — verify the comparison grain']
+         sql: SELECT DISTINCT COUNT("suppliers"."supplier_id") AS "supplier_count" FROM "products" INNER JOIN "suppliers" ON "products"."supplier_id" = "suppliers"."supplier_id" WHERE "products"."sale_price" > ?
+     - llm_variant_1            src=llm_variant          score=37.0  elig=fatal       fatal=True
+         fatal_reasons: ['fanout violation: COUNT("suppliers"."supplier_id") is aggregated after a one-to-many join multiplies its rows (many side: [\'products\']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [suppliers 1->N products (via products.supplier_id)]']
+         warnings: ['distinct-count intent but no COUNT(DISTINCT)', "checklist requires shape 'count_distinct' but the SQL lacks it", 'fanout violation: COUNT("suppliers"."supplier_id") is aggregated after a one-to-many join multiplies its rows (many side: [\'products\']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [suppliers 1->N products (via products.supplier_id)]', 'grain note: COUNT(suppliers.supplier_id) per suppliers.supplier_id is computed, but a raw suppliers.supplier_id also appears in a comparison — verify the comparison grain']
+         sql: SELECT DISTINCT "suppliers"."supplier_id", COUNT("suppliers"."supplier_id") AS "supplier_count" FROM "suppliers" INNER JOIN "products" ON "suppliers"."supplier_id" = "products"."supplier_id" WHERE "products"."sale_price"
+     - llm_variant_2            src=llm_variant          score=72.0  elig=eligible    fatal=False
+         warnings: ['distinct-count intent but no COUNT(DISTINCT)', "checklist requires shape 'count_distinct' but the SQL lacks it", 'grain note: suppliers.supplier_id is compared as a raw value without a standalone COUNT — consistent with a row-vs-peer or output-only reading; not treated as fatal', 'grain note: cannot prove the required COUNT(DISTINCT supplier_id) comparison is applied']
+         sql: SELECT DISTINCT "suppliers"."supplier_id" FROM "suppliers" INNER JOIN "products" ON "suppliers"."supplier_id" = "products"."supplier_id" WHERE "products"."sale_price" > ?
+     - llm_sql_direct           src=llm_sql_direct       score=100.0 elig=eligible    fatal=False
+         warnings: ['grain note: COUNT(suppliers.supplier_id) per suppliers.supplier_id is computed, but a raw suppliers.supplier_id also appears in a comparison — verify the comparison grain']
+         sql: SELECT COUNT(DISTINCT s.supplier_id)
+FROM products p
+JOIN suppliers s ON p.supplier_id = s.supplier_id
+WHERE p.sale_price > 500
+     - llm_sql_direct_grain     src=llm_sql_direct_grain score=100.0 elig=eligible    fatal=False
+         warnings: ['grain note: COUNT(suppliers.supplier_id) per suppliers.supplier_id is computed, but a raw suppliers.supplier_id also appears in a comparison — verify the comparison grain']
+         sql: SELECT COUNT(DISTINCT s.supplier_id)
+FROM suppliers s
+JOIN products p ON s.supplier_id = p.supplier_id
+WHERE p.sale_price > 500
+     - llm_sql_direct_variant   src=llm_sql_direct_variant score=100.0 elig=eligible    fatal=False
+         sql: SELECT COUNT(DISTINCT suppliers.supplier_id)
+FROM products
+JOIN suppliers ON products.supplier_id = suppliers.supplier_id
+WHERE products.sale_price > 500
+  selected_label        : llm_sql_direct_variant (source=llm_sql_direct_variant)
+  selection_reason      : consensus_group
+  selected_sql          : SELECT COUNT(DISTINCT suppliers.supplier_id)
+FROM products
+JOIN suppliers ON products.supplier_id = suppliers.supplier_id
+WHERE products.sale_price > 500
+  RC3 trace             : {'semantic_eligible_count': 4, 'semantic_incomplete': [], 'consensus_group_size': 3, 'consensus_sources': ['llm_sql_direct', 'llm_sql_direct_grain', 'llm_sql_direct_variant']}
+  RC4 override trace    : {'override_trace': None, 'direct_override_trace': None, 'override_blocked': None, 'override_block_reason': None}
+  RC5 trace             : None
+  audited_source_generated : True  (NOT correctness)
+  audited_correct_ref   : see audit_note
+  audit_note            : DISTINCT applies to the single COUNT result, not supplier IDs; it counts qualifying product rows rather than distinct suppliers.
+  semantic_correct      : None
+  semantic_review_status: pending_manual_sql_review
+  >> REVIEW the selected_sql above against the audited semantics.
+
+[129] bucket=RC1_RC2  outcome=executed_pending_semantic_review
+  question              : How many distinct warehouses currently store discontinued products?
+  http_status           : 200
+  application_success   : True
+  execution.executed    : True   row_count=1
+  execution.error       : None
+  result_signature      : [1, 1, 742165313392667055]
+  generated candidates  :
+     - llm_primary              src=llm_primary          score=72.0  elig=eligible    fatal=False
+         warnings: ['distinct-count intent but no COUNT(DISTINCT)', "checklist requires shape 'count_distinct' but the SQL lacks it"]
+         sql: SELECT DISTINCT COUNT("inventory"."warehouse_id") AS "warehouse_count" FROM "products" INNER JOIN "inventory" ON "products"."product_id" = "inventory"."product_id" WHERE "products"."discontinued_flag" = ?
+     - llm_variant_1            src=llm_variant          score=37.0  elig=fatal       fatal=True
+         fatal_reasons: ['fanout violation: COUNT("warehouses"."warehouse_id") is aggregated after a one-to-many join multiplies its rows (many side: [\'inventory\']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [warehouses 1->N inventory (via inventory.warehouse_id); products 1->N inventory (via inventory.product_id)]']
+         warnings: ['distinct-count intent but no COUNT(DISTINCT)', "checklist requires shape 'count_distinct' but the SQL lacks it", 'fanout violation: COUNT("warehouses"."warehouse_id") is aggregated after a one-to-many join multiplies its rows (many side: [\'inventory\']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [warehouses 1->N inventory (via inventory.warehouse_id); products 1->N inventory (via inventory.product_id)]', 'grain note: inventory.warehouse_id is compared as a raw value without a standalone COUNT — consistent with a row-vs-peer or output-only reading; not treated as fatal', 'grain note: cannot prove the required COUNT(DISTINCT warehouse_id) comparison is applied']
+         sql: SELECT DISTINCT COUNT("warehouses"."warehouse_id") AS "warehouse_count" FROM "inventory" INNER JOIN "products" ON "inventory"."product_id" = "products"."product_id" INNER JOIN "warehouses" ON "inventory"."warehouse_id" =
+     - llm_sql_direct           src=llm_sql_direct       score=100.0 elig=eligible    fatal=False
+         sql: SELECT COUNT(DISTINCT i.warehouse_id)
+FROM inventory i
+JOIN products p ON i.product_id = p.product_id
+WHERE p.discontinued_flag = 1
+     - llm_sql_direct_grain     src=llm_sql_direct_grain score=100.0 elig=eligible    fatal=False
+         sql: SELECT COUNT(DISTINCT i.warehouse_id)
+FROM inventory i
+JOIN products p ON i.product_id = p.product_id
+WHERE p.discontinued_flag = '1'
+     - llm_sql_direct_variant   src=llm_sql_direct_variant score=100.0 elig=eligible    fatal=False
+         sql: SELECT COUNT(DISTINCT i.warehouse_id)
+FROM inventory i
+JOIN products p ON i.product_id = p.product_id
+WHERE p.discontinued_flag = '1'
+  selected_label        : llm_sql_direct_variant (source=llm_sql_direct_variant)
+  selection_reason      : consensus_group
+  selected_sql          : SELECT COUNT(DISTINCT i.warehouse_id)
+FROM inventory i
+JOIN products p ON i.product_id = p.product_id
+WHERE p.discontinued_flag = '1'
+  RC3 trace             : {'semantic_eligible_count': 4, 'semantic_incomplete': [], 'consensus_group_size': 3, 'consensus_sources': ['llm_sql_direct', 'llm_sql_direct_grain', 'llm_sql_direct_variant']}
+  RC4 override trace    : {'override_trace': None, 'direct_override_trace': None, 'override_blocked': None, 'override_block_reason': None}
+  RC5 trace             : None
+  audited_source_generated : True  (NOT correctness)
+  audited_correct_ref   : see audit_note
+  audit_note            : DISTINCT applies to the single COUNT result, so inventory rows are counted instead of distinct warehouses.
+  semantic_correct      : None
+  semantic_review_status: pending_manual_sql_review
+  >> REVIEW the selected_sql above against the audited semantics.
+
+[133] bucket=RC1_RC2  outcome=executed_pending_semantic_review
+  question              : How many distinct sales representatives handled orders from enterprise customers?
+  http_status           : 200
+  application_success   : True
+  execution.executed    : True   row_count=1
+  execution.error       : None
+  result_signature      : [1, 1, 7609266076890056843]
+  generated candidates  :
+     - llm_primary              src=llm_primary          score=72.0  elig=eligible    fatal=False
+         warnings: ['distinct-count intent but no COUNT(DISTINCT)', "checklist requires shape 'count_distinct' but the SQL lacks it"]
+         sql: SELECT DISTINCT COUNT("sales_orders"."sales_rep_id") AS "rep_count" FROM "sales_orders" INNER JOIN "customers" ON "sales_orders"."customer_id" = "customers"."customer_id" WHERE "customers"."customer_segment" = ?
+     - llm_variant_1            src=llm_variant          score=60.0  elig=eligible    fatal=False
+         warnings: ['distinct-count intent but no COUNT(DISTINCT)', "checklist requires shape 'count_distinct' but the SQL lacks it", "alias 'distinct_sales_reps' claims distinct but the expression is COUNT(...) without DISTINCT"]
+         sql: SELECT DISTINCT COUNT("sales_orders"."sales_rep_id") AS "distinct_sales_reps" FROM "sales_orders" INNER JOIN "customers" ON "sales_orders"."customer_id" = "customers"."customer_id" WHERE "customers"."customer_segment" = 
+     - llm_variant_2            src=llm_variant          score=100.0 elig=eligible    fatal=False
+         sql: SELECT COUNT(DISTINCT "sales_orders"."sales_rep_id") AS "distinct_sales_reps" FROM "sales_orders" INNER JOIN "customers" ON "sales_orders"."customer_id" = "customers"."customer_id" WHERE "customers"."customer_segment" = 
+     - llm_sql_direct           src=llm_sql_direct       score=100.0 elig=eligible    fatal=False
+         sql: SELECT COUNT(DISTINCT sales_orders.sales_rep_id)
+FROM sales_orders
+JOIN customers ON sales_orders.customer_id = customers.customer_id
+WHERE customers.customer_segment = 'enterprise'
+     - llm_sql_direct_grain     src=llm_sql_direct_grain score=100.0 elig=eligible    fatal=False
+         sql: SELECT COUNT(DISTINCT sales_orders.sales_rep_id)
+FROM sales_orders
+JOIN customers ON sales_orders.customer_id = customers.customer_id
+WHERE customers.customer_segment = 'enterprise'
+     - llm_sql_direct_variant   src=llm_sql_direct_variant score=100.0 elig=eligible    fatal=False
+         sql: SELECT COUNT(DISTINCT sales_orders.sales_rep_id)
+FROM sales_orders
+JOIN customers ON sales_orders.customer_id = customers.customer_id
+WHERE customers.customer_segment = 'enterprise'
+  selected_label        : llm_sql_direct_variant (source=llm_sql_direct_variant)
+  selection_reason      : consensus_group
+  selected_sql          : SELECT COUNT(DISTINCT sales_orders.sales_rep_id)
+FROM sales_orders
+JOIN customers ON sales_orders.customer_id = customers.customer_id
+WHERE customers.customer_segment = 'enterprise'
+  RC3 trace             : {'semantic_eligible_count': 6, 'semantic_incomplete': [], 'consensus_group_size': 4, 'consensus_sources': ['llm_sql_direct', 'llm_sql_direct_grain', 'llm_sql_direct_variant', 'llm_variant']}
+  RC4 override trace    : {'override_trace': None, 'direct_override_trace': None, 'override_blocked': None, 'override_block_reason': None}
+  RC5 trace             : None
+  audited_source_generated : True  (NOT correctness)
+  audited_correct_ref   : see audit_note
+  audit_note            : DISTINCT applies to the aggregate result, so order rows are counted rather than distinct sales representatives.
+  semantic_correct      : None
+  semantic_review_status: pending_manual_sql_review
+  >> REVIEW the selected_sql above against the audited semantics.
+
+[142] bucket=RC1_RC2  outcome=executed_pending_semantic_review
+  question              : How many distinct products are both low in stock and supplied by a high-risk supplier?
+  http_status           : 200
+  application_success   : True
+  execution.executed    : True   row_count=1
+  execution.error       : None
+  result_signature      : [1, 1, 7609266076890056843]
+  generated candidates  :
+     - llm_primary              src=llm_primary          score=0.0   elig=not_executed fatal=False
+         warnings: ['no SQL produced (invalid IR / unresolved plan / generation failure)', 'referenced column does not exist: products.stock_status', 'distinct-count intent but no COUNT(DISTINCT)', "literal 'low' is not among the sampled values of column 'stock_status' (known: ['in_stock', 'low_stock', 'out_of_stock'])"]
+         sql: 
+     - llm_variant_1            src=llm_variant          score=66.0  elig=eligible    fatal=False
+         warnings: ['distinct-count intent but no COUNT(DISTINCT)', "checklist requires shape 'count_distinct' but the SQL lacks it"]
+         sql: SELECT DISTINCT "products"."product_id", COUNT(*) AS "product_count" FROM "products" INNER JOIN "suppliers" ON "products"."supplier_id" = "suppliers"."supplier_id" WHERE "suppliers"."risk_level" = ?
+     - llm_sql_direct           src=llm_sql_direct       score=100.0 elig=eligible    fatal=False
+         sql: SELECT COUNT(DISTINCT p.product_id)
+FROM products p
+JOIN suppliers s ON p.supplier_id = s.supplier_id
+WHERE s.risk_level = 'high'
+  AND p.product_id IN (
+    SELECT i.product_id
+    FROM inventory i
+    WHERE i.quantity_
+     - llm_sql_direct_grain     src=llm_sql_direct_grain score=100.0 elig=eligible    fatal=False
+         sql: SELECT COUNT(DISTINCT p.product_id)
+FROM products p
+JOIN suppliers s ON p.supplier_id = s.supplier_id
+JOIN inventory i ON p.product_id = i.product_id
+WHERE s.risk_level = 'high'
+  AND i.quantity_available < i.reorder_poi
+     - llm_sql_direct_variant   src=llm_sql_direct_variant score=100.0 elig=eligible    fatal=False
+         sql: SELECT COUNT(DISTINCT p.product_id)
+FROM products p
+JOIN suppliers s ON p.supplier_id = s.supplier_id
+WHERE s.risk_level = 'high'
+  AND p.product_id IN (
+    SELECT i.product_id
+    FROM inventory i
+    WHERE i.quantity_
+  selected_label        : llm_sql_direct_variant (source=llm_sql_direct_variant)
+  selection_reason      : consensus_group
+  selected_sql          : SELECT COUNT(DISTINCT p.product_id)
+FROM products p
+JOIN suppliers s ON p.supplier_id = s.supplier_id
+WHERE s.risk_level = 'high'
+  AND p.product_id IN (
+    SELECT i.product_id
+    FROM inventory i
+    WHERE i.quantity_available <= i.reorder_point
+  )
+  RC3 trace             : {'semantic_eligible_count': 4, 'semantic_incomplete': [], 'consensus_group_size': 3, 'consensus_sources': ['llm_sql_direct', 'llm_sql_direct_grain', 'llm_sql_direct_variant']}
+  RC4 override trace    : {'override_trace': None, 'direct_override_trace': None, 'override_blocked': None, 'override_block_reason': None}
+  RC5 trace             : None
+  audited_source_generated : True  (NOT correctness)
+  audited_correct_ref   : see audit_note
+  audit_note            : Does not join inventory or test low-stock status and does not return one scalar distinct-product count.
+  semantic_correct      : None
+  semantic_review_status: pending_manual_sql_review
+  >> REVIEW the selected_sql above against the audited semantics.
+
+[144] bucket=RC1_RC2  outcome=executed_pending_semantic_review
+  question              : How many distinct carriers delivered orders containing Electronics products?
+  http_status           : 200
+  application_success   : True
+  execution.executed    : True   row_count=1
+  execution.error       : None
+  result_signature      : [1, 1, 5881710934219839874]
+  generated candidates  :
+     - llm_primary              src=llm_primary          score=40.0  elig=fatal       fatal=True
+         fatal_reasons: ["required concept 'shipments.carrier' named in the question is missing from the SQL"]
+         warnings: ['distinct-count intent but no COUNT(DISTINCT)', "checklist requires shape 'count_distinct' but the SQL lacks it", "checklist table 'shipments' is never used", "checklist column 'shipments.carrier' is never used", "SQL uses unmentioned table 'sales_orders' while the question names specific tables ['products']", 'grain note: cannot prove the required COUNT(DISTINCT shipment_id) comparison is applied']
+         sql: SELECT COUNT(*) AS "order_count" FROM "sales_order_items" INNER JOIN "products" ON "sales_order_items"."product_id" = "products"."product_id" INNER JOIN "sales_orders" ON "sales_order_items"."order_id" = "sales_orders"."
+     - llm_variant_1            src=llm_variant          score=22.0  elig=fatal       fatal=True
+         fatal_reasons: ['fanout violation: COUNT("shipments"."carrier") is aggregated after a one-to-many join multiplies its rows (many side: [\'sales_order_items\']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [sales_orders 1->N sales_order_items (via sales_order_items.order_id); products 1->N sales_order_items (via sales_order_items.product_id)]']
+         warnings: ['distinct-count intent but no COUNT(DISTINCT)', "checklist requires shape 'count_distinct' but the SQL lacks it", "SQL uses unmentioned table 'sales_orders' while the question names specific tables ['products']", "SQL uses unmentioned table 'shipments' while the question names specific tables ['products']", 'fanout violation: COUNT("shipments"."carrier") is aggregated after a one-to-many join multiplies its rows (many side: [\'sales_order_items\']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [sales_orders 1->N sales_order_items (via sales_order_items.order_id); products 1->N sales_order_items (via sales_order_items.product_id)]', 'grain note: cannot prove the required COUNT(DISTINCT shipment_id) comparison is applied']
+         sql: SELECT DISTINCT "shipments"."carrier", COUNT("shipments"."carrier") AS "carrier_count" FROM "sales_orders" INNER JOIN "sales_order_items" ON "sales_orders"."order_id" = "sales_order_items"."order_id" INNER JOIN "products
+     - llm_variant_2            src=llm_variant          score=22.0  elig=fatal       fatal=True
+         fatal_reasons: ['fanout violation: COUNT("shipments"."carrier") is aggregated after a one-to-many join multiplies its rows (many side: [\'sales_order_items\']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [sales_orders 1->N sales_order_items (via sales_order_items.order_id); products 1->N sales_order_items (via sales_order_items.product_id)]']
+         warnings: ['distinct-count intent but no COUNT(DISTINCT)', "checklist requires shape 'count_distinct' but the SQL lacks it", "SQL uses unmentioned table 'sales_orders' while the question names specific tables ['products']", "SQL uses unmentioned table 'shipments' while the question names specific tables ['products']", 'fanout violation: COUNT("shipments"."carrier") is aggregated after a one-to-many join multiplies its rows (many side: [\'sales_order_items\']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [sales_orders 1->N sales_order_items (via sales_order_items.order_id); products 1->N sales_order_items (via sales_order_items.product_id)]', 'grain note: cannot prove the required COUNT(DISTINCT shipment_id) comparison is applied']
+         sql: SELECT DISTINCT COUNT("shipments"."carrier") AS "carrier_count" FROM "sales_order_items" INNER JOIN "products" ON "sales_order_items"."product_id" = "products"."product_id" INNER JOIN "sales_orders" ON "sales_order_items
+     - llm_sql_direct           src=llm_sql_direct       score=99.0  elig=eligible    fatal=False
+         warnings: ["SQL uses unmentioned table 'sales_orders' while the question names specific tables ['products']", "SQL uses unmentioned table 'shipments' while the question names specific tables ['products']"]
+         sql: SELECT COUNT(DISTINCT s.carrier) AS carrier_count
+FROM shipments s
+JOIN sales_orders so ON s.order_id = so.order_id
+JOIN sales_order_items soi ON so.order_id = soi.order_id
+JOIN products p ON soi.product_id = p.product_i
+     - llm_sql_direct_grain     src=llm_sql_direct_grain score=64.0  elig=fatal       fatal=True
+         fatal_reasons: ['grain violation: contract requires a COUNT(DISTINCT shipment_id) comparison per shipments.carrier, but no comparison predicate uses it']
+         warnings: ["SQL uses unmentioned table 'sales_orders' while the question names specific tables ['products']", "SQL uses unmentioned table 'shipments' while the question names specific tables ['products']", 'grain violation: contract requires a COUNT(DISTINCT shipment_id) comparison per shipments.carrier, but no comparison predicate uses it']
+         sql: SELECT shipments.carrier, COUNT(DISTINCT shipments.shipment_id) AS distinct_carrier_count
+FROM shipments
+JOIN sales_orders ON shipments.order_id = sales_orders.order_id
+JOIN sales_order_items ON sales_orders.order_id = s
+     - llm_sql_direct_variant   src=llm_sql_direct_variant score=99.0  elig=eligible    fatal=False
+         sql: SELECT COUNT(DISTINCT s.carrier) AS distinct_carrier_count
+FROM shipments s
+JOIN sales_orders so ON s.order_id = so.order_id
+JOIN sales_order_items soi ON so.order_id = soi.order_id
+JOIN products p ON soi.product_id = p.
+  selected_label        : llm_sql_direct_variant (source=llm_sql_direct_variant)
+  selection_reason      : consensus_group
+  selected_sql          : SELECT COUNT(DISTINCT s.carrier) AS distinct_carrier_count
+FROM shipments s
+JOIN sales_orders so ON s.order_id = so.order_id
+JOIN sales_order_items soi ON so.order_id = soi.order_id
+JOIN products p ON soi.product_id = p.product_id
+WHERE p.category = 'Electronics'
+  RC3 trace             : {'semantic_eligible_count': 2, 'semantic_incomplete': [], 'consensus_group_size': 2, 'consensus_sources': ['llm_sql_direct', 'llm_sql_direct_variant']}
+  RC4 override trace    : {'override_trace': None, 'direct_override_trace': None, 'override_blocked': None, 'override_block_reason': None}
+  RC5 trace             : None
+  audited_source_generated : True  (NOT correctness)
+  audited_correct_ref   : see audit_note
+  audit_note            : Selects a carrier with COUNT(*) without grouping or COUNT(DISTINCT carrier), producing an arbitrary carrier and a row count.
+  semantic_correct      : None
+  semantic_review_status: pending_manual_sql_review
+  >> REVIEW the selected_sql above against the audited semantics.
+
+[466] bucket=RC1_RC2  outcome=executed_pending_semantic_review
+  question              : List products priced above the average sale price for their category.
+  http_status           : 200
+  application_success   : True
+  execution.executed    : True   row_count=243
+  execution.error       : None
+  result_signature      : [4, 243, -3581655765591934288]
+  generated candidates  :
+     - llm_primary              src=llm_primary          score=82.0  elig=eligible    fatal=False
+         warnings: ["checklist requires shape 'comparison_subquery' but the SQL lacks it", 'grain note: AVG(products.sale_price) per products.category is computed, but a raw products.sale_price also appears in a comparison — verify the comparison grain']
+         sql: SELECT "products"."product_id", "products"."product_name", "products"."sale_price", "products"."category", AVG("products"."sale_price") AS "avg_category_price" FROM "products" GROUP BY "products"."category" HAVING "avg_c
+     - llm_variant_2            src=llm_variant          score=82.0  elig=eligible    fatal=False
+         warnings: ["checklist requires shape 'comparison_subquery' but the SQL lacks it", 'grain note: AVG(products.sale_price) per products.category is computed, but a raw products.sale_price also appears in a comparison — verify the comparison grain']
+         sql: SELECT "products"."product_id", "products"."product_name", "products"."category", "products"."sale_price", AVG("products"."sale_price") AS "avg_sale_price" FROM "products" WHERE "products"."sale_price" > ? GROUP BY "prod
+     - llm_sql_direct           src=llm_sql_direct       score=100.0 elig=eligible    fatal=False
+         warnings: ['grain note: AVG(products.sale_price) per products.category is computed, but a raw products.sale_price also appears in a comparison — verify the comparison grain', 'grain note: AVG(products.sale_price) is computed over raw rows; for a row-vs-group-average or group-vs-global comparison of the same measure this is the correct right side, so it is advisory only, never fatal.']
+         sql: SELECT p.product_id, p.product_name, p.category, p.sale_price
+FROM products p
+WHERE p.sale_price > (
+    SELECT AVG(p2.sale_price)
+    FROM products p2
+    WHERE p2.category = p.category
+)
+     - llm_sql_direct_grain     src=llm_sql_direct_grain score=100.0 elig=eligible    fatal=False
+         warnings: ['grain note: AVG(products.sale_price) per products.category is computed, but a raw products.sale_price also appears in a comparison — verify the comparison grain', 'grain note: AVG(products.sale_price) is computed over raw rows; for a row-vs-group-average or group-vs-global comparison of the same measure this is the correct right side, so it is advisory only, never fatal.']
+         sql: SELECT p.product_id, p.product_name, p.category, p.sale_price
+FROM products p
+WHERE p.sale_price > (
+    SELECT AVG(p2.sale_price)
+    FROM products p2
+    WHERE p2.category = p.category
+)
+     - llm_sql_direct_variant   src=llm_sql_direct_variant score=100.0 elig=eligible    fatal=False
+         sql: SELECT p.product_id, p.product_name, p.category, p.sale_price
+FROM products p
+WHERE p.sale_price > (
+    SELECT AVG(p2.sale_price)
+    FROM products p2
+    WHERE p2.category = p.category
+)
+  selected_label        : llm_sql_direct_variant (source=llm_sql_direct_variant)
+  selection_reason      : consensus_group
+  selected_sql          : SELECT p.product_id, p.product_name, p.category, p.sale_price
+FROM products p
+WHERE p.sale_price > (
+    SELECT AVG(p2.sale_price)
+    FROM products p2
+    WHERE p2.category = p.category
+)
+  RC3 trace             : {'semantic_eligible_count': 5, 'semantic_incomplete': [], 'consensus_group_size': 3, 'consensus_sources': ['llm_sql_direct', 'llm_sql_direct_grain', 'llm_sql_direct_variant']}
+  RC4 override trace    : {'override_trace': None, 'direct_override_trace': None, 'override_blocked': None, 'override_block_reason': None}
+  RC5 trace             : None
+  audited_source_generated : True  (NOT correctness)
+  audited_correct_ref   : see audit_note
+  audit_note            : Groups by category and selects one arbitrary product per category, rather than comparing every product with its category average.
+  semantic_correct      : None
+  semantic_review_status: pending_manual_sql_review
+  >> REVIEW the selected_sql above against the audited semantics.
+
+[467] bucket=RC1_RC2  outcome=executed_pending_semantic_review
+  question              : List employees earning more than the average salary in their department.
+  http_status           : 200
+  application_success   : True
+  execution.executed    : True   row_count=59
+  execution.error       : None
+  result_signature      : [5, 59, -4060336063914125586]
+  generated candidates  :
+     - llm_primary              src=llm_primary          score=67.0  elig=eligible    fatal=False
+         warnings: ['executed but returned zero rows (weak signal)', "checklist requires shape 'comparison_subquery' but the SQL lacks it", 'grain note: AVG(employees.salary) per employees.department_id is computed, but a raw employees.salary also appears in a comparison — verify the comparison grain', 'possible contradictory constraint']
+         sql: SELECT "employees"."department_id", "employees"."employee_id", "employees"."first_name", "employees"."last_name", "employees"."salary", "departments"."department_name", AVG("employees"."salary") AS "avg_dept_salary" FROM
+     - llm_variant_1            src=llm_variant          score=88.0  elig=eligible    fatal=False
+         warnings: ['executed but returned zero rows (weak signal)', 'grain note: AVG(employees.salary) per employees.department_id is computed, but a raw employees.salary also appears in a comparison — verify the comparison grain', 'possible contradictory constraint']
+         sql: WITH "dept_avg_salaries" AS (SELECT "employees"."department_id" AS "department_id", AVG("employees"."salary") AS "avg_salary" FROM "employees" GROUP BY "employees"."department_id") SELECT "employees"."department_id", "em
+     - llm_variant_2            src=llm_variant          score=88.0  elig=eligible    fatal=False
+         warnings: ['executed but returned zero rows (weak signal)', 'grain note: AVG(employees.salary) per employees.department_id is computed, but a raw employees.salary also appears in a comparison — verify the comparison grain', 'possible contradictory constraint']
+         sql: WITH "dept_avg_salaries" AS (SELECT "employees"."department_id" AS "department_id", AVG("employees"."salary") AS "avg_salary" FROM "employees" GROUP BY "employees"."department_id") SELECT "employees"."department_id", "em
+     - llm_sql_direct           src=llm_sql_direct       score=100.0 elig=eligible    fatal=False
+         warnings: ['grain note: AVG(employees.salary) per employees.department_id is computed, but a raw employees.salary also appears in a comparison — verify the comparison grain', 'grain note: AVG(employees.salary) is computed over raw rows; for a row-vs-group-average or group-vs-global comparison of the same measure this is the correct right side, so it is advisory only, never fatal.']
+         sql: SELECT e.employee_id, e.first_name, e.last_name, e.salary, e.department_id
+FROM employees e
+WHERE e.salary > (
+    SELECT AVG(e2.salary)
+    FROM employees e2
+    WHERE e2.department_id = e.department_id
+)
+     - llm_sql_direct_grain     src=llm_sql_direct_grain score=100.0 elig=eligible    fatal=False
+         warnings: ['grain note: AVG(employees.salary) per employees.department_id is computed, but a raw employees.salary also appears in a comparison — verify the comparison grain', 'grain note: AVG(employees.salary) is computed over raw rows; for a row-vs-group-average or group-vs-global comparison of the same measure this is the correct right side, so it is advisory only, never fatal.']
+         sql: SELECT e.employee_id, e.first_name, e.last_name, e.salary, e.department_id
+FROM employees e
+WHERE e.salary > (
+    SELECT AVG(e2.salary)
+    FROM employees e2
+    WHERE e2.department_id = e.department_id
+)
+     - llm_sql_direct_variant   src=llm_sql_direct_variant score=100.0 elig=eligible    fatal=False
+         sql: SELECT e.employee_id, e.first_name, e.last_name, e.salary, e.department_id
+FROM employees e
+WHERE e.salary > (
+    SELECT AVG(e2.salary)
+    FROM employees e2
+    WHERE e2.department_id = e.department_id
+)
+  selected_label        : llm_sql_direct_variant (source=llm_sql_direct_variant)
+  selection_reason      : consensus_group
+  selected_sql          : SELECT e.employee_id, e.first_name, e.last_name, e.salary, e.department_id
+FROM employees e
+WHERE e.salary > (
+    SELECT AVG(e2.salary)
+    FROM employees e2
+    WHERE e2.department_id = e.department_id
+)
+  RC3 trace             : {'semantic_eligible_count': 6, 'semantic_incomplete': [], 'consensus_group_size': 3, 'consensus_sources': ['llm_sql_direct', 'llm_sql_direct_grain', 'llm_sql_direct_variant']}
+  RC4 override trace    : {'override_trace': None, 'direct_override_trace': None, 'override_blocked': None, 'override_block_reason': None}
+  RC5 trace             : None
+  audited_source_generated : True  (NOT correctness)
+  audited_correct_ref   : see audit_note
+  audit_note            : Groups by department and selects one arbitrary employee per department, rather than comparing every employee with the department average.
+  semantic_correct      : None
+  semantic_review_status: pending_manual_sql_review
+  >> REVIEW the selected_sql above against the audited semantics.
+
+[473] bucket=RC1_RC2  outcome=executed_pending_semantic_review
+  question              : List shipments whose shipping cost is above the average cost for the same carrier.
+  http_status           : 200
+  application_success   : True
+  execution.executed    : True   row_count=401
+  execution.error       : None
+  result_signature      : [3, 401, 5702950934014128817]
+  generated candidates  :
+     - llm_primary              src=llm_primary          score=82.0  elig=eligible    fatal=False
+         warnings: ["checklist requires shape 'comparison_subquery' but the SQL lacks it", 'grain note: AVG(shipments.shipping_cost) per shipments.carrier is computed, but a raw shipments.shipping_cost also appears in a comparison — verify the comparison grain']
+         sql: SELECT "shipments"."shipment_id", "shipments"."carrier", "shipments"."shipping_cost", AVG("shipments"."shipping_cost") AS "avg_cost_per_carrier" FROM "shipments" GROUP BY "shipments"."carrier" HAVING "avg_cost_per_carrie
+     - llm_variant_1            src=llm_variant          score=82.0  elig=eligible    fatal=False
+         warnings: ["checklist requires shape 'comparison_subquery' but the SQL lacks it", 'grain note: AVG(shipments.shipping_cost) per shipments.carrier is computed, but a raw shipments.shipping_cost also appears in a comparison — verify the comparison grain']
+         sql: SELECT "shipments"."shipment_id", "shipments"."carrier", "shipments"."shipping_cost", AVG("shipments"."shipping_cost") AS "avg_cost" FROM "shipments" GROUP BY "shipments"."carrier" HAVING "avg_cost" < "shipping_cost"
+     - llm_sql_direct           src=llm_sql_direct       score=100.0 elig=eligible    fatal=False
+         warnings: ['grain note: AVG(shipments.shipping_cost) per shipments.carrier is computed, but a raw shipments.shipping_cost also appears in a comparison — verify the comparison grain', 'grain note: AVG(shipments.shipping_cost) is computed over raw rows; for a row-vs-group-average or group-vs-global comparison of the same measure this is the correct right side, so it is advisory only, never fatal.']
+         sql: SELECT s.shipment_id, s.carrier, s.shipping_cost
+FROM shipments s
+WHERE s.shipping_cost > (
+    SELECT AVG(s2.shipping_cost)
+    FROM shipments s2
+    WHERE s2.carrier = s.carrier
+)
+     - llm_sql_direct_grain     src=llm_sql_direct_grain score=100.0 elig=eligible    fatal=False
+         warnings: ['grain note: AVG(shipments.shipping_cost) per shipments.carrier is computed, but a raw shipments.shipping_cost also appears in a comparison — verify the comparison grain', 'grain note: AVG(shipments.shipping_cost) is computed over raw rows; for a row-vs-group-average or group-vs-global comparison of the same measure this is the correct right side, so it is advisory only, never fatal.']
+         sql: SELECT s.shipment_id, s.carrier, s.shipping_cost
+FROM shipments s
+WHERE s.shipping_cost > (
+    SELECT AVG(s2.shipping_cost)
+    FROM shipments s2
+    WHERE s2.carrier = s.carrier
+)
+     - llm_sql_direct_variant   src=llm_sql_direct_variant score=100.0 elig=eligible    fatal=False
+         sql: SELECT s.shipment_id, s.carrier, s.shipping_cost
+FROM shipments s
+WHERE s.shipping_cost > (
+    SELECT AVG(s2.shipping_cost)
+    FROM shipments s2
+    WHERE s2.carrier = s.carrier
+)
+  selected_label        : llm_sql_direct_variant (source=llm_sql_direct_variant)
+  selection_reason      : consensus_group
+  selected_sql          : SELECT s.shipment_id, s.carrier, s.shipping_cost
+FROM shipments s
+WHERE s.shipping_cost > (
+    SELECT AVG(s2.shipping_cost)
+    FROM shipments s2
+    WHERE s2.carrier = s.carrier
+)
+  RC3 trace             : {'semantic_eligible_count': 5, 'semantic_incomplete': [], 'consensus_group_size': 3, 'consensus_sources': ['llm_sql_direct', 'llm_sql_direct_grain', 'llm_sql_direct_variant']}
+  RC4 override trace    : {'override_trace': None, 'direct_override_trace': None, 'override_blocked': None, 'override_block_reason': None}
+  RC5 trace             : None
+  audited_source_generated : True  (NOT correctness)
+  audited_correct_ref   : see audit_note
+  audit_note            : Groups by carrier and selects one arbitrary shipment per carrier, rather than comparing every shipment with its carrier average.
+  semantic_correct      : None
+  semantic_review_status: pending_manual_sql_review
+  >> REVIEW the selected_sql above against the audited semantics.
+
+[153] bucket=RC3  outcome=executed_pending_semantic_review
+  question              : Count addresses by state.
+  http_status           : 200
+  application_success   : True
+  execution.executed    : True   row_count=12
+  execution.error       : None
+  result_signature      : [2, 12, 666699759454204535]
+  generated candidates  :
+     - llm_primary              src=llm_primary          score=71.0  elig=eligible    fatal=False
+         warnings: ["checklist requires shape 'group_by_having' but the SQL lacks it"]
+         sql: SELECT "addresses"."state_code", COUNT(*) AS "address_count" FROM "addresses" GROUP BY "addresses"."state_code"
+     - llm_sql_direct           src=llm_sql_direct       score=93.0  elig=incomplete  fatal=False
+         sql: SELECT state_code
+FROM addresses
+GROUP BY state_code
+HAVING COUNT(*) > 0
+     - llm_sql_direct_grain     src=llm_sql_direct_grain score=71.0  elig=eligible    fatal=False
+         warnings: ["checklist requires shape 'group_by_having' but the SQL lacks it"]
+         sql: SELECT state_code, COUNT(*) AS address_count
+FROM addresses
+GROUP BY state_code
+     - llm_sql_direct_variant   src=llm_sql_direct_variant score=78.0  elig=eligible    fatal=False
+         warnings: ['executed but returned zero rows (weak signal)', 'possible contradictory constraint']
+         sql: SELECT state_code
+FROM addresses
+GROUP BY state_code
+HAVING COUNT(*) = (SELECT COUNT(*) FROM addresses)
+     - llm_sql_repair           src=llm_sql_repair       score=93.0  elig=eligible    fatal=False
+         sql: SELECT state_code, COUNT(*) AS address_count
+FROM addresses
+GROUP BY state_code
+HAVING COUNT(*) > 0
+  selected_label        : llm_sql_repair (source=llm_sql_repair)
+  selection_reason      : consensus_group
+  selected_sql          : SELECT state_code, COUNT(*) AS address_count
+FROM addresses
+GROUP BY state_code
+HAVING COUNT(*) > 0
+  RC3 trace             : {'semantic_eligible_count': 4, 'semantic_incomplete': [{'label': 'llm_sql_direct', 'missing': ['required_aggregates_satisfied', 'required_output_aggregate_satisfied']}], 'consensus_group_size': 3, 'consensus_sources': ['llm_primary', 'llm_sql_direct_grain', 'llm_sql_repair']}
+  RC4 override trace    : {'override_trace': None, 'direct_override_trace': None, 'override_blocked': None, 'override_block_reason': None}
+  RC5 trace             : None
+  audited_source_generated : True  (NOT correctness)
+  audited_correct_ref   : see audit_note
+  audit_note            : Groups addresses by state but omits the count.
+  semantic_correct      : None
+  semantic_review_status: pending_manual_sql_review
+  >> REVIEW the selected_sql above against the audited semantics.
+
+[156] bucket=RC3  outcome=executed_pending_semantic_review
+  question              : Count products by category.
+  http_status           : 200
+  application_success   : True
+  execution.executed    : True   row_count=8
+  execution.error       : None
+  result_signature      : [2, 8, -6647267466960278672]
+  generated candidates  :
+     - llm_primary              src=llm_primary          score=71.0  elig=eligible    fatal=False
+         warnings: ["checklist requires shape 'group_by_having' but the SQL lacks it"]
+         sql: SELECT "products"."category", COUNT(*) AS "product_count" FROM "products" GROUP BY "products"."category"
+     - llm_variant_2            src=llm_variant          score=71.0  elig=eligible    fatal=False
+         warnings: ["checklist requires shape 'group_by_having' but the SQL lacks it"]
+         sql: SELECT "products"."category", COUNT(*) AS "product_count" FROM "products" GROUP BY "products"."category"
+     - llm_sql_direct           src=llm_sql_direct       score=93.0  elig=incomplete  fatal=False
+         sql: SELECT category
+FROM products
+GROUP BY category
+HAVING COUNT(*) > 0
+     - llm_sql_direct_grain     src=llm_sql_direct_grain score=71.0  elig=eligible    fatal=False
+         warnings: ["checklist requires shape 'group_by_having' but the SQL lacks it"]
+         sql: SELECT category, COUNT(*) AS product_count
+FROM products
+GROUP BY category
+     - llm_sql_direct_variant   src=llm_sql_direct_variant score=93.0  elig=incomplete  fatal=False
+         sql: SELECT products.category
+FROM products
+GROUP BY products.category
+HAVING COUNT(*) > 0
+     - llm_sql_repair           src=llm_sql_repair       score=93.0  elig=eligible    fatal=False
+         sql: SELECT category, COUNT(*) AS product_count
+FROM products
+GROUP BY category
+HAVING COUNT(*) > 0
+  selected_label        : llm_sql_repair (source=llm_sql_repair)
+  selection_reason      : consensus_group
+  selected_sql          : SELECT category, COUNT(*) AS product_count
+FROM products
+GROUP BY category
+HAVING COUNT(*) > 0
+  RC3 trace             : {'semantic_eligible_count': 4, 'semantic_incomplete': [{'label': 'llm_sql_direct', 'missing': ['required_aggregates_satisfied', 'required_output_aggregate_satisfied']}, {'label': 'llm_sql_direct_variant', 'missing': ['required_aggregates_satisfied', 'required_output_aggregate_satisfied']}], 'consensus_group_size': 4, 'consensus_sources': ['llm_primary', 'llm_sql_direct_grain', 'llm_sql_repair', 'llm_variant']}
+  RC4 override trace    : {'override_trace': None, 'direct_override_trace': None, 'override_blocked': None, 'override_block_reason': None}
+  RC5 trace             : None
+  audited_source_generated : True  (NOT correctness)
+  audited_correct_ref   : see audit_note
+  audit_note            : Groups products by category but omits the product count.
+  semantic_correct      : None
+  semantic_review_status: pending_manual_sql_review
+  >> REVIEW the selected_sql above against the audited semantics.
+
+[343] bucket=RC3  outcome=executed_pending_semantic_review
+  question              : List products supplied by rating-1 suppliers that generated delivered-order revenue in 2025, with revenue by warehouse.
+  http_status           : 200
+  application_success   : True
+  execution.executed    : True   row_count=0
+  execution.error       : None
+  result_signature      : [5, 0, 5740354900026072187]
+  generated candidates  :
+     - llm_primary              src=llm_primary          score=78.0  elig=eligible    fatal=False
+         warnings: ["checklist requires shape 'group_by_having' but the SQL lacks it", "checklist table 'warehouses' is never used", "checklist column 'sales_orders.fulfillment_status' is never used", "SQL uses unmentioned table 'sales_orders' while the question names specific tables ['products', 'suppliers']"]
+         sql: SELECT "sales_order_items"."warehouse_id", "products"."product_id", "products"."product_name", SUM("sales_order_items"."line_total") AS "revenue" FROM "products" INNER JOIN "sales_order_items" ON "products"."product_id" 
+     - llm_variant_1            src=llm_variant          score=35.0  elig=fatal       fatal=True
+         fatal_reasons: ['grain violation: contract requires SUM(sales_order_items.line_total) per products.product_id, but the query groups by products.product_name, warehouses.warehouse_name but uses the nonaggregated child measure sales_order_items.line_total']
+         warnings: ['executed but returned zero rows (weak signal)', "checklist requires shape 'group_by_having' but the SQL lacks it", "required group key(s) ['products.product_id', 'warehouses.warehouse_id'] not in GROUP BY", "SQL uses unmentioned table 'sales_orders' while the question names specific tables ['products', 'suppliers']", "SQL uses unmentioned table 'warehouses' while the question names specific tables ['products', 'suppliers']", "literal 'delivered' is not among the sampled values of column 'fulfillment_status' (known: ['fulfilled', 'partial', 'unfulfilled'])", 'grain violation: contract requires SUM(sales_order_items.line_total) per products.product_id, but the query groups by products.product_name, warehouses.warehouse_name but uses the nonaggregated child measure sales_order_items.line_total']
+         sql: SELECT "products"."product_name", "warehouses"."warehouse_name", "sales_order_items"."line_total", SUM("sales_order_items"."line_total") AS "revenue" FROM "sales_order_items" INNER JOIN "products" ON "sales_order_items".
+     - llm_variant_2            src=llm_variant          score=45.0  elig=fatal       fatal=True
+         fatal_reasons: ['grain violation: contract requires SUM(sales_order_items.line_total) per products.product_id, but the query groups by warehouses.warehouse_id, products.product_id, products.product_name but uses the nonaggregated child measure sales_order_items.line_total']
+         warnings: ["checklist requires shape 'group_by_having' but the SQL lacks it", "checklist column 'sales_orders.fulfillment_status' is never used", "SQL uses unmentioned table 'sales_orders' while the question names specific tables ['products', 'suppliers']", "SQL uses unmentioned table 'warehouses' while the question names specific tables ['products', 'suppliers']", 'grain violation: contract requires SUM(sales_order_items.line_total) per products.product_id, but the query groups by warehouses.warehouse_id, products.product_id, products.product_name but uses the nonaggregated child measure sales_order_items.line_total']
+         sql: SELECT "warehouses"."warehouse_id", "products"."product_id", "products"."product_name", "sales_order_items"."line_total" AS "revenue", SUM("sales_order_items"."line_total") AS "revenue" FROM "sales_order_items" INNER JOI
+     - llm_sql_direct           src=llm_sql_direct       score=78.0  elig=incomplete  fatal=False
+         warnings: ['executed but returned zero rows (weak signal)', "SQL uses unmentioned table 'sales_orders' while the question names specific tables ['products', 'suppliers']", "SQL uses unmentioned table 'warehouses' while the question names specific tables ['products', 'suppliers']", "literal 'delivered' is not among the sampled values of column 'fulfillment_status' (known: ['fulfilled', 'partial', 'unfulfilled'])"]
+         sql: SELECT p.product_id, p.product_name, w.warehouse_id, w.warehouse_name
+FROM products p
+JOIN suppliers s ON p.supplier_id = s.supplier_id
+JOIN sales_order_items soi ON p.product_id = soi.product_id
+JOIN sales_orders so ON 
+     - llm_sql_direct_grain     src=llm_sql_direct_grain score=78.0  elig=eligible    fatal=False
+         sql: SELECT p.product_id, p.product_name, w.warehouse_id, w.warehouse_name, SUM(soi.line_total) AS total_revenue
+FROM products p
+JOIN suppliers s ON p.supplier_id = s.supplier_id
+JOIN sales_order_items soi ON p.product_id = s
+     - llm_sql_direct_variant   src=llm_sql_direct_variant score=78.0  elig=incomplete  fatal=False
+         warnings: ['executed but returned zero rows (weak signal)', "SQL uses unmentioned table 'sales_orders' while the question names specific tables ['products', 'suppliers']", "SQL uses unmentioned table 'warehouses' while the question names specific tables ['products', 'suppliers']", "literal 'delivered' is not among the sampled values of column 'fulfillment_status' (known: ['fulfilled', 'partial', 'unfulfilled'])"]
+         sql: SELECT
+  p.product_id,
+  p.product_name,
+  w.warehouse_id,
+  w.warehouse_name
+FROM products p
+JOIN suppliers s ON p.supplier_id = s.supplier_id
+JOIN sales_order_items soi ON p.product_id = soi.product_id
+JOIN sales_order
+     - llm_sql_repair           src=llm_sql_repair       score=83.0  elig=incomplete  fatal=False
+         warnings: ["SQL uses unmentioned table 'sales_orders' while the question names specific tables ['products', 'suppliers']", "SQL uses unmentioned table 'warehouses' while the question names specific tables ['products', 'suppliers']", 'possible join fanout aggregate inflation']
+         sql: SELECT p.product_id, p.product_name, w.warehouse_id, w.warehouse_name
+FROM products p
+JOIN suppliers s ON p.supplier_id = s.supplier_id
+JOIN sales_order_items soi ON p.product_id = soi.product_id
+JOIN sales_orders so ON 
+  selected_label        : llm_sql_direct_grain (source=llm_sql_direct_grain)
+  selection_reason      : direct_repair_preference
+  selected_sql          : SELECT p.product_id, p.product_name, w.warehouse_id, w.warehouse_name, SUM(soi.line_total) AS total_revenue
+FROM products p
+JOIN suppliers s ON p.supplier_id = s.supplier_id
+JOIN sales_order_items soi ON p.product_id = soi.product_id
+JOIN sales_orders so ON soi.order_id = so.order_id
+JOIN warehouses
+  RC3 trace             : {'semantic_eligible_count': 2, 'semantic_incomplete': [{'label': 'llm_sql_direct', 'missing': ['required_aggregates_satisfied', 'required_output_aggregate_satisfied']}, {'label': 'llm_sql_direct_variant', 'missing': ['required_aggregates_satisfied', 'required_output_aggregate_satisfied']}, {'label': 'llm_sql_repair', 'missing': ['required_aggregates_satisfied', 'required_output_aggregate_satisfied']}], 'consensus_group_size': 1, 'consensus_sources': ['llm_sql_direct_grain']}
+  RC4 override trace    : {'override_trace': None, 'direct_override_trace': None, 'override_blocked': None, 'override_block_reason': None}
+  RC5 trace             : None
+  audited_source_generated : True  (NOT correctness)
+  audited_correct_ref   : see audit_note
+  audit_note            : Correctly filters and groups qualifying rows, but the requested revenue-by-warehouse value is not selected.
+  semantic_correct      : None
+  semantic_review_status: pending_manual_sql_review
+  >> REVIEW the selected_sql above against the audited semantics.
+
+[392] bucket=RC3  outcome=executed_pending_semantic_review
+  question              : Show the top 5 customer cities by average delivered-order value, considering only cities with at least 5 delivered orders.
+  http_status           : 200
+  application_success   : True
+  execution.executed    : True   row_count=5
+  execution.error       : None
+  result_signature      : [3, 5, 8292790445520005015]
+  generated candidates  :
+     - llm_primary              src=llm_primary          score=100.0 elig=eligible    fatal=False
+         sql: SELECT "addresses"."city", AVG("sales_orders"."grand_total") AS "avg_order_value", COUNT(*) AS "order_count" FROM "sales_orders" INNER JOIN "addresses" ON "sales_orders"."billing_address_id" = "addresses"."address_id" WH
+     - llm_variant_1            src=llm_variant          score=0.0   elig=not_executed fatal=False
+         warnings: ['no SQL produced (invalid IR / unresolved plan / generation failure)', 'referenced column does not exist: customers.city']
+         sql: 
+     - llm_variant_2            src=llm_variant          score=35.0  elig=fatal       fatal=True
+         fatal_reasons: ['fanout violation: AVG("sales_orders"."grand_total") is aggregated after a one-to-many join multiplies its rows (many side: [\'sales_order_items\']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [sales_orders 1->N sales_order_items (via sales_order_items.order_id)]', 'grain violation [requirement 1/2]: contract requires AVG(sales_orders.grand_total) per addresses.city, but the query groups by addresses.city but uses the nonaggregated child measure sales_orders.grand_total']
+         warnings: ["checklist table 'customers' is never used", 'fanout violation: AVG("sales_orders"."grand_total") is aggregated after a one-to-many join multiplies its rows (many side: [\'sales_order_items\']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [sales_orders 1->N sales_order_items (via sales_order_items.order_id)]', 'grain violation [requirement 1/2]: contract requires AVG(sales_orders.grand_total) per addresses.city, but the query groups by addresses.city but uses the nonaggregated child measure sales_orders.grand_total', 'grain note [requirement 2/2]: sales_orders.order_id is compared as a raw value without a standalone COUNT — consistent with a row-vs-peer or output-only reading; not treated as fatal', 'grain note [requirement 2/2]: query groups by addresses.city but uses the nonaggregated child measure sales_orders.order_id — consistent with a row-vs-peer comparison; advisory only']
+         sql: SELECT "addresses"."city", "sales_orders"."grand_total" AS "avg_order_value", AVG("sales_orders"."grand_total") AS "avg_order_value", COUNT(*) AS "order_count" FROM "sales_orders" INNER JOIN "addresses" ON "sales_orders"
+     - llm_sql_direct           src=llm_sql_direct       score=90.0  elig=incomplete  fatal=False
+         warnings: ['possible join fanout aggregate inflation']
+         sql: SELECT a.city
+FROM addresses a
+JOIN customers c ON a.customer_id = c.customer_id
+JOIN sales_orders so ON c.customer_id = so.customer_id
+WHERE so.order_status = 'delivered'
+GROUP BY a.city
+HAVING COUNT(*) >= 5
+ORDER BY AV
+     - llm_sql_direct_grain     src=llm_sql_direct_grain score=90.0  elig=incomplete  fatal=False
+         warnings: ['possible join fanout aggregate inflation']
+         sql: SELECT a.city
+FROM addresses a
+JOIN customers c ON a.customer_id = c.customer_id
+JOIN sales_orders so ON c.customer_id = so.customer_id
+WHERE so.order_status = 'delivered'
+GROUP BY a.city
+HAVING COUNT(*) >= 5
+ORDER BY AV
+     - llm_sql_direct_variant   src=llm_sql_direct_variant score=90.0  elig=incomplete  fatal=False
+         warnings: ['possible join fanout aggregate inflation']
+         sql: SELECT a.city
+FROM addresses a
+JOIN customers c ON a.customer_id = c.customer_id
+JOIN sales_orders so ON c.customer_id = so.customer_id
+WHERE so.order_status = 'delivered'
+GROUP BY a.city
+HAVING COUNT(*) >= 5
+ORDER BY AV
+  selected_label        : llm_primary (source=llm_primary)
+  selection_reason      : best_scored_executed
+  selected_sql          : SELECT "addresses"."city", AVG("sales_orders"."grand_total") AS "avg_order_value", COUNT(*) AS "order_count" FROM "sales_orders" INNER JOIN "addresses" ON "sales_orders"."billing_address_id" = "addresses"."address_id" WHERE "sales_orders"."order_status" = ? GROUP BY "addresses"."city" HAVING "order_
+  RC3 trace             : {'semantic_eligible_count': 1, 'semantic_incomplete': [{'label': 'llm_sql_direct', 'missing': ['required_aggregates_satisfied', 'required_output_aggregate_satisfied']}, {'label': 'llm_sql_direct_grain', 'missing': ['required_aggregates_satisfied', 'required_output_aggregate_satisfied']}, {'label': 'llm_sql_direct_variant', 'missing': ['required_aggregates_satisfied', 'required_output_aggregate_satisfied']}], 'consensus_group_size': 1, 'consensus_sources': ['llm_primary']}
+  RC4 override trace    : {'override_trace': None, 'direct_override_trace': None, 'override_blocked': None, 'override_block_reason': None}
+  RC5 trace             : None
+  audited_source_generated : True  (NOT correctness)
+  audited_correct_ref   : see audit_note
+  audit_note            : Uses every address belonging to a customer rather than the order's relevant address, which can duplicate orders and assign revenue to the wrong city.
+  semantic_correct      : None
+  semantic_review_status: pending_manual_sql_review
+  >> REVIEW the selected_sql above against the audited semantics.
+
+[68] bucket=RC4  outcome=executed_pending_semantic_review
+  question              : Calculate the refund rate for each payment method using refunded amount divided by payment amount.
+  http_status           : 200
+  application_success   : True
+  execution.executed    : True   row_count=5
+  execution.error       : None
+  result_signature      : [2, 5, -3061108386113879907]
+  generated candidates  :
+     - llm_primary              src=llm_primary          score=91.0  elig=eligible    fatal=False
+         warnings: ["checklist requires shape 'group_by_having' but the SQL lacks it"]
+         sql: SELECT "payments"."payment_method", SUM("payments"."refunded_amount") AS "total_refunded", SUM("payments"."amount") AS "total_amount" FROM "payments" GROUP BY "payments"."payment_method"
+     - llm_variant_2            src=llm_variant          score=91.0  elig=eligible    fatal=False
+         warnings: ["checklist requires shape 'group_by_having' but the SQL lacks it"]
+         sql: SELECT "payments"."payment_method", SUM("payments"."refunded_amount") AS "total_refunded", SUM("payments"."amount") AS "total_paid" FROM "payments" GROUP BY "payments"."payment_method"
+     - llm_sql_direct           src=llm_sql_direct       score=100.0 elig=eligible    fatal=False
+         sql: SELECT payment_method, SUM(refunded_amount) * 1.0 / SUM(amount) AS refund_rate
+FROM payments
+GROUP BY payment_method
+HAVING SUM(amount) > 0
+     - llm_sql_direct_grain     src=llm_sql_direct_grain score=100.0 elig=eligible    fatal=False
+         sql: SELECT payment_method, SUM(refunded_amount) * 1.0 / SUM(amount) AS refund_rate
+FROM payments
+GROUP BY payment_method
+HAVING SUM(amount) > 0
+     - llm_sql_direct_variant   src=llm_sql_direct_variant score=91.0  elig=eligible    fatal=False
+         warnings: ["checklist requires shape 'group_by_having' but the SQL lacks it"]
+         sql: SELECT payment_method, SUM(refunded_amount) * 1.0 / SUM(amount) AS refund_rate
+FROM payments
+GROUP BY payment_method
+  selected_label        : llm_sql_direct_grain (source=llm_sql_direct_grain)
+  selection_reason      : consensus_group
+  selected_sql          : SELECT payment_method, SUM(refunded_amount) * 1.0 / SUM(amount) AS refund_rate
+FROM payments
+GROUP BY payment_method
+HAVING SUM(amount) > 0
+  RC3 trace             : {'semantic_eligible_count': 5, 'semantic_incomplete': [], 'consensus_group_size': 3, 'consensus_sources': ['llm_sql_direct', 'llm_sql_direct_grain', 'llm_sql_direct_variant']}
+  RC4 override trace    : {'override_trace': None, 'direct_override_trace': None, 'override_blocked': None, 'override_block_reason': None}
+  RC5 trace             : None
+  audited_source_generated : True  (NOT correctness)
+  audited_correct_ref   : see audit_note
+  audit_note            : Does not calculate refunded_amount / payment_amount. It returns payment methods whose refunded total is above the global average.
+  semantic_correct      : None
+  semantic_review_status: pending_manual_sql_review
+  >> REVIEW the selected_sql above against the audited semantics.
+
+[73] bucket=RC4  outcome=executed_pending_semantic_review
+  question              : Calculate the employee salary cost per current department headcount for each department.
+  http_status           : 200
+  application_success   : True
+  execution.executed    : True   row_count=12
+  execution.error       : None
+  result_signature      : [3, 12, -293649939810096392]
+  generated candidates  :
+     - llm_primary              src=llm_primary          score=95.0  elig=eligible    fatal=False
+         warnings: ["checklist requires shape 'group_by_having' but the SQL lacks it"]
+         sql: SELECT "departments"."department_name", "departments"."department_id", SUM("employees"."salary") AS "total_salary", COUNT(*) AS "headcount" FROM "employees" INNER JOIN "departments" ON "employees"."department_id" = "depa
+     - llm_variant_1            src=llm_variant          score=95.0  elig=eligible    fatal=False
+         warnings: ["checklist requires shape 'group_by_having' but the SQL lacks it"]
+         sql: SELECT "departments"."department_name", "departments"."department_id", SUM("employees"."salary") AS "total_salary", COUNT(*) AS "headcount" FROM "departments" LEFT JOIN "employees" ON "departments"."department_id" = "emp
+     - llm_sql_direct           src=llm_sql_direct       score=100.0 elig=eligible    fatal=False
+         sql: SELECT d.department_id, d.department_name, SUM(e.salary) * 1.0 / d.headcount_current AS salary_cost_per_headcount
+FROM departments d
+JOIN employees e ON d.department_id = e.department_id
+GROUP BY d.department_id, d.depar
+     - llm_sql_direct_grain     src=llm_sql_direct_grain score=95.0  elig=eligible    fatal=False
+         warnings: ["checklist requires shape 'group_by_having' but the SQL lacks it"]
+         sql: SELECT d.department_id, d.department_name, SUM(e.salary) * 1.0 / d.headcount_current AS salary_cost_per_headcount
+FROM departments d
+JOIN employees e ON d.department_id = e.department_id
+GROUP BY d.department_id, d.depar
+     - llm_sql_direct_variant   src=llm_sql_direct_variant score=100.0 elig=eligible    fatal=False
+         sql: SELECT d.department_id, d.department_name, SUM(e.salary) * 1.0 / d.headcount_current AS salary_cost_per_headcount
+FROM departments d
+JOIN employees e ON d.department_id = e.department_id
+GROUP BY d.department_id, d.depar
+  selected_label        : llm_sql_direct_variant (source=llm_sql_direct_variant)
+  selection_reason      : consensus_group
+  selected_sql          : SELECT d.department_id, d.department_name, SUM(e.salary) * 1.0 / d.headcount_current AS salary_cost_per_headcount
+FROM departments d
+JOIN employees e ON d.department_id = e.department_id
+GROUP BY d.department_id, d.department_name, d.headcount_current
+HAVING d.headcount_current > 0
+  RC3 trace             : {'semantic_eligible_count': 5, 'semantic_incomplete': [], 'consensus_group_size': 3, 'consensus_sources': ['llm_sql_direct', 'llm_sql_direct_grain', 'llm_sql_direct_variant']}
+  RC4 override trace    : {'override_trace': None, 'direct_override_trace': None, 'override_blocked': None, 'override_block_reason': None}
+  RC5 trace             : None
+  audited_source_generated : True  (NOT correctness)
+  audited_correct_ref   : see audit_note
+  audit_note            : Returns total salary and an employee count but never divides salary cost by the department's current headcount; it also adds an unrequested active-employee filter.
+  semantic_correct      : None
+  semantic_review_status: pending_manual_sql_review
+  >> REVIEW the selected_sql above against the audited semantics.
+
+[81] bucket=RC4  outcome=executed_pending_semantic_review
+  question              : Calculate the percentage of shipments delivered on or before their estimated delivery date for each carrier.
+  http_status           : 200
+  application_success   : True
+  execution.executed    : True   row_count=5
+  execution.error       : None
+  result_signature      : [2, 5, -1058437579710264645]
+  generated candidates  :
+     - llm_primary              src=llm_primary          score=41.0  elig=fatal       fatal=True
+         fatal_reasons: ["required concept 'shipments.estimated_delivery_date' named in the question is missing from the SQL"]
+         warnings: ["checklist requires shape 'group_by_having' but the SQL lacks it", "checklist measure column 'shipments.shipment_id' is never used", "checklist column 'shipments.estimated_delivery_date' is never used", "checklist column 'shipments.actual_delivery_date' is never used", 'grain note: output metric COUNT(shipments.shipment_id) per shipments.carrier is not clearly computed in the query — verify the SELECT expression']
+         sql: SELECT "shipments"."carrier", COUNT(*) AS "total_shipments", COUNT(*) AS "on_time_shipments" FROM "shipments" GROUP BY "shipments"."carrier"
+     - llm_variant_1            src=llm_variant          score=41.0  elig=fatal       fatal=True
+         fatal_reasons: ["required concept 'shipments.estimated_delivery_date' named in the question is missing from the SQL"]
+         warnings: ["checklist requires shape 'group_by_having' but the SQL lacks it", "checklist measure column 'shipments.shipment_id' is never used", "checklist column 'shipments.estimated_delivery_date' is never used", "checklist column 'shipments.actual_delivery_date' is never used", 'grain note: output metric COUNT(shipments.shipment_id) per shipments.carrier is not clearly computed in the query — verify the SELECT expression']
+         sql: SELECT "shipments"."carrier", COUNT(*) AS "total_shipments", COUNT(*) AS "on_time_shipments" FROM "shipments" GROUP BY "shipments"."carrier" ORDER BY "shipments"."carrier" ASC
+     - llm_sql_direct           src=llm_sql_direct       score=71.0  elig=eligible    fatal=False
+         warnings: ["checklist requires shape 'group_by_having' but the SQL lacks it", "checklist measure column 'shipments.shipment_id' is never used", 'grain note: output metric COUNT(shipments.shipment_id) per shipments.carrier is not clearly computed in the query — verify the SELECT expression']
+         sql: SELECT 
+    shipments.carrier,
+    CAST(SUM(CASE WHEN shipments.actual_delivery_date <= shipments.estimated_delivery_date THEN 1 ELSE 0 END) AS REAL) * 100.0 / COUNT(*) AS on_time_percentage
+FROM shipments
+GROUP BY shipm
+     - llm_sql_direct_grain     src=llm_sql_direct_grain score=71.0  elig=eligible    fatal=False
+         warnings: ["checklist requires shape 'group_by_having' but the SQL lacks it", "checklist measure column 'shipments.shipment_id' is never used", 'grain note: output metric COUNT(shipments.shipment_id) per shipments.carrier is not clearly computed in the query — verify the SELECT expression']
+         sql: SELECT carrier, 100.0 * SUM(CASE WHEN actual_delivery_date <= estimated_delivery_date THEN 1 ELSE 0 END) / COUNT(*) AS on_time_percentage
+FROM shipments
+GROUP BY carrier
+     - llm_sql_direct_variant   src=llm_sql_direct_variant score=71.0  elig=eligible    fatal=False
+         sql: SELECT 
+    shipments.carrier,
+    CAST(SUM(CASE WHEN shipments.actual_delivery_date <= shipments.estimated_delivery_date THEN 1 ELSE 0 END) AS REAL) * 100.0 / COUNT(*) AS on_time_percentage
+FROM shipments
+GROUP BY shipm
+     - llm_sql_repair           src=llm_sql_repair       score=87.0  elig=eligible    fatal=False
+         warnings: ["checklist requires shape 'group_by_having' but the SQL lacks it"]
+         sql: SELECT 
+    carrier
+FROM (
+    SELECT 
+        carrier,
+        COUNT(shipment_id) AS total_shipments,
+        CAST(SUM(CASE WHEN actual_delivery_date <= estimated_delivery_date THEN 1 ELSE 0 END) AS REAL) * 100.0 / COUN
+  selected_label        : llm_sql_direct_variant (source=llm_sql_direct_variant)
+  selection_reason      : consensus_group
+  selected_sql          : SELECT 
+    shipments.carrier,
+    CAST(SUM(CASE WHEN shipments.actual_delivery_date <= shipments.estimated_delivery_date THEN 1 ELSE 0 END) AS REAL) * 100.0 / COUNT(*) AS on_time_percentage
+FROM shipments
+GROUP BY shipments.carrier
+  RC3 trace             : {'semantic_eligible_count': 4, 'semantic_incomplete': [], 'consensus_group_size': 3, 'consensus_sources': ['llm_sql_direct', 'llm_sql_direct_grain', 'llm_sql_direct_variant']}
+  RC4 override trace    : {'override_trace': {'override_attempted': True, 'current_candidate': 'llm_sql_direct_variant', 'proposed_candidate': 'llm_sql_repair', 'current_score': 71.0, 'proposed_score': 87.0, 'obligations_lost': ['required_formula_shape'], 'obligations_gained': [], 'new_semantic_defects': [], 'semantic_dominance': False, 'override_allowed': False, 'override_block_reason': 'proposed candidate changes the derived-metric formula'}, 'direct_override_trace': None, 'override_blocked': True, 'override_block_reason': 'proposed candidate changes the derived-metric formula'}
+  RC5 trace             : None
+  audited_source_generated : True  (NOT correctness)
+  audited_correct_ref   : see audit_note
+  audit_note            : Calculates an on-time percentage but incorrectly filters out carriers whose shipment count is not above the average carrier count.
+  semantic_correct      : None
+  semantic_review_status: pending_manual_sql_review
+  >> REVIEW the selected_sql above against the audited semantics.
+
+[98] bucket=RC4  outcome=executed_pending_semantic_review
+  question              : For each department, calculate average employee performance rating per ten thousand dollars of average salary.
+  http_status           : 200
+  application_success   : True
+  execution.executed    : True   row_count=12
+  execution.error       : None
+  result_signature      : [3, 12, -8133412390222686774]
+  generated candidates  :
+     - query_family             src=query_family         score=45.0  elig=fatal       fatal=True
+         fatal_reasons: ["required concept 'employees.performance_rating' named in the question is missing from the SQL"]
+         warnings: ["checklist requires shape 'group_by_having' but the SQL lacks it", "checklist measure column 'employees.performance_rating' is never used", "checklist column 'departments.department_name' is never used", "checklist column 'employees.performance_rating' is never used", "literal '10000' from the question is missing", 'grain note: output metric AVG(employees.performance_rating) per departments.department_id is not clearly computed in the query — verify the SELECT expression']
+         sql: WITH "departments_totals" AS (SELECT "departments"."department_id" AS "entity_id", "departments"."department_code" AS "group_col", AVG("employees"."salary") AS "agg_value" FROM "departments" INNER JOIN "employees" ON "de
+     - llm_primary              src=llm_primary          score=91.0  elig=eligible    fatal=False
+         warnings: ["checklist requires shape 'group_by_having' but the SQL lacks it", "literal '10000' from the question is missing"]
+         sql: SELECT "departments"."department_name", "departments"."department_id", AVG("employees"."performance_rating") AS "avg_performance", AVG("employees"."salary") AS "avg_salary" FROM "employees" INNER JOIN "departments" ON "e
+     - llm_variant_1            src=llm_variant          score=5.0   elig=not_executed fatal=False
+         warnings: ['no SQL produced (invalid IR / unresolved plan / generation failure)']
+         sql: 
+     - llm_sql_direct           src=llm_sql_direct       score=97.0  elig=eligible    fatal=False
+         warnings: ["checklist requires shape 'group_by_having' but the SQL lacks it"]
+         sql: SELECT d.department_id, d.department_name, AVG(e.performance_rating) / (AVG(e.salary) / 10000) AS performance_per_10k_salary
+FROM departments d
+JOIN employees e ON d.department_id = e.department_id
+GROUP BY d.department_
+     - llm_sql_direct_grain     src=llm_sql_direct_grain score=97.0  elig=eligible    fatal=False
+         warnings: ["checklist requires shape 'group_by_having' but the SQL lacks it"]
+         sql: SELECT d.department_id, d.department_name, AVG(e.performance_rating) / (AVG(e.salary) / 10000.0) AS performance_per_10k_salary
+FROM departments d
+JOIN employees e ON d.department_id = e.department_id
+GROUP BY d.departmen
+     - llm_sql_direct_variant   src=llm_sql_direct_variant score=97.0  elig=eligible    fatal=False
+         sql: SELECT d.department_id, d.department_name, AVG(e.performance_rating) / (AVG(e.salary) / 10000.0) AS performance_per_10k_salary
+FROM departments d
+JOIN employees e ON d.department_id = e.department_id
+GROUP BY d.departmen
+  selected_label        : llm_sql_direct_variant (source=llm_sql_direct_variant)
+  selection_reason      : consensus_group
+  selected_sql          : SELECT d.department_id, d.department_name, AVG(e.performance_rating) / (AVG(e.salary) / 10000.0) AS performance_per_10k_salary
+FROM departments d
+JOIN employees e ON d.department_id = e.department_id
+GROUP BY d.department_id, d.department_name
+  RC3 trace             : {'semantic_eligible_count': 4, 'semantic_incomplete': [], 'consensus_group_size': 3, 'consensus_sources': ['llm_sql_direct', 'llm_sql_direct_grain', 'llm_sql_direct_variant']}
+  RC4 override trace    : {'override_trace': None, 'direct_override_trace': None, 'override_blocked': None, 'override_block_reason': None}
+  RC5 trace             : None
+  audited_source_generated : True  (NOT correctness)
+  audited_correct_ref   : see audit_note
+  audit_note            : Computes department metrics internally but returns only departments above an unrelated global benchmark, omitting the requested per-department metric.
+  semantic_correct      : None
+  semantic_review_status: pending_manual_sql_review
+  >> REVIEW the selected_sql above against the audited semantics.
+
+[137] bucket=RC4  outcome=executed_pending_semantic_review
+  question              : How many distinct products were sold through both online and store channels?
+  http_status           : 200
+  application_success   : True
+  execution.executed    : True   row_count=1
+  execution.error       : None
+  result_signature      : [2, 1, -7280814095606906121]
+  generated candidates  :
+     - llm_primary              src=llm_primary          score=51.0  elig=eligible    fatal=False
+         sql: SELECT DISTINCT "sales_order_items"."product_id", COUNT("sales_order_items"."product_id") AS "product_count" FROM "sales_orders" INNER JOIN "sales_order_items" ON "sales_orders"."order_id" = "sales_order_items"."order_id
+     - llm_variant_1            src=llm_variant          score=46.0  elig=eligible    fatal=False
+         warnings: ['distinct-count intent but no COUNT(DISTINCT)', "checklist table 'products' is never used", "checklist column 'sales_orders.sales_channel' is never used", "literal 'online' from the question is missing", "literal 'store' from the question is missing", "SQL uses unmentioned table 'sales_orders' while the question names specific tables ['products']", 'grain note: cannot prove the required comparison (COUNT(products.product_id) per products.product_id) is applied — a comparison side could not be traced', 'grain note: cannot prove the required COUNT(DISTINCT product_id) comparison is applied']
+         sql: SELECT DISTINCT "sales_order_items"."product_id", COUNT(*) AS "channel_count" FROM "sales_orders" INNER JOIN "sales_order_items" ON "sales_orders"."order_id" = "sales_order_items"."order_id" GROUP BY "sales_order_items".
+     - llm_variant_2            src=llm_variant          score=59.0  elig=eligible    fatal=False
+         warnings: ['executed but returned zero rows (weak signal)', 'distinct-count intent but no COUNT(DISTINCT)', "checklist requires shape 'group_by_having' but the SQL lacks it", "SQL uses unmentioned table 'sales_orders' while the question names specific tables ['products']", 'grain note: products.product_id is compared as a raw value without a standalone COUNT — consistent with a row-vs-peer or output-only reading; not treated as fatal', 'grain note: cannot prove the required COUNT(DISTINCT product_id) comparison is applied']
+         sql: SELECT DISTINCT "products"."product_id", "products"."product_name" FROM "sales_order_items" INNER JOIN "products" ON "sales_order_items"."product_id" = "products"."product_id" INNER JOIN "sales_orders" ON "sales_order_it
+     - llm_sql_direct           src=llm_sql_direct       score=24.0  elig=fatal       fatal=True
+         fatal_reasons: ['grain violation: the required aggregate comparison is never applied in WHERE or HAVING (contract requires comparing COUNT(products.product_id) per products.product_id, but no comparison predicate uses the measure products.product_id)', 'grain violation: contract requires a COUNT(DISTINCT product_id) comparison per products.product_id, but no comparison predicate uses it']
+         warnings: ["checklist table 'products' is never used", "SQL uses unmentioned table 'sales_orders' while the question names specific tables ['products']", 'grain violation: the required aggregate comparison is never applied in WHERE or HAVING (contract requires comparing COUNT(products.product_id) per products.product_id, but no comparison predicate uses the measure products.product_id)', 'grain violation: contract requires a COUNT(DISTINCT product_id) comparison per products.product_id, but no comparison predicate uses it']
+         sql: SELECT COUNT(DISTINCT product_id)
+FROM sales_orders
+JOIN sales_order_items ON sales_orders.order_id = sales_order_items.order_id
+WHERE sales_orders.sales_channel IN ('online', 'store')
+GROUP BY sales_order_items.product_
+     - llm_sql_direct_grain     src=llm_sql_direct_grain score=24.0  elig=fatal       fatal=True
+         fatal_reasons: ['grain violation: the required aggregate comparison is never applied in WHERE or HAVING (contract requires comparing COUNT(products.product_id) per products.product_id, but no comparison predicate uses the measure products.product_id)', 'grain violation: contract requires a COUNT(DISTINCT product_id) comparison per products.product_id, but no comparison predicate uses it']
+         warnings: ["checklist table 'products' is never used", "SQL uses unmentioned table 'sales_orders' while the question names specific tables ['products']", 'grain violation: the required aggregate comparison is never applied in WHERE or HAVING (contract requires comparing COUNT(products.product_id) per products.product_id, but no comparison predicate uses the measure products.product_id)', 'grain violation: contract requires a COUNT(DISTINCT product_id) comparison per products.product_id, but no comparison predicate uses it']
+         sql: SELECT COUNT(DISTINCT product_id)
+FROM sales_orders
+JOIN sales_order_items ON sales_orders.order_id = sales_order_items.order_id
+WHERE sales_orders.sales_channel IN ('online', 'store')
+GROUP BY sales_order_items.product_
+     - llm_sql_direct_variant   src=llm_sql_direct_variant score=12.0  elig=fatal       fatal=True
+         fatal_reasons: ['grain violation: the required aggregate comparison is never applied in WHERE or HAVING (contract requires comparing COUNT(products.product_id) per products.product_id, but no comparison predicate uses the measure products.product_id)']
+         warnings: ['duplicate table alias in the same scope: so, soi', "checklist requires shape 'group_by_having' but the SQL lacks it", "checklist table 'products' is never used", "SQL uses unmentioned table 'sales_orders' while the question names specific tables ['products']", 'grain violation: the required aggregate comparison is never applied in WHERE or HAVING (contract requires comparing COUNT(products.product_id) per products.product_id, but no comparison predicate uses the measure products.product_id)']
+         sql: SELECT COUNT(DISTINCT product_id)
+FROM sales_order_items
+WHERE product_id IN (
+    SELECT product_id
+    FROM sales_order_items soi
+    JOIN sales_orders so ON soi.order_id = so.order_id
+    WHERE so.sales_channel = 'onl
+     - llm_sql_repair           src=llm_sql_repair       score=24.0  elig=fatal       fatal=True
+         fatal_reasons: ['grain violation: the required aggregate comparison is never applied in WHERE or HAVING (contract requires comparing COUNT(products.product_id) per products.product_id, but no comparison predicate uses the measure products.product_id)', 'grain violation: contract requires a COUNT(DISTINCT product_id) comparison per products.product_id, but no comparison predicate uses it']
+         warnings: ["checklist table 'products' is never used", "SQL uses unmentioned table 'sales_orders' while the question names specific tables ['products']", 'grain violation: the required aggregate comparison is never applied in WHERE or HAVING (contract requires comparing COUNT(products.product_id) per products.product_id, but no comparison predicate uses the measure products.product_id)', 'grain violation: contract requires a COUNT(DISTINCT product_id) comparison per products.product_id, but no comparison predicate uses it']
+         sql: SELECT COUNT(DISTINCT product_id) AS product_count
+FROM (
+    SELECT product_id
+    FROM sales_order_items soi
+    JOIN sales_orders so ON soi.order_id = so.order_id
+    GROUP BY product_id
+    HAVING SUM(CASE WHEN so.sa
+  selected_label        : llm_primary (source=llm_primary)
+  selection_reason      : best_scored_executed
+  selected_sql          : SELECT DISTINCT "sales_order_items"."product_id", COUNT("sales_order_items"."product_id") AS "product_count" FROM "sales_orders" INNER JOIN "sales_order_items" ON "sales_orders"."order_id" = "sales_order_items"."order_id" WHERE "sales_orders"."sales_channel" = ? AND "sales_orders"."sales_channel" = 
+  RC3 trace             : {'semantic_eligible_count': 3, 'semantic_incomplete': [], 'consensus_group_size': 1, 'consensus_sources': ['llm_primary']}
+  RC4 override trace    : {'override_trace': None, 'direct_override_trace': None, 'override_blocked': None, 'override_block_reason': None}
+  RC5 trace             : None
+  audited_source_generated : True  (NOT correctness)
+  audited_correct_ref   : see audit_note
+  audit_note            : Requires sales_channel to equal two different values in the same row and returns grouped product rows instead of one distinct-product count.
+  semantic_correct      : None
+  semantic_review_status: pending_manual_sql_review
+  >> REVIEW the selected_sql above against the audited semantics.
+
+[242] bucket=RC4  outcome=executed_pending_semantic_review
+  question              : List customer segments whose refund rate is above 5 percent.
+  http_status           : 200
+  application_success   : True
+  execution.executed    : True   row_count=0
+  execution.error       : None
+  result_signature      : [1, 0, 5740354900026072187]
+  generated candidates  :
+     - llm_primary              src=llm_primary          score=55.0  elig=fatal       fatal=True
+         fatal_reasons: ['self-comparison is always true/false: aliases \'"refunded_count"\' and \'"total_count"\' are the same expression']
+         warnings: ['executed but returned zero rows (weak signal)', "checklist measure column 'payments.refunded_amount' is never used", "checklist table 'sales_orders' is never used", "checklist column 'payments.refunded_amount' is never used", "checklist column 'payments.amount' is never used", "literal '0.05' from the question is missing", 'self-comparison is always true/false: aliases \'"refunded_count"\' and \'"total_count"\' are the same expression', 'grain note: cannot prove the required comparison (SUM(payments.refunded_amount) per customers.customer_segment) is applied — a comparison side could not be traced']
+         sql: SELECT "customers"."customer_segment", COUNT(*) AS "refunded_count", COUNT(*) AS "total_count" FROM "customers" INNER JOIN "payments" ON "customers"."customer_id" = "payments"."customer_id" WHERE "payments"."payment_stat
+     - llm_variant_1            src=llm_variant          score=55.0  elig=fatal       fatal=True
+         fatal_reasons: ['self-comparison is always true/false: aliases \'"refund_count"\' and \'"total_count"\' are the same expression']
+         warnings: ['executed but returned zero rows (weak signal)', "checklist measure column 'payments.refunded_amount' is never used", "checklist table 'sales_orders' is never used", "checklist column 'payments.refunded_amount' is never used", "checklist column 'payments.amount' is never used", "literal '0.05' from the question is missing", 'self-comparison is always true/false: aliases \'"refund_count"\' and \'"total_count"\' are the same expression', 'grain note: cannot prove the required comparison (SUM(payments.refunded_amount) per customers.customer_segment) is applied — a comparison side could not be traced']
+         sql: SELECT "customers"."customer_segment", COUNT(*) AS "refund_count", COUNT(*) AS "total_count" FROM "customers" INNER JOIN "payments" ON "customers"."customer_id" = "payments"."customer_id" WHERE "payments"."payment_status
+     - llm_variant_2            src=llm_variant          score=55.0  elig=fatal       fatal=True
+         fatal_reasons: ['self-comparison is always true/false: aliases \'"refunded_payments"\' and \'"total_payments"\' are the same expression']
+         warnings: ['executed but returned zero rows (weak signal)', "checklist measure column 'payments.refunded_amount' is never used", "checklist table 'sales_orders' is never used", "checklist column 'payments.refunded_amount' is never used", "checklist column 'payments.amount' is never used", "literal '0.05' from the question is missing", 'self-comparison is always true/false: aliases \'"refunded_payments"\' and \'"total_payments"\' are the same expression', 'grain note: cannot prove the required comparison (SUM(payments.refunded_amount) per customers.customer_segment) is applied — a comparison side could not be traced']
+         sql: SELECT "customers"."customer_segment", COUNT(*) AS "total_payments", COUNT(*) AS "refunded_payments" FROM "customers" INNER JOIN "payments" ON "customers"."customer_id" = "payments"."customer_id" WHERE "payments"."paymen
+     - llm_sql_direct           src=llm_sql_direct       score=78.0  elig=eligible    fatal=False
+         warnings: ['executed but returned zero rows (weak signal)', 'possible contradictory constraint', 'possible join fanout aggregate inflation']
+         sql: SELECT c.customer_segment
+FROM customers c
+JOIN sales_orders so ON c.customer_id = so.customer_id
+JOIN payments p ON so.order_id = p.order_id
+GROUP BY c.customer_segment
+HAVING SUM(p.refunded_amount) * 1.0 / SUM(p.amount
+     - llm_sql_direct_grain     src=llm_sql_direct_grain score=78.0  elig=eligible    fatal=False
+         warnings: ['executed but returned zero rows (weak signal)', 'possible contradictory constraint', 'possible join fanout aggregate inflation']
+         sql: SELECT c.customer_segment
+FROM customers c
+JOIN sales_orders so ON c.customer_id = so.customer_id
+JOIN payments p ON so.order_id = p.order_id
+GROUP BY c.customer_segment
+HAVING SUM(p.refunded_amount) * 1.0 / SUM(p.amount
+     - llm_sql_direct_variant   src=llm_sql_direct_variant score=78.0  elig=eligible    fatal=False
+         warnings: ['executed but returned zero rows (weak signal)', 'possible contradictory constraint', 'possible join fanout aggregate inflation']
+         sql: SELECT c.customer_segment
+FROM customers c
+JOIN sales_orders so ON c.customer_id = so.customer_id
+JOIN payments p ON so.order_id = p.order_id
+GROUP BY c.customer_segment
+HAVING SUM(p.refunded_amount) * 1.0 / SUM(p.amount
+     - llm_sql_repair           src=llm_sql_repair       score=86.0  elig=eligible    fatal=False
+         sql: WITH segment_refund_rates AS (
+    SELECT 
+        c.customer_segment,
+        SUM(p.refunded_amount) * 1.0 / SUM(p.amount) AS refund_rate
+    FROM customers c
+    JOIN sales_orders so ON c.customer_id = so.customer_id
+ 
+  selected_label        : llm_sql_repair (source=llm_sql_repair)
+  selection_reason      : consensus_group
+  selected_sql          : WITH segment_refund_rates AS (
+    SELECT 
+        c.customer_segment,
+        SUM(p.refunded_amount) * 1.0 / SUM(p.amount) AS refund_rate
+    FROM customers c
+    JOIN sales_orders so ON c.customer_id = so.customer_id
+    JOIN payments p ON so.order_id = p.order_id
+    GROUP BY c.customer_segment
+)
+  RC3 trace             : {'semantic_eligible_count': 4, 'semantic_incomplete': [], 'consensus_group_size': 4, 'consensus_sources': ['llm_sql_direct', 'llm_sql_direct_grain', 'llm_sql_direct_variant', 'llm_sql_repair']}
+  RC4 override trace    : {'override_trace': None, 'direct_override_trace': None, 'override_blocked': None, 'override_block_reason': None}
+  RC5 trace             : None
+  audited_source_generated : True  (NOT correctness)
+  audited_correct_ref   : see audit_note
+  audit_note            : Tests total_refunded > total_paid, effectively a rate above 100%, rather than a refund rate above 5%.
+  semantic_correct      : None
+  semantic_review_status: pending_manual_sql_review
+  >> REVIEW the selected_sql above against the audited semantics.
+
+[401] bucket=RC4  outcome=executed_pending_semantic_review
+  question              : List cities that appear either in customer addresses or in warehouse locations.
+  http_status           : 200
+  application_success   : True
+  execution.executed    : True   row_count=15
+  execution.error       : None
+  result_signature      : [1, 15, -5280819841336125594]
+  generated candidates  :
+     - llm_primary              src=llm_primary          score=77.0  elig=eligible    fatal=False
+         warnings: ["concept 'location' mentioned in the question but no matching column is used", "SQL uses unmentioned table 'warehouses' while the question names specific tables ['addresses']"]
+         sql: SELECT DISTINCT "addresses"."city", "warehouses"."city" FROM "addresses" INNER JOIN "shipments" ON "addresses"."address_id" = "shipments"."shipping_address_id" INNER JOIN "warehouses" ON "shipments"."warehouse_id" = "war
+     - llm_sql_direct           src=llm_sql_direct       score=62.0  elig=eligible    fatal=False
+         warnings: ["concept 'location' mentioned in the question but no matching column is used", 'generic fallback SQL (no_aggregation) ignores the requested aggregation/join/filter the question needs', "SQL uses unmentioned table 'warehouses' while the question names specific tables ['addresses']"]
+         sql: SELECT city FROM addresses
+UNION
+SELECT city FROM warehouses
+     - llm_sql_direct_grain     src=llm_sql_direct_grain score=62.0  elig=eligible    fatal=False
+         warnings: ["concept 'location' mentioned in the question but no matching column is used", 'generic fallback SQL (no_aggregation) ignores the requested aggregation/join/filter the question needs', "SQL uses unmentioned table 'warehouses' while the question names specific tables ['addresses']"]
+         sql: SELECT city FROM addresses
+UNION
+SELECT city FROM warehouses
+     - llm_sql_direct_variant   src=llm_sql_direct_variant score=77.0  elig=eligible    fatal=False
+         warnings: ["concept 'location' mentioned in the question but no matching column is used", "SQL uses unmentioned table 'warehouses' while the question names specific tables ['addresses']"]
+         sql: SELECT DISTINCT a.city AS city, w.city AS warehouse_city
+FROM addresses a
+CROSS JOIN warehouses w
+WHERE a.city IS NOT NULL AND w.city IS NOT NULL
+     - llm_sql_repair           src=llm_sql_repair       score=77.0  elig=eligible    fatal=False
+         sql: SELECT DISTINCT city FROM addresses
+UNION
+SELECT DISTINCT city FROM warehouses
+  selected_label        : llm_sql_repair (source=llm_sql_repair)
+  selection_reason      : consensus_group
+  selected_sql          : SELECT DISTINCT city FROM addresses
+UNION
+SELECT DISTINCT city FROM warehouses
+  RC3 trace             : {'semantic_eligible_count': 5, 'semantic_incomplete': [], 'consensus_group_size': 3, 'consensus_sources': ['llm_sql_direct', 'llm_sql_direct_grain', 'llm_sql_repair']}
+  RC4 override trace    : {'override_trace': None, 'direct_override_trace': None, 'override_blocked': None, 'override_block_reason': None}
+  RC5 trace             : None
+  audited_source_generated : True  (NOT correctness)
+  audited_correct_ref   : see audit_note
+  audit_note            : Returns address-city/warehouse-city pairs linked through shipments, not a single union of all cities from both sources.
+  semantic_correct      : None
+  semantic_review_status: pending_manual_sql_review
+  >> REVIEW the selected_sql above against the audited semantics.
+
+[447] bucket=RC4  outcome=executed_pending_semantic_review
+  question              : List customers who had both refunded and settled payments but no failed payments.
+  http_status           : 200
+  application_success   : True
+  execution.executed    : True   row_count=0
+  execution.error       : None
+  result_signature      : [3, 0, 5740354900026072187]
+  generated candidates  :
+     - llm_primary              src=llm_primary          score=5.0   elig=not_executed fatal=False
+         warnings: ['no SQL produced (invalid IR / unresolved plan / generation failure)']
+         sql: 
+     - llm_variant_1            src=llm_variant          score=88.0  elig=eligible    fatal=False
+         warnings: ['executed but returned zero rows (weak signal)', "checklist column 'payments.payment_status' is never used"]
+         sql: SELECT "customers"."customer_id", "customers"."first_name", "customers"."last_name", COUNT("payments"."payment_id") AS "refunded_count", COUNT("payments"."payment_id") AS "settled_count", COUNT("payments"."payment_id") A
+     - llm_variant_2            src=llm_variant          score=88.0  elig=eligible    fatal=False
+         warnings: ['executed but returned zero rows (weak signal)', "checklist column 'payments.payment_status' is never used"]
+         sql: SELECT "customers"."customer_id", COUNT("payments"."payment_id") AS "refunded_count", COUNT("payments"."payment_id") AS "settled_count", COUNT("payments"."payment_id") AS "failed_count" FROM "customers" INNER JOIN "payme
+     - llm_sql_direct           src=llm_sql_direct       score=100.0 elig=eligible    fatal=False
+         warnings: ['executed but returned zero rows (weak signal)']
+         sql: SELECT c.customer_id, c.first_name, c.last_name
+FROM customers c
+JOIN payments p ON c.customer_id = p.customer_id
+GROUP BY c.customer_id, c.first_name, c.last_name
+HAVING SUM(CASE WHEN p.payment_status = 'refunded' THEN 
+     - llm_sql_direct_grain     src=llm_sql_direct_grain score=100.0 elig=eligible    fatal=False
+         warnings: ['executed but returned zero rows (weak signal)']
+         sql: SELECT c.customer_id, c.first_name, c.last_name
+FROM customers c
+JOIN payments p ON c.customer_id = p.customer_id
+GROUP BY c.customer_id, c.first_name, c.last_name
+HAVING SUM(CASE WHEN p.payment_status = 'refunded' THEN 
+     - llm_sql_direct_variant   src=llm_sql_direct_variant score=100.0 elig=eligible    fatal=False
+         warnings: ['executed but returned zero rows (weak signal)']
+         sql: SELECT c.customer_id, c.first_name, c.last_name
+FROM customers c
+JOIN payments p ON c.customer_id = p.customer_id
+GROUP BY c.customer_id, c.first_name, c.last_name
+HAVING COUNT(CASE WHEN p.payment_status = 'refunded' THE
+     - llm_sql_repair           src=llm_sql_repair       score=100.0 elig=eligible    fatal=False
+         sql: SELECT c.customer_id, c.first_name, c.last_name
+FROM customers c
+JOIN payments p ON c.customer_id = p.customer_id
+GROUP BY c.customer_id, c.first_name, c.last_name
+HAVING SUM(CASE WHEN p.payment_status = 'refunded' THEN 
+  selected_label        : llm_sql_repair (source=llm_sql_repair)
+  selection_reason      : consensus_group
+  selected_sql          : SELECT c.customer_id, c.first_name, c.last_name
+FROM customers c
+JOIN payments p ON c.customer_id = p.customer_id
+GROUP BY c.customer_id, c.first_name, c.last_name
+HAVING SUM(CASE WHEN p.payment_status = 'refunded' THEN 1 ELSE 0 END) > 0
+   AND SUM(CASE WHEN p.payment_status = 'settled' THEN 1 ELSE 
+  RC3 trace             : {'semantic_eligible_count': 6, 'semantic_incomplete': [], 'consensus_group_size': 4, 'consensus_sources': ['llm_sql_direct', 'llm_sql_direct_grain', 'llm_sql_direct_variant', 'llm_sql_repair']}
+  RC4 override trace    : {'override_trace': None, 'direct_override_trace': None, 'override_blocked': None, 'override_block_reason': None}
+  RC5 trace             : None
+  audited_source_generated : True  (NOT correctness)
+  audited_correct_ref   : see audit_note
+  audit_note            : All three counts are COUNT(*), so refunded, settled, and failed counts are identical and do not test payment statuses.
+  semantic_correct      : None
+  semantic_review_status: pending_manual_sql_review
+  >> REVIEW the selected_sql above against the audited semantics.
+
+[146] bucket=RC5  outcome=executed_pending_semantic_review
+  question              : How many distinct suppliers had products stored in at least three different warehouses?
+  http_status           : 200
+  application_success   : True
+  execution.executed    : True   row_count=60
+  execution.error       : None
+  result_signature      : [2, 60, -2424363924099404270]
+  generated candidates  :
+     - llm_primary              src=llm_primary          score=38.0  elig=fatal       fatal=True
+         fatal_reasons: ["grain violation: contract requires COUNT(DISTINCT warehouse_id) per suppliers.supplier_id, but the SQL compares COUNT(warehouse_id) without DISTINCT (a 'distinct'-looking alias proves nothing)"]
+         warnings: ['distinct-count intent but no COUNT(DISTINCT)', "checklist table 'suppliers' is never used", "checklist table 'warehouses' is never used", "SQL ignores most explicitly named tables (missing: ['suppliers', 'warehouses'])", "grain violation: contract requires COUNT(DISTINCT warehouse_id) per suppliers.supplier_id, but the SQL compares COUNT(warehouse_id) without DISTINCT (a 'distinct'-looking alias proves nothing)"]
+         sql: SELECT DISTINCT "products"."supplier_id", COUNT("inventory"."warehouse_id") AS "warehouse_count" FROM "products" INNER JOIN "inventory" ON "products"."product_id" = "inventory"."product_id" GROUP BY "products"."supplier_
+     - llm_variant_1            src=llm_variant          score=94.0  elig=eligible    fatal=False
+         warnings: ["checklist table 'suppliers' is never used", "checklist table 'warehouses' is never used", "SQL ignores most explicitly named tables (missing: ['suppliers', 'warehouses'])"]
+         sql: SELECT "products"."supplier_id", COUNT(DISTINCT "inventory"."warehouse_id") AS "warehouse_count" FROM "products" INNER JOIN "inventory" ON "products"."product_id" = "inventory"."product_id" GROUP BY "products"."supplier_
+     - llm_variant_2            src=llm_variant          score=42.0  elig=eligible    fatal=False
+         warnings: ['distinct-count intent but no COUNT(DISTINCT)', "checklist measure column 'inventory.warehouse_id' is never used", "checklist table 'suppliers' is never used", "checklist table 'warehouses' is never used", "checklist column 'inventory.warehouse_id' is never used", "SQL ignores most explicitly named tables (missing: ['suppliers', 'warehouses'])", 'grain note: cannot prove the required COUNT(DISTINCT warehouse_id) comparison is applied']
+         sql: SELECT DISTINCT "products"."supplier_id", COUNT(*) AS "warehouse_count" FROM "products" INNER JOIN "inventory" ON "products"."product_id" = "inventory"."product_id" GROUP BY "products"."supplier_id" HAVING "warehouse_cou
+     - llm_sql_direct           src=llm_sql_direct       score=100.0 elig=eligible    fatal=False
+         warnings: ['grain note: COUNT(inventory.warehouse_id) per suppliers.supplier_id is computed, but a raw inventory.warehouse_id also appears in a comparison — verify the comparison grain', 'grain note: query groups by suppliers.supplier_id, suppliers.supplier_name but uses the nonaggregated child measure inventory.warehouse_id — consistent with a row-vs-peer comparison; advisory only']
+         sql: SELECT s.supplier_id, s.supplier_name
+FROM suppliers s
+JOIN products p ON s.supplier_id = p.supplier_id
+JOIN inventory i ON p.product_id = i.product_id
+JOIN warehouses w ON i.warehouse_id = w.warehouse_id
+GROUP BY s.supp
+     - llm_sql_direct_grain     src=llm_sql_direct_grain score=100.0 elig=eligible    fatal=False
+         sql: SELECT s.supplier_id, s.supplier_name
+FROM suppliers s
+JOIN products p ON s.supplier_id = p.supplier_id
+JOIN inventory i ON p.product_id = i.product_id
+JOIN warehouses w ON i.warehouse_id = w.warehouse_id
+GROUP BY s.supp
+     - llm_sql_direct_variant   src=llm_sql_direct_variant score=76.0  elig=fatal       fatal=True
+         fatal_reasons: ['grain violation: contract requires a COUNT(DISTINCT warehouse_id) comparison per suppliers.supplier_id, but no comparison predicate uses it']
+         warnings: ['grain violation: contract requires a COUNT(DISTINCT warehouse_id) comparison per suppliers.supplier_id, but no comparison predicate uses it', 'grain note: inventory.warehouse_id is compared as a raw value without a standalone COUNT — consistent with a row-vs-peer or output-only reading; not treated as fatal', 'grain note: query groups by suppliers.supplier_id but uses the nonaggregated child measure inventory.warehouse_id — consistent with a row-vs-peer comparison; advisory only']
+         sql: SELECT COUNT(*) 
+FROM (
+    SELECT s.supplier_id
+    FROM suppliers s
+    JOIN products p ON s.supplier_id = p.supplier_id
+    JOIN inventory i ON p.product_id = i.product_id
+    JOIN warehouses w ON i.warehouse_id = w.w
+  selected_label        : llm_sql_direct_grain (source=llm_sql_direct_grain)
+  selection_reason      : consensus_group
+  selected_sql          : SELECT s.supplier_id, s.supplier_name
+FROM suppliers s
+JOIN products p ON s.supplier_id = p.supplier_id
+JOIN inventory i ON p.product_id = i.product_id
+JOIN warehouses w ON i.warehouse_id = w.warehouse_id
+GROUP BY s.supplier_id, s.supplier_name
+HAVING COUNT(DISTINCT i.warehouse_id) >= 3
+  RC3 trace             : {'semantic_eligible_count': 4, 'semantic_incomplete': [], 'consensus_group_size': 2, 'consensus_sources': ['llm_sql_direct', 'llm_sql_direct_grain']}
+  RC4 override trace    : {'override_trace': None, 'direct_override_trace': None, 'override_blocked': None, 'override_block_reason': None}
+  RC5 trace             : None
+  audited_source_generated : True  (NOT correctness)
+  audited_correct_ref   : scalar COUNT(*) FROM (...) not a supplier list
+  audit_note            : Returns one row per supplier with a warehouse count instead of the requested number of distinct suppliers.
+  semantic_correct      : None
+  semantic_review_status: pending_manual_sql_review
+  >> REVIEW the selected_sql above against the audited semantics.
+
+[286] bucket=RC5  outcome=executed_pending_semantic_review
+  question              : List customers whose primary address city matches the city of an open warehouse.
+  http_status           : 200
+  application_success   : True
+  execution.executed    : True   row_count=109
+  execution.error       : None
+  result_signature      : [3, 109, -3002347609375835091]
+  generated candidates  :
+     - llm_primary              src=llm_primary          score=0.0   elig=not_executed fatal=False
+         warnings: ['no SQL produced (invalid IR / unresolved plan / generation failure)', "concept 'address' mentioned in the question but no matching column is used"]
+         sql: 
+     - llm_variant_1            src=llm_variant          score=78.0  elig=eligible    fatal=False
+         sql: SELECT DISTINCT "customers"."customer_id", "customers"."first_name", "customers"."last_name" FROM "customers" INNER JOIN "addresses" ON "customers"."customer_id" = "addresses"."customer_id" INNER JOIN "warehouses" ON "ad
+     - llm_sql_direct           src=llm_sql_direct       score=75.0  elig=eligible    fatal=False
+         warnings: ['executed but returned zero rows (weak signal)', "checklist requires shape 'comparison_subquery' but the SQL lacks it", "SQL uses unmentioned table 'warehouses' while the question names specific tables ['customers']"]
+         sql: SELECT DISTINCT c.customer_id, c.first_name, c.last_name
+FROM customers c
+JOIN addresses a ON c.customer_id = a.customer_id
+JOIN warehouses w ON a.city = w.city
+WHERE a.is_primary = '1'
+  AND w.operating_status = 'active
+     - llm_sql_direct_grain     src=llm_sql_direct_grain score=75.0  elig=eligible    fatal=False
+         warnings: ['executed but returned zero rows (weak signal)', "checklist requires shape 'comparison_subquery' but the SQL lacks it", "SQL uses unmentioned table 'warehouses' while the question names specific tables ['customers']"]
+         sql: SELECT c.customer_id, c.first_name, c.last_name
+FROM customers c
+JOIN addresses a ON c.customer_id = a.customer_id
+JOIN warehouses w ON a.city = w.city
+WHERE a.is_primary = '1'
+  AND w.operating_status = 'active'
+GROUP B
+     - llm_sql_direct_variant   src=llm_sql_direct_variant score=75.0  elig=eligible    fatal=False
+         warnings: ['executed but returned zero rows (weak signal)', "checklist requires shape 'comparison_subquery' but the SQL lacks it", "SQL uses unmentioned table 'warehouses' while the question names specific tables ['customers']"]
+         sql: SELECT DISTINCT c.customer_id, c.first_name, c.last_name
+FROM customers c
+JOIN addresses a ON c.customer_id = a.customer_id
+JOIN warehouses w ON a.city = w.city
+WHERE a.is_primary = '1'
+  AND a.active_flag = '1'
+  AND w.
+  selected_label        : llm_variant_1 (source=llm_variant)
+  selection_reason      : best_scored_executed
+  selected_sql          : SELECT DISTINCT "customers"."customer_id", "customers"."first_name", "customers"."last_name" FROM "customers" INNER JOIN "addresses" ON "customers"."customer_id" = "addresses"."customer_id" INNER JOIN "warehouses" ON "addresses"."city" = "warehouses"."city" WHERE "addresses"."is_primary" = ? AND "wa
+  RC3 trace             : {'semantic_eligible_count': 4, 'semantic_incomplete': [], 'consensus_group_size': 1, 'consensus_sources': ['llm_variant']}
+  RC4 override trace    : {'override_trace': None, 'direct_override_trace': None, 'override_blocked': None, 'override_block_reason': None}
+  RC5 trace             : None
+  audited_source_generated : True  (NOT correctness)
+  audited_correct_ref   : per-entity comparison not LIMIT 1
+  audit_note            : Compares each primary-address city with only one arbitrary open-warehouse city because of LIMIT 1.
+  semantic_correct      : None
+  semantic_review_status: pending_manual_sql_review
+  >> REVIEW the selected_sql above against the audited semantics.
+
+[289] bucket=RC5  outcome=executed_pending_semantic_review
+  question              : List products whose supplier state matches the state of a warehouse storing that product.
+  http_status           : 200
+  application_success   : True
+  execution.executed    : True   row_count=114
+  execution.error       : None
+  result_signature      : [3, 114, -5191549234648457087]
+  generated candidates  :
+     - llm_primary              src=llm_primary          score=81.0  elig=eligible    fatal=False
+         warnings: ["checklist requires shape 'comparison_subquery' but the SQL lacks it", "SQL uses unmentioned table 'warehouses' while the question names specific tables ['products']"]
+         sql: SELECT "products"."product_id", "products"."product_name", "suppliers"."state_code", "warehouses"."state_code" FROM "products" INNER JOIN "inventory" ON "products"."product_id" = "inventory"."product_id" INNER JOIN "supp
+     - llm_variant_1            src=llm_variant          score=78.0  elig=eligible    fatal=False
+         warnings: ['executed but returned zero rows (weak signal)', "checklist requires shape 'comparison_subquery' but the SQL lacks it", "SQL uses unmentioned table 'warehouses' while the question names specific tables ['products']"]
+         sql: SELECT DISTINCT "products"."product_id", "products"."product_name" FROM "products" INNER JOIN "inventory" ON "products"."product_id" = "inventory"."product_id" INNER JOIN "suppliers" ON "products"."supplier_id" = "suppli
+     - llm_variant_2            src=llm_variant          score=43.0  elig=eligible    fatal=False
+         warnings: ["concept 'state' mentioned in the question but no matching column is used", "checklist requires shape 'comparison_subquery' but the SQL lacks it", "checklist column 'suppliers.state_code' is never used", "checklist column 'warehouses.state_code' is never used", "SQL uses unmentioned table 'warehouses' while the question names specific tables ['products']"]
+         sql: SELECT DISTINCT "products"."product_id", "products"."product_name" FROM "products" INNER JOIN "inventory" ON "products"."product_id" = "inventory"."product_id" INNER JOIN "suppliers" ON "products"."supplier_id" = "suppli
+     - llm_sql_direct           src=llm_sql_direct       score=81.0  elig=eligible    fatal=False
+         sql: SELECT DISTINCT p.product_id, p.product_name, p.sku
+FROM products p
+JOIN suppliers s ON p.supplier_id = s.supplier_id
+JOIN inventory i ON p.product_id = i.product_id
+JOIN warehouses w ON i.warehouse_id = w.warehouse_id
+W
+     - llm_sql_direct_grain     src=llm_sql_direct_grain score=81.0  elig=eligible    fatal=False
+         warnings: ["checklist requires shape 'comparison_subquery' but the SQL lacks it", "SQL uses unmentioned table 'warehouses' while the question names specific tables ['products']"]
+         sql: SELECT p.product_id, p.product_name, p.sku
+FROM products p
+JOIN suppliers s ON p.supplier_id = s.supplier_id
+JOIN inventory i ON p.product_id = i.product_id
+JOIN warehouses w ON i.warehouse_id = w.warehouse_id
+WHERE s.st
+     - llm_sql_direct_variant   src=llm_sql_direct_variant score=46.0  elig=fatal       fatal=True
+         fatal_reasons: ['Cartesian join: a JOIN uses a constant ON predicate (ON 1=1 / ON TRUE) instead of a real key relationship']
+         warnings: ["checklist requires shape 'comparison_subquery' but the SQL lacks it", "SQL uses unmentioned table 'warehouses' while the question names specific tables ['products']", 'Cartesian join: a JOIN uses a constant ON predicate (ON 1=1 / ON TRUE) instead of a real key relationship']
+         sql: SELECT p.product_id, p.product_name, p.sku
+FROM products p
+JOIN inventory i ON p.product_id = i.product_id
+JOIN suppliers s ON p.supplier_id = s.supplier_id
+JOIN warehouses w ON i.warehouse_id = w.warehouse_id
+WHERE EXIS
+  selected_label        : llm_sql_direct (source=llm_sql_direct)
+  selection_reason      : semantic_best_candidate
+  selected_sql          : SELECT DISTINCT p.product_id, p.product_name, p.sku
+FROM products p
+JOIN suppliers s ON p.supplier_id = s.supplier_id
+JOIN inventory i ON p.product_id = i.product_id
+JOIN warehouses w ON i.warehouse_id = w.warehouse_id
+WHERE s.state_code = w.state_code
+  RC3 trace             : {'semantic_eligible_count': 5, 'semantic_incomplete': [], 'consensus_group_size': 1, 'consensus_sources': ['llm_sql_direct']}
+  RC4 override trace    : {'override_trace': None, 'direct_override_trace': None, 'override_blocked': None, 'override_block_reason': None}
+  RC5 trace             : {'stage': 'semantic_best_candidate', 'previous_pick': 'llm_primary', 'previous_score': 81.0, 'previous_profile': {'scalar_count_output': True, 'comparison_predicate': False, 'relationship_specificity': True, 'compound_set_complete': True, 'entity_grain_unique': True}, 'new_pick': 'llm_sql_direct', 'new_score': 81.0, 'new_profile': {'scalar_count_output': True, 'comparison_predicate': True, 'relationship_specificity': True, 'compound_set_complete': True, 'entity_grain_unique': True}, 'obligations_gained': ['comparison_predicate'], 'obligations_lost': [], 'semantic_winner': 'llm_sql_direct', 'incomparable': [], 'numeric_score_consulted': False, 'tie_break_reason': 'semantic_dominance'}
+  audited_source_generated : True  (NOT correctness)
+  audited_correct_ref   : WHERE supplier.state_code = warehouse.state_code
+  audit_note            : Joins supplier and warehouse states but never filters for equality.
+  semantic_correct      : None
+  semantic_review_status: pending_manual_sql_review
+  >> REVIEW the selected_sql above against the audited semantics.
+
+[317] bucket=RC5  outcome=executed_pending_semantic_review
+  question              : List Gold customers with their delivered order numbers and payment amounts.
+  http_status           : 200
+  application_success   : True
+  execution.executed    : True   row_count=120
+  execution.error       : None
+  result_signature      : [4, 120, -3540058455589723092]
+  generated candidates  :
+     - llm_primary              src=llm_primary          score=94.0  elig=eligible    fatal=False
+         warnings: ['executed but returned zero rows (weak signal)', "literal 'delivered' is not among the sampled values of column 'fulfillment_status' (known: ['fulfilled', 'partial', 'unfulfilled'])"]
+         sql: SELECT "customers"."customer_id", "customers"."first_name", "customers"."last_name", "sales_orders"."order_number", "payments"."amount" FROM "customers" INNER JOIN "payments" ON "customers"."customer_id" = "payments"."cu
+     - llm_variant_1            src=llm_variant          score=94.0  elig=eligible    fatal=False
+         warnings: ['executed but returned zero rows (weak signal)', "literal 'delivered' is not among the sampled values of column 'fulfillment_status' (known: ['fulfilled', 'partial', 'unfulfilled'])"]
+         sql: SELECT "customers"."customer_id", "sales_orders"."order_number", "payments"."amount" FROM "customers" INNER JOIN "payments" ON "customers"."customer_id" = "payments"."customer_id" INNER JOIN "sales_orders" ON "customers"
+     - llm_variant_2            src=llm_variant          score=100.0 elig=eligible    fatal=False
+         sql: SELECT "customers"."customer_id", "sales_orders"."order_number", "payments"."amount" FROM "customers" INNER JOIN "payments" ON "customers"."customer_id" = "payments"."customer_id" INNER JOIN "sales_orders" ON "customers"
+     - llm_sql_direct           src=llm_sql_direct       score=94.0  elig=eligible    fatal=False
+         warnings: ['executed but returned zero rows (weak signal)', "literal 'delivered' is not among the sampled values of column 'fulfillment_status' (known: ['fulfilled', 'partial', 'unfulfilled'])"]
+         sql: SELECT c.customer_id, c.loyalty_tier, so.order_number, p.amount
+FROM customers c
+JOIN sales_orders so ON c.customer_id = so.customer_id
+JOIN payments p ON so.order_id = p.order_id
+WHERE c.loyalty_tier = 'gold'
+AND so.ful
+     - llm_sql_direct_grain     src=llm_sql_direct_grain score=94.0  elig=eligible    fatal=False
+         warnings: ['executed but returned zero rows (weak signal)', "literal 'delivered' is not among the sampled values of column 'fulfillment_status' (known: ['fulfilled', 'partial', 'unfulfilled'])"]
+         sql: SELECT c.customer_id, c.loyalty_tier, so.order_number, p.amount
+FROM customers c
+JOIN sales_orders so ON c.customer_id = so.customer_id
+JOIN payments p ON so.order_id = p.order_id
+WHERE c.loyalty_tier = 'gold'
+  AND so.f
+     - llm_sql_direct_variant   src=llm_sql_direct_variant score=100.0 elig=eligible    fatal=False
+         sql: SELECT c.customer_id, c.loyalty_tier, so.order_number, p.amount
+FROM customers c
+JOIN sales_orders so ON c.customer_id = so.customer_id
+JOIN payments p ON so.order_id = p.order_id
+WHERE c.loyalty_tier = 'gold'
+  AND so.o
+  selected_label        : llm_sql_direct_variant (source=llm_sql_direct_variant)
+  selection_reason      : semantic_best_candidate
+  selected_sql          : SELECT c.customer_id, c.loyalty_tier, so.order_number, p.amount
+FROM customers c
+JOIN sales_orders so ON c.customer_id = so.customer_id
+JOIN payments p ON so.order_id = p.order_id
+WHERE c.loyalty_tier = 'gold'
+  AND so.order_status = 'delivered'
+  RC3 trace             : {'semantic_eligible_count': 6, 'semantic_incomplete': [], 'consensus_group_size': 1, 'consensus_sources': ['llm_sql_direct_variant']}
+  RC4 override trace    : {'override_trace': None, 'direct_override_trace': None, 'override_blocked': None, 'override_block_reason': None}
+  RC5 trace             : {'stage': 'semantic_best_candidate', 'previous_pick': 'llm_variant_2', 'previous_score': 100.0, 'previous_profile': {'scalar_count_output': True, 'comparison_predicate': True, 'relationship_specificity': False, 'compound_set_complete': True, 'entity_grain_unique': True}, 'new_pick': 'llm_sql_direct_variant', 'new_score': 100.0, 'new_profile': {'scalar_count_output': True, 'comparison_predicate': True, 'relationship_specificity': True, 'compound_set_complete': True, 'entity_grain_unique': True}, 'obligations_gained': ['relationship_specificity'], 'obligations_lost': [], 'semantic_winner': 'llm_sql_direct_variant', 'incomparable': [], 'numeric_score_consulted': False, 'tie_break_reason': 'semantic_dominance'}
+  audited_source_generated : True  (NOT correctness)
+  audited_correct_ref   : payment joined via order_id (not customer_id)
+  audit_note            : Joins payments to the customer rather than to the specific delivered order, pairing unrelated payments with orders.
+  semantic_correct      : None
+  semantic_review_status: pending_manual_sql_review
+  >> REVIEW the selected_sql above against the audited semantics.
+
+[336] bucket=RC5  outcome=executed_pending_semantic_review
+  question              : List customers who placed delivered online orders for Electronics products, with order number, product, payment amount, and carrier.
+  http_status           : 200
+  application_success   : True
+  execution.executed    : True   row_count=78
+  execution.error       : None
+  result_signature      : [4, 78, 1400550776929742017]
+  generated candidates  :
+     - llm_primary              src=llm_primary          score=100.0 elig=eligible    fatal=False
+         warnings: ["SQL uses unmentioned table 'shipments' while the question names specific tables ['customers', 'products']"]
+         sql: SELECT "sales_orders"."order_number", "products"."product_name", "payments"."amount", "shipments"."carrier" FROM "sales_orders" INNER JOIN "customers" ON "sales_orders"."customer_id" = "customers"."customer_id" INNER JOI
+     - llm_variant_1            src=llm_variant          score=100.0 elig=eligible    fatal=False
+         warnings: ["SQL uses unmentioned table 'shipments' while the question names specific tables ['customers', 'products']"]
+         sql: SELECT "customers"."customer_id", "sales_orders"."order_number", "products"."product_name", "payments"."amount", "shipments"."carrier" FROM "sales_orders" INNER JOIN "customers" ON "sales_orders"."customer_id" = "custome
+     - llm_variant_2            src=llm_variant          score=100.0 elig=eligible    fatal=False
+         warnings: ["SQL uses unmentioned table 'shipments' while the question names specific tables ['customers', 'products']"]
+         sql: SELECT "sales_orders"."order_number", "products"."product_name", "payments"."amount", "shipments"."carrier" FROM "sales_orders" INNER JOIN "customers" ON "sales_orders"."customer_id" = "customers"."customer_id" INNER JOI
+     - llm_sql_direct           src=llm_sql_direct       score=88.0  elig=eligible    fatal=False
+         warnings: ['executed but returned zero rows (weak signal)', "SQL uses unmentioned table 'shipments' while the question names specific tables ['customers', 'products']", "literal 'delivered' is not among the sampled values of column 'fulfillment_status' (known: ['fulfilled', 'partial', 'unfulfilled'])"]
+         sql: SELECT so.order_number, p.product_name, pay.amount, s.carrier
+FROM customers c
+JOIN sales_orders so ON c.customer_id = so.customer_id
+JOIN sales_order_items soi ON so.order_id = soi.order_id
+JOIN products p ON soi.produc
+     - llm_sql_direct_grain     src=llm_sql_direct_grain score=100.0 elig=eligible    fatal=False
+         sql: SELECT so.order_number, p.product_name, pay.amount, s.carrier
+FROM customers c
+JOIN sales_orders so ON c.customer_id = so.customer_id
+JOIN sales_order_items soi ON so.order_id = soi.order_id
+JOIN products p ON soi.produc
+     - llm_sql_direct_variant   src=llm_sql_direct_variant score=88.0  elig=eligible    fatal=False
+         warnings: ['executed but returned zero rows (weak signal)', "SQL uses unmentioned table 'shipments' while the question names specific tables ['customers', 'products']", "literal 'delivered' is not among the sampled values of column 'fulfillment_status' (known: ['fulfilled', 'partial', 'unfulfilled'])"]
+         sql: SELECT so.order_number, p.product_name, pay.amount, s.carrier
+FROM customers c
+JOIN sales_orders so ON c.customer_id = so.customer_id
+JOIN sales_order_items soi ON so.order_id = soi.order_id
+JOIN products p ON soi.produc
+  selected_label        : llm_sql_direct_grain (source=llm_sql_direct_grain)
+  selection_reason      : semantic_best_candidate
+  selected_sql          : SELECT so.order_number, p.product_name, pay.amount, s.carrier
+FROM customers c
+JOIN sales_orders so ON c.customer_id = so.customer_id
+JOIN sales_order_items soi ON so.order_id = soi.order_id
+JOIN products p ON soi.product_id = p.product_id
+JOIN payments pay ON so.order_id = pay.order_id
+JOIN shipmen
+  RC3 trace             : {'semantic_eligible_count': 6, 'semantic_incomplete': [], 'consensus_group_size': 1, 'consensus_sources': ['llm_sql_direct_grain']}
+  RC4 override trace    : {'override_trace': None, 'direct_override_trace': None, 'override_blocked': None, 'override_block_reason': None}
+  RC5 trace             : {'stage': 'semantic_best_candidate', 'previous_pick': 'llm_primary', 'previous_score': 100.0, 'previous_profile': {'scalar_count_output': True, 'comparison_predicate': True, 'relationship_specificity': False, 'compound_set_complete': True, 'entity_grain_unique': True}, 'new_pick': 'llm_sql_direct_grain', 'new_score': 100.0, 'new_profile': {'scalar_count_output': True, 'comparison_predicate': True, 'relationship_specificity': True, 'compound_set_complete': True, 'entity_grain_unique': True}, 'obligations_gained': ['relationship_specificity'], 'obligations_lost': [], 'semantic_winner': 'llm_sql_direct_grain', 'incomparable': [], 'numeric_score_consulted': False, 'tie_break_reason': 'semantic_dominance'}
+  audited_source_generated : True  (NOT correctness)
+  audited_correct_ref   : payment joined via order_id (not customer_id)
+  audit_note            : Joins payments through customer_id instead of order_id, attaching unrelated payments to delivered online orders.
+  semantic_correct      : None
+  semantic_review_status: pending_manual_sql_review
+  >> REVIEW the selected_sql above against the audited semantics.
+
+[437] bucket=RC5  outcome=executed_pending_semantic_review
+  question              : List products sold to both Gold and Platinum customers but not to Bronze customers.
+  http_status           : 200
+  application_success   : True
+  execution.executed    : True   row_count=33
+  execution.error       : None
+  result_signature      : [2, 33, -1849881021236019159]
+  generated candidates  :
+     - llm_primary              src=llm_primary          score=5.0   elig=not_executed fatal=False
+         warnings: ['no SQL produced (invalid IR / unresolved plan / generation failure)']
+         sql: 
+     - llm_variant_2            src=llm_variant          score=35.0  elig=fatal       fatal=True
+         fatal_reasons: ['fanout violation: COUNT("customers"."customer_segment") is aggregated after a one-to-many join multiplies its rows (many side: [\'sales_order_items\', \'sales_orders\']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [sales_orders 1->N sales_order_items (via sales_order_items.order_id); products 1->N sales_order_items (via sales_order_items.product_id); customers 1->N sales_orders (via sales_orders.customer_id)]']
+         warnings: ['executed but returned zero rows (weak signal)', "checklist requires shape 'not_exists' but the SQL lacks it", "checklist column 'customers.loyalty_tier' is never used", 'fanout violation: COUNT("customers"."customer_segment") is aggregated after a one-to-many join multiplies its rows (many side: [\'sales_order_items\', \'sales_orders\']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [sales_orders 1->N sales_order_items (via sales_order_items.order_id); products 1->N sales_order_items (via sales_order_items.product_id); customers 1->N sales_orders (via sales_orders.customer_id)]']
+         sql: SELECT "products"."product_id", "products"."product_name", COUNT("customers"."customer_segment") AS "gold_count", COUNT("customers"."customer_segment") AS "platinum_count", COUNT("customers"."customer_segment") AS "bronz
+     - llm_sql_direct           src=llm_sql_direct       score=100.0 elig=eligible    fatal=False
+         sql: SELECT p.product_id, p.product_name
+FROM products p
+JOIN sales_order_items soi ON p.product_id = soi.product_id
+JOIN sales_orders so ON soi.order_id = so.order_id
+JOIN customers c ON so.customer_id = c.customer_id
+WHERE 
+     - llm_sql_direct_grain     src=llm_sql_direct_grain score=100.0 elig=eligible    fatal=False
+         sql: SELECT p.product_id, p.product_name
+FROM products p
+JOIN sales_order_items soi ON p.product_id = soi.product_id
+JOIN sales_orders so ON soi.order_id = so.order_id
+JOIN customers c ON so.customer_id = c.customer_id
+WHERE 
+     - llm_sql_direct_variant   src=llm_sql_direct_variant score=100.0 elig=eligible    fatal=False
+         sql: SELECT p.product_id, p.product_name
+FROM products p
+JOIN sales_order_items soi ON p.product_id = soi.product_id
+JOIN sales_orders so ON soi.order_id = so.order_id
+JOIN customers c ON so.customer_id = c.customer_id
+WHERE 
+  selected_label        : llm_sql_direct (source=llm_sql_direct)
+  selection_reason      : semantic_best_candidate
+  selected_sql          : SELECT p.product_id, p.product_name
+FROM products p
+JOIN sales_order_items soi ON p.product_id = soi.product_id
+JOIN sales_orders so ON soi.order_id = so.order_id
+JOIN customers c ON so.customer_id = c.customer_id
+WHERE p.product_id IN (
+    SELECT p2.product_id
+    FROM products p2
+    JOIN sales_o
+  RC3 trace             : {'semantic_eligible_count': 3, 'semantic_incomplete': [], 'consensus_group_size': 1, 'consensus_sources': ['llm_sql_direct']}
+  RC4 override trace    : {'override_trace': None, 'direct_override_trace': None, 'override_blocked': None, 'override_block_reason': None}
+  RC5 trace             : {'stage': 'semantic_best_candidate', 'previous_pick': 'llm_sql_direct_variant', 'previous_score': 100.0, 'previous_profile': {'scalar_count_output': True, 'comparison_predicate': True, 'relationship_specificity': True, 'compound_set_complete': True, 'entity_grain_unique': False}, 'new_pick': 'llm_sql_direct', 'new_score': 100.0, 'new_profile': {'scalar_count_output': True, 'comparison_predicate': True, 'relationship_specificity': True, 'compound_set_complete': True, 'entity_grain_unique': True}, 'obligations_gained': ['entity_grain_unique'], 'obligations_lost': [], 'semantic_winner': 'llm_sql_direct', 'incomparable': [], 'numeric_score_consulted': False, 'tie_break_reason': 'semantic_dominance'}
+  audited_source_generated : True  (NOT correctness)
+  audited_correct_ref   : Gold AND Platinum (INTERSECT) AND NOT Bronze
+  audit_note            : Only excludes Bronze customers; it never requires that the product was sold to both Gold and Platinum customers.
+  semantic_correct      : None
+  semantic_review_status: pending_manual_sql_review
+  >> REVIEW the selected_sql above against the audited semantics.

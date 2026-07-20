@@ -1,0 +1,1 @@
+Executed 64 targeted queries locally. after_sql captured; semantic verdicts PENDING human review against question + schema + original audit reason. Populate day2_verified_recoveries.csv and day2_protected_regressions.csv from the review.

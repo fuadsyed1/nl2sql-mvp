@@ -294,6 +294,110 @@ def _looks_like_key(col: str, pk_names: set) -> bool:
     return c in pk_names or c == "geoid" or c.endswith("_id")
 
 
+def _benchmark_canonical_key(db_path: str, table: str):
+    """Registered answer-entity key columns for a table in a recognized local
+    benchmark (e.g. Lahman Teams -> [teamid, yearid, lgid]), filtered to columns
+    that actually exist. None when the DB is not a known benchmark. This resolves
+    ambiguous multi-id tables that the generic id-like heuristic can't key."""
+    if not db_path:
+        return None
+    try:
+        from local_benchmarks.benchmark_relationships import canonical_keys
+    except Exception:
+        return None
+    schema = _schema_pk_map(db_path)
+    cks = canonical_keys(set(schema.keys()))
+    key = cks.get(str(table).lower())
+    if not key:
+        return None
+    cols = schema.get(str(table).lower(), {}).get("cols", set())
+    filtered = [k for k in key if k in cols]
+    return filtered or None
+
+
+_JOIN_ALIAS_KW = {
+    "on", "where", "group", "order", "having", "limit", "join", "inner",
+    "left", "right", "outer", "cross", "full", "union", "using", "and", "or",
+}
+
+
+def _project_replace(sql: str, new_proj: str):
+    """Replace the top-level projection: `SELECT <...> FROM` -> `SELECT
+    <new_proj> FROM`, finding the FROM at paren depth 0 (so aggregates and
+    scalar subqueries in the SELECT list are handled). Returns None when the
+    projection cannot be located safely."""
+    m = re.match(r"(?is)\s*SELECT\b", sql)
+    if not m:
+        return None
+    i, depth, n = m.end(), 0, len(sql)
+    while i < n:
+        ch = sql[i]
+        if ch == "(":
+            depth += 1
+        elif ch == ")":
+            if depth == 0:
+                return None
+            depth -= 1
+        elif depth == 0 and re.match(r"(?i)FROM\b", sql[i:]) and (
+                i == 0 or not (sql[i - 1].isalnum() or sql[i - 1] == "_")):
+            return f"SELECT {new_proj} " + sql[i:]
+        i += 1
+    return None
+
+
+def _join_tables(sql: str):
+    """Ordered [(table, alias_or_None)] for the driving table + each JOIN.
+    Subqueries in FROM (FROM (SELECT ...)) are skipped."""
+    out = []
+    for m in re.finditer(
+            r"(?is)\b(?:FROM|JOIN)\s+([`\"\[]?[A-Za-z_]\w*[`\"\]]?)"
+            r"(?:\s+(?:AS\s+)?([`\"\[]?[A-Za-z_]\w*[`\"\]]?))?", sql):
+        t = m.group(1).strip('`"[]').lower()
+        a = (m.group(2) or "").strip('`"[]')
+        if a.lower() in _JOIN_ALIAS_KW:
+            a = ""
+        out.append((t, a or None))
+    return out
+
+
+def _benchmark_key_columns(db_path: str) -> set:
+    """Union of all registered canonical-key column names for this DB's
+    benchmark (empty for non-benchmark DBs)."""
+    if not db_path:
+        return set()
+    try:
+        from local_benchmarks.benchmark_relationships import canonical_keys
+    except Exception:
+        return set()
+    schema = _schema_pk_map(db_path)
+    cols = set()
+    for v in canonical_keys(set(schema.keys())).values():
+        cols |= {c.lower() for c in v}
+    return cols
+
+
+def _parse_group_by_exprs(sql: str):
+    """[(bare_name_lower, raw_expr)] when every GROUP BY term is a simple
+    column / table.column reference, else None. The raw_expr is projected in the
+    comparison SQL (keeps the alias qualifier)."""
+    m = re.search(
+        r"(?is)\bGROUP\s+BY\b(.+?)(?:\bHAVING\b|\bORDER\s+BY\b|\bLIMIT\b|$)", sql)
+    if not m:
+        return None
+    out = []
+    for term in m.group(1).split(","):
+        t = term.strip()
+        if not t:
+            return None
+        mm = re.fullmatch(
+            r"""[`"\[]?([A-Za-z_]\w*)[`"\]]?"""
+            r"""(?:\s*\.\s*[`"\[]?([A-Za-z_]\w*)[`"\]]?)?""", t)
+        if not mm:
+            return None
+        out.append(((mm.group(2) or mm.group(1)).lower(), t))
+    return out or None
+
+
 def build_key_comparison(database_id: int, sql: str, execution_columns: list) -> dict:
     """Build a single-column canonical-key projection of `sql`, used ONLY for
     the EXCEPT comparison. Returns:
@@ -336,6 +440,61 @@ def build_key_comparison(database_id: int, sql: str, execution_columns: list) ->
             "comparison_sql": f"SELECT {key} FROM (\n{clean}\n) AS __proj",
             "strategy": "key_in_output",
         }
+
+    # -- Benchmark canonical key (composite-aware): when the generic id-like
+    #    detection is ambiguous (Teams has yearID/teamID/lgID), use the
+    #    registered answer-entity key for a recognized benchmark schema.
+    base = _single_base_table(clean)
+    if base:
+        bkey = _benchmark_canonical_key(db_path, base[0])
+        if bkey:
+            out_lower = {c.lower(): c for c in out}
+            if all(k in out_lower for k in bkey):     # key already in output
+                cols = [out_lower[k] for k in bkey]
+                return {
+                    "ok": True,
+                    "key": ",".join(sorted(bkey)),
+                    "comparison_sql": f"SELECT {', '.join(cols)} FROM (\n{clean}\n) AS __proj",
+                    "strategy": "benchmark_key_in_output",
+                }
+            if not (_AGG_RE.search(clean) or _GROUP_RE.search(clean)
+                    or _DISTINCT_RE.search(clean) or _SETOP_RE.search(clean)):
+                table, alias = base
+                proj = re.search(r"(?is)^\s*SELECT\b(.*?)\bFROM\b", clean)
+                if proj and "(" not in proj.group(1) and not re.search(
+                        r"(?i)\bSELECT\b", proj.group(1)):
+                    refs = ", ".join((f"{alias}.{c}" if alias else c) for c in bkey)
+                    comparison_sql = re.sub(
+                        r"(?is)^\s*SELECT\b.*?\bFROM\b", f"SELECT {refs} FROM",
+                        clean, count=1)
+                    return {
+                        "ok": True,
+                        "key": ",".join(sorted(bkey)),
+                        "comparison_sql": comparison_sql,
+                        "strategy": "benchmark_single_table_rewrite",
+                    }
+
+    # -- Answer-entity canonical key for JOINED queries: recover the answer key
+    #    from the FIRST joined table that has a registered benchmark key, even
+    #    when there is no single base table (Case 5/9/10). The display SQL is
+    #    unchanged; the comparison SQL projects the answer key. GROUP BY queries
+    #    are handled by the grouped path, so skip them here.
+    if not _GROUP_RE.search(clean) and not _SETOP_RE.search(clean):
+        for (t, alias) in _join_tables(clean):
+            bkey = _benchmark_canonical_key(db_path, t)
+            if not bkey:
+                continue
+            qual = alias or t
+            refs = ", ".join(f"{qual}.{c}" for c in bkey)
+            comp = _project_replace(clean, refs)
+            if comp:
+                return {
+                    "ok": True,
+                    "key": ",".join(sorted(bkey)),
+                    "comparison_sql": comp,
+                    "strategy": "benchmark_answer_key",
+                }
+            break
 
     # -- Path 2: recover the key from a single base table. Only safe when the
     #    query is a plain single-table SELECT (no join / aggregate / group by /
@@ -442,12 +601,14 @@ def _parse_group_by_columns(sql: str):
 def build_group_key_comparison(database_id: int, sql: str, execution_columns: list) -> dict:
     """Step 2: identify the group-key columns of a GROUP BY query so containment
     can be compared on the group keys only. Returns:
-        {"ok": True, "clean_sql": ..., "group_key_cols": [out names],
-         "canonical_key": "club_id"|None, "canonical_col": "club_id"|None}
+        {"ok": True, "clean_sql": ..., "group_key_bare": [names],
+         "group_key_exprs": [raw exprs], "canonical_key": name|None,
+         "canonical_expr": raw|None}
         {"ok": False, "reason": "..."}
-    The comparison SQL itself is assembled by the caller by wrapping clean_sql
-    and projecting the chosen key column(s) — the grouped query's own output
-    already reflects WHERE/GROUP BY/HAVING, so wrapping preserves those exactly.
+    The group key does NOT need to be in the output: the caller rewrites the
+    grouped query's projection to the GROUP BY expression(s) (WHERE/JOIN/GROUP
+    BY/HAVING are preserved), so a career query grouped by playerID compares on
+    playerID even when it only displays names + aggregates.
     """
     clean, err = sanitize(sql)
     if err:
@@ -461,42 +622,33 @@ def build_group_key_comparison(database_id: int, sql: str, execution_columns: li
     if _DISTINCT_RE.search(clean):
         return {"ok": False, "reason": "SELECT DISTINCT grouped query is not normalized"}
 
-    gb = _parse_group_by_columns(clean)
-    if not gb:
+    gbx = _parse_group_by_exprs(clean)
+    if not gbx:
         return {"ok": False, "reason": "GROUP BY expression is not a simple column reference"}
-
-    out = list(execution_columns or [])
-    out_lower = {c.lower(): c for c in out}  # lower -> original output name
-    exposed = [out_lower[c.lower()] for c in gb if c.lower() in out_lower]
-    if not exposed:
-        return {"ok": False, "reason": "group key not exposed in the query output"}
+    bare = [b for b, _ in gbx]
+    exprs = [e for _, e in gbx]
 
     db_path = get_database_path(database_id)
     schema = _schema_pk_map(db_path) if db_path else {}
     pk_names = {v["pk"].lower() for v in schema.values() if v["pk"]}
+    bench_cols = _benchmark_key_columns(db_path)
 
-    # A single canonical key among the exposed group keys (declared PK preferred,
-    # else exactly one id-like column) lets same-entity groupings that use
-    # different but equivalent key columns still line up.
-    canonical = None
-    pk_hits = [c for c in exposed if c.lower() in pk_names]
-    if pk_hits:
-        canonical = pk_hits[0]
-    else:
-        id_hits = [c for c in exposed if _looks_like_key(c, pk_names)]
-        if len(id_hits) == 1:
-            canonical = id_hits[0]
-
-    # Without a canonical key we must expose the FULL grouping key to compare.
-    if canonical is None and len(exposed) != len(gb):
-        return {"ok": False, "reason": "group key not fully exposed in the query output"}
+    # A single-column group key that is a real key (declared PK, id-like, or a
+    # registered benchmark canonical column like playerID) lines up same-entity
+    # groupings that use different-but-equivalent key columns.
+    canonical_idx = None
+    if len(gbx) == 1:
+        b0 = bare[0]
+        if b0 in pk_names or _looks_like_key(b0, pk_names) or b0 in bench_cols:
+            canonical_idx = 0
 
     return {
         "ok": True,
         "clean_sql": clean,
-        "group_key_cols": exposed,
-        "canonical_key": canonical.lower() if canonical else None,
-        "canonical_col": canonical,
+        "group_key_bare": bare,
+        "group_key_exprs": exprs,
+        "canonical_key": bare[canonical_idx] if canonical_idx is not None else None,
+        "canonical_expr": exprs[canonical_idx] if canonical_idx is not None else None,
     }
 
 

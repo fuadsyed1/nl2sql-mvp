@@ -136,14 +136,15 @@ def test_setop_grouped_remains_unknown(db):
     assert compared_on is None
 
 
-def test_unexposed_group_key_remains_unknown(db):
-    # Groups by city but does not select city -> key not exposed.
+def test_unexposed_group_key_now_compares(db):
+    # Groups by city but does NOT select city. The comparison SQL rewrites the
+    # projection to the GROUP BY key, so it now compares on city (no longer
+    # "unknown: group key not exposed").
     a = "SELECT COUNT(*) AS n FROM clubs GROUP BY city"
     b = "SELECT city, COUNT(*) AS n FROM clubs GROUP BY city"
     rel, expl, amb, bma, compared_on = classify(db, a, b)
-    assert rel == "unknown"
-    assert compared_on is None
-    assert "not exposed" in expl
+    assert compared_on == "group_keys:city"
+    assert rel == "equivalent_on_current_database"
 
 
 # ---------------------------------------------------------------------------

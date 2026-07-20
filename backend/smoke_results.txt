@@ -1,0 +1,76 @@
+====================================================================================================
+TEST 001
+CATEGORY: aggregation
+DIFFICULTY: easy
+STATUS: PASS
+QUERY:
+How many customers are currently active?
+SQL:
+SELECT COUNT(customer_id) FROM customers WHERE account_status = 'active'
+====================================================================================================
+TEST 257
+CATEGORY: join
+DIFFICULTY: easy
+STATUS: PASS
+QUERY:
+Show each sales order number with the assigned sales representative.
+SQL:
+SELECT "sales_orders"."order_number", "employees"."full_name" FROM "sales_orders" INNER JOIN "sales_order_items" ON "sales_orders"."sales_rep_id" = "sales_order_items"."order_item_id" INNER JOIN "warehouses" ON "sales_order_items"."warehouse_id" = "warehouses"."warehouse_id" INNER JOIN "employees" ON "warehouses"."manager_employee_id" = "employees"."employee_id"
+====================================================================================================
+TEST 401
+CATEGORY: set_operations
+DIFFICULTY: easy
+STATUS: PASS
+QUERY:
+List cities that appear either in customer addresses or in warehouse locations.
+SQL:
+SELECT DISTINCT city FROM addresses
+UNION
+SELECT DISTINCT city FROM warehouses
+====================================================================================================
+TEST 451
+CATEGORY: subquery_cte
+DIFFICULTY: easy
+STATUS: PASS
+QUERY:
+List products priced above the overall average sale price.
+SQL:
+SELECT product_id, product_name, sale_price
+FROM products
+WHERE sale_price > (SELECT AVG(sale_price) FROM products)
+====================================================================================================
+TEST 257
+CATEGORY: join
+DIFFICULTY: easy
+STATUS: PASS
+QUERY:
+Show each sales order number with the assigned sales representative.
+SQL:
+SELECT "sales_orders"."order_number", "employees"."full_name" FROM "sales_orders" INNER JOIN "sales_order_items" ON "sales_orders"."sales_rep_id" = "sales_order_items"."order_item_id" INNER JOIN "warehouses" ON "sales_order_items"."warehouse_id" = "warehouses"."warehouse_id" INNER JOIN "employees" ON "warehouses"."manager_employee_id" = "employees"."employee_id"
+====================================================================================================
+TEST 257
+CATEGORY: join
+DIFFICULTY: easy
+STATUS: PASS
+QUERY:
+Show each sales order number with the assigned sales representative.
+SQL:
+SELECT "sales_orders"."order_number", "employees"."first_name", "employees"."last_name" FROM "sales_orders" INNER JOIN "sales_order_items" ON "sales_orders"."sales_rep_id" = "sales_order_items"."order_item_id" INNER JOIN "warehouses" ON "sales_order_items"."warehouse_id" = "warehouses"."warehouse_id" INNER JOIN "employees" ON "warehouses"."manager_employee_id" = "employees"."employee_id"
+====================================================================================================
+TEST 257
+CATEGORY: join
+DIFFICULTY: easy
+STATUS: PASS
+QUERY:
+Show each sales order number with the assigned sales representative.
+SQL:
+SELECT "sales_orders"."order_number", "employees"."full_name" FROM "sales_orders" INNER JOIN "sales_order_items" ON "sales_orders"."sales_rep_id" = "sales_order_items"."order_item_id" INNER JOIN "warehouses" ON "sales_order_items"."warehouse_id" = "warehouses"."warehouse_id" INNER JOIN "employees" ON "warehouses"."manager_employee_id" = "employees"."employee_id"
+====================================================================================================
+TEST 257
+CATEGORY: join
+DIFFICULTY: easy
+STATUS: PASS
+QUERY:
+Show each sales order number with the assigned sales representative.
+SQL:
+SELECT "sales_orders"."order_number", "employees"."full_name" FROM "sales_orders" INNER JOIN "sales_order_items" ON "sales_orders"."sales_rep_id" = "sales_order_items"."order_item_id" INNER JOIN "warehouses" ON "sales_order_items"."warehouse_id" = "warehouses"."warehouse_id" INNER JOIN "employees" ON "warehouses"."manager_employee_id" = "employees"."employee_id"

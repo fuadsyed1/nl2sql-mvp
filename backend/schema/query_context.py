@@ -18,10 +18,17 @@ filter removal, ambiguous_partitioned_table_query) stay in the endpoint because
 they operate on the IR, not on schema selection.
 """
 
-from db.database_service import get_database_graph
+from db.database_service import (
+    get_database_graph, get_database_path, get_database_tables,
+    get_relationships,
+)
 from schema.lazy_loader import get_database_meta
 from schema.subgraph_builder import build_subgraph
+from schema.table_mention import explicit_table_mentions
 from retrieval.table_retriever import retrieve_tables, requested_dates_satisfied
+from retrieval.relationship_expansion import (
+    physical_fk_edges, expand_tables_along_fks,
+)
 
 __all__ = ["resolve_query_graph"]
 
@@ -34,25 +41,13 @@ def _name_tokens(s):
 
 
 def _explicitly_named_tables(question, all_names):
-    """Real table names that appear in the question, matched
-    separator-INSENSITIVELY (underscores/spaces/hyphens equivalent).
-    Only distinctive names (multi-token / digit / long) can match, so a
-    plain common word cannot force a table. Returns real-cased names."""
-    qn = " " + " ".join(_name_tokens(question)) + " "
-    found = []
-    for name in all_names:
-        toks = _name_tokens(name)
-        if not toks:
-            continue
-        distinctive = (len(toks) >= 2 or any(ch.isdigit() for ch in str(name))
-                       or len(str(name)) >= 8)
-        if not distinctive:
-            continue
-        pat = (r"(?<![a-z0-9])" + r"\s+".join(_re.escape(tk) for tk in toks)
-               + r"(?![a-z0-9])")
-        if _re.search(pat, qn):
-            found.append(name)
-    return found
+    """Real table names the question EXPLICITLY references (separator-
+    insensitive). A distinctive name (multi-token / digit / underscore / very
+    long token) matches on a bare mention; a plain single-word name locks only
+    with an explicit table cue ('customer table', 'from customer',
+    'customer.id'), so an ordinary business noun cannot force a table. Delegates
+    to the shared detector. Returns real-cased names."""
+    return list(explicit_table_mentions(question, all_names))
 
 
 def resolve_query_graph(database_id, question, meta=None):
@@ -91,9 +86,32 @@ def resolve_query_graph(database_id, question, meta=None):
                 "tables_considered": tables_considered,
             }
 
-        graph = build_subgraph(
-            database_id, [t["table_name"] for t in tables_considered]
-        )
+        # Relationship-aware closure: lexical retrieval returns only tables
+        # whose NAMES match the question, so multi-hop join/measure/bridge
+        # tables (SalesOrderHeader/Detail, EmployeePayHistory, PurchaseOrderHeader
+        # ...) are missing and the join path cannot be built. Expand the seed set
+        # along the database's REAL foreign keys to pull in bridge tables (on the
+        # join path between seeds) and question-relevant neighbors, capped so the
+        # graph stays focused. `tables_considered` (used by the date/table
+        # fallback) is left as the original lexical seeds.
+        seed_names = [t["table_name"] for t in tables_considered]
+        try:
+            # Table expansion derives adjacency from the FINALIZED STORED edges,
+            # never a fresh physical-FK read. Table selection may vary per query
+            # (retrieval); relationships do not.
+            fk_edges = get_relationships(database_id)
+            if fk_edges:
+                all_names = [r["table_name"]
+                             for r in get_database_tables(database_id)]
+                expanded = expand_tables_along_fks(
+                    seed_names, fk_edges, all_names, question)
+                if expanded:
+                    print(f"[FK EXPANSION] seeds={seed_names} -> {expanded}",
+                          flush=True)
+                    seed_names = expanded
+        except Exception as exc:
+            print(f"FK EXPANSION ERROR: {exc}", flush=True)
+        graph = build_subgraph(database_id, seed_names)
     else:
         graph = get_database_graph(database_id)
 

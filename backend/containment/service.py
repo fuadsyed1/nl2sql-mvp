@@ -11,7 +11,7 @@ pipeline's output, applies the safety gate, and (Step 2) runs a live-database
 EXCEPT containment check via containment.checker.
 """
 
-from collections import defaultdict
+from collections import defaultdict  # noqa
 from typing import Callable
 
 from .models import (
@@ -320,29 +320,35 @@ def _classify_grouped(database_id, qa: BatchQueryResult, qb: BatchQueryResult):
             reasons.append(f"Query {b} ({gb.get('reason')})")
         return "unknown", f"Cannot compare grouped queries: {'; '.join(reasons)}.", [], [], None
 
-    # Choose the comparison basis: a shared canonical key if both grouped on one,
-    # otherwise the full group-key column set (which must match between queries).
+    # Choose the comparison basis: a shared single canonical group key if both
+    # grouped on one, otherwise the full group-key set (bare names must match).
+    # The comparison SQL REWRITES the projection to the GROUP BY expression(s),
+    # so the group key need not appear in the query's output.
     if ga["canonical_key"] and gb["canonical_key"] and ga["canonical_key"] == gb["canonical_key"]:
-        cols_a = [ga["canonical_col"]]
-        cols_b = [gb["canonical_col"]]
+        exprs_a = [ga["canonical_expr"]]
+        exprs_b = [gb["canonical_expr"]]
         label = f"group_key:{ga['canonical_key']}"
     else:
-        set_a = sorted(c.lower() for c in ga["group_key_cols"])
-        set_b = sorted(c.lower() for c in gb["group_key_cols"])
+        set_a = sorted(ga["group_key_bare"])
+        set_b = sorted(gb["group_key_bare"])
         if set_a != set_b:
             return ("unknown",
                     f"Cannot compare grouped queries: different group keys "
-                    f"({ga['group_key_cols']} vs {gb['group_key_cols']}).",
+                    f"({ga['group_key_bare']} vs {gb['group_key_bare']}).",
                     [], [], None)
-        # Align projection order (by lowercased name) so EXCEPT lines up columns.
-        order = sorted(ga["group_key_cols"], key=lambda c: c.lower())
-        b_by_lower = {c.lower(): c for c in gb["group_key_cols"]}
-        cols_a = order
-        cols_b = [b_by_lower[c.lower()] for c in order]
-        label = f"group_keys:{','.join(c.lower() for c in order)}"
+        order = set_a  # aligned bare-name order for both sides
+        a_by = {b: e for b, e in zip(ga["group_key_bare"], ga["group_key_exprs"])}
+        b_by = {b: e for b, e in zip(gb["group_key_bare"], gb["group_key_exprs"])}
+        exprs_a = [a_by[name] for name in order]
+        exprs_b = [b_by[name] for name in order]
+        label = f"group_keys:{','.join(order)}"
 
-    comp_a = f"SELECT {', '.join(cols_a)} FROM (\n{ga['clean_sql']}\n) AS __g"
-    comp_b = f"SELECT {', '.join(cols_b)} FROM (\n{gb['clean_sql']}\n) AS __g"
+    comp_a = checker._project_replace(ga["clean_sql"], ", ".join(exprs_a))
+    comp_b = checker._project_replace(gb["clean_sql"], ", ".join(exprs_b))
+    if not comp_a or not comp_b:
+        return ("unknown",
+                "Cannot compare grouped queries: projection could not be rewritten "
+                "to the group key.", [], [], None)
     live = checker.check_live_containment(
         database_id, comp_a, qa.params, comp_b, qb.params
     )

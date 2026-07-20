@@ -4,7 +4,7 @@ import RelationshipsView from "./RelationshipsView";
 
 import { API_BASE } from "../api";
 
-function DatabaseWorkspace({ userId, activeDatabaseId = null, onClose, onSelectDatabase = () => {} }) {
+function DatabaseWorkspace({ activeDatabaseId = null, onClose }) {
   const [graph, setGraph] = useState(null);
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -17,57 +17,54 @@ function DatabaseWorkspace({ userId, activeDatabaseId = null, onClose, onSelectD
   // Load the active database. Small mode: full graph (schema + relationships),
   // unchanged. Large mode: a lightweight summary only (no full graph build).
   useEffect(() => {
-    if (!activeDatabaseId) {
+    let cancelled = false;
+    (async () => {
+      if (!activeDatabaseId) {
+        setGraph(null);
+        setSummary(null);
+        return;
+      }
+      setLoading(true);
+      setError("");
       setGraph(null);
       setSummary(null);
-      return;
-    }
-    let cancelled = false;
-    setLoading(true);
-    setError("");
-    setGraph(null);
-    setSummary(null);
-
-    fetch(`${API_BASE}/database/${activeDatabaseId}/meta`)
-      .then((r) => r.json())
-      .then((meta) => {
-        if (cancelled) return null;
+      try {
+        const meta = await (
+          await fetch(`${API_BASE}/database/${activeDatabaseId}/meta`)
+        ).json();
+        if (cancelled) return;
         if (!meta.success) {
           setError(meta.message || "Failed to load database.");
-          return null;
+          return;
         }
         if (meta.mode === "large") {
-          return fetch(
-            `${API_BASE}/database/${activeDatabaseId}/graph?summary=true`
-          )
-            .then((r) => r.json())
-            .then((d) => {
-              if (cancelled) return;
-              if (!d.success)
-                setError(d.message || "Failed to load database.");
-              else setSummary({ name: meta.name, ...d });
-            });
+          const d = await (
+            await fetch(
+              `${API_BASE}/database/${activeDatabaseId}/graph?summary=true`
+            )
+          ).json();
+          if (cancelled) return;
+          if (!d.success) setError(d.message || "Failed to load database.");
+          else setSummary({ name: meta.name, ...d });
+        } else {
+          // Small mode: existing full-graph behavior, unchanged.
+          const d = await (
+            await fetch(`${API_BASE}/database/${activeDatabaseId}/graph`)
+          ).json();
+          if (cancelled) return;
+          if (!d.success) {
+            setError(d.message || "Failed to load database.");
+            setGraph(null);
+          } else {
+            setGraph(d.database);
+          }
         }
-        // Small mode: existing full-graph behavior, unchanged.
-        return fetch(`${API_BASE}/database/${activeDatabaseId}/graph`)
-          .then((r) => r.json())
-          .then((d) => {
-            if (cancelled) return;
-            if (!d.success) {
-              setError(d.message || "Failed to load database.");
-              setGraph(null);
-            } else {
-              setGraph(d.database);
-            }
-          });
-      })
-      .catch((e) => {
+      } catch (e) {
         if (!cancelled) setError(`Could not load database: ${e.message}`);
-      })
-      .finally(() => {
+      } finally {
         if (!cancelled) setLoading(false);
-      });
-
+      }
+    })();
     return () => {
       cancelled = true;
     };

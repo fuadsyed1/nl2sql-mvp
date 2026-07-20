@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import OutputCard from "./OutputCard";
 import QueryResultCard from "./QueryResultCard";
 import ContainmentResultCard from "./ContainmentResultCard";
@@ -52,9 +52,14 @@ function ConversionPage({
   // Toggle between the summary card and the (placeholder) relationship review
   // card. Reset whenever the active database changes.
   const [reviewingRelationships, setReviewingRelationships] = useState(false);
-  useEffect(() => {
+  // Reset to the summary view when the active database changes. Done during
+  // render (React's recommended "adjust state on prop change" pattern) rather
+  // than in an effect, so it does not trigger a cascading post-render update.
+  const [prevReviewDbId, setPrevReviewDbId] = useState(activeDatabaseId);
+  if (activeDatabaseId !== prevReviewDbId) {
+    setPrevReviewDbId(activeDatabaseId);
     setReviewingRelationships(false);
-  }, [activeDatabaseId]);
+  }
 
   return (
     <div className="flex flex-col h-full bg-gray-100">
@@ -75,33 +80,45 @@ function ConversionPage({
           <p className="text-gray-500 text-sm">NL to {target}</p>
         </div>
 
-        <button
-          onClick={() => setDbBrowserOpen(true)}
-          className="w-1/2 flex items-center justify-between gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl px-4 py-2.5 text-sm font-medium"
-          title="Browse and select a database"
-        >
-          <span>🗄️ {activeDatabaseId ? `Database #${activeDatabaseId}` : "Databases"}</span>
-          <span className="text-gray-400">▾</span>
-        </button>
+        <div className="w-1/2 flex items-center gap-2">
+          <button
+            onClick={() => setDbBrowserOpen(true)}
+            className="flex-1 flex items-center justify-between gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl px-4 py-2.5 text-sm font-medium"
+            title="Browse and select a database"
+          >
+            <span>🗄️ {activeDatabaseId ? `Database #${activeDatabaseId}` : "Databases"}</span>
+            <span className="text-gray-400">▾</span>
+          </button>
+          {activeDatabaseId && (
+            <button
+              onClick={() => setReviewingRelationships(true)}
+              className="shrink-0 flex items-center gap-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl px-3 py-2.5 text-sm font-medium whitespace-nowrap"
+              title="View, add, edit, or remove this database's relationships"
+            >
+              🔗 Edit Relationships
+            </button>
+          )}
+        </div>
       </header>
 
       <section
         style={{ paddingBottom: canQuery ? inputBarHeight + 56 : 32 }}
         className="flex-1 overflow-y-auto p-8 mx-2 mt-2 mb-0 bg-white rounded-tl-3xl shadow-sm space-y-6 min-h-0">
-        {showSummary &&
-          (reviewingRelationships ? (
-            <RelationshipReviewCard
-              summary={activeDatabaseSummary}
-              onBack={() => setReviewingRelationships(false)}
-              onFinalize={onFinalizeRelationships}
-              finalized={relationshipsFinalized}
-            />
-          ) : (
-            <DatabaseSummaryCard
-              summary={activeDatabaseSummary}
-              onReviewRelationships={() => setReviewingRelationships(true)}
-            />
-          ))}
+        {reviewingRelationships && (
+          <RelationshipReviewCard
+            summary={activeDatabaseSummary}
+            conversationId={currentConversationId}
+            onBack={() => setReviewingRelationships(false)}
+            onFinalize={onFinalizeRelationships}
+            finalized={relationshipsFinalized}
+          />
+        )}
+        {showSummary && !reviewingRelationships && (
+          <DatabaseSummaryCard
+            summary={activeDatabaseSummary}
+            onReviewRelationships={() => setReviewingRelationships(true)}
+          />
+        )}
 
         {showWorkspaceCard && (
           <DatabaseWorkspaceCard

@@ -1,0 +1,63 @@
+{
+  "created_at": "2026-07-13T21:56:47.890009",
+  "git_head": "6b292846cb41699e4dd443cbe6a08885661b1027",
+  "git_branch": "main",
+  "working_tree_dirty": true,
+  "model_provider": "mindrouter",
+  "model_name": "qwen/qwen3.5-122b",
+  "benchmark_databases": {
+    "46": {
+      "name": "appointments",
+      "path": "uploads/user_4/databases/db_46/data.db"
+    },
+    "49": {
+      "name": "Lahman Baseball",
+      "path": "uploads/user_4/databases/db_49/data.db"
+    },
+    "50": {
+      "name": "AdventureWorks CTU",
+      "path": "uploads/user_4/databases/db_50/data.db"
+    }
+  },
+  "pipeline_file_sha256": {
+    "app.py": "7418862c5074bd17b58688ce7079b47bce8e59f3015b4522f9c9b2bc24cf6bc8",
+    "semantic/semantic_checklist.py": "19ed0e882420393368e177dd3d916b5bde6cbdae46cb9e43cde8ea2e04bea017",
+    "semantic/semantic_contract.py": "8a8bee8416ecceed30516711827203e71f3e0792f4a547cff4501870fb16a938",
+    "semantic/llm_sql_direct.py": "04f1e7cac66e751c204b0519f5b448b5488566f7b83007f1ab536d55e7bfea5a",
+    "semantic/llm_sql_repair.py": "4c7ea6c2ef7dfcf031aa5a62acb0b245bd332483a4d4dd7acc6fc741b185a629",
+    "sql_analysis/ast_tools.py": "b55e2fd4bcc85d406769ca8a7829808b42443f1b3736ae635760e86861fb4245",
+    "validators/grain_validator.py": "dcb4ebc67d252e02a11ff86a60b4a30a6ea40aa4100bb5ecf2f7b342a94b8bf2",
+    "validators/fanout_validator.py": "5fd38d495cfa6265217c4b4af89ab375659ca24104a0373846513196788f2736",
+    "validators/temporal_validator.py": "f8153bc7e0deaea24662243748fb6304a3d06d057712338f4765c1a2826ebf07",
+    "sql_candidates/candidate_scorer.py": "66bfcfdd5fbc7ec441ce1e3fd20a7f33a3cade305a3a35967fada0a4fccd6583",
+    "sql_candidates/candidate_selector.py": "424583caeec15a460834b58c8fc245742e2d3ce9bb54e5454e1c58c1c403686a",
+    "sql_candidates/semantic_sql_guards.py": "ba077d00d3580c54f1b2872c785d0cd8f933400b77938fa4e6023c3b0b28fea3",
+    "containment/checker.py": "36fbc037a525bb40b3c81adadb5b268d484a8ea6ffe9c5c9710905776f918ca0",
+    "containment/service.py": "f4701ba67519769c2e3b3b9175dbb1740e4d1585f2dd8b12c2150d796087c72c"
+  },
+  "manifest_sha256": {
+    "sql/aggregation.jsonl": "c79c9a067c1dbe31bb8e22f468d49931b247c5c5919fff3874beba34f251a4b9",
+    "sql/derived_metric.jsonl": "209806a1ce40d86b42f8215c696da784e51ef92f420d5161b23772e2523c5c95",
+    "sql/distinct_count.jsonl": "7a82689e626ca8c49fa97383a71380558b3c7c1aef4acf21efd8cd18cad8a512",
+    "sql/group_by.jsonl": "0ec01bac0e7f55deb7914a03b3716392a6a36cafb19b731cd2c5607d5dee9f70",
+    "sql/having.jsonl": "c9f448e2faca18123850db8a2024b04becc33a4dbd51eec252f05d21c22c7b19",
+    "sql/join.jsonl": "58dd212eee31e9d23ff80c05335dd0e4c3c09345d2d3eef213eecd062e9e8674",
+    "sql/multi_table_join.jsonl": "8948f69af2c2691325a242a6dcf3e692f31e47ad4fdd60b159370db9926255c4",
+    "sql/order_limit_topk.jsonl": "db1cf468c469ba1c1ed0d822524608642d4f71d6322eaa81976792fd6e6ad074",
+    "sql/set_operations.jsonl": "ded22065b7cc7f10ab751f109e0ea1275c4d9fd0952c5497ca94f00c57c1e089",
+    "sql/subquery_cte.jsonl": "1754a0874da3480bfaf8f2a9764a675c92edb954164112cc6ea4804708331dfa",
+    "containment/aggregate_having.jsonl": "4c104defbee120383a6deadf0e5cba1a90e74bb97b19c20186d6b4089d14cfc4",
+    "containment/conjunction_disjunction.jsonl": "9f31d16186d1c5552038831af7d3ead3ccbfc08be338fde32069aea6247a31a3",
+    "containment/derived_metric.jsonl": "513c33410a08e08bde2d9d6228b068a0f018ab935359af482c2341d0d7ccc7c4",
+    "containment/distinct_projection_key.jsonl": "70bcb9360677b41c4d8a8a576c1fa707115cf7ed8770654139eba81b52c2bf16",
+    "containment/equivalence.jsonl": "0ee8cdc2ed4cdf3310f10eb53dc937b84e479a316dffd1971c405201eb2a284c",
+    "containment/incomparable.jsonl": "9a055c69bb25ec4163f31befe7e82ae75b56d6a14a317dc5a83fcf458192f486",
+    "containment/join_refinement.jsonl": "272f8f1e428e2efe4c1996a16b157b7ce83a619d15143dc468dd4370572af25f",
+    "containment/mixed_hierarchy_edge_cases.jsonl": "e5edd62534a0adeab04b979f36dca998218cc109c4fa061847ccee97006b13f8",
+    "containment/multi_table_refinement.jsonl": "7f69dafc83ece412cf1cf8dcbc2b019d9493ea1e6ae6149708e9185f78ed99ec",
+    "containment/numeric_range_boundary.jsonl": "be191c9651907e45634e0448a116c442cef9c04b7dd4d0504803a85fe609450c",
+    "containment/simple_filter_chain.jsonl": "a0defa306d0463ac27ff3e7636a597622447c267e7f99037150838e4519f79ff",
+    "containment/temporal.jsonl": "22eae977af58263bac3b0f6227df97cefaf1c8d0bdbd0dc60826bdf598c30198"
+  },
+  "note": "Data-dependent evaluation on the frozen databases above. Containment verdicts hold for the frozen data only \u2014 never a symbolic proof."
+}

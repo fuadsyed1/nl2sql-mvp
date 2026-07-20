@@ -177,6 +177,12 @@ def retrieve_tables(database_id, question, k=8):
 
     # Deterministic ordering: score desc, then name asc.
     results.sort(key=lambda r: (-r["score"], r["table_name"]))
+    try:                                       # diagnostics only (full trace)
+        from diagnostics import full_trace
+        full_trace.note("layer3", "table_scores",
+                        results[: max(1, int(k or 8))])
+    except Exception:
+        pass
     return results[: max(1, int(k or 8))]
 
 

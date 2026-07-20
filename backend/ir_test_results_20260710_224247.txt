@@ -1,0 +1,728 @@
+IR QUERY TEST RESULTS
+================================================================================
+
+TEST 1
+--------------------------------------------------------------------------------
+QUESTION:
+Which extension has the most files?
+
+HTTP STATUS:
+200
+
+FRONTEND DISPLAY DATA
+----------------------------------------
+TYPE:
+missing_dataset
+
+CLEAN QUERY:
+None
+
+SQL:
+None
+
+RESULTS:
+null
+
+BACKEND SEMANTIC DATA
+----------------------------------------
+SEMANTIC:
+null
+
+================================================================================
+
+TEST 2
+--------------------------------------------------------------------------------
+QUESTION:
+Which extension has the least files?
+
+HTTP STATUS:
+200
+
+FRONTEND DISPLAY DATA
+----------------------------------------
+TYPE:
+missing_dataset
+
+CLEAN QUERY:
+None
+
+SQL:
+None
+
+RESULTS:
+null
+
+BACKEND SEMANTIC DATA
+----------------------------------------
+SEMANTIC:
+null
+
+================================================================================
+
+TEST 3
+--------------------------------------------------------------------------------
+QUESTION:
+Top 5 extensions by size
+
+HTTP STATUS:
+200
+
+FRONTEND DISPLAY DATA
+----------------------------------------
+TYPE:
+missing_dataset
+
+CLEAN QUERY:
+None
+
+SQL:
+None
+
+RESULTS:
+null
+
+BACKEND SEMANTIC DATA
+----------------------------------------
+SEMANTIC:
+null
+
+================================================================================
+
+TEST 4
+--------------------------------------------------------------------------------
+QUESTION:
+Top 10 extensions by allocated
+
+HTTP STATUS:
+200
+
+FRONTEND DISPLAY DATA
+----------------------------------------
+TYPE:
+missing_dataset
+
+CLEAN QUERY:
+None
+
+SQL:
+None
+
+RESULTS:
+null
+
+BACKEND SEMANTIC DATA
+----------------------------------------
+SEMANTIC:
+null
+
+================================================================================
+
+TEST 5
+--------------------------------------------------------------------------------
+QUESTION:
+Average size by extension
+
+HTTP STATUS:
+200
+
+FRONTEND DISPLAY DATA
+----------------------------------------
+TYPE:
+missing_dataset
+
+CLEAN QUERY:
+None
+
+SQL:
+None
+
+RESULTS:
+null
+
+BACKEND SEMANTIC DATA
+----------------------------------------
+SEMANTIC:
+null
+
+================================================================================
+
+TEST 6
+--------------------------------------------------------------------------------
+QUESTION:
+Average allocated space by extension
+
+HTTP STATUS:
+200
+
+FRONTEND DISPLAY DATA
+----------------------------------------
+TYPE:
+missing_dataset
+
+CLEAN QUERY:
+None
+
+SQL:
+None
+
+RESULTS:
+null
+
+BACKEND SEMANTIC DATA
+----------------------------------------
+SEMANTIC:
+null
+
+================================================================================
+
+TEST 7
+--------------------------------------------------------------------------------
+QUESTION:
+Highest allocated space
+
+HTTP STATUS:
+200
+
+FRONTEND DISPLAY DATA
+----------------------------------------
+TYPE:
+missing_dataset
+
+CLEAN QUERY:
+None
+
+SQL:
+None
+
+RESULTS:
+null
+
+BACKEND SEMANTIC DATA
+----------------------------------------
+SEMANTIC:
+null
+
+================================================================================
+
+TEST 8
+--------------------------------------------------------------------------------
+QUESTION:
+Lowest allocated space
+
+HTTP STATUS:
+200
+
+FRONTEND DISPLAY DATA
+----------------------------------------
+TYPE:
+missing_dataset
+
+CLEAN QUERY:
+None
+
+SQL:
+None
+
+RESULTS:
+null
+
+BACKEND SEMANTIC DATA
+----------------------------------------
+SEMANTIC:
+null
+
+================================================================================
+
+TEST 9
+--------------------------------------------------------------------------------
+QUESTION:
+Highest size
+
+HTTP STATUS:
+200
+
+FRONTEND DISPLAY DATA
+----------------------------------------
+TYPE:
+missing_dataset
+
+CLEAN QUERY:
+None
+
+SQL:
+None
+
+RESULTS:
+null
+
+BACKEND SEMANTIC DATA
+----------------------------------------
+SEMANTIC:
+null
+
+================================================================================
+
+TEST 10
+--------------------------------------------------------------------------------
+QUESTION:
+Lowest size
+
+HTTP STATUS:
+200
+
+FRONTEND DISPLAY DATA
+----------------------------------------
+TYPE:
+missing_dataset
+
+CLEAN QUERY:
+None
+
+SQL:
+None
+
+RESULTS:
+null
+
+BACKEND SEMANTIC DATA
+----------------------------------------
+SEMANTIC:
+null
+
+================================================================================
+
+TEST 11
+--------------------------------------------------------------------------------
+QUESTION:
+Top 5 file types by size
+
+HTTP STATUS:
+200
+
+FRONTEND DISPLAY DATA
+----------------------------------------
+TYPE:
+missing_dataset
+
+CLEAN QUERY:
+None
+
+SQL:
+None
+
+RESULTS:
+null
+
+BACKEND SEMANTIC DATA
+----------------------------------------
+SEMANTIC:
+null
+
+================================================================================
+
+TEST 12
+--------------------------------------------------------------------------------
+QUESTION:
+Top 5 file types by files
+
+HTTP STATUS:
+200
+
+FRONTEND DISPLAY DATA
+----------------------------------------
+TYPE:
+missing_dataset
+
+CLEAN QUERY:
+None
+
+SQL:
+None
+
+RESULTS:
+null
+
+BACKEND SEMANTIC DATA
+----------------------------------------
+SEMANTIC:
+null
+
+================================================================================
+
+TEST 13
+--------------------------------------------------------------------------------
+QUESTION:
+Average size by file_type
+
+HTTP STATUS:
+200
+
+FRONTEND DISPLAY DATA
+----------------------------------------
+TYPE:
+missing_dataset
+
+CLEAN QUERY:
+None
+
+SQL:
+None
+
+RESULTS:
+null
+
+BACKEND SEMANTIC DATA
+----------------------------------------
+SEMANTIC:
+null
+
+================================================================================
+
+TEST 14
+--------------------------------------------------------------------------------
+QUESTION:
+Average allocated by file_type
+
+HTTP STATUS:
+200
+
+FRONTEND DISPLAY DATA
+----------------------------------------
+TYPE:
+missing_dataset
+
+CLEAN QUERY:
+None
+
+SQL:
+None
+
+RESULTS:
+null
+
+BACKEND SEMANTIC DATA
+----------------------------------------
+SEMANTIC:
+null
+
+================================================================================
+
+TEST 15
+--------------------------------------------------------------------------------
+QUESTION:
+Which file_type has the most files?
+
+HTTP STATUS:
+200
+
+FRONTEND DISPLAY DATA
+----------------------------------------
+TYPE:
+missing_dataset
+
+CLEAN QUERY:
+None
+
+SQL:
+None
+
+RESULTS:
+null
+
+BACKEND SEMANTIC DATA
+----------------------------------------
+SEMANTIC:
+null
+
+================================================================================
+
+TEST 16
+--------------------------------------------------------------------------------
+QUESTION:
+Which file_type has the least files?
+
+HTTP STATUS:
+200
+
+FRONTEND DISPLAY DATA
+----------------------------------------
+TYPE:
+missing_dataset
+
+CLEAN QUERY:
+None
+
+SQL:
+None
+
+RESULTS:
+null
+
+BACKEND SEMANTIC DATA
+----------------------------------------
+SEMANTIC:
+null
+
+================================================================================
+
+TEST 17
+--------------------------------------------------------------------------------
+QUESTION:
+Show files where size > 1000000
+
+HTTP STATUS:
+200
+
+FRONTEND DISPLAY DATA
+----------------------------------------
+TYPE:
+missing_dataset
+
+CLEAN QUERY:
+None
+
+SQL:
+None
+
+RESULTS:
+null
+
+BACKEND SEMANTIC DATA
+----------------------------------------
+SEMANTIC:
+null
+
+================================================================================
+
+TEST 18
+--------------------------------------------------------------------------------
+QUESTION:
+Show files where allocated > 1000000
+
+HTTP STATUS:
+200
+
+FRONTEND DISPLAY DATA
+----------------------------------------
+TYPE:
+missing_dataset
+
+CLEAN QUERY:
+None
+
+SQL:
+None
+
+RESULTS:
+null
+
+BACKEND SEMANTIC DATA
+----------------------------------------
+SEMANTIC:
+null
+
+================================================================================
+
+TEST 19
+--------------------------------------------------------------------------------
+QUESTION:
+Show files where files > 1000
+
+HTTP STATUS:
+200
+
+FRONTEND DISPLAY DATA
+----------------------------------------
+TYPE:
+missing_dataset
+
+CLEAN QUERY:
+None
+
+SQL:
+None
+
+RESULTS:
+null
+
+BACKEND SEMANTIC DATA
+----------------------------------------
+SEMANTIC:
+null
+
+================================================================================
+
+TEST 20
+--------------------------------------------------------------------------------
+QUESTION:
+Show files where percent > 1
+
+HTTP STATUS:
+200
+
+FRONTEND DISPLAY DATA
+----------------------------------------
+TYPE:
+missing_dataset
+
+CLEAN QUERY:
+None
+
+SQL:
+None
+
+RESULTS:
+null
+
+BACKEND SEMANTIC DATA
+----------------------------------------
+SEMANTIC:
+null
+
+================================================================================
+
+TEST 21
+--------------------------------------------------------------------------------
+QUESTION:
+Top 3 extensions by percent
+
+HTTP STATUS:
+200
+
+FRONTEND DISPLAY DATA
+----------------------------------------
+TYPE:
+missing_dataset
+
+CLEAN QUERY:
+None
+
+SQL:
+None
+
+RESULTS:
+null
+
+BACKEND SEMANTIC DATA
+----------------------------------------
+SEMANTIC:
+null
+
+================================================================================
+
+TEST 22
+--------------------------------------------------------------------------------
+QUESTION:
+Top 3 file types by percent
+
+HTTP STATUS:
+200
+
+FRONTEND DISPLAY DATA
+----------------------------------------
+TYPE:
+missing_dataset
+
+CLEAN QUERY:
+None
+
+SQL:
+None
+
+RESULTS:
+null
+
+BACKEND SEMANTIC DATA
+----------------------------------------
+SEMANTIC:
+null
+
+================================================================================
+
+TEST 23
+--------------------------------------------------------------------------------
+QUESTION:
+Average percent by extension
+
+HTTP STATUS:
+200
+
+FRONTEND DISPLAY DATA
+----------------------------------------
+TYPE:
+missing_dataset
+
+CLEAN QUERY:
+None
+
+SQL:
+None
+
+RESULTS:
+null
+
+BACKEND SEMANTIC DATA
+----------------------------------------
+SEMANTIC:
+null
+
+================================================================================
+
+TEST 24
+--------------------------------------------------------------------------------
+QUESTION:
+Which extension has the highest allocated space?
+
+HTTP STATUS:
+200
+
+FRONTEND DISPLAY DATA
+----------------------------------------
+TYPE:
+missing_dataset
+
+CLEAN QUERY:
+None
+
+SQL:
+None
+
+RESULTS:
+null
+
+BACKEND SEMANTIC DATA
+----------------------------------------
+SEMANTIC:
+null
+
+================================================================================
+
+TEST 25
+--------------------------------------------------------------------------------
+QUESTION:
+Which extension has the lowest allocated space?
+
+HTTP STATUS:
+200
+
+FRONTEND DISPLAY DATA
+----------------------------------------
+TYPE:
+missing_dataset
+
+CLEAN QUERY:
+None
+
+SQL:
+None
+
+RESULTS:
+null
+
+BACKEND SEMANTIC DATA
+----------------------------------------
+SEMANTIC:
+null
+
+================================================================================
+

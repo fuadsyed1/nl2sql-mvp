@@ -1,0 +1,2133 @@
+{
+  "Q02": {
+    "success": false,
+    "error": "no_semantically_valid_sql",
+    "database_id": 46,
+    "question": "Find patients who were seen by doctors from more than one specialty and whose total invoiced amount is above the average total for patients with the same insurance provider.",
+    "tables_considered": null,
+    "message": "No semantically valid SQL could be generated for this question \u2014 every executed candidate violated a required relationship, measure, or query shape.",
+    "semantic_checklist": {
+      "target_entity": "patients",
+      "output_columns": [
+        "patients.patient_id",
+        "patients.patient_name"
+      ],
+      "must_use_tables": [
+        "appointments",
+        "doctors",
+        "invoices",
+        "patients"
+      ],
+      "must_use_columns": [
+        "doctors.specialty",
+        "invoices.total_amount",
+        "patients.insurance_provider"
+      ],
+      "measure_column": "invoices.total_amount",
+      "group_by_entity": "patients.patient_id",
+      "comparison_logic": "Total invoiced amount per patient must be greater than the average total amount for patients sharing the same insurance provider.",
+      "required_sql_shape": "comparison_subquery",
+      "literals": [],
+      "row_grain": "one row per patient",
+      "universe": null,
+      "required_group_keys": [
+        "patients.patient_id"
+      ],
+      "forbidden_hardcoded_universe": false,
+      "measure_aggregation": null,
+      "measure_entity_key": null,
+      "comparison_right_kind": null,
+      "grain_confidence": null,
+      "grain_requirements": [
+        {
+          "measure_column": "invoices.total_amount",
+          "entity_key": "patients.patient_id",
+          "population_key": "patients.insurance_provider",
+          "aggregation": "sum",
+          "comparison_right_kind": "aggregate_of_entity_totals",
+          "measure_scope": "all_entity_rows",
+          "distinct": null,
+          "comparison_operator": ">",
+          "comparison_constant": null,
+          "measure_expression": null,
+          "confidence": "high"
+        },
+        {
+          "measure_column": "doctors.specialty",
+          "entity_key": "patients.patient_id",
+          "population_key": null,
+          "aggregation": "count",
+          "comparison_right_kind": "constant",
+          "measure_scope": "all_entity_rows",
+          "distinct": true,
+          "comparison_operator": ">",
+          "comparison_constant": 1.0,
+          "measure_expression": null,
+          "confidence": "high"
+        }
+      ],
+      "required_literal_groups": [],
+      "grain_normalization": [],
+      "temporal_requirements": []
+    },
+    "semantic_contract": {
+      "requirements": [
+        {
+          "measure_table": "invoices",
+          "measure_column": "total_amount",
+          "measure_aggregation": "sum",
+          "entity_table": "patients",
+          "entity_key_column": "patient_id",
+          "comparison_right_kind": "aggregate_of_entity_totals",
+          "population_table": "patients",
+          "population_column": "insurance_provider",
+          "measure_scope": "all_entity_rows",
+          "distinct": null,
+          "comparison_operator": ">",
+          "comparison_constant": null,
+          "measure_components": [],
+          "measure_operation": null,
+          "confidence": "high",
+          "model_confidence": "high",
+          "actionable": true,
+          "evidence": []
+        },
+        {
+          "measure_table": "doctors",
+          "measure_column": "specialty",
+          "measure_aggregation": "count",
+          "entity_table": "patients",
+          "entity_key_column": "patient_id",
+          "comparison_right_kind": "constant",
+          "population_table": null,
+          "population_column": null,
+          "measure_scope": "all_entity_rows",
+          "distinct": true,
+          "comparison_operator": ">",
+          "comparison_constant": 1.0,
+          "measure_components": [],
+          "measure_operation": null,
+          "confidence": "high",
+          "model_confidence": "high",
+          "actionable": true,
+          "evidence": []
+        }
+      ],
+      "temporal": [],
+      "actionable": true,
+      "evidence": []
+    },
+    "candidate_fatal_reasons": {
+      "query_family": [
+        "family guard rejected this output",
+        "bare CTE 'patients_totals' never applies the comparison",
+        "required concept 'doctors.specialty' named in the question is missing from the SQL",
+        "required concept 'invoices.total_amount' named in the question is missing from the SQL",
+        "fanout violation: AVG(\"medications\".\"unit_cost\") is aggregated after a one-to-many join multiplies its rows (many side: ['appointments', 'prescriptions']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [patients 1->N appointments (via appointments.patient_id); appointments 1->N prescriptions (via prescriptions.appointment_id); medications 1->N prescriptions (via prescriptions.medication_id)]",
+        "grain violation [requirement 1/2]: the required aggregate comparison is never applied in WHERE or HAVING (contract requires comparing SUM(invoices.total_amount) per patients.patient_id, but no comparison predicate uses the measure invoices.total_amount)",
+        "grain violation [requirement 2/2]: contract requires a COUNT(DISTINCT specialty) comparison per patients.patient_id, but no comparison predicate uses it"
+      ],
+      "llm_primary": [
+        "grain violation [requirement 1/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows"
+      ],
+      "llm_sql_direct": [
+        "grain violation [requirement 1/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows"
+      ],
+      "llm_sql_direct_grain": [
+        "grain violation [requirement 1/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows"
+      ],
+      "llm_sql_direct_variant": [
+        "grain violation [requirement 1/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows"
+      ],
+      "llm_sql_repair": []
+    },
+    "debug_rejected_sql": "SELECT p.patient_id, p.patient_name\nFROM patients p\nJOIN appointments a ON p.patient_id = a.patient_id\nJOIN doctors d ON a.doctor_id = d.doctor_id\nJOIN invoices i ON a.appointment_id = i.appointment_id\nWHERE p.patient_id IN (\n    SELECT a2.patient_id\n    FROM appointments a2\n    JOIN doctors d2 ON a2.doctor_id = d2.doctor_id\n    GROUP BY a2.patient_id\n    HAVING COUNT(DISTINCT d2.specialty) > 1\n)\nGROUP BY p.patient_id, p.patient_name, p.insurance_provider\nHAVING SUM(i.total_amount) > (\n    SELECT AVG(total_amount)\n    FROM invoices i2\n    JOIN appointments a3 ON i2.appointment_id = a3.appointment_id\n    JOIN patients p2 ON a3.patient_id = p2.patient_id\n    WHERE p2.insurance_provider = p.insurance_provider\n)",
+    "debug_rejected_fatal_reasons": [
+      "grain violation [requirement 1/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows"
+    ],
+    "candidate_count": 6,
+    "selected_candidate_source": "llm_sql_direct_grain",
+    "selected_candidate_label": "llm_sql_direct_grain",
+    "selection_reason": "consensus_group",
+    "consensus_group_size": 3,
+    "consensus_sources": [
+      "llm_sql_direct",
+      "llm_sql_direct_grain",
+      "llm_sql_direct_variant"
+    ],
+    "candidate_scores": [
+      {
+        "source": "query_family",
+        "label": "query_family",
+        "score": 0.0,
+        "executed": true,
+        "row_count": 7,
+        "fatal": true,
+        "fatal_reasons": [
+          "family guard rejected this output",
+          "bare CTE 'patients_totals' never applies the comparison",
+          "required concept 'doctors.specialty' named in the question is missing from the SQL",
+          "required concept 'invoices.total_amount' named in the question is missing from the SQL",
+          "fanout violation: AVG(\"medications\".\"unit_cost\") is aggregated after a one-to-many join multiplies its rows (many side: ['appointments', 'prescriptions']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [patients 1->N appointments (via appointments.patient_id); appointments 1->N prescriptions (via prescriptions.appointment_id); medications 1->N prescriptions (via prescriptions.medication_id)]",
+          "grain violation [requirement 1/2]: the required aggregate comparison is never applied in WHERE or HAVING (contract requires comparing SUM(invoices.total_amount) per patients.patient_id, but no comparison predicate uses the measure invoices.total_amount)",
+          "grain violation [requirement 2/2]: contract requires a COUNT(DISTINCT specialty) comparison per patients.patient_id, but no comparison predicate uses it"
+        ]
+      },
+      {
+        "source": "llm_primary",
+        "label": "llm_primary",
+        "score": 52.0,
+        "executed": true,
+        "row_count": 14,
+        "fatal": true,
+        "fatal_reasons": [
+          "grain violation [requirement 1/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows"
+        ]
+      },
+      {
+        "source": "llm_sql_direct",
+        "label": "llm_sql_direct",
+        "score": 64.0,
+        "executed": true,
+        "row_count": 14,
+        "fatal": true,
+        "fatal_reasons": [
+          "grain violation [requirement 1/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows"
+        ]
+      },
+      {
+        "source": "llm_sql_direct_grain",
+        "label": "llm_sql_direct_grain",
+        "score": 64.0,
+        "executed": true,
+        "row_count": 14,
+        "fatal": true,
+        "fatal_reasons": [
+          "grain violation [requirement 1/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows"
+        ]
+      },
+      {
+        "source": "llm_sql_direct_variant",
+        "label": "llm_sql_direct_variant",
+        "score": 54.0,
+        "executed": true,
+        "row_count": 14,
+        "fatal": true,
+        "fatal_reasons": [
+          "grain violation [requirement 1/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows"
+        ]
+      },
+      {
+        "source": "llm_sql_repair",
+        "label": "llm_sql_repair",
+        "score": 34.0,
+        "executed": false,
+        "row_count": null,
+        "fatal": false,
+        "fatal_reasons": []
+      }
+    ],
+    "candidate_reasons": {
+      "query_family": [
+        "question names table 'doctors' but the candidate never uses it",
+        "family guard rejected this output: derived_aggregate is a bare CTE (SELECT *) but the question asks a comparison/extremum",
+        "question asks a comparison but the final SELECT just dumps CTE 'patients_totals' without applying it",
+        "checklist measure column 'invoices.total_amount' is never used",
+        "checklist table 'doctors' is never used",
+        "checklist table 'invoices' is never used",
+        "checklist column 'doctors.specialty' is never used",
+        "checklist column 'invoices.total_amount' is never used",
+        "SQL builds on 'medications', unrelated to the question's terms; 'doctors' matches them better",
+        "SQL uses unmentioned table 'medications' while the question names specific tables ['doctors', 'patients']",
+        "SQL uses unmentioned table 'prescriptions' while the question names specific tables ['doctors', 'patients']",
+        "fanout violation: AVG(\"medications\".\"unit_cost\") is aggregated after a one-to-many join multiplies its rows (many side: ['appointments', 'prescriptions']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [patients 1->N appointments (via appointments.patient_id); appointments 1->N prescriptions (via prescriptions.appointment_id); medications 1->N prescriptions (via prescriptions.medication_id)]",
+        "grain violation [requirement 1/2]: the required aggregate comparison is never applied in WHERE or HAVING (contract requires comparing SUM(invoices.total_amount) per patients.patient_id, but no comparison predicate uses the measure invoices.total_amount)",
+        "grain violation [requirement 2/2]: contract requires a COUNT(DISTINCT specialty) comparison per patients.patient_id, but no comparison predicate uses it"
+      ],
+      "llm_primary": [
+        "checklist requires shape 'comparison_subquery' but the SQL lacks it",
+        "SQL uses unmentioned table 'invoices' while the question names specific tables ['doctors', 'patients']",
+        "grain violation [requirement 1/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows"
+      ],
+      "llm_sql_direct": [
+        "SQL uses unmentioned table 'invoices' while the question names specific tables ['doctors', 'patients']",
+        "grain violation [requirement 1/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows"
+      ],
+      "llm_sql_direct_grain": [
+        "SQL uses unmentioned table 'invoices' while the question names specific tables ['doctors', 'patients']",
+        "grain violation [requirement 1/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows"
+      ],
+      "llm_sql_direct_variant": [
+        "SQL uses unmentioned table 'invoices' while the question names specific tables ['doctors', 'patients']",
+        "grain violation [requirement 1/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows",
+        "possible join fanout aggregate inflation"
+      ],
+      "llm_sql_repair": [
+        "execution failed: no such column: p.patient_name",
+        "SQL uses unmentioned table 'invoices' while the question names specific tables ['doctors', 'patients']"
+      ]
+    },
+    "rejected_candidates": [
+      {
+        "source": "query_family",
+        "label": "query_family",
+        "sql": "WITH \"patients_totals\" AS (SELECT \"patients\".\"patient_id\" AS \"entity_id\", \"patients\".\"insurance_provider\" AS \"group_col\", AVG(\"medications\".\"unit_cost\") AS \"agg_value\" FROM \"patients\" INNER JOIN \"appointments\" ON \"patients\".\"patient_id\" = \"appointments\".\"patient_id\" INNER JOIN \"prescriptions\" ON \"appointments\".\"appointment_id\" = \"prescriptions\".\"appointment_id\" INNER JOIN \"medications\" ON \"prescriptions\".\"medication_id\" = \"medications\".\"medication_id\" GROUP BY \"patients\".\"patient_id\", \"patients\".\"insurance_provider\") SELECT * FROM \"patients_totals\"",
+        "score": 0.0,
+        "executed": true,
+        "row_count": 7,
+        "reasons": [
+          "question names table 'doctors' but the candidate never uses it",
+          "family guard rejected this output: derived_aggregate is a bare CTE (SELECT *) but the question asks a comparison/extremum",
+          "question asks a comparison but the final SELECT just dumps CTE 'patients_totals' without applying it",
+          "checklist measure column 'invoices.total_amount' is never used",
+          "checklist table 'doctors' is never used",
+          "checklist table 'invoices' is never used",
+          "checklist column 'doctors.specialty' is never used",
+          "checklist column 'invoices.total_amount' is never used",
+          "SQL builds on 'medications', unrelated to the question's terms; 'doctors' matches them better",
+          "SQL uses unmentioned table 'medications' while the question names specific tables ['doctors', 'patients']",
+          "SQL uses unmentioned table 'prescriptions' while the question names specific tables ['doctors', 'patients']",
+          "fanout violation: AVG(\"medications\".\"unit_cost\") is aggregated after a one-to-many join multiplies its rows (many side: ['appointments', 'prescriptions']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [patients 1->N appointments (via appointments.patient_id); appointments 1->N prescriptions (via prescriptions.appointment_id); medications 1->N prescriptions (via prescriptions.medication_id)]",
+          "grain violation [requirement 1/2]: the required aggregate comparison is never applied in WHERE or HAVING (contract requires comparing SUM(invoices.total_amount) per patients.patient_id, but no comparison predicate uses the measure invoices.total_amount)",
+          "grain violation [requirement 2/2]: contract requires a COUNT(DISTINCT specialty) comparison per patients.patient_id, but no comparison predicate uses it"
+        ]
+      },
+      {
+        "source": "llm_primary",
+        "label": "llm_primary",
+        "sql": "SELECT \"patients\".\"insurance_provider\", \"patients\".\"patient_id\", \"patients\".\"patient_name\", COUNT(DISTINCT \"doctors\".\"specialty\") AS \"specialty_count\", SUM(\"invoices\".\"total_amount\") AS \"total_invoiced\", AVG(\"invoices\".\"total_amount\") AS \"avg_by_insurance\" FROM \"appointments\" INNER JOIN \"doctors\" ON \"appointments\".\"doctor_id\" = \"doctors\".\"doctor_id\" INNER JOIN \"invoices\" ON \"appointments\".\"appointment_id\" = \"invoices\".\"appointment_id\" INNER JOIN \"patients\" ON \"appointments\".\"patient_id\" = \"patients\".\"patient_id\" GROUP BY \"patients\".\"patient_id\", \"patients\".\"insurance_provider\" HAVING \"specialty_count\" > ? AND \"total_invoiced\" > \"avg_by_insurance\"",
+        "score": 52.0,
+        "executed": true,
+        "row_count": 14,
+        "reasons": [
+          "checklist requires shape 'comparison_subquery' but the SQL lacks it",
+          "SQL uses unmentioned table 'invoices' while the question names specific tables ['doctors', 'patients']",
+          "grain violation [requirement 1/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows"
+        ]
+      },
+      {
+        "source": "llm_sql_direct",
+        "label": "llm_sql_direct",
+        "sql": "SELECT p.patient_id, p.patient_name\nFROM patients p\nJOIN appointments a ON p.patient_id = a.patient_id\nJOIN doctors d ON a.doctor_id = d.doctor_id\nJOIN invoices i ON a.appointment_id = i.appointment_id\nWHERE p.patient_id IN (\n    SELECT patient_id\n    FROM appointments\n    JOIN doctors ON appointments.doctor_id = doctors.doctor_id\n    GROUP BY patient_id\n    HAVING COUNT(DISTINCT doctors.specialty) > 1\n)\nGROUP BY p.patient_id, p.patient_name\nHAVING SUM(i.total_amount) > (\n    SELECT AVG(total_amount)\n    FROM invoices\n    JOIN appointments ON invoices.appointment_id = appointments.appointment_id\n    JOIN patients p2 ON appointments.patient_id = p2.patient_id\n    WHERE p2.insurance_provider = p.insurance_provider\n)",
+        "score": 64.0,
+        "executed": true,
+        "row_count": 14,
+        "reasons": [
+          "SQL uses unmentioned table 'invoices' while the question names specific tables ['doctors', 'patients']",
+          "grain violation [requirement 1/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows"
+        ]
+      },
+      {
+        "source": "llm_sql_direct_variant",
+        "label": "llm_sql_direct_variant",
+        "sql": "SELECT p.patient_id, p.patient_name\nFROM patients p\nJOIN appointments a ON p.patient_id = a.patient_id\nJOIN doctors d ON a.doctor_id = d.doctor_id\nJOIN invoices i ON a.appointment_id = i.appointment_id\nGROUP BY p.patient_id, p.patient_name\nHAVING COUNT(DISTINCT d.specialty) > 1\n   AND SUM(i.total_amount) > (\n       SELECT AVG(total_amount)\n       FROM invoices i2\n       JOIN appointments a2 ON i2.appointment_id = a2.appointment_id\n       JOIN patients p2 ON a2.patient_id = p2.patient_id\n       WHERE p2.insurance_provider = p.insurance_provider\n   )",
+        "score": 54.0,
+        "executed": true,
+        "row_count": 14,
+        "reasons": [
+          "SQL uses unmentioned table 'invoices' while the question names specific tables ['doctors', 'patients']",
+          "grain violation [requirement 1/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows",
+          "possible join fanout aggregate inflation"
+        ]
+      },
+      {
+        "source": "llm_sql_repair",
+        "label": "llm_sql_repair",
+        "sql": "WITH patient_specialty_counts AS (\n    SELECT p.patient_id, COUNT(DISTINCT d.specialty) AS specialty_count\n    FROM patients p\n    JOIN appointments a ON p.patient_id = a.patient_id\n    JOIN doctors d ON a.doctor_id = d.doctor_id\n    GROUP BY p.patient_id\n    HAVING COUNT(DISTINCT d.specialty) > 1\n),\npatient_invoices AS (\n    SELECT p.patient_id, p.insurance_provider, SUM(i.total_amount) AS total_amount\n    FROM patients p\n    JOIN appointments a ON p.patient_id = a.patient_id\n    JOIN invoices i ON a.appointment_id = i.appointment_id\n    GROUP BY p.patient_id, p.insurance_provider\n),\navg_by_insurance AS (\n    SELECT insurance_provider, AVG(total_amount) AS avg_total\n    FROM patient_invoices\n    GROUP BY insurance_provider\n)\nSELECT p.patient_id, p.patient_name\nFROM patient_invoices p\nJOIN patient_specialty_counts s ON p.patient_id = s.patient_id\nJOIN avg_by_insurance a ON p.insurance_provider = a.insurance_provider\nWHERE p.total_amount > a.avg_total",
+        "score": 34.0,
+        "executed": false,
+        "row_count": null,
+        "reasons": [
+          "execution failed: no such column: p.patient_name",
+          "SQL uses unmentioned table 'invoices' while the question names specific tables ['doctors', 'patients']"
+        ]
+      }
+    ],
+    "warnings": [
+      "all executed candidates failed hard semantic checks; low confidence",
+      "LOW CONFIDENCE RESULT: every usable candidate failed hard semantic checks; this SQL is a best-effort fallback, NOT a normal success. Fatal reasons: grain violation [requirement 1/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows"
+    ],
+    "low_confidence": true,
+    "_elapsed_seconds": 22.78
+  },
+  "Q04": {
+    "success": true,
+    "database_id": 46,
+    "question": "Find patients whose unpaid or partially paid balance is higher than the average outstanding balance for patients with the same insurance provider.",
+    "extraction": null,
+    "ir": null,
+    "validation": null,
+    "tables_considered": null,
+    "large_mode_table_fallback": false,
+    "fallback_table": null,
+    "removed_redundant_partition_date_filter": false,
+    "partition_date": null,
+    "extraction_source": "llm",
+    "query_family": "normal_join_filter_group",
+    "query_family_confidence": 0.3,
+    "query_family_reason": "no distinctive relational pattern; use base pipeline",
+    "family_guard_valid": null,
+    "family_guard_reasons": null,
+    "candidate_count": 6,
+    "selected_candidate_source": "llm_sql_direct_variant",
+    "selected_candidate_label": "llm_sql_direct_variant",
+    "selection_reason": "consensus_group",
+    "consensus_group_size": 3,
+    "consensus_sources": [
+      "llm_sql_direct",
+      "llm_sql_direct_grain",
+      "llm_sql_direct_variant"
+    ],
+    "candidate_scores": [
+      {
+        "source": "llm_primary",
+        "label": "llm_primary",
+        "score": 29.0,
+        "executed": true,
+        "row_count": 4,
+        "fatal": true,
+        "fatal_reasons": [
+          "required concept 'invoices.insurance_paid' named in the question is missing from the SQL",
+          "grain violation: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows"
+        ]
+      },
+      {
+        "source": "llm_variant",
+        "label": "llm_variant_1",
+        "score": 0.0,
+        "executed": true,
+        "row_count": 14,
+        "fatal": true,
+        "fatal_reasons": [
+          "semantic violation: arithmetic expression is used as a Boolean predicate without a comparison operator (HAVING: \"total_billed\" - ?)",
+          "semantic violation: arithmetic expression is used as a Boolean predicate without a comparison operator (HAVING: \"avg_total_billed\" - ?)",
+          "grain violation: the required aggregate comparison is never applied in WHERE or HAVING (contract requires comparing SUM(invoices.total_amount) per patients.patient_id, but no comparison predicate uses the measure invoices.total_amount)"
+        ]
+      },
+      {
+        "source": "llm_variant",
+        "label": "llm_variant_2",
+        "score": 0.0,
+        "executed": true,
+        "row_count": 14,
+        "fatal": true,
+        "fatal_reasons": [
+          "semantic violation: arithmetic expression is used as a Boolean predicate without a comparison operator (HAVING: \"total_bill\" - \"total_paid\")",
+          "semantic violation: arithmetic expression is used as a Boolean predicate without a comparison operator (HAVING: \"avg_total_bill\" - \"avg_paid\")",
+          "grain violation: the required aggregate comparison is never applied in WHERE or HAVING (contract requires comparing SUM(invoices.total_amount) per patients.patient_id, but no comparison predicate uses the measure invoices.total_amount)"
+        ]
+      },
+      {
+        "source": "llm_sql_direct",
+        "label": "llm_sql_direct",
+        "score": 89.0,
+        "executed": true,
+        "row_count": 6,
+        "fatal": false,
+        "fatal_reasons": []
+      },
+      {
+        "source": "llm_sql_direct_grain",
+        "label": "llm_sql_direct_grain",
+        "score": 89.0,
+        "executed": true,
+        "row_count": 6,
+        "fatal": false,
+        "fatal_reasons": []
+      },
+      {
+        "source": "llm_sql_direct_variant",
+        "label": "llm_sql_direct_variant",
+        "score": 89.0,
+        "executed": true,
+        "row_count": 6,
+        "fatal": false,
+        "fatal_reasons": []
+      }
+    ],
+    "candidate_reasons": {
+      "llm_primary": [
+        "checklist requires shape 'comparison_subquery' but the SQL lacks it",
+        "checklist column 'invoices.insurance_paid' is never used",
+        "required group key(s) ['patients.patient_id'] not in GROUP BY",
+        "SQL uses unmentioned table 'invoices' while the question names specific tables ['patients']",
+        "grain violation: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows"
+      ],
+      "llm_variant_1": [
+        "checklist requires shape 'comparison_subquery' but the SQL lacks it",
+        "SQL uses unmentioned table 'invoices' while the question names specific tables ['patients']",
+        "semantic violation: arithmetic expression is used as a Boolean predicate without a comparison operator (HAVING: \"total_billed\" - ?)",
+        "semantic violation: arithmetic expression is used as a Boolean predicate without a comparison operator (HAVING: \"avg_total_billed\" - ?)",
+        "grain violation: the required aggregate comparison is never applied in WHERE or HAVING (contract requires comparing SUM(invoices.total_amount) per patients.patient_id, but no comparison predicate uses the measure invoices.total_amount)",
+        "possible join fanout aggregate inflation"
+      ],
+      "llm_variant_2": [
+        "checklist requires shape 'comparison_subquery' but the SQL lacks it",
+        "SQL uses unmentioned table 'invoices' while the question names specific tables ['patients']",
+        "semantic violation: arithmetic expression is used as a Boolean predicate without a comparison operator (HAVING: \"total_bill\" - \"total_paid\")",
+        "semantic violation: arithmetic expression is used as a Boolean predicate without a comparison operator (HAVING: \"avg_total_bill\" - \"avg_paid\")",
+        "grain violation: the required aggregate comparison is never applied in WHERE or HAVING (contract requires comparing SUM(invoices.total_amount) per patients.patient_id, but no comparison predicate uses the measure invoices.total_amount)"
+      ],
+      "llm_sql_direct": [
+        "SQL uses unmentioned table 'invoices' while the question names specific tables ['patients']",
+        "possible join fanout aggregate inflation"
+      ],
+      "llm_sql_direct_grain": [
+        "SQL uses unmentioned table 'invoices' while the question names specific tables ['patients']",
+        "possible join fanout aggregate inflation"
+      ],
+      "llm_sql_direct_variant": [
+        "SQL uses unmentioned table 'invoices' while the question names specific tables ['patients']",
+        "possible join fanout aggregate inflation"
+      ]
+    },
+    "rejected_candidates": [
+      {
+        "source": "llm_primary",
+        "label": "llm_primary",
+        "sql": "SELECT \"patients\".\"patient_id\", \"patients\".\"patient_name\", \"patients\".\"insurance_provider\", SUM(\"invoices\".\"total_amount\") AS \"outstanding_balance\", AVG(\"invoices\".\"total_amount\") AS \"avg_outstanding_balance\" FROM \"appointments\" INNER JOIN \"invoices\" ON \"appointments\".\"appointment_id\" = \"invoices\".\"appointment_id\" INNER JOIN \"patients\" ON \"appointments\".\"patient_id\" = \"patients\".\"patient_id\" WHERE \"invoices\".\"payment_status\" IN (?, ?) GROUP BY \"patients\".\"insurance_provider\" HAVING \"outstanding_balance\" > \"avg_outstanding_balance\"",
+        "score": 29.0,
+        "executed": true,
+        "row_count": 4,
+        "reasons": [
+          "checklist requires shape 'comparison_subquery' but the SQL lacks it",
+          "checklist column 'invoices.insurance_paid' is never used",
+          "required group key(s) ['patients.patient_id'] not in GROUP BY",
+          "SQL uses unmentioned table 'invoices' while the question names specific tables ['patients']",
+          "grain violation: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows"
+        ]
+      },
+      {
+        "source": "llm_variant",
+        "label": "llm_variant_1",
+        "sql": "SELECT \"patients\".\"insurance_provider\", \"patients\".\"patient_id\", \"patients\".\"patient_name\", SUM(\"invoices\".\"total_amount\") AS \"total_billed\", SUM(\"invoices\".\"insurance_paid\") AS \"total_paid\", AVG(\"invoices\".\"total_amount\") AS \"avg_total_billed\", AVG(\"invoices\".\"insurance_paid\") AS \"avg_total_paid\" FROM \"patients\" INNER JOIN \"appointments\" ON \"patients\".\"patient_id\" = \"appointments\".\"patient_id\" INNER JOIN \"invoices\" ON \"appointments\".\"appointment_id\" = \"invoices\".\"appointment_id\" GROUP BY \"patients\".\"patient_id\", \"patients\".\"patient_name\", \"patients\".\"insurance_provider\" HAVING \"total_billed\" - ? AND \"avg_total_billed\" - ?",
+        "score": 0.0,
+        "executed": true,
+        "row_count": 14,
+        "reasons": [
+          "checklist requires shape 'comparison_subquery' but the SQL lacks it",
+          "SQL uses unmentioned table 'invoices' while the question names specific tables ['patients']",
+          "semantic violation: arithmetic expression is used as a Boolean predicate without a comparison operator (HAVING: \"total_billed\" - ?)",
+          "semantic violation: arithmetic expression is used as a Boolean predicate without a comparison operator (HAVING: \"avg_total_billed\" - ?)",
+          "grain violation: the required aggregate comparison is never applied in WHERE or HAVING (contract requires comparing SUM(invoices.total_amount) per patients.patient_id, but no comparison predicate uses the measure invoices.total_amount)",
+          "possible join fanout aggregate inflation"
+        ]
+      },
+      {
+        "source": "llm_variant",
+        "label": "llm_variant_2",
+        "sql": "SELECT \"patients\".\"patient_id\", \"patients\".\"patient_name\", \"patients\".\"insurance_provider\", SUM(\"invoices\".\"total_amount\") AS \"total_bill\", SUM(\"invoices\".\"insurance_paid\") AS \"total_paid\", AVG(\"invoices\".\"total_amount\") AS \"avg_total_bill\", AVG(\"invoices\".\"insurance_paid\") AS \"avg_paid\" FROM \"appointments\" INNER JOIN \"invoices\" ON \"appointments\".\"appointment_id\" = \"invoices\".\"appointment_id\" INNER JOIN \"patients\" ON \"appointments\".\"patient_id\" = \"patients\".\"patient_id\" GROUP BY \"patients\".\"patient_id\", \"patients\".\"insurance_provider\" HAVING \"total_bill\" - \"total_paid\" AND \"avg_total_bill\" - \"avg_paid\"",
+        "score": 0.0,
+        "executed": true,
+        "row_count": 14,
+        "reasons": [
+          "checklist requires shape 'comparison_subquery' but the SQL lacks it",
+          "SQL uses unmentioned table 'invoices' while the question names specific tables ['patients']",
+          "semantic violation: arithmetic expression is used as a Boolean predicate without a comparison operator (HAVING: \"total_bill\" - \"total_paid\")",
+          "semantic violation: arithmetic expression is used as a Boolean predicate without a comparison operator (HAVING: \"avg_total_bill\" - \"avg_paid\")",
+          "grain violation: the required aggregate comparison is never applied in WHERE or HAVING (contract requires comparing SUM(invoices.total_amount) per patients.patient_id, but no comparison predicate uses the measure invoices.total_amount)"
+        ]
+      },
+      {
+        "source": "llm_sql_direct",
+        "label": "llm_sql_direct",
+        "sql": "SELECT p.patient_id, p.patient_name, p.insurance_provider\nFROM patients p\nJOIN appointments a ON p.patient_id = a.patient_id\nJOIN invoices i ON a.appointment_id = i.appointment_id\nWHERE i.payment_status IN ('unpaid', 'partial')\nGROUP BY p.patient_id, p.patient_name, p.insurance_provider\nHAVING SUM(i.total_amount - i.insurance_paid) > (\n    SELECT AVG(outstanding_balance)\n    FROM (\n        SELECT p2.insurance_provider, SUM(i2.total_amount - i2.insurance_paid) AS outstanding_balance\n        FROM patients p2\n        JOIN appointments a2 ON p2.patient_id = a2.patient_id\n        JOIN invoices i2 ON a2.appointment_id = i2.appointment_id\n        WHERE i2.payment_status IN ('unpaid', 'partial')\n        GROUP BY p2.patient_id, p2.insurance_provider\n    ) sub\n    WHERE sub.insurance_provider = p.insurance_provider\n)",
+        "score": 89.0,
+        "executed": true,
+        "row_count": 6,
+        "reasons": [
+          "SQL uses unmentioned table 'invoices' while the question names specific tables ['patients']",
+          "possible join fanout aggregate inflation"
+        ]
+      },
+      {
+        "source": "llm_sql_direct_grain",
+        "label": "llm_sql_direct_grain",
+        "sql": "SELECT p.patient_id, p.patient_name, p.insurance_provider\nFROM patients p\nJOIN appointments a ON p.patient_id = a.patient_id\nJOIN invoices i ON a.appointment_id = i.appointment_id\nWHERE i.payment_status IN ('unpaid', 'partial')\nGROUP BY p.patient_id, p.patient_name, p.insurance_provider\nHAVING SUM(i.total_amount - i.insurance_paid) > (\n    SELECT AVG(outstanding_balance)\n    FROM (\n        SELECT p2.patient_id, p2.insurance_provider, SUM(i2.total_amount - i2.insurance_paid) AS outstanding_balance\n        FROM patients p2\n        JOIN appointments a2 ON p2.patient_id = a2.patient_id\n        JOIN invoices i2 ON a2.appointment_id = i2.appointment_id\n        WHERE i2.payment_status IN ('unpaid', 'partial')\n        GROUP BY p2.patient_id, p2.insurance_provider\n    ) sub\n    WHERE sub.insurance_provider = p.insurance_provider\n)",
+        "score": 89.0,
+        "executed": true,
+        "row_count": 6,
+        "reasons": [
+          "SQL uses unmentioned table 'invoices' while the question names specific tables ['patients']",
+          "possible join fanout aggregate inflation"
+        ]
+      }
+    ],
+    "warnings": [
+      "selected SQL: possible join fanout aggregate inflation"
+    ],
+    "low_confidence": false,
+    "selected_candidate_score": 89.0,
+    "selected_candidate_validation": {
+      "executed": true,
+      "illegal_joins": [],
+      "unknown_columns": [],
+      "missing_tables": [],
+      "missing_concepts": [],
+      "required_shapes": {},
+      "duplicate_aliases": [],
+      "undefined_aliases": [],
+      "guard_valid": null,
+      "bare_cte": null,
+      "checklist": {
+        "delta": 30.0,
+        "missing_columns": [],
+        "missing_tables": [],
+        "shape_ok": true
+      },
+      "grain": {
+        "delta": 0.0
+      },
+      "semantic_rel": {
+        "delta": 0.0
+      },
+      "semantic_join": {
+        "delta": 0.0
+      },
+      "table_lock": {
+        "locked_tables": [
+          "patients"
+        ],
+        "unmentioned_tables": [
+          "invoices"
+        ],
+        "delta": -6.0
+      },
+      "outside_tables": [],
+      "outside_tables_allowed_reachable": [
+        "doctors",
+        "lab_results",
+        "medications",
+        "prescriptions"
+      ],
+      "unseen_literals": [],
+      "shape": {
+        "fatal": [],
+        "penalties": [],
+        "report_only": []
+      },
+      "semantic_guards": [],
+      "literal_groups": [],
+      "fanout": {
+        "fatal": [],
+        "warnings": [],
+        "fatal_count": 0
+      },
+      "grain_contract": {
+        "fatal": [],
+        "warnings": [],
+        "skipped": null,
+        "requirement_1": {
+          "required": "SUM(invoices.total_amount) per patients.patient_id",
+          "required_aggregate_found": true,
+          "raw_comparison_sides": 0,
+          "entity_total_uses": 1,
+          "two_level_sides": 1,
+          "scope_restrictions": [],
+          "comparison_applied": true,
+          "unproven_comparison_sides": 0
+        },
+        "fatal_count": 0
+      },
+      "temporal_contract": {
+        "fatal": [],
+        "warnings": [],
+        "skipped": "no actionable temporal requirement"
+      },
+      "fatal": [],
+      "probes": {
+        "warnings": [
+          "possible join fanout aggregate inflation"
+        ],
+        "penalty": 10.0,
+        "checks": {
+          "fanout": {
+            "ran": true,
+            "count_star": 94,
+            "count_distinct_driver": 14,
+            "driver": "p"
+          }
+        }
+      }
+    },
+    "semantic_checklist": {
+      "target_entity": "patients",
+      "output_columns": [
+        "patients.patient_id",
+        "patients.patient_name",
+        "patients.insurance_provider"
+      ],
+      "must_use_tables": [
+        "appointments",
+        "invoices",
+        "patients"
+      ],
+      "must_use_columns": [
+        "invoices.total_amount",
+        "invoices.insurance_paid",
+        "patients.insurance_provider"
+      ],
+      "measure_column": "invoices.total_amount",
+      "group_by_entity": "patients.patient_id",
+      "comparison_logic": "Compare each patient's outstanding balance to the average outstanding balance of patients with the same insurance provider",
+      "required_sql_shape": "comparison_subquery",
+      "literals": [],
+      "row_grain": "one row per patient",
+      "universe": null,
+      "required_group_keys": [
+        "patients.patient_id"
+      ],
+      "forbidden_hardcoded_universe": false,
+      "measure_aggregation": null,
+      "measure_entity_key": null,
+      "comparison_right_kind": null,
+      "grain_confidence": null,
+      "grain_requirements": [
+        {
+          "measure_column": "invoices.total_amount",
+          "entity_key": "patients.patient_id",
+          "population_key": "patients.insurance_provider",
+          "aggregation": "sum",
+          "comparison_right_kind": "aggregate_of_entity_totals",
+          "measure_scope": "all_entity_rows",
+          "distinct": null,
+          "comparison_operator": ">",
+          "comparison_constant": null,
+          "measure_expression": {
+            "operation": "subtract",
+            "components": [
+              "invoices.total_amount",
+              "invoices.insurance_paid"
+            ]
+          },
+          "confidence": "high"
+        }
+      ],
+      "required_literal_groups": [],
+      "grain_normalization": [],
+      "temporal_requirements": []
+    },
+    "semantic_contract": {
+      "requirements": [
+        {
+          "measure_table": "invoices",
+          "measure_column": "total_amount",
+          "measure_aggregation": "sum",
+          "entity_table": "patients",
+          "entity_key_column": "patient_id",
+          "comparison_right_kind": "aggregate_of_entity_totals",
+          "population_table": "patients",
+          "population_column": "insurance_provider",
+          "measure_scope": "all_entity_rows",
+          "distinct": null,
+          "comparison_operator": ">",
+          "comparison_constant": null,
+          "measure_components": [
+            [
+              "invoices",
+              "total_amount"
+            ],
+            [
+              "invoices",
+              "insurance_paid"
+            ]
+          ],
+          "measure_operation": "subtract",
+          "confidence": "high",
+          "model_confidence": "high",
+          "actionable": true,
+          "evidence": []
+        }
+      ],
+      "temporal": [],
+      "actionable": true,
+      "evidence": []
+    },
+    "repair_attempted": false,
+    "repair_triggers": [],
+    "repair_executed": false,
+    "repair_score": null,
+    "repair_selected": false,
+    "selected_source_before_repair": "llm_sql_direct_variant",
+    "value_grounding": {
+      "profiled_columns": 20,
+      "grounded_from_eval_copy": false
+    },
+    "plan": null,
+    "generated_sql": {
+      "generated": true,
+      "sql": "SELECT p.patient_id, p.patient_name, p.insurance_provider\nFROM patients p\nJOIN appointments a ON p.patient_id = a.patient_id\nJOIN invoices i ON a.appointment_id = i.appointment_id\nWHERE i.payment_status IN ('unpaid', 'partial')\nGROUP BY p.patient_id, p.patient_name, p.insurance_provider\nHAVING SUM(i.total_amount - i.insurance_paid) > (\n    SELECT AVG(outstanding)\n    FROM (\n        SELECT p2.insurance_provider, SUM(i2.total_amount - i2.insurance_paid) AS outstanding\n        FROM patients p2\n        JOIN appointments a2 ON p2.patient_id = a2.patient_id\n        JOIN invoices i2 ON a2.appointment_id = i2.appointment_id\n        WHERE i2.payment_status IN ('unpaid', 'partial')\n        GROUP BY p2.patient_id, p2.insurance_provider\n    ) sub\n    WHERE sub.insurance_provider = p.insurance_provider\n)",
+      "params": []
+    },
+    "relational_algebra": null,
+    "execution": {
+      "executed": true,
+      "columns": [
+        "patient_id",
+        "patient_name",
+        "insurance_provider"
+      ],
+      "rows": [
+        [
+          6,
+          "Patient 6",
+          "Medicaid"
+        ],
+        [
+          11,
+          "Patient 11",
+          "None"
+        ],
+        [
+          16,
+          "Patient 16",
+          "Aetna"
+        ],
+        [
+          21,
+          "Patient 21",
+          "BlueCross"
+        ],
+        [
+          26,
+          "Patient 26",
+          "Medicaid"
+        ],
+        [
+          41,
+          "Patient 41",
+          "BlueCross"
+        ]
+      ],
+      "row_count": 6,
+      "truncated": false,
+      "diagnostics": {
+        "param_count": 0
+      }
+    },
+    "_elapsed_seconds": 22.65
+  },
+  "Q13": {
+    "success": true,
+    "database_id": 46,
+    "question": "Find patients whose most recent appointment was completed and whose lifetime invoiced amount is above the average for patients with the same insurance provider.",
+    "extraction": null,
+    "ir": null,
+    "validation": null,
+    "tables_considered": null,
+    "large_mode_table_fallback": false,
+    "fallback_table": null,
+    "removed_redundant_partition_date_filter": false,
+    "partition_date": null,
+    "extraction_source": "llm",
+    "query_family": "derived_aggregate_cte",
+    "query_family_confidence": 0.85,
+    "query_family_reason": "per-entity aggregate total then ranked/compared (derived relation)",
+    "family_guard_valid": true,
+    "family_guard_reasons": [],
+    "candidate_count": 5,
+    "selected_candidate_source": "llm_sql_direct_grain",
+    "selected_candidate_label": "llm_sql_direct_grain",
+    "selection_reason": "best_scored_executed",
+    "consensus_group_size": 1,
+    "consensus_sources": [
+      "llm_sql_direct_grain"
+    ],
+    "candidate_scores": [
+      {
+        "source": "query_family",
+        "label": "query_family",
+        "score": 0.0,
+        "executed": true,
+        "row_count": 2,
+        "fatal": true,
+        "fatal_reasons": [
+          "required concept 'invoices.total_amount' named in the question is missing from the SQL",
+          "fanout violation: AVG(\"medications\".\"unit_cost\") is aggregated after a one-to-many join multiplies its rows (many side: ['appointments', 'prescriptions']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [patients 1->N appointments (via appointments.patient_id); appointments 1->N prescriptions (via prescriptions.appointment_id); medications 1->N prescriptions (via prescriptions.medication_id)]",
+          "grain violation: the required aggregate comparison is never applied in WHERE or HAVING (contract requires comparing SUM(invoices.total_amount) per patients.patient_id, but no comparison predicate uses the measure invoices.total_amount)"
+        ]
+      },
+      {
+        "source": "llm_primary",
+        "label": "llm_primary",
+        "score": 26.0,
+        "executed": true,
+        "row_count": 0,
+        "fatal": true,
+        "fatal_reasons": [
+          "grain violation: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows",
+          "grain violation: contract requires the measure over ALL rows of the entity (lifetime/overall SUM(invoices.total_amount) per patients.patient_id), but every SUM(total_amount) used in the comparison is computed from a restricted scope: measure scope is filtered by an unrelated qualifying condition on appointments.status"
+        ]
+      },
+      {
+        "source": "llm_sql_direct",
+        "label": "llm_sql_direct",
+        "score": 0.0,
+        "executed": true,
+        "row_count": 4,
+        "fatal": true,
+        "fatal_reasons": [
+          "grain violation: contract requires SUM(invoices.total_amount) per patients.patient_id, but the SQL compares the raw row-level value invoices.total_amount and never computes SUM(total_amount)",
+          "grain violation: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows",
+          "grain violation: contract requires SUM(invoices.total_amount) per patients.patient_id, but the query groups by patients.patient_id, patients.patient_name but uses the nonaggregated child measure invoices.total_amount"
+        ]
+      },
+      {
+        "source": "llm_sql_direct_grain",
+        "label": "llm_sql_direct_grain",
+        "score": 99.0,
+        "executed": true,
+        "row_count": 3,
+        "fatal": false,
+        "fatal_reasons": []
+      },
+      {
+        "source": "llm_sql_direct_variant",
+        "label": "llm_sql_direct_variant",
+        "score": 29.0,
+        "executed": true,
+        "row_count": 4,
+        "fatal": true,
+        "fatal_reasons": [
+          "grain violation: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows",
+          "grain violation: contract requires the measure over ALL rows of the entity (lifetime/overall SUM(invoices.total_amount) per patients.patient_id), but every SUM(total_amount) used in the comparison is computed from a restricted scope: MAX-equality pins rows to a single extremum event; measure scope is filtered by an unrelated qualifying condition on appointments.status"
+        ]
+      }
+    ],
+    "candidate_reasons": {
+      "query_family": [
+        "checklist measure column 'invoices.total_amount' is never used",
+        "checklist table 'invoices' is never used",
+        "checklist column 'appointments.status' is never used",
+        "checklist column 'invoices.total_amount' is never used",
+        "literal 'completed' from the question is missing",
+        "SQL builds on 'medications', unrelated to the question's terms; 'invoices' matches them better",
+        "SQL uses unmentioned table 'medications' while the question names specific tables ['patients']",
+        "SQL uses unmentioned table 'prescriptions' while the question names specific tables ['patients']",
+        "fanout violation: AVG(\"medications\".\"unit_cost\") is aggregated after a one-to-many join multiplies its rows (many side: ['appointments', 'prescriptions']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [patients 1->N appointments (via appointments.patient_id); appointments 1->N prescriptions (via prescriptions.appointment_id); medications 1->N prescriptions (via prescriptions.medication_id)]",
+        "grain violation: the required aggregate comparison is never applied in WHERE or HAVING (contract requires comparing SUM(invoices.total_amount) per patients.patient_id, but no comparison predicate uses the measure invoices.total_amount)"
+      ],
+      "llm_primary": [
+        "executed but returned zero rows (weak signal)",
+        "SQL uses unmentioned table 'invoices' while the question names specific tables ['patients']",
+        "grain violation: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows",
+        "grain violation: contract requires the measure over ALL rows of the entity (lifetime/overall SUM(invoices.total_amount) per patients.patient_id), but every SUM(total_amount) used in the comparison is computed from a restricted scope: measure scope is filtered by an unrelated qualifying condition on appointments.status"
+      ],
+      "llm_sql_direct": [
+        "SQL uses unmentioned table 'invoices' while the question names specific tables ['patients']",
+        "grain violation: contract requires SUM(invoices.total_amount) per patients.patient_id, but the SQL compares the raw row-level value invoices.total_amount and never computes SUM(total_amount)",
+        "grain violation: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows",
+        "grain violation: contract requires SUM(invoices.total_amount) per patients.patient_id, but the query groups by patients.patient_id, patients.patient_name but uses the nonaggregated child measure invoices.total_amount"
+      ],
+      "llm_sql_direct_grain": [
+        "SQL uses unmentioned table 'invoices' while the question names specific tables ['patients']"
+      ],
+      "llm_sql_direct_variant": [
+        "SQL uses unmentioned table 'invoices' while the question names specific tables ['patients']",
+        "grain violation: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows",
+        "grain violation: contract requires the measure over ALL rows of the entity (lifetime/overall SUM(invoices.total_amount) per patients.patient_id), but every SUM(total_amount) used in the comparison is computed from a restricted scope: MAX-equality pins rows to a single extremum event; measure scope is filtered by an unrelated qualifying condition on appointments.status"
+      ]
+    },
+    "rejected_candidates": [
+      {
+        "source": "query_family",
+        "label": "query_family",
+        "sql": "WITH \"patients_totals\" AS (SELECT \"patients\".\"patient_id\" AS \"entity_id\", \"patients\".\"insurance_provider\" AS \"group_col\", AVG(\"medications\".\"unit_cost\") AS \"agg_value\" FROM \"patients\" INNER JOIN \"appointments\" ON \"patients\".\"patient_id\" = \"appointments\".\"patient_id\" INNER JOIN \"prescriptions\" ON \"appointments\".\"appointment_id\" = \"prescriptions\".\"appointment_id\" INNER JOIN \"medications\" ON \"prescriptions\".\"medication_id\" = \"medications\".\"medication_id\" GROUP BY \"patients\".\"patient_id\", \"patients\".\"insurance_provider\") SELECT * FROM \"patients_totals\" WHERE NOT EXISTS (SELECT 1 FROM \"patients_totals\" AS \"patients_totals__g0\" WHERE \"patients_totals__g0\".\"group_col\" = \"patients_totals\".\"group_col\" AND \"patients_totals__g0\".\"agg_value\" > \"patients_totals\".\"agg_value\")",
+        "score": 0.0,
+        "executed": true,
+        "row_count": 2,
+        "reasons": [
+          "checklist measure column 'invoices.total_amount' is never used",
+          "checklist table 'invoices' is never used",
+          "checklist column 'appointments.status' is never used",
+          "checklist column 'invoices.total_amount' is never used",
+          "literal 'completed' from the question is missing",
+          "SQL builds on 'medications', unrelated to the question's terms; 'invoices' matches them better",
+          "SQL uses unmentioned table 'medications' while the question names specific tables ['patients']",
+          "SQL uses unmentioned table 'prescriptions' while the question names specific tables ['patients']",
+          "fanout violation: AVG(\"medications\".\"unit_cost\") is aggregated after a one-to-many join multiplies its rows (many side: ['appointments', 'prescriptions']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [patients 1->N appointments (via appointments.patient_id); appointments 1->N prescriptions (via prescriptions.appointment_id); medications 1->N prescriptions (via prescriptions.medication_id)]",
+          "grain violation: the required aggregate comparison is never applied in WHERE or HAVING (contract requires comparing SUM(invoices.total_amount) per patients.patient_id, but no comparison predicate uses the measure invoices.total_amount)"
+        ]
+      },
+      {
+        "source": "llm_primary",
+        "label": "llm_primary",
+        "sql": "SELECT \"patients\".\"insurance_provider\", \"patients\".\"patient_id\", \"patients\".\"patient_name\", SUM(\"invoices\".\"total_amount\") AS \"lifetime_invoiced\", AVG(\"invoices\".\"total_amount\") AS \"avg_by_insurance\" FROM \"appointments\" INNER JOIN \"invoices\" ON \"appointments\".\"appointment_id\" = \"invoices\".\"appointment_id\" INNER JOIN \"patients\" ON \"appointments\".\"patient_id\" = \"patients\".\"patient_id\" WHERE \"appointments\".\"status\" = ? AND NOT EXISTS (SELECT 1 FROM \"appointments\" AS \"appointments__g0\" WHERE \"appointments__g0\".\"patient_id\" = \"appointments\".\"patient_id\" AND \"appointments__g0\".\"appointment_date\" > \"appointments\".\"appointment_date\") GROUP BY \"patients\".\"patient_id\", \"patients\".\"insurance_provider\" HAVING \"lifetime_invoiced\" > \"avg_by_insurance\"",
+        "score": 26.0,
+        "executed": true,
+        "row_count": 0,
+        "reasons": [
+          "executed but returned zero rows (weak signal)",
+          "SQL uses unmentioned table 'invoices' while the question names specific tables ['patients']",
+          "grain violation: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows",
+          "grain violation: contract requires the measure over ALL rows of the entity (lifetime/overall SUM(invoices.total_amount) per patients.patient_id), but every SUM(total_amount) used in the comparison is computed from a restricted scope: measure scope is filtered by an unrelated qualifying condition on appointments.status"
+        ]
+      },
+      {
+        "source": "llm_sql_direct",
+        "label": "llm_sql_direct",
+        "sql": "SELECT p.patient_id, p.patient_name\nFROM patients p\nJOIN appointments a ON p.patient_id = a.patient_id\nJOIN invoices i ON a.appointment_id = i.appointment_id\nWHERE a.status = 'completed'\n  AND a.appointment_date = (\n    SELECT MAX(a2.appointment_date)\n    FROM appointments a2\n    WHERE a2.patient_id = p.patient_id\n  )\n  AND i.total_amount > (\n    SELECT AVG(i2.total_amount)\n    FROM invoices i2\n    JOIN appointments a2 ON i2.appointment_id = a2.appointment_id\n    JOIN patients p2 ON a2.patient_id = p2.patient_id\n    WHERE p2.insurance_provider = p.insurance_provider\n  )\nGROUP BY p.patient_id, p.patient_name",
+        "score": 0.0,
+        "executed": true,
+        "row_count": 4,
+        "reasons": [
+          "SQL uses unmentioned table 'invoices' while the question names specific tables ['patients']",
+          "grain violation: contract requires SUM(invoices.total_amount) per patients.patient_id, but the SQL compares the raw row-level value invoices.total_amount and never computes SUM(total_amount)",
+          "grain violation: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows",
+          "grain violation: contract requires SUM(invoices.total_amount) per patients.patient_id, but the query groups by patients.patient_id, patients.patient_name but uses the nonaggregated child measure invoices.total_amount"
+        ]
+      },
+      {
+        "source": "llm_sql_direct_variant",
+        "label": "llm_sql_direct_variant",
+        "sql": "SELECT p.patient_id, p.patient_name\nFROM patients p\nJOIN appointments a ON p.patient_id = a.patient_id\nJOIN invoices i ON a.appointment_id = i.appointment_id\nWHERE a.status = 'completed'\n  AND a.appointment_date = (\n    SELECT MAX(a2.appointment_date)\n    FROM appointments a2\n    WHERE a2.patient_id = p.patient_id\n  )\nGROUP BY p.patient_id, p.patient_name\nHAVING SUM(i.total_amount) > (\n  SELECT AVG(total_amount)\n  FROM invoices i2\n  JOIN appointments a2 ON i2.appointment_id = a2.appointment_id\n  JOIN patients p2 ON a2.patient_id = p2.patient_id\n  WHERE p2.insurance_provider = p.insurance_provider\n)",
+        "score": 29.0,
+        "executed": true,
+        "row_count": 4,
+        "reasons": [
+          "SQL uses unmentioned table 'invoices' while the question names specific tables ['patients']",
+          "grain violation: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows",
+          "grain violation: contract requires the measure over ALL rows of the entity (lifetime/overall SUM(invoices.total_amount) per patients.patient_id), but every SUM(total_amount) used in the comparison is computed from a restricted scope: MAX-equality pins rows to a single extremum event; measure scope is filtered by an unrelated qualifying condition on appointments.status"
+        ]
+      }
+    ],
+    "warnings": [],
+    "low_confidence": false,
+    "selected_candidate_score": 99.0,
+    "selected_candidate_validation": {
+      "executed": true,
+      "illegal_joins": [],
+      "unknown_columns": [],
+      "missing_tables": [],
+      "missing_concepts": [],
+      "required_shapes": {},
+      "duplicate_aliases": [],
+      "undefined_aliases": [],
+      "guard_valid": null,
+      "bare_cte": null,
+      "checklist": {
+        "delta": 30.0,
+        "missing_columns": [],
+        "missing_tables": [],
+        "shape_ok": true
+      },
+      "grain": {
+        "delta": 0.0
+      },
+      "semantic_rel": {
+        "delta": 0.0
+      },
+      "semantic_join": {
+        "delta": 0.0
+      },
+      "table_lock": {
+        "locked_tables": [
+          "patients"
+        ],
+        "unmentioned_tables": [
+          "invoices"
+        ],
+        "delta": -6.0
+      },
+      "outside_tables": [],
+      "outside_tables_allowed_reachable": [
+        "doctors",
+        "lab_results",
+        "medications",
+        "prescriptions"
+      ],
+      "unseen_literals": [],
+      "shape": {
+        "fatal": [],
+        "penalties": [],
+        "report_only": []
+      },
+      "semantic_guards": [],
+      "literal_groups": [],
+      "fanout": {
+        "fatal": [],
+        "warnings": [],
+        "fatal_count": 0
+      },
+      "grain_contract": {
+        "fatal": [],
+        "warnings": [],
+        "skipped": null,
+        "requirement_1": {
+          "required": "SUM(invoices.total_amount) per patients.patient_id",
+          "required_aggregate_found": true,
+          "raw_comparison_sides": 0,
+          "entity_total_uses": 1,
+          "two_level_sides": 1,
+          "scope_restrictions": [],
+          "comparison_applied": true,
+          "unproven_comparison_sides": 1
+        },
+        "fatal_count": 0
+      },
+      "temporal_contract": {
+        "fatal": [],
+        "warnings": [],
+        "skipped": null,
+        "temporal_1": {
+          "event": "appointments",
+          "order": "appointments.appointment_date",
+          "qualifier": "appointments.status",
+          "extremum_scopes": 1,
+          "contaminated_scopes": 0
+        },
+        "fatal_count": 0
+      },
+      "fatal": [],
+      "probes": {
+        "warnings": [],
+        "penalty": 0.0,
+        "checks": {}
+      }
+    },
+    "semantic_checklist": {
+      "target_entity": "patients",
+      "output_columns": [
+        "patients.patient_id",
+        "patients.patient_name"
+      ],
+      "must_use_tables": [
+        "appointments",
+        "invoices",
+        "patients"
+      ],
+      "must_use_columns": [
+        "appointments.status",
+        "invoices.total_amount",
+        "patients.insurance_provider"
+      ],
+      "measure_column": "invoices.total_amount",
+      "group_by_entity": "patients.patient_id",
+      "comparison_logic": "Compare each patient's total invoiced amount to the average total invoiced amount of patients sharing the same insurance provider.",
+      "required_sql_shape": "comparison_subquery",
+      "literals": [
+        "completed"
+      ],
+      "row_grain": "one row per patient",
+      "universe": null,
+      "required_group_keys": [
+        "patients.patient_id"
+      ],
+      "forbidden_hardcoded_universe": false,
+      "measure_aggregation": null,
+      "measure_entity_key": null,
+      "comparison_right_kind": null,
+      "grain_confidence": null,
+      "grain_requirements": [
+        {
+          "measure_column": "invoices.total_amount",
+          "entity_key": "patients.patient_id",
+          "population_key": "patients.insurance_provider",
+          "aggregation": "sum",
+          "comparison_right_kind": "aggregate_of_entity_totals",
+          "measure_scope": "all_entity_rows",
+          "distinct": null,
+          "comparison_operator": ">",
+          "comparison_constant": null,
+          "measure_expression": null,
+          "confidence": "high"
+        }
+      ],
+      "required_literal_groups": [],
+      "grain_normalization": [],
+      "temporal_requirements": [
+        {
+          "event_table": "appointments",
+          "entity_key": "patients.patient_id",
+          "order_column": "appointments.appointment_date",
+          "qualifier_column": "appointments.status",
+          "direction": "latest",
+          "qualifier_timing": "after_extremum",
+          "qualifier_values": [
+            "completed"
+          ],
+          "confidence": "high"
+        }
+      ]
+    },
+    "semantic_contract": {
+      "requirements": [
+        {
+          "measure_table": "invoices",
+          "measure_column": "total_amount",
+          "measure_aggregation": "sum",
+          "entity_table": "patients",
+          "entity_key_column": "patient_id",
+          "comparison_right_kind": "aggregate_of_entity_totals",
+          "population_table": "patients",
+          "population_column": "insurance_provider",
+          "measure_scope": "all_entity_rows",
+          "distinct": null,
+          "comparison_operator": ">",
+          "comparison_constant": null,
+          "measure_components": [],
+          "measure_operation": null,
+          "confidence": "high",
+          "model_confidence": "high",
+          "actionable": true,
+          "evidence": []
+        }
+      ],
+      "temporal": [
+        {
+          "event_table": "appointments",
+          "entity_table": "patients",
+          "entity_key_column": "patient_id",
+          "order_table": "appointments",
+          "order_column": "appointment_date",
+          "direction": "latest",
+          "qualifier_table": "appointments",
+          "qualifier_column": "status",
+          "qualifier_values": [
+            "completed"
+          ],
+          "qualifier_timing": "after_extremum",
+          "confidence": "high",
+          "model_confidence": "high",
+          "actionable": true,
+          "evidence": []
+        }
+      ],
+      "actionable": true,
+      "evidence": []
+    },
+    "repair_attempted": false,
+    "repair_triggers": [],
+    "repair_executed": false,
+    "repair_score": null,
+    "repair_selected": false,
+    "selected_source_before_repair": "llm_sql_direct_grain",
+    "value_grounding": {
+      "profiled_columns": 20,
+      "grounded_from_eval_copy": false
+    },
+    "plan": null,
+    "generated_sql": {
+      "generated": true,
+      "sql": "WITH patient_appt AS (\n  SELECT \n    a.patient_id,\n    a.appointment_date,\n    a.status,\n    ROW_NUMBER() OVER (PARTITION BY a.patient_id ORDER BY a.appointment_date DESC) as rn\n  FROM appointments a\n),\npatient_totals AS (\n  SELECT \n    p.patient_id,\n    p.patient_name,\n    p.insurance_provider,\n    SUM(i.total_amount) as total_invoiced\n  FROM patients p\n  JOIN invoices i ON p.patient_id = (SELECT patient_id FROM appointments WHERE appointment_id = i.appointment_id)\n  GROUP BY p.patient_id, p.patient_name, p.insurance_provider\n),\navg_by_provider AS (\n  SELECT \n    insurance_provider,\n    AVG(total_invoiced) as avg_amount\n  FROM patient_totals\n  GROUP BY insurance_provider\n)\nSELECT \n  pt.patient_id,\n  pt.patient_name\nFROM patient_totals pt\nJOIN avg_by_provider ab ON pt.insurance_provider = ab.insurance_provider\nJOIN patient_appt pa ON pt.patient_id = pa.patient_id AND pa.rn = 1\nWHERE pa.status = 'completed'\n  AND pt.total_invoiced > ab.avg_amount",
+      "params": []
+    },
+    "relational_algebra": null,
+    "execution": {
+      "executed": true,
+      "columns": [
+        "patient_id",
+        "patient_name"
+      ],
+      "rows": [
+        [
+          11,
+          "Patient 11"
+        ],
+        [
+          16,
+          "Patient 16"
+        ],
+        [
+          31,
+          "Patient 31"
+        ]
+      ],
+      "row_count": 3,
+      "truncated": false,
+      "diagnostics": {
+        "param_count": 0
+      }
+    },
+    "_elapsed_seconds": 21.53
+  },
+  "Q40": {
+    "success": false,
+    "error": "no_semantically_valid_sql",
+    "database_id": 46,
+    "question": "Find lab results whose value is above the average for the same test and whose patient has spent more than the average patient.",
+    "tables_considered": null,
+    "message": "No semantically valid SQL could be generated for this question \u2014 every executed candidate violated a required relationship, measure, or query shape.",
+    "semantic_checklist": {
+      "target_entity": "lab_results",
+      "output_columns": [
+        "lab_results.lab_id",
+        "lab_results.test_name",
+        "lab_results.test_value",
+        "lab_results.result_flag",
+        "lab_results.result_date"
+      ],
+      "must_use_tables": [
+        "appointments",
+        "invoices",
+        "lab_results",
+        "patients"
+      ],
+      "must_use_columns": [
+        "lab_results.test_value",
+        "lab_results.test_name",
+        "invoices.total_amount"
+      ],
+      "measure_column": "lab_results.test_value",
+      "group_by_entity": null,
+      "comparison_logic": "Compare test value to average of same test and patient spending to average patient spending",
+      "required_sql_shape": "comparison_subquery",
+      "literals": [],
+      "row_grain": "one row per lab result",
+      "universe": null,
+      "required_group_keys": [],
+      "forbidden_hardcoded_universe": false,
+      "measure_aggregation": null,
+      "measure_entity_key": null,
+      "comparison_right_kind": null,
+      "grain_confidence": null,
+      "grain_requirements": [
+        {
+          "measure_column": "lab_results.test_value",
+          "entity_key": "lab_results.test_name",
+          "population_key": null,
+          "aggregation": "avg",
+          "comparison_right_kind": "aggregate_of_rows",
+          "measure_scope": "all_entity_rows",
+          "distinct": null,
+          "comparison_operator": ">",
+          "comparison_constant": null,
+          "measure_expression": null,
+          "confidence": "high"
+        },
+        {
+          "measure_column": "invoices.total_amount",
+          "entity_key": "patients.patient_id",
+          "population_key": null,
+          "aggregation": "sum",
+          "comparison_right_kind": "aggregate_of_entity_totals",
+          "measure_scope": "all_entity_rows",
+          "distinct": null,
+          "comparison_operator": ">",
+          "comparison_constant": null,
+          "measure_expression": null,
+          "confidence": "high"
+        }
+      ],
+      "required_literal_groups": [],
+      "grain_normalization": [],
+      "temporal_requirements": []
+    },
+    "semantic_contract": {
+      "requirements": [
+        {
+          "measure_table": "lab_results",
+          "measure_column": "test_value",
+          "measure_aggregation": "avg",
+          "entity_table": "lab_results",
+          "entity_key_column": "test_name",
+          "comparison_right_kind": "aggregate_of_rows",
+          "population_table": null,
+          "population_column": null,
+          "measure_scope": "all_entity_rows",
+          "distinct": null,
+          "comparison_operator": ">",
+          "comparison_constant": null,
+          "measure_components": [],
+          "measure_operation": null,
+          "confidence": "high",
+          "model_confidence": "high",
+          "actionable": true,
+          "evidence": []
+        },
+        {
+          "measure_table": "invoices",
+          "measure_column": "total_amount",
+          "measure_aggregation": "sum",
+          "entity_table": "patients",
+          "entity_key_column": "patient_id",
+          "comparison_right_kind": "aggregate_of_entity_totals",
+          "population_table": null,
+          "population_column": null,
+          "measure_scope": "all_entity_rows",
+          "distinct": null,
+          "comparison_operator": ">",
+          "comparison_constant": null,
+          "measure_components": [],
+          "measure_operation": null,
+          "confidence": "high",
+          "model_confidence": "high",
+          "actionable": true,
+          "evidence": []
+        }
+      ],
+      "temporal": [],
+      "actionable": true,
+      "evidence": []
+    },
+    "candidate_fatal_reasons": {
+      "llm_primary": [],
+      "llm_sql_direct": [
+        "grain violation [requirement 2/2]: contract requires SUM(invoices.total_amount) per patients.patient_id, but the SQL compares the raw row-level value invoices.total_amount and never computes SUM(total_amount)",
+        "grain violation [requirement 2/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows"
+      ],
+      "llm_sql_direct_grain": [
+        "grain violation [requirement 2/2]: contract requires SUM(invoices.total_amount) per patients.patient_id, but the SQL compares the raw row-level value invoices.total_amount and never computes SUM(total_amount)",
+        "grain violation [requirement 2/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows"
+      ],
+      "llm_sql_direct_variant": [
+        "grain violation [requirement 2/2]: contract requires SUM(invoices.total_amount) per patients.patient_id, but the SQL compares the raw row-level value invoices.total_amount and never computes SUM(total_amount)",
+        "grain violation [requirement 2/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows"
+      ]
+    },
+    "debug_rejected_sql": "SELECT lr.lab_id, lr.test_name, lr.test_value, lr.result_flag, lr.result_date\nFROM lab_results lr\nJOIN appointments a ON lr.appointment_id = a.appointment_id\nJOIN invoices i ON a.appointment_id = i.appointment_id\nJOIN patients p ON a.patient_id = p.patient_id\nWHERE lr.test_value > (\n    SELECT AVG(lr2.test_value)\n    FROM lab_results lr2\n    WHERE lr2.test_name = lr.test_name\n)\nAND i.total_amount > (\n    SELECT AVG(total_amount)\n    FROM invoices\n)",
+    "debug_rejected_fatal_reasons": [
+      "grain violation [requirement 2/2]: contract requires SUM(invoices.total_amount) per patients.patient_id, but the SQL compares the raw row-level value invoices.total_amount and never computes SUM(total_amount)",
+      "grain violation [requirement 2/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows"
+    ],
+    "candidate_count": 4,
+    "selected_candidate_source": "llm_sql_direct_variant",
+    "selected_candidate_label": "llm_sql_direct_variant",
+    "selection_reason": "consensus_group",
+    "consensus_group_size": 3,
+    "consensus_sources": [
+      "llm_sql_direct",
+      "llm_sql_direct_grain",
+      "llm_sql_direct_variant"
+    ],
+    "candidate_scores": [
+      {
+        "source": "llm_primary",
+        "label": "llm_primary",
+        "score": 5.0,
+        "executed": false,
+        "row_count": null,
+        "fatal": false,
+        "fatal_reasons": []
+      },
+      {
+        "source": "llm_sql_direct",
+        "label": "llm_sql_direct",
+        "score": 39.0,
+        "executed": true,
+        "row_count": 33,
+        "fatal": true,
+        "fatal_reasons": [
+          "grain violation [requirement 2/2]: contract requires SUM(invoices.total_amount) per patients.patient_id, but the SQL compares the raw row-level value invoices.total_amount and never computes SUM(total_amount)",
+          "grain violation [requirement 2/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows"
+        ]
+      },
+      {
+        "source": "llm_sql_direct_grain",
+        "label": "llm_sql_direct_grain",
+        "score": 39.0,
+        "executed": true,
+        "row_count": 33,
+        "fatal": true,
+        "fatal_reasons": [
+          "grain violation [requirement 2/2]: contract requires SUM(invoices.total_amount) per patients.patient_id, but the SQL compares the raw row-level value invoices.total_amount and never computes SUM(total_amount)",
+          "grain violation [requirement 2/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows"
+        ]
+      },
+      {
+        "source": "llm_sql_direct_variant",
+        "label": "llm_sql_direct_variant",
+        "score": 39.0,
+        "executed": true,
+        "row_count": 33,
+        "fatal": true,
+        "fatal_reasons": [
+          "grain violation [requirement 2/2]: contract requires SUM(invoices.total_amount) per patients.patient_id, but the SQL compares the raw row-level value invoices.total_amount and never computes SUM(total_amount)",
+          "grain violation [requirement 2/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows"
+        ]
+      }
+    ],
+    "candidate_reasons": {
+      "llm_primary": [
+        "no SQL produced (invalid IR / unresolved plan / generation failure)"
+      ],
+      "llm_sql_direct": [
+        "grain violation [requirement 2/2]: contract requires SUM(invoices.total_amount) per patients.patient_id, but the SQL compares the raw row-level value invoices.total_amount and never computes SUM(total_amount)",
+        "grain violation [requirement 2/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows",
+        "grain note [requirement 1/2]: AVG(lab_results.test_value) per lab_results.test_name is computed, but a raw lab_results.test_value also appears in a comparison \u2014 verify the comparison grain"
+      ],
+      "llm_sql_direct_grain": [
+        "grain violation [requirement 2/2]: contract requires SUM(invoices.total_amount) per patients.patient_id, but the SQL compares the raw row-level value invoices.total_amount and never computes SUM(total_amount)",
+        "grain violation [requirement 2/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows",
+        "grain note [requirement 1/2]: AVG(lab_results.test_value) per lab_results.test_name is computed, but a raw lab_results.test_value also appears in a comparison \u2014 verify the comparison grain"
+      ],
+      "llm_sql_direct_variant": [
+        "grain violation [requirement 2/2]: contract requires SUM(invoices.total_amount) per patients.patient_id, but the SQL compares the raw row-level value invoices.total_amount and never computes SUM(total_amount)",
+        "grain violation [requirement 2/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows",
+        "grain note [requirement 1/2]: AVG(lab_results.test_value) per lab_results.test_name is computed, but a raw lab_results.test_value also appears in a comparison \u2014 verify the comparison grain"
+      ]
+    },
+    "rejected_candidates": [
+      {
+        "source": "llm_primary",
+        "label": "llm_primary",
+        "sql": null,
+        "score": 5.0,
+        "executed": false,
+        "row_count": null,
+        "reasons": [
+          "no SQL produced (invalid IR / unresolved plan / generation failure)"
+        ]
+      },
+      {
+        "source": "llm_sql_direct",
+        "label": "llm_sql_direct",
+        "sql": "SELECT lr.lab_id, lr.test_name, lr.test_value, lr.result_flag, lr.result_date\nFROM lab_results lr\nJOIN appointments a ON lr.appointment_id = a.appointment_id\nJOIN invoices i ON a.appointment_id = i.appointment_id\nJOIN patients p ON a.patient_id = p.patient_id\nWHERE lr.test_value > (\n    SELECT AVG(lr2.test_value)\n    FROM lab_results lr2\n    WHERE lr2.test_name = lr.test_name\n)\nAND i.total_amount > (\n    SELECT AVG(total_amount)\n    FROM invoices\n)",
+        "score": 39.0,
+        "executed": true,
+        "row_count": 33,
+        "reasons": [
+          "grain violation [requirement 2/2]: contract requires SUM(invoices.total_amount) per patients.patient_id, but the SQL compares the raw row-level value invoices.total_amount and never computes SUM(total_amount)",
+          "grain violation [requirement 2/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows",
+          "grain note [requirement 1/2]: AVG(lab_results.test_value) per lab_results.test_name is computed, but a raw lab_results.test_value also appears in a comparison \u2014 verify the comparison grain"
+        ]
+      },
+      {
+        "source": "llm_sql_direct_grain",
+        "label": "llm_sql_direct_grain",
+        "sql": "SELECT lr.lab_id, lr.test_name, lr.test_value, lr.result_flag, lr.result_date\nFROM lab_results lr\nJOIN appointments a ON lr.appointment_id = a.appointment_id\nJOIN invoices i ON a.appointment_id = i.appointment_id\nJOIN patients p ON a.patient_id = p.patient_id\nWHERE lr.test_value > (\n    SELECT AVG(lr2.test_value)\n    FROM lab_results lr2\n    WHERE lr2.test_name = lr.test_name\n)\nAND i.total_amount > (\n    SELECT AVG(total_amount)\n    FROM invoices\n)",
+        "score": 39.0,
+        "executed": true,
+        "row_count": 33,
+        "reasons": [
+          "grain violation [requirement 2/2]: contract requires SUM(invoices.total_amount) per patients.patient_id, but the SQL compares the raw row-level value invoices.total_amount and never computes SUM(total_amount)",
+          "grain violation [requirement 2/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows",
+          "grain note [requirement 1/2]: AVG(lab_results.test_value) per lab_results.test_name is computed, but a raw lab_results.test_value also appears in a comparison \u2014 verify the comparison grain"
+        ]
+      }
+    ],
+    "warnings": [
+      "all executed candidates failed hard semantic checks; low confidence",
+      "LOW CONFIDENCE RESULT: every usable candidate failed hard semantic checks; this SQL is a best-effort fallback, NOT a normal success. Fatal reasons: grain violation [requirement 2/2]: contract requires SUM(invoices.total_amount) per patients.patient_id, but the SQL compares the raw row-level value invoices.total_amount and never computes SUM(total_amount); grain violation [requirement 2/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows",
+      "low confidence (score 39.0 < 40.0); the question may need clarification"
+    ],
+    "low_confidence": true,
+    "_elapsed_seconds": 25.02
+  },
+  "Q48": {
+    "success": true,
+    "database_id": 46,
+    "question": "Find patients with abnormal results in more than one type of lab test and an outstanding balance above the average patient outstanding balance.",
+    "extraction": null,
+    "ir": null,
+    "validation": null,
+    "tables_considered": null,
+    "large_mode_table_fallback": false,
+    "fallback_table": null,
+    "removed_redundant_partition_date_filter": false,
+    "partition_date": null,
+    "extraction_source": "llm",
+    "query_family": "derived_aggregate_cte",
+    "query_family_confidence": 0.85,
+    "query_family_reason": "per-entity aggregate total then ranked/compared (derived relation)",
+    "family_guard_valid": null,
+    "family_guard_reasons": null,
+    "candidate_count": 7,
+    "selected_candidate_source": "llm_sql_repair",
+    "selected_candidate_label": "llm_sql_repair",
+    "selection_reason": "best_scored_executed",
+    "consensus_group_size": 1,
+    "consensus_sources": [
+      "llm_sql_repair"
+    ],
+    "candidate_scores": [
+      {
+        "source": "llm_primary",
+        "label": "llm_primary",
+        "score": 0.0,
+        "executed": true,
+        "row_count": 0,
+        "fatal": true,
+        "fatal_reasons": [
+          "semantic violation: arithmetic expression is used as a Boolean predicate without a comparison operator (HAVING: \"total_billed\" - \"total_paid\")",
+          "semantic violation: literal 'abnormal' is not a valid value of lab_results.result_flag \u2014 the question's category resolves to ['critical', 'high', 'low'] and none of those literals is used",
+          "fanout violation: COUNT(\"lab_results\".\"test_name\") is aggregated after a one-to-many join multiplies its rows (many side: ['invoices']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [appointments 1->N invoices (via invoices.appointment_id)]",
+          "fanout violation: SUM(\"invoices\".\"total_amount\") is aggregated after a one-to-many join multiplies its rows (many side: ['lab_results']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [appointments 1->N lab_results (via lab_results.appointment_id)]",
+          "fanout violation: SUM(\"invoices\".\"insurance_paid\") is aggregated after a one-to-many join multiplies its rows (many side: ['lab_results']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [appointments 1->N lab_results (via lab_results.appointment_id)]",
+          "fanout violation: AVG(\"invoices\".\"total_amount\") is aggregated after a one-to-many join multiplies its rows (many side: ['lab_results']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [appointments 1->N lab_results (via lab_results.appointment_id)]",
+          "fanout violation: AVG(\"invoices\".\"insurance_paid\") is aggregated after a one-to-many join multiplies its rows (many side: ['lab_results']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [appointments 1->N lab_results (via lab_results.appointment_id)]",
+          "grain violation [requirement 1/2]: contract requires COUNT(DISTINCT test_name) per patients.patient_id, but the SQL compares COUNT(test_name) without DISTINCT (a 'distinct'-looking alias proves nothing)"
+        ]
+      },
+      {
+        "source": "llm_variant",
+        "label": "llm_variant_1",
+        "score": 0.0,
+        "executed": true,
+        "row_count": 0,
+        "fatal": true,
+        "fatal_reasons": [
+          "self-comparison is always true/false: \"avg_outstanding\" > \"avg_outstanding\"",
+          "semantic violation: literal 'abnormal' is not a valid value of lab_results.result_flag \u2014 the question's category resolves to ['critical', 'high', 'low'] and none of those literals is used",
+          "fanout violation: AVG(\"invoices\".\"total_amount\") is aggregated after a one-to-many join multiplies its rows (many side: ['lab_results']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [appointments 1->N lab_results (via lab_results.appointment_id)]",
+          "grain violation [requirement 2/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows"
+        ]
+      },
+      {
+        "source": "llm_variant",
+        "label": "llm_variant_2",
+        "score": 0.0,
+        "executed": true,
+        "row_count": 0,
+        "fatal": true,
+        "fatal_reasons": [
+          "self-comparison is always true/false: \"avg_outstanding_balance\" > \"avg_outstanding_balance\"",
+          "semantic violation: literal 'abnormal' is not a valid value of lab_results.result_flag \u2014 the question's category resolves to ['critical', 'high', 'low'] and none of those literals is used",
+          "fanout violation: AVG(\"invoices\".\"total_amount\") is aggregated after a one-to-many join multiplies its rows (many side: ['lab_results']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [appointments 1->N lab_results (via lab_results.appointment_id)]",
+          "grain violation [requirement 2/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows"
+        ]
+      },
+      {
+        "source": "llm_sql_direct",
+        "label": "llm_sql_direct",
+        "score": 29.0,
+        "executed": true,
+        "row_count": 4,
+        "fatal": true,
+        "fatal_reasons": [
+          "grain violation [requirement 2/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows",
+          "grain violation [requirement 2/2]: contract requires SUM(invoices.total_amount) per patients.patient_id, but the query groups by patients.patient_id, patients.patient_name but uses the nonaggregated child measure invoices.total_amount"
+        ]
+      },
+      {
+        "source": "llm_sql_direct_grain",
+        "label": "llm_sql_direct_grain",
+        "score": 0.0,
+        "executed": true,
+        "row_count": 6,
+        "fatal": true,
+        "fatal_reasons": [
+          "fanout violation: SUM(i.total_amount) is aggregated after a one-to-many join multiplies its rows (many side: ['lab_results']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [appointments 1->N lab_results (via lab_results.appointment_id)]",
+          "fanout violation: SUM(i.insurance_paid) is aggregated after a one-to-many join multiplies its rows (many side: ['lab_results']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [appointments 1->N lab_results (via lab_results.appointment_id)]",
+          "grain violation [requirement 2/2]: contract requires the measure over ALL rows of the entity (lifetime/overall SUM(invoices.total_amount) per patients.patient_id), but every SUM(total_amount) used in the comparison is computed from a restricted scope: measure scope is filtered by an unrelated qualifying condition on lab_results.result_flag"
+        ]
+      },
+      {
+        "source": "llm_sql_direct_variant",
+        "label": "llm_sql_direct_variant",
+        "score": 29.0,
+        "executed": true,
+        "row_count": 4,
+        "fatal": true,
+        "fatal_reasons": [
+          "grain violation [requirement 2/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows",
+          "grain violation [requirement 2/2]: contract requires SUM(invoices.total_amount) per patients.patient_id, but the query groups by patients.patient_id, patients.patient_name but uses the nonaggregated child measure invoices.total_amount"
+        ]
+      },
+      {
+        "source": "llm_sql_repair",
+        "label": "llm_sql_repair",
+        "score": 89.0,
+        "executed": true,
+        "row_count": 3,
+        "fatal": false,
+        "fatal_reasons": []
+      }
+    ],
+    "candidate_reasons": {
+      "llm_primary": [
+        "executed but returned zero rows (weak signal)",
+        "distinct-count intent but no COUNT(DISTINCT)",
+        "checklist requires shape 'comparison_subquery' but the SQL lacks it",
+        "literal 'high' from the question is missing",
+        "literal 'low' from the question is missing",
+        "literal 'critical' from the question is missing",
+        "SQL uses unmentioned table 'lab_results' while the question names specific tables ['patients']",
+        "SQL uses unmentioned table 'invoices' while the question names specific tables ['patients']",
+        "literal 'abnormal' is not among the sampled values of column 'result_flag' (known: ['critical', 'high', 'low', 'normal'])",
+        "alias 'distinct_abnormal_tests' claims distinct but the expression is COUNT(...) without DISTINCT",
+        "semantic violation: arithmetic expression is used as a Boolean predicate without a comparison operator (HAVING: \"total_billed\" - \"total_paid\")",
+        "semantic violation: literal 'abnormal' is not a valid value of lab_results.result_flag \u2014 the question's category resolves to ['critical', 'high', 'low'] and none of those literals is used",
+        "fanout violation: COUNT(\"lab_results\".\"test_name\") is aggregated after a one-to-many join multiplies its rows (many side: ['invoices']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [appointments 1->N invoices (via invoices.appointment_id)]",
+        "fanout violation: SUM(\"invoices\".\"total_amount\") is aggregated after a one-to-many join multiplies its rows (many side: ['lab_results']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [appointments 1->N lab_results (via lab_results.appointment_id)]",
+        "fanout violation: SUM(\"invoices\".\"insurance_paid\") is aggregated after a one-to-many join multiplies its rows (many side: ['lab_results']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [appointments 1->N lab_results (via lab_results.appointment_id)]",
+        "fanout violation: AVG(\"invoices\".\"total_amount\") is aggregated after a one-to-many join multiplies its rows (many side: ['lab_results']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [appointments 1->N lab_results (via lab_results.appointment_id)]",
+        "fanout violation: AVG(\"invoices\".\"insurance_paid\") is aggregated after a one-to-many join multiplies its rows (many side: ['lab_results']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [appointments 1->N lab_results (via lab_results.appointment_id)]",
+        "grain violation [requirement 1/2]: contract requires COUNT(DISTINCT test_name) per patients.patient_id, but the SQL compares COUNT(test_name) without DISTINCT (a 'distinct'-looking alias proves nothing)",
+        "grain note [requirement 2/2]: cannot prove the required comparison (SUM(invoices.total_amount) per patients.patient_id) is applied \u2014 a comparison side could not be traced"
+      ],
+      "llm_variant_1": [
+        "executed but returned zero rows (weak signal)",
+        "distinct-count intent but no COUNT(DISTINCT)",
+        "checklist requires shape 'comparison_subquery' but the SQL lacks it",
+        "checklist column 'invoices.insurance_paid' is never used",
+        "literal 'high' from the question is missing",
+        "literal 'low' from the question is missing",
+        "literal 'critical' from the question is missing",
+        "SQL uses unmentioned table 'lab_results' while the question names specific tables ['patients']",
+        "SQL uses unmentioned table 'invoices' while the question names specific tables ['patients']",
+        "literal 'abnormal' is not among the sampled values of column 'result_flag' (known: ['critical', 'high', 'low', 'normal'])",
+        "self-comparison is always true/false: \"avg_outstanding\" > \"avg_outstanding\"",
+        "semantic violation: literal 'abnormal' is not a valid value of lab_results.result_flag \u2014 the question's category resolves to ['critical', 'high', 'low'] and none of those literals is used",
+        "fanout violation: AVG(\"invoices\".\"total_amount\") is aggregated after a one-to-many join multiplies its rows (many side: ['lab_results']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [appointments 1->N lab_results (via lab_results.appointment_id)]",
+        "grain violation [requirement 2/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows",
+        "grain note [requirement 1/2]: cannot prove the required COUNT(DISTINCT test_name) comparison is applied"
+      ],
+      "llm_variant_2": [
+        "executed but returned zero rows (weak signal)",
+        "distinct-count intent but no COUNT(DISTINCT)",
+        "checklist requires shape 'comparison_subquery' but the SQL lacks it",
+        "checklist column 'invoices.insurance_paid' is never used",
+        "literal 'high' from the question is missing",
+        "literal 'low' from the question is missing",
+        "literal 'critical' from the question is missing",
+        "SQL uses unmentioned table 'lab_results' while the question names specific tables ['patients']",
+        "SQL uses unmentioned table 'invoices' while the question names specific tables ['patients']",
+        "literal 'abnormal' is not among the sampled values of column 'result_flag' (known: ['critical', 'high', 'low', 'normal'])",
+        "self-comparison is always true/false: \"avg_outstanding_balance\" > \"avg_outstanding_balance\"",
+        "semantic violation: literal 'abnormal' is not a valid value of lab_results.result_flag \u2014 the question's category resolves to ['critical', 'high', 'low'] and none of those literals is used",
+        "fanout violation: AVG(\"invoices\".\"total_amount\") is aggregated after a one-to-many join multiplies its rows (many side: ['lab_results']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [appointments 1->N lab_results (via lab_results.appointment_id)]",
+        "grain violation [requirement 2/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows",
+        "grain note [requirement 1/2]: cannot prove the required COUNT(DISTINCT test_name) comparison is applied"
+      ],
+      "llm_sql_direct": [
+        "SQL uses unmentioned table 'lab_results' while the question names specific tables ['patients']",
+        "SQL uses unmentioned table 'invoices' while the question names specific tables ['patients']",
+        "grain violation [requirement 2/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows",
+        "grain violation [requirement 2/2]: contract requires SUM(invoices.total_amount) per patients.patient_id, but the query groups by patients.patient_id, patients.patient_name but uses the nonaggregated child measure invoices.total_amount"
+      ],
+      "llm_sql_direct_grain": [
+        "SQL uses unmentioned table 'lab_results' while the question names specific tables ['patients']",
+        "SQL uses unmentioned table 'invoices' while the question names specific tables ['patients']",
+        "fanout violation: SUM(i.total_amount) is aggregated after a one-to-many join multiplies its rows (many side: ['lab_results']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [appointments 1->N lab_results (via lab_results.appointment_id)]",
+        "fanout violation: SUM(i.insurance_paid) is aggregated after a one-to-many join multiplies its rows (many side: ['lab_results']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [appointments 1->N lab_results (via lab_results.appointment_id)]",
+        "grain violation [requirement 2/2]: contract requires the measure over ALL rows of the entity (lifetime/overall SUM(invoices.total_amount) per patients.patient_id), but every SUM(total_amount) used in the comparison is computed from a restricted scope: measure scope is filtered by an unrelated qualifying condition on lab_results.result_flag",
+        "possible join fanout aggregate inflation"
+      ],
+      "llm_sql_direct_variant": [
+        "SQL uses unmentioned table 'lab_results' while the question names specific tables ['patients']",
+        "SQL uses unmentioned table 'invoices' while the question names specific tables ['patients']",
+        "grain violation [requirement 2/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows",
+        "grain violation [requirement 2/2]: contract requires SUM(invoices.total_amount) per patients.patient_id, but the query groups by patients.patient_id, patients.patient_name but uses the nonaggregated child measure invoices.total_amount"
+      ],
+      "llm_sql_repair": [
+        "SQL uses unmentioned table 'lab_results' while the question names specific tables ['patients']",
+        "SQL uses unmentioned table 'invoices' while the question names specific tables ['patients']",
+        "possible join fanout aggregate inflation"
+      ]
+    },
+    "rejected_candidates": [
+      {
+        "source": "llm_primary",
+        "label": "llm_primary",
+        "sql": "SELECT \"patients\".\"patient_id\", \"patients\".\"patient_name\", COUNT(*) AS \"abnormal_test_count\", COUNT(\"lab_results\".\"test_name\") AS \"distinct_abnormal_tests\", SUM(\"invoices\".\"total_amount\") AS \"total_billed\", SUM(\"invoices\".\"insurance_paid\") AS \"total_paid\", AVG(\"invoices\".\"total_amount\") AS \"avg_total_billed\", AVG(\"invoices\".\"insurance_paid\") AS \"avg_total_paid\" FROM \"appointments\" INNER JOIN \"invoices\" ON \"appointments\".\"appointment_id\" = \"invoices\".\"appointment_id\" INNER JOIN \"lab_results\" ON \"appointments\".\"appointment_id\" = \"lab_results\".\"appointment_id\" INNER JOIN \"patients\" ON \"appointments\".\"patient_id\" = \"patients\".\"patient_id\" WHERE \"lab_results\".\"result_flag\" = ? GROUP BY \"patients\".\"patient_id\", \"patients\".\"patient_name\" HAVING \"distinct_abnormal_tests\" > ? AND \"total_billed\" - \"total_paid\"",
+        "score": 0.0,
+        "executed": true,
+        "row_count": 0,
+        "reasons": [
+          "executed but returned zero rows (weak signal)",
+          "distinct-count intent but no COUNT(DISTINCT)",
+          "checklist requires shape 'comparison_subquery' but the SQL lacks it",
+          "literal 'high' from the question is missing",
+          "literal 'low' from the question is missing",
+          "literal 'critical' from the question is missing",
+          "SQL uses unmentioned table 'lab_results' while the question names specific tables ['patients']",
+          "SQL uses unmentioned table 'invoices' while the question names specific tables ['patients']",
+          "literal 'abnormal' is not among the sampled values of column 'result_flag' (known: ['critical', 'high', 'low', 'normal'])",
+          "alias 'distinct_abnormal_tests' claims distinct but the expression is COUNT(...) without DISTINCT",
+          "semantic violation: arithmetic expression is used as a Boolean predicate without a comparison operator (HAVING: \"total_billed\" - \"total_paid\")",
+          "semantic violation: literal 'abnormal' is not a valid value of lab_results.result_flag \u2014 the question's category resolves to ['critical', 'high', 'low'] and none of those literals is used",
+          "fanout violation: COUNT(\"lab_results\".\"test_name\") is aggregated after a one-to-many join multiplies its rows (many side: ['invoices']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [appointments 1->N invoices (via invoices.appointment_id)]",
+          "fanout violation: SUM(\"invoices\".\"total_amount\") is aggregated after a one-to-many join multiplies its rows (many side: ['lab_results']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [appointments 1->N lab_results (via lab_results.appointment_id)]",
+          "fanout violation: SUM(\"invoices\".\"insurance_paid\") is aggregated after a one-to-many join multiplies its rows (many side: ['lab_results']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [appointments 1->N lab_results (via lab_results.appointment_id)]",
+          "fanout violation: AVG(\"invoices\".\"total_amount\") is aggregated after a one-to-many join multiplies its rows (many side: ['lab_results']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [appointments 1->N lab_results (via lab_results.appointment_id)]",
+          "fanout violation: AVG(\"invoices\".\"insurance_paid\") is aggregated after a one-to-many join multiplies its rows (many side: ['lab_results']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [appointments 1->N lab_results (via lab_results.appointment_id)]",
+          "grain violation [requirement 1/2]: contract requires COUNT(DISTINCT test_name) per patients.patient_id, but the SQL compares COUNT(test_name) without DISTINCT (a 'distinct'-looking alias proves nothing)",
+          "grain note [requirement 2/2]: cannot prove the required comparison (SUM(invoices.total_amount) per patients.patient_id) is applied \u2014 a comparison side could not be traced"
+        ]
+      },
+      {
+        "source": "llm_variant",
+        "label": "llm_variant_1",
+        "sql": "SELECT \"patients\".\"patient_id\", \"patients\".\"patient_name\", COUNT(*) AS \"abnormal_test_count\", AVG(\"invoices\".\"total_amount\") AS \"avg_outstanding\" FROM \"appointments\" INNER JOIN \"invoices\" ON \"appointments\".\"appointment_id\" = \"invoices\".\"appointment_id\" INNER JOIN \"lab_results\" ON \"appointments\".\"appointment_id\" = \"lab_results\".\"appointment_id\" INNER JOIN \"patients\" ON \"appointments\".\"patient_id\" = \"patients\".\"patient_id\" WHERE \"lab_results\".\"result_flag\" = ? GROUP BY \"patients\".\"patient_id\", \"patients\".\"patient_name\" HAVING \"abnormal_test_count\" > ? AND \"avg_outstanding\" > \"avg_outstanding\"",
+        "score": 0.0,
+        "executed": true,
+        "row_count": 0,
+        "reasons": [
+          "executed but returned zero rows (weak signal)",
+          "distinct-count intent but no COUNT(DISTINCT)",
+          "checklist requires shape 'comparison_subquery' but the SQL lacks it",
+          "checklist column 'invoices.insurance_paid' is never used",
+          "literal 'high' from the question is missing",
+          "literal 'low' from the question is missing",
+          "literal 'critical' from the question is missing",
+          "SQL uses unmentioned table 'lab_results' while the question names specific tables ['patients']",
+          "SQL uses unmentioned table 'invoices' while the question names specific tables ['patients']",
+          "literal 'abnormal' is not among the sampled values of column 'result_flag' (known: ['critical', 'high', 'low', 'normal'])",
+          "self-comparison is always true/false: \"avg_outstanding\" > \"avg_outstanding\"",
+          "semantic violation: literal 'abnormal' is not a valid value of lab_results.result_flag \u2014 the question's category resolves to ['critical', 'high', 'low'] and none of those literals is used",
+          "fanout violation: AVG(\"invoices\".\"total_amount\") is aggregated after a one-to-many join multiplies its rows (many side: ['lab_results']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [appointments 1->N lab_results (via lab_results.appointment_id)]",
+          "grain violation [requirement 2/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows",
+          "grain note [requirement 1/2]: cannot prove the required COUNT(DISTINCT test_name) comparison is applied"
+        ]
+      },
+      {
+        "source": "llm_variant",
+        "label": "llm_variant_2",
+        "sql": "SELECT \"patients\".\"patient_id\", \"patients\".\"patient_name\", COUNT(*) AS \"abnormal_test_count\", AVG(\"invoices\".\"total_amount\") AS \"avg_outstanding_balance\" FROM \"patients\" INNER JOIN \"appointments\" ON \"patients\".\"patient_id\" = \"appointments\".\"patient_id\" INNER JOIN \"invoices\" ON \"appointments\".\"appointment_id\" = \"invoices\".\"appointment_id\" INNER JOIN \"lab_results\" ON \"appointments\".\"appointment_id\" = \"lab_results\".\"appointment_id\" WHERE \"lab_results\".\"result_flag\" = ? GROUP BY \"patients\".\"patient_id\", \"patients\".\"patient_name\" HAVING \"abnormal_test_count\" > ? AND \"avg_outstanding_balance\" > \"avg_outstanding_balance\"",
+        "score": 0.0,
+        "executed": true,
+        "row_count": 0,
+        "reasons": [
+          "executed but returned zero rows (weak signal)",
+          "distinct-count intent but no COUNT(DISTINCT)",
+          "checklist requires shape 'comparison_subquery' but the SQL lacks it",
+          "checklist column 'invoices.insurance_paid' is never used",
+          "literal 'high' from the question is missing",
+          "literal 'low' from the question is missing",
+          "literal 'critical' from the question is missing",
+          "SQL uses unmentioned table 'lab_results' while the question names specific tables ['patients']",
+          "SQL uses unmentioned table 'invoices' while the question names specific tables ['patients']",
+          "literal 'abnormal' is not among the sampled values of column 'result_flag' (known: ['critical', 'high', 'low', 'normal'])",
+          "self-comparison is always true/false: \"avg_outstanding_balance\" > \"avg_outstanding_balance\"",
+          "semantic violation: literal 'abnormal' is not a valid value of lab_results.result_flag \u2014 the question's category resolves to ['critical', 'high', 'low'] and none of those literals is used",
+          "fanout violation: AVG(\"invoices\".\"total_amount\") is aggregated after a one-to-many join multiplies its rows (many side: ['lab_results']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [appointments 1->N lab_results (via lab_results.appointment_id)]",
+          "grain violation [requirement 2/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows",
+          "grain note [requirement 1/2]: cannot prove the required COUNT(DISTINCT test_name) comparison is applied"
+        ]
+      },
+      {
+        "source": "llm_sql_direct",
+        "label": "llm_sql_direct",
+        "sql": "SELECT p.patient_id, p.patient_name\nFROM patients p\nJOIN appointments a ON p.patient_id = a.patient_id\nJOIN invoices i ON a.appointment_id = i.appointment_id\nJOIN lab_results l ON a.appointment_id = l.appointment_id\nWHERE l.result_flag IN ('high', 'low', 'critical')\nGROUP BY p.patient_id, p.patient_name\nHAVING COUNT(DISTINCT l.test_name) > 1\n   AND (i.total_amount - i.insurance_paid) > (\n       SELECT AVG(total_amount - insurance_paid)\n       FROM invoices\n       WHERE payment_status != 'paid'\n   )",
+        "score": 29.0,
+        "executed": true,
+        "row_count": 4,
+        "reasons": [
+          "SQL uses unmentioned table 'lab_results' while the question names specific tables ['patients']",
+          "SQL uses unmentioned table 'invoices' while the question names specific tables ['patients']",
+          "grain violation [requirement 2/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows",
+          "grain violation [requirement 2/2]: contract requires SUM(invoices.total_amount) per patients.patient_id, but the query groups by patients.patient_id, patients.patient_name but uses the nonaggregated child measure invoices.total_amount"
+        ]
+      },
+      {
+        "source": "llm_sql_direct_grain",
+        "label": "llm_sql_direct_grain",
+        "sql": "SELECT p.patient_id, p.patient_name\nFROM patients p\nJOIN appointments a ON p.patient_id = a.patient_id\nJOIN invoices i ON a.appointment_id = i.appointment_id\nJOIN lab_results l ON a.appointment_id = l.appointment_id\nWHERE l.result_flag IN ('high', 'low', 'critical')\nGROUP BY p.patient_id, p.patient_name\nHAVING COUNT(DISTINCT l.test_name) > 1\n   AND (SUM(i.total_amount) - SUM(i.insurance_paid)) > (\n       SELECT AVG(total_outstanding)\n       FROM (\n           SELECT SUM(i2.total_amount) - SUM(i2.insurance_paid) AS total_outstanding\n           FROM appointments a2\n           JOIN invoices i2 ON a2.appointment_id = i2.appointment_id\n           GROUP BY a2.patient_id\n       )\n   )",
+        "score": 0.0,
+        "executed": true,
+        "row_count": 6,
+        "reasons": [
+          "SQL uses unmentioned table 'lab_results' while the question names specific tables ['patients']",
+          "SQL uses unmentioned table 'invoices' while the question names specific tables ['patients']",
+          "fanout violation: SUM(i.total_amount) is aggregated after a one-to-many join multiplies its rows (many side: ['lab_results']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [appointments 1->N lab_results (via lab_results.appointment_id)]",
+          "fanout violation: SUM(i.insurance_paid) is aggregated after a one-to-many join multiplies its rows (many side: ['lab_results']); pre-aggregate per entity in its own CTE, use EXISTS for qualification, or COUNT(DISTINCT an entity key) [appointments 1->N lab_results (via lab_results.appointment_id)]",
+          "grain violation [requirement 2/2]: contract requires the measure over ALL rows of the entity (lifetime/overall SUM(invoices.total_amount) per patients.patient_id), but every SUM(total_amount) used in the comparison is computed from a restricted scope: measure scope is filtered by an unrelated qualifying condition on lab_results.result_flag",
+          "possible join fanout aggregate inflation"
+        ]
+      },
+      {
+        "source": "llm_sql_direct_variant",
+        "label": "llm_sql_direct_variant",
+        "sql": "SELECT p.patient_id, p.patient_name\nFROM patients p\nJOIN appointments a ON p.patient_id = a.patient_id\nJOIN invoices i ON a.appointment_id = i.appointment_id\nJOIN lab_results l ON a.appointment_id = l.appointment_id\nWHERE l.result_flag IN ('high', 'low', 'critical')\nGROUP BY p.patient_id, p.patient_name\nHAVING COUNT(DISTINCT l.test_name) > 1\n   AND (i.total_amount - i.insurance_paid) > (\n       SELECT AVG(total_amount - insurance_paid)\n       FROM invoices\n       WHERE payment_status = 'unpaid'\n   )",
+        "score": 29.0,
+        "executed": true,
+        "row_count": 4,
+        "reasons": [
+          "SQL uses unmentioned table 'lab_results' while the question names specific tables ['patients']",
+          "SQL uses unmentioned table 'invoices' while the question names specific tables ['patients']",
+          "grain violation [requirement 2/2]: the comparison must use an aggregate of per-entity totals (AVG over SUM(total_amount) per patients.patient_id), but the SQL computes AVG(invoices.total_amount) directly over raw rows",
+          "grain violation [requirement 2/2]: contract requires SUM(invoices.total_amount) per patients.patient_id, but the query groups by patients.patient_id, patients.patient_name but uses the nonaggregated child measure invoices.total_amount"
+        ]
+      }
+    ],
+    "warnings": [
+      "selected SQL: possible join fanout aggregate inflation"
+    ],
+    "low_confidence": false,
+    "selected_candidate_score": 89.0,
+    "selected_candidate_validation": {
+      "executed": true,
+      "illegal_joins": [],
+      "unknown_columns": [],
+      "missing_tables": [],
+      "missing_concepts": [],
+      "required_shapes": {
+        "count_distinct": true
+      },
+      "duplicate_aliases": [],
+      "undefined_aliases": [],
+      "guard_valid": null,
+      "bare_cte": null,
+      "checklist": {
+        "delta": 30.0,
+        "missing_columns": [],
+        "missing_tables": [],
+        "shape_ok": true
+      },
+      "grain": {
+        "delta": 0.0
+      },
+      "semantic_rel": {
+        "delta": 0.0
+      },
+      "semantic_join": {
+        "delta": 0.0
+      },
+      "table_lock": {
+        "locked_tables": [
+          "patients"
+        ],
+        "unmentioned_tables": [
+          "lab_results",
+          "invoices"
+        ],
+        "delta": -12.0
+      },
+      "outside_tables": [],
+      "outside_tables_allowed_reachable": [
+        "doctors",
+        "medications",
+        "prescriptions"
+      ],
+      "unseen_literals": [],
+      "shape": {
+        "fatal": [],
+        "penalties": [],
+        "report_only": []
+      },
+      "semantic_guards": [],
+      "literal_groups": [],
+      "fanout": {
+        "fatal": [],
+        "warnings": [],
+        "fatal_count": 0
+      },
+      "grain_contract": {
+        "fatal": [],
+        "warnings": [],
+        "skipped": null,
+        "requirement_1": {
+          "required": "COUNT(lab_results.test_name) per patients.patient_id",
+          "required_aggregate_found": true,
+          "raw_comparison_sides": 0,
+          "entity_total_uses": 1,
+          "two_level_sides": 0,
+          "comparison_applied": true,
+          "unproven_comparison_sides": 0,
+          "distinct_count_sides": 1,
+          "distinct_comparison_matched": true
+        },
+        "requirement_2": {
+          "required": "SUM(invoices.total_amount) per patients.patient_id",
+          "required_aggregate_found": true,
+          "raw_comparison_sides": 0,
+          "entity_total_uses": 1,
+          "two_level_sides": 1,
+          "scope_restrictions": [],
+          "comparison_applied": true,
+          "unproven_comparison_sides": 0
+        },
+        "fatal_count": 0
+      },
+      "temporal_contract": {
+        "fatal": [],
+        "warnings": [],
+        "skipped": "no actionable temporal requirement"
+      },
+      "fatal": [],
+      "probes": {
+        "warnings": [
+          "possible join fanout aggregate inflation"
+        ],
+        "penalty": 10.0,
+        "checks": {
+          "fanout": {
+            "ran": true,
+            "count_star": 90,
+            "count_distinct_driver": 7,
+            "driver": "p"
+          }
+        }
+      }
+    },
+    "semantic_checklist": {
+      "target_entity": "patients",
+      "output_columns": [
+        "patients.patient_id",
+        "patients.patient_name"
+      ],
+      "must_use_tables": [
+        "appointments",
+        "invoices",
+        "lab_results",
+        "patients"
+      ],
+      "must_use_columns": [
+        "lab_results.result_flag",
+        "invoices.total_amount",
+        "invoices.insurance_paid"
+      ],
+      "measure_column": "invoices.total_amount",
+      "group_by_entity": "patients.patient_id",
+      "comparison_logic": "Compare patient's abnormal test count to 1 and patient's outstanding balance to the average outstanding balance of all patients",
+      "required_sql_shape": "comparison_subquery",
+      "literals": [
+        "high",
+        "low",
+        "critical"
+      ],
+      "row_grain": "one row per patient",
+      "universe": null,
+      "required_group_keys": [
+        "patients.patient_id"
+      ],
+      "forbidden_hardcoded_universe": false,
+      "measure_aggregation": null,
+      "measure_entity_key": null,
+      "comparison_right_kind": null,
+      "grain_confidence": null,
+      "grain_requirements": [
+        {
+          "measure_column": "lab_results.test_name",
+          "entity_key": "patients.patient_id",
+          "population_key": null,
+          "aggregation": "count",
+          "comparison_right_kind": "constant",
+          "measure_scope": "filtered_entity_rows",
+          "distinct": true,
+          "comparison_operator": ">",
+          "comparison_constant": 1.0,
+          "measure_expression": null,
+          "confidence": "high"
+        },
+        {
+          "measure_column": "invoices.total_amount",
+          "entity_key": "patients.patient_id",
+          "population_key": null,
+          "aggregation": "sum",
+          "comparison_right_kind": "aggregate_of_entity_totals",
+          "measure_scope": "all_entity_rows",
+          "distinct": false,
+          "comparison_operator": ">",
+          "comparison_constant": null,
+          "measure_expression": {
+            "operation": "subtract",
+            "components": [
+              "invoices.total_amount",
+              "invoices.insurance_paid"
+            ]
+          },
+          "confidence": "high"
+        }
+      ],
+      "required_literal_groups": [
+        {
+          "concept": "abnormal",
+          "column": "lab_results.result_flag",
+          "literals": [
+            "critical",
+            "high",
+            "low"
+          ],
+          "confidence": "high"
+        }
+      ],
+      "grain_normalization": [],
+      "temporal_requirements": []
+    },
+    "semantic_contract": {
+      "requirements": [
+        {
+          "measure_table": "lab_results",
+          "measure_column": "test_name",
+          "measure_aggregation": "count",
+          "entity_table": "patients",
+          "entity_key_column": "patient_id",
+          "comparison_right_kind": "constant",
+          "population_table": null,
+          "population_column": null,
+          "measure_scope": "filtered_entity_rows",
+          "distinct": true,
+          "comparison_operator": ">",
+          "comparison_constant": 1.0,
+          "measure_components": [],
+          "measure_operation": null,
+          "confidence": "high",
+          "model_confidence": "high",
+          "actionable": true,
+          "evidence": []
+        },
+        {
+          "measure_table": "invoices",
+          "measure_column": "total_amount",
+          "measure_aggregation": "sum",
+          "entity_table": "patients",
+          "entity_key_column": "patient_id",
+          "comparison_right_kind": "aggregate_of_entity_totals",
+          "population_table": null,
+          "population_column": null,
+          "measure_scope": "all_entity_rows",
+          "distinct": false,
+          "comparison_operator": ">",
+          "comparison_constant": null,
+          "measure_components": [
+            [
+              "invoices",
+              "total_amount"
+            ],
+            [
+              "invoices",
+              "insurance_paid"
+            ]
+          ],
+          "measure_operation": "subtract",
+          "confidence": "high",
+          "model_confidence": "high",
+          "actionable": true,
+          "evidence": []
+        }
+      ],
+      "temporal": [],
+      "actionable": true,
+      "evidence": []
+    },
+    "repair_attempted": true,
+    "repair_triggers": [
+      "selected candidate failed hard semantic checks",
+      "selected score 29.0 < 75.0"
+    ],
+    "repair_executed": true,
+    "repair_score": 89.0,
+    "repair_selected": true,
+    "selected_source_before_repair": "llm_sql_direct_variant",
+    "value_grounding": {
+      "profiled_columns": 20,
+      "grounded_from_eval_copy": false
+    },
+    "plan": null,
+    "generated_sql": {
+      "generated": true,
+      "sql": "WITH abnormal_tests AS (\n    SELECT p.patient_id\n    FROM patients p\n    JOIN appointments a ON p.patient_id = a.patient_id\n    JOIN lab_results l ON a.appointment_id = l.appointment_id\n    WHERE l.result_flag IN ('high', 'low', 'critical')\n    GROUP BY p.patient_id\n    HAVING COUNT(DISTINCT l.test_name) > 1\n),\npatient_outstanding AS (\n    SELECT p.patient_id, SUM(i.total_amount - i.insurance_paid) AS total_outstanding\n    FROM patients p\n    JOIN appointments a ON p.patient_id = a.patient_id\n    JOIN invoices i ON a.appointment_id = i.appointment_id\n    GROUP BY p.patient_id\n),\navg_outstanding AS (\n    SELECT AVG(total_outstanding) AS avg_val\n    FROM patient_outstanding\n)\nSELECT p.patient_id, p.patient_name\nFROM patients p\nJOIN abnormal_tests ab ON p.patient_id = ab.patient_id\nJOIN patient_outstanding po ON p.patient_id = po.patient_id\nCROSS JOIN avg_outstanding ao\nWHERE po.total_outstanding > ao.avg_val",
+      "params": []
+    },
+    "relational_algebra": null,
+    "execution": {
+      "executed": true,
+      "columns": [
+        "patient_id",
+        "patient_name"
+      ],
+      "rows": [
+        [
+          16,
+          "Patient 16"
+        ],
+        [
+          26,
+          "Patient 26"
+        ],
+        [
+          36,
+          "Patient 36"
+        ]
+      ],
+      "row_count": 3,
+      "truncated": false,
+      "diagnostics": {
+        "param_count": 0
+      }
+    },
+    "_elapsed_seconds": 26.43
+  }
+}

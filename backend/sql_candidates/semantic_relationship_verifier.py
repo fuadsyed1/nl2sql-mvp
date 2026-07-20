@@ -133,28 +133,21 @@ def _key_like(col, c):
 
 
 def _rel_supported(idx, t1, c1, t2, c2):
-    """A join is 'supported' by a trusted relationship: declared FK, a confirmed
-    edge, or a high-confidence (>=USABLE) HoPF-inferred edge. Weak inferred
-    links (confidence < USABLE) do NOT count."""
+    """A join is 'supported' iff a matching relationship edge is present in the
+    finalized stored graph (either direction). Membership is authority; edge
+    labels/confidence do not gate legality."""
     want = {(t1, c1), (t2, c2)}
     for r in idx["relationships"]:
         ft = str(r.get("from_table") or "").lower()
         fc = str(r.get("from_column") or "").lower()
         tt = str(r.get("to_table") or "").lower()
         tc = str(r.get("to_column") or "").lower()
-        if {(ft, fc), (tt, tc)} != want:
-            continue
-        src = str(r.get("source") or "").lower()
-        rtype = str(r.get("relationship_type") or "").lower()
-        confirmed = r.get("confirmed")
-        try:
-            conf = float(r.get("confidence") or 0.0)
-        except (TypeError, ValueError):
-            conf = 0.0
-        if src in ("declared_fk", "confirmed") or rtype == "foreign_key" \
-                or confirmed in (1, True):
-            return True
-        if conf >= _HOPF_USABLE:
+        # Membership IS authority: queries run only on a finalized relationship
+        # set, so any edge present between these endpoints (either direction) is
+        # approved. Edge type / confirmed / confidence no longer gate legality —
+        # that would let a weak, unreviewed inferred edge become a legal join
+        # before approval.
+        if {(ft, fc), (tt, tc)} == want:
             return True
     return False
 

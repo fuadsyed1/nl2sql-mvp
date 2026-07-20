@@ -1,0 +1,8 @@
+verdict,count
+controlled_failure,89
+correct,737
+execution_error,192
+manual_review_required,11
+timeout,8
+wrong_columns,520
+wrong_result,443

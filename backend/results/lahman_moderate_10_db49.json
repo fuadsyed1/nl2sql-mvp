@@ -1,0 +1,5818 @@
+[
+  {
+    "query_number": 1,
+    "question": "Show playerID, nameFirst, nameLast, birthYear from People limit 10.",
+    "elapsed_seconds": 12.091,
+    "success": true,
+    "http_status": 200,
+    "row_count": 10,
+    "sql": "SELECT playerID, nameFirst, nameLast, birthYear FROM People LIMIT 10",
+    "response": {
+      "success": true,
+      "database_id": 49,
+      "question": "Show playerID, nameFirst, nameLast, birthYear from People limit 10.",
+      "extraction": null,
+      "ir": null,
+      "validation": null,
+      "tables_considered": null,
+      "large_mode_table_fallback": false,
+      "fallback_table": null,
+      "removed_redundant_partition_date_filter": false,
+      "partition_date": null,
+      "extraction_source": "llm",
+      "query_family": "normal_join_filter_group",
+      "query_family_confidence": 0.3,
+      "query_family_reason": "no distinctive relational pattern; use base pipeline",
+      "family_guard_valid": null,
+      "family_guard_reasons": null,
+      "candidate_count": 4,
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_label": "llm_sql_direct_variant",
+      "selection_reason": "consensus_group",
+      "consensus_group_size": 4,
+      "consensus_sources": [
+        "llm_primary",
+        "llm_sql_direct",
+        "llm_sql_direct_grain",
+        "llm_sql_direct_variant"
+      ],
+      "candidate_scores": [
+        {
+          "source": "llm_primary",
+          "label": "llm_primary",
+          "score": 77.0,
+          "executed": true,
+          "row_count": 10,
+          "fatal": false,
+          "fatal_reasons": []
+        },
+        {
+          "source": "llm_sql_direct",
+          "label": "llm_sql_direct",
+          "score": 77.0,
+          "executed": true,
+          "row_count": 10,
+          "fatal": false,
+          "fatal_reasons": []
+        },
+        {
+          "source": "llm_sql_direct_grain",
+          "label": "llm_sql_direct_grain",
+          "score": 77.0,
+          "executed": true,
+          "row_count": 10,
+          "fatal": false,
+          "fatal_reasons": []
+        },
+        {
+          "source": "llm_sql_direct_variant",
+          "label": "llm_sql_direct_variant",
+          "score": 77.0,
+          "executed": true,
+          "row_count": 10,
+          "fatal": false,
+          "fatal_reasons": []
+        }
+      ],
+      "candidate_reasons": {
+        "llm_primary": [
+          "checklist requires shape 'order_by_limit' but the SQL lacks it",
+          "generic fallback SQL (no_aggregation) ignores the requested aggregation/join/filter the question needs"
+        ],
+        "llm_sql_direct": [
+          "checklist requires shape 'order_by_limit' but the SQL lacks it",
+          "generic fallback SQL (no_aggregation) ignores the requested aggregation/join/filter the question needs"
+        ],
+        "llm_sql_direct_grain": [
+          "checklist requires shape 'order_by_limit' but the SQL lacks it",
+          "generic fallback SQL (no_aggregation) ignores the requested aggregation/join/filter the question needs"
+        ],
+        "llm_sql_direct_variant": [
+          "checklist requires shape 'order_by_limit' but the SQL lacks it",
+          "generic fallback SQL (no_aggregation) ignores the requested aggregation/join/filter the question needs"
+        ]
+      },
+      "rejected_candidates": [
+        {
+          "source": "llm_primary",
+          "label": "llm_primary",
+          "sql": "SELECT \"people\".\"playerid\", \"people\".\"namefirst\", \"people\".\"namelast\", \"people\".\"birthyear\" FROM \"people\" LIMIT 10",
+          "score": 77.0,
+          "executed": true,
+          "row_count": 10,
+          "reasons": [
+            "checklist requires shape 'order_by_limit' but the SQL lacks it",
+            "generic fallback SQL (no_aggregation) ignores the requested aggregation/join/filter the question needs"
+          ]
+        },
+        {
+          "source": "llm_sql_direct",
+          "label": "llm_sql_direct",
+          "sql": "SELECT playerID, nameFirst, nameLast, birthYear FROM People LIMIT 10",
+          "score": 77.0,
+          "executed": true,
+          "row_count": 10,
+          "reasons": [
+            "checklist requires shape 'order_by_limit' but the SQL lacks it",
+            "generic fallback SQL (no_aggregation) ignores the requested aggregation/join/filter the question needs"
+          ]
+        },
+        {
+          "source": "llm_sql_direct_grain",
+          "label": "llm_sql_direct_grain",
+          "sql": "SELECT people.playerid, people.namefirst, people.namelast, people.birthyear\nFROM people\nLIMIT 10",
+          "score": 77.0,
+          "executed": true,
+          "row_count": 10,
+          "reasons": [
+            "checklist requires shape 'order_by_limit' but the SQL lacks it",
+            "generic fallback SQL (no_aggregation) ignores the requested aggregation/join/filter the question needs"
+          ]
+        }
+      ],
+      "warnings": [],
+      "low_confidence": false,
+      "selected_candidate_score": 77.0,
+      "selected_candidate_validation": {
+        "executed": true,
+        "illegal_joins": [],
+        "unknown_columns": [],
+        "missing_tables": [],
+        "missing_concepts": [],
+        "required_shapes": {},
+        "duplicate_aliases": [],
+        "undefined_aliases": [],
+        "guard_valid": null,
+        "bare_cte": null,
+        "checklist": {
+          "delta": 13.0,
+          "missing_columns": [],
+          "missing_tables": [],
+          "shape_ok": false
+        },
+        "grain": {
+          "delta": 0.0
+        },
+        "semantic_rel": {
+          "generic_fallback": "no_aggregation",
+          "delta": -15.0
+        },
+        "semantic_join": {
+          "purpose_match": true,
+          "delta": 4.0
+        },
+        "table_lock": {
+          "locked_tables": [
+            "people"
+          ],
+          "delta": 0.0
+        },
+        "outside_tables": [],
+        "unseen_literals": [],
+        "shape": {
+          "fatal": [],
+          "penalties": [],
+          "report_only": []
+        },
+        "fatal": [],
+        "probes": {
+          "warnings": [],
+          "penalty": 0.0,
+          "checks": {}
+        }
+      },
+      "semantic_checklist": {
+        "target_entity": "people",
+        "output_columns": [
+          "people.playerid",
+          "people.namefirst",
+          "people.namelast",
+          "people.birthyear"
+        ],
+        "must_use_tables": [
+          "people"
+        ],
+        "must_use_columns": [
+          "people.playerid",
+          "people.namefirst",
+          "people.namelast",
+          "people.birthyear"
+        ],
+        "measure_column": null,
+        "group_by_entity": null,
+        "comparison_logic": null,
+        "required_sql_shape": "order_by_limit",
+        "literals": [
+          "10"
+        ],
+        "row_grain": "one row per player",
+        "universe": null,
+        "required_group_keys": [],
+        "forbidden_hardcoded_universe": false
+      },
+      "repair_attempted": false,
+      "repair_triggers": [],
+      "repair_executed": false,
+      "repair_score": null,
+      "repair_selected": false,
+      "selected_source_before_repair": "llm_sql_direct_variant",
+      "value_grounding": {
+        "profiled_columns": 58,
+        "grounded_from_eval_copy": false
+      },
+      "plan": null,
+      "generated_sql": {
+        "generated": true,
+        "sql": "SELECT playerID, nameFirst, nameLast, birthYear FROM People LIMIT 10",
+        "params": []
+      },
+      "relational_algebra": null,
+      "execution": {
+        "executed": true,
+        "columns": [
+          "playerID",
+          "nameFirst",
+          "nameLast",
+          "birthYear"
+        ],
+        "rows": [
+          [
+            "aardsda01",
+            "David",
+            "Aardsma",
+            1981
+          ],
+          [
+            "aaronha01",
+            "Hank",
+            "Aaron",
+            1934
+          ],
+          [
+            "aaronto01",
+            "Tommie",
+            "Aaron",
+            1939
+          ],
+          [
+            "aasedo01",
+            "Don",
+            "Aase",
+            1954
+          ],
+          [
+            "abadan01",
+            "Andy",
+            "Abad",
+            1972
+          ],
+          [
+            "abadfe01",
+            "Fernando",
+            "Abad",
+            1985
+          ],
+          [
+            "abadijo01",
+            "John",
+            "Abadie",
+            1850
+          ],
+          [
+            "abbated01",
+            "Ed",
+            "Abbaticchio",
+            1877
+          ],
+          [
+            "abbeybe01",
+            "Bert",
+            "Abbey",
+            1869
+          ],
+          [
+            "abbeych01",
+            "Charlie",
+            "Abbey",
+            1866
+          ]
+        ],
+        "row_count": 10,
+        "truncated": false,
+        "diagnostics": {
+          "param_count": 0
+        }
+      },
+      "_http_status": 200
+    }
+  },
+  {
+    "query_number": 2,
+    "question": "Count the number of rows in People.",
+    "elapsed_seconds": 8.728,
+    "success": true,
+    "http_status": 200,
+    "row_count": 1,
+    "sql": "SELECT COUNT(*) FROM People",
+    "response": {
+      "success": true,
+      "database_id": 49,
+      "question": "Count the number of rows in People.",
+      "extraction": null,
+      "ir": null,
+      "validation": null,
+      "tables_considered": null,
+      "large_mode_table_fallback": false,
+      "fallback_table": null,
+      "removed_redundant_partition_date_filter": false,
+      "partition_date": null,
+      "extraction_source": "llm",
+      "query_family": "normal_join_filter_group",
+      "query_family_confidence": 0.3,
+      "query_family_reason": "no distinctive relational pattern; use base pipeline",
+      "family_guard_valid": null,
+      "family_guard_reasons": null,
+      "candidate_count": 4,
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_label": "llm_sql_direct_variant",
+      "selection_reason": "consensus_group",
+      "consensus_group_size": 4,
+      "consensus_sources": [
+        "llm_primary",
+        "llm_sql_direct",
+        "llm_sql_direct_grain",
+        "llm_sql_direct_variant"
+      ],
+      "candidate_scores": [
+        {
+          "source": "llm_primary",
+          "label": "llm_primary",
+          "score": 82.0,
+          "executed": true,
+          "row_count": 1,
+          "fatal": false,
+          "fatal_reasons": []
+        },
+        {
+          "source": "llm_sql_direct",
+          "label": "llm_sql_direct",
+          "score": 82.0,
+          "executed": true,
+          "row_count": 1,
+          "fatal": false,
+          "fatal_reasons": []
+        },
+        {
+          "source": "llm_sql_direct_grain",
+          "label": "llm_sql_direct_grain",
+          "score": 82.0,
+          "executed": true,
+          "row_count": 1,
+          "fatal": false,
+          "fatal_reasons": []
+        },
+        {
+          "source": "llm_sql_direct_variant",
+          "label": "llm_sql_direct_variant",
+          "score": 82.0,
+          "executed": true,
+          "row_count": 1,
+          "fatal": false,
+          "fatal_reasons": []
+        }
+      ],
+      "candidate_reasons": {
+        "llm_primary": [],
+        "llm_sql_direct": [],
+        "llm_sql_direct_grain": [],
+        "llm_sql_direct_variant": []
+      },
+      "rejected_candidates": [
+        {
+          "source": "llm_primary",
+          "label": "llm_primary",
+          "sql": "SELECT COUNT(*) AS \"row_count\" FROM \"people\"",
+          "score": 82.0,
+          "executed": true,
+          "row_count": 1,
+          "reasons": []
+        },
+        {
+          "source": "llm_sql_direct",
+          "label": "llm_sql_direct",
+          "sql": "SELECT COUNT(*) FROM People",
+          "score": 82.0,
+          "executed": true,
+          "row_count": 1,
+          "reasons": []
+        },
+        {
+          "source": "llm_sql_direct_grain",
+          "label": "llm_sql_direct_grain",
+          "sql": "SELECT COUNT(*) FROM People",
+          "score": 82.0,
+          "executed": true,
+          "row_count": 1,
+          "reasons": []
+        }
+      ],
+      "warnings": [],
+      "low_confidence": false,
+      "selected_candidate_score": 82.0,
+      "selected_candidate_validation": {
+        "executed": true,
+        "illegal_joins": [],
+        "unknown_columns": [],
+        "missing_tables": [],
+        "missing_concepts": [],
+        "required_shapes": {},
+        "duplicate_aliases": [],
+        "undefined_aliases": [],
+        "guard_valid": null,
+        "bare_cte": null,
+        "checklist": {
+          "delta": 3.0,
+          "missing_columns": [],
+          "missing_tables": [],
+          "shape_ok": null
+        },
+        "grain": {
+          "delta": 0.0
+        },
+        "semantic_rel": {
+          "delta": 0.0
+        },
+        "semantic_join": {
+          "purpose_match": true,
+          "delta": 4.0
+        },
+        "table_lock": {
+          "locked_tables": [
+            "people"
+          ],
+          "delta": 0.0
+        },
+        "outside_tables": [],
+        "unseen_literals": [],
+        "shape": {
+          "fatal": [],
+          "penalties": [],
+          "report_only": []
+        },
+        "fatal": [],
+        "probes": {
+          "warnings": [],
+          "penalty": 0.0,
+          "checks": {}
+        }
+      },
+      "semantic_checklist": {
+        "target_entity": "people",
+        "output_columns": [],
+        "must_use_tables": [
+          "people"
+        ],
+        "must_use_columns": [],
+        "measure_column": null,
+        "group_by_entity": null,
+        "comparison_logic": null,
+        "required_sql_shape": "plain_select",
+        "literals": [],
+        "row_grain": "a single count of all people",
+        "universe": null,
+        "required_group_keys": [],
+        "forbidden_hardcoded_universe": false
+      },
+      "repair_attempted": false,
+      "repair_triggers": [],
+      "repair_executed": false,
+      "repair_score": null,
+      "repair_selected": false,
+      "selected_source_before_repair": "llm_sql_direct_variant",
+      "value_grounding": {
+        "profiled_columns": 58,
+        "grounded_from_eval_copy": false
+      },
+      "plan": null,
+      "generated_sql": {
+        "generated": true,
+        "sql": "SELECT COUNT(*) FROM People",
+        "params": []
+      },
+      "relational_algebra": null,
+      "execution": {
+        "executed": true,
+        "columns": [
+          "COUNT(*)"
+        ],
+        "rows": [
+          [
+            20676
+          ]
+        ],
+        "row_count": 1,
+        "truncated": false,
+        "diagnostics": {
+          "param_count": 0
+        }
+      },
+      "_http_status": 200
+    }
+  },
+  {
+    "query_number": 3,
+    "question": "Find the top 10 rows from Batting by home runs. Show playerID, yearID, teamID, HR.",
+    "elapsed_seconds": 14.035,
+    "success": true,
+    "http_status": 200,
+    "row_count": 10,
+    "sql": "SELECT playerID, yearID, teamID, HR FROM Batting ORDER BY HR DESC LIMIT 10",
+    "response": {
+      "success": true,
+      "database_id": 49,
+      "question": "Find the top 10 rows from Batting by home runs. Show playerID, yearID, teamID, HR.",
+      "extraction": null,
+      "ir": null,
+      "validation": null,
+      "tables_considered": null,
+      "large_mode_table_fallback": false,
+      "fallback_table": null,
+      "removed_redundant_partition_date_filter": false,
+      "partition_date": null,
+      "extraction_source": "llm",
+      "query_family": "normal_join_filter_group",
+      "query_family_confidence": 0.3,
+      "query_family_reason": "no distinctive relational pattern; use base pipeline",
+      "family_guard_valid": null,
+      "family_guard_reasons": null,
+      "candidate_count": 4,
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_label": "llm_sql_direct_variant",
+      "selection_reason": "consensus_group",
+      "consensus_group_size": 4,
+      "consensus_sources": [
+        "llm_primary",
+        "llm_sql_direct",
+        "llm_sql_direct_grain",
+        "llm_sql_direct_variant"
+      ],
+      "candidate_scores": [
+        {
+          "source": "llm_primary",
+          "label": "llm_primary",
+          "score": 100.0,
+          "executed": true,
+          "row_count": 10,
+          "fatal": false,
+          "fatal_reasons": []
+        },
+        {
+          "source": "llm_sql_direct",
+          "label": "llm_sql_direct",
+          "score": 100.0,
+          "executed": true,
+          "row_count": 10,
+          "fatal": false,
+          "fatal_reasons": []
+        },
+        {
+          "source": "llm_sql_direct_grain",
+          "label": "llm_sql_direct_grain",
+          "score": 100.0,
+          "executed": true,
+          "row_count": 10,
+          "fatal": false,
+          "fatal_reasons": []
+        },
+        {
+          "source": "llm_sql_direct_variant",
+          "label": "llm_sql_direct_variant",
+          "score": 100.0,
+          "executed": true,
+          "row_count": 10,
+          "fatal": false,
+          "fatal_reasons": []
+        }
+      ],
+      "candidate_reasons": {
+        "llm_primary": [],
+        "llm_sql_direct": [],
+        "llm_sql_direct_grain": [],
+        "llm_sql_direct_variant": []
+      },
+      "rejected_candidates": [
+        {
+          "source": "llm_primary",
+          "label": "llm_primary",
+          "sql": "SELECT \"batting\".\"playerid\", \"batting\".\"yearid\", \"batting\".\"teamid\", \"batting\".\"hr\" FROM \"batting\" ORDER BY \"batting\".\"hr\" DESC LIMIT 10",
+          "score": 100.0,
+          "executed": true,
+          "row_count": 10,
+          "reasons": []
+        },
+        {
+          "source": "llm_sql_direct",
+          "label": "llm_sql_direct",
+          "sql": "SELECT playerID, yearID, teamID, HR FROM Batting ORDER BY HR DESC LIMIT 10",
+          "score": 100.0,
+          "executed": true,
+          "row_count": 10,
+          "reasons": []
+        },
+        {
+          "source": "llm_sql_direct_grain",
+          "label": "llm_sql_direct_grain",
+          "sql": "SELECT playerID, yearID, teamID, HR\nFROM Batting\nORDER BY HR DESC\nLIMIT 10",
+          "score": 100.0,
+          "executed": true,
+          "row_count": 10,
+          "reasons": []
+        }
+      ],
+      "warnings": [],
+      "low_confidence": false,
+      "selected_candidate_score": 100.0,
+      "selected_candidate_validation": {
+        "executed": true,
+        "illegal_joins": [],
+        "unknown_columns": [],
+        "missing_tables": [],
+        "missing_concepts": [],
+        "required_shapes": {},
+        "duplicate_aliases": [],
+        "undefined_aliases": [],
+        "guard_valid": null,
+        "bare_cte": null,
+        "checklist": {
+          "delta": 30.0,
+          "missing_columns": [],
+          "missing_tables": [],
+          "shape_ok": true
+        },
+        "grain": {
+          "delta": 0.0
+        },
+        "semantic_rel": {
+          "delta": 0.0
+        },
+        "semantic_join": {
+          "delta": 0.0
+        },
+        "table_lock": {
+          "locked_tables": [
+            "batting"
+          ],
+          "delta": 0.0
+        },
+        "outside_tables": [],
+        "unseen_literals": [],
+        "shape": {
+          "fatal": [],
+          "penalties": [],
+          "report_only": []
+        },
+        "fatal": [],
+        "probes": {
+          "warnings": [],
+          "penalty": 0.0,
+          "checks": {}
+        }
+      },
+      "semantic_checklist": {
+        "target_entity": "batting",
+        "output_columns": [
+          "batting.playerid",
+          "batting.yearid",
+          "batting.teamid",
+          "batting.hr"
+        ],
+        "must_use_tables": [
+          "batting"
+        ],
+        "must_use_columns": [
+          "batting.playerid",
+          "batting.yearid",
+          "batting.teamid",
+          "batting.hr"
+        ],
+        "measure_column": "batting.hr",
+        "group_by_entity": null,
+        "comparison_logic": "Sort by home runs in descending order",
+        "required_sql_shape": "order_by_limit",
+        "literals": [
+          "10"
+        ],
+        "row_grain": "one row per player-season-team combination",
+        "universe": null,
+        "required_group_keys": [],
+        "forbidden_hardcoded_universe": false
+      },
+      "repair_attempted": false,
+      "repair_triggers": [],
+      "repair_executed": false,
+      "repair_score": null,
+      "repair_selected": false,
+      "selected_source_before_repair": "llm_sql_direct_variant",
+      "value_grounding": {
+        "profiled_columns": 58,
+        "grounded_from_eval_copy": false
+      },
+      "plan": null,
+      "generated_sql": {
+        "generated": true,
+        "sql": "SELECT playerID, yearID, teamID, HR FROM Batting ORDER BY HR DESC LIMIT 10",
+        "params": []
+      },
+      "relational_algebra": null,
+      "execution": {
+        "executed": true,
+        "columns": [
+          "playerID",
+          "yearID",
+          "teamID",
+          "HR"
+        ],
+        "rows": [
+          [
+            "bondsba01",
+            2001,
+            "SFN",
+            73
+          ],
+          [
+            "mcgwima01",
+            1998,
+            "SLN",
+            70
+          ],
+          [
+            "sosasa01",
+            1998,
+            "CHN",
+            66
+          ],
+          [
+            "mcgwima01",
+            1999,
+            "SLN",
+            65
+          ],
+          [
+            "sosasa01",
+            2001,
+            "CHN",
+            64
+          ],
+          [
+            "sosasa01",
+            1999,
+            "CHN",
+            63
+          ],
+          [
+            "judgeaa01",
+            2022,
+            "NYA",
+            62
+          ],
+          [
+            "marisro01",
+            1961,
+            "NYA",
+            61
+          ],
+          [
+            "ruthba01",
+            1927,
+            "NYA",
+            60
+          ],
+          [
+            "ruthba01",
+            1921,
+            "NYA",
+            59
+          ]
+        ],
+        "row_count": 10,
+        "truncated": false,
+        "diagnostics": {
+          "param_count": 0
+        }
+      },
+      "_http_status": 200
+    }
+  },
+  {
+    "query_number": 4,
+    "question": "Find batting rows where HR is greater than 50. Show playerID, yearID, teamID, HR and RBI.",
+    "elapsed_seconds": 14.522,
+    "success": true,
+    "http_status": 200,
+    "row_count": 40,
+    "sql": "SELECT playerID, yearID, teamID, HR, RBI FROM batting WHERE HR > 50",
+    "response": {
+      "success": true,
+      "database_id": 49,
+      "question": "Find batting rows where HR is greater than 50. Show playerID, yearID, teamID, HR and RBI.",
+      "extraction": null,
+      "ir": null,
+      "validation": null,
+      "tables_considered": null,
+      "large_mode_table_fallback": false,
+      "fallback_table": null,
+      "removed_redundant_partition_date_filter": false,
+      "partition_date": null,
+      "extraction_source": "llm",
+      "query_family": "normal_join_filter_group",
+      "query_family_confidence": 0.3,
+      "query_family_reason": "no distinctive relational pattern; use base pipeline",
+      "family_guard_valid": null,
+      "family_guard_reasons": null,
+      "candidate_count": 4,
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_label": "llm_sql_direct_variant",
+      "selection_reason": "consensus_group",
+      "consensus_group_size": 4,
+      "consensus_sources": [
+        "llm_primary",
+        "llm_sql_direct",
+        "llm_sql_direct_grain",
+        "llm_sql_direct_variant"
+      ],
+      "candidate_scores": [
+        {
+          "source": "llm_primary",
+          "label": "llm_primary",
+          "score": 90.0,
+          "executed": true,
+          "row_count": 40,
+          "fatal": false,
+          "fatal_reasons": []
+        },
+        {
+          "source": "llm_sql_direct",
+          "label": "llm_sql_direct",
+          "score": 90.0,
+          "executed": true,
+          "row_count": 40,
+          "fatal": false,
+          "fatal_reasons": []
+        },
+        {
+          "source": "llm_sql_direct_grain",
+          "label": "llm_sql_direct_grain",
+          "score": 90.0,
+          "executed": true,
+          "row_count": 40,
+          "fatal": false,
+          "fatal_reasons": []
+        },
+        {
+          "source": "llm_sql_direct_variant",
+          "label": "llm_sql_direct_variant",
+          "score": 90.0,
+          "executed": true,
+          "row_count": 40,
+          "fatal": false,
+          "fatal_reasons": []
+        }
+      ],
+      "candidate_reasons": {
+        "llm_primary": [
+          "generic fallback SQL (no_aggregation) ignores the requested aggregation/join/filter the question needs"
+        ],
+        "llm_sql_direct": [
+          "generic fallback SQL (no_aggregation) ignores the requested aggregation/join/filter the question needs"
+        ],
+        "llm_sql_direct_grain": [
+          "generic fallback SQL (no_aggregation) ignores the requested aggregation/join/filter the question needs"
+        ],
+        "llm_sql_direct_variant": [
+          "generic fallback SQL (no_aggregation) ignores the requested aggregation/join/filter the question needs"
+        ]
+      },
+      "rejected_candidates": [
+        {
+          "source": "llm_primary",
+          "label": "llm_primary",
+          "sql": "SELECT \"batting\".\"playerid\", \"batting\".\"yearid\", \"batting\".\"teamid\", \"batting\".\"hr\", \"batting\".\"rbi\" FROM \"batting\" WHERE \"batting\".\"hr\" > ?",
+          "score": 90.0,
+          "executed": true,
+          "row_count": 40,
+          "reasons": [
+            "generic fallback SQL (no_aggregation) ignores the requested aggregation/join/filter the question needs"
+          ]
+        },
+        {
+          "source": "llm_sql_direct",
+          "label": "llm_sql_direct",
+          "sql": "SELECT playerID, yearID, teamID, HR, RBI FROM batting WHERE HR > 50",
+          "score": 90.0,
+          "executed": true,
+          "row_count": 40,
+          "reasons": [
+            "generic fallback SQL (no_aggregation) ignores the requested aggregation/join/filter the question needs"
+          ]
+        },
+        {
+          "source": "llm_sql_direct_grain",
+          "label": "llm_sql_direct_grain",
+          "sql": "SELECT playerID, yearID, teamID, HR, RBI\nFROM Batting\nWHERE HR > 50",
+          "score": 90.0,
+          "executed": true,
+          "row_count": 40,
+          "reasons": [
+            "generic fallback SQL (no_aggregation) ignores the requested aggregation/join/filter the question needs"
+          ]
+        }
+      ],
+      "warnings": [],
+      "low_confidence": false,
+      "selected_candidate_score": 90.0,
+      "selected_candidate_validation": {
+        "executed": true,
+        "illegal_joins": [],
+        "unknown_columns": [],
+        "missing_tables": [],
+        "missing_concepts": [],
+        "required_shapes": {},
+        "duplicate_aliases": [],
+        "undefined_aliases": [],
+        "guard_valid": null,
+        "bare_cte": null,
+        "checklist": {
+          "delta": 30.0,
+          "missing_columns": [],
+          "missing_tables": [],
+          "shape_ok": null
+        },
+        "grain": {
+          "delta": 0.0
+        },
+        "semantic_rel": {
+          "generic_fallback": "no_aggregation",
+          "delta": -15.0
+        },
+        "semantic_join": {
+          "delta": 0.0
+        },
+        "table_lock": {
+          "locked_tables": [
+            "batting"
+          ],
+          "delta": 0.0
+        },
+        "outside_tables": [],
+        "unseen_literals": [],
+        "shape": {
+          "fatal": [],
+          "penalties": [],
+          "report_only": []
+        },
+        "fatal": [],
+        "probes": {
+          "warnings": [],
+          "penalty": 0.0,
+          "checks": {}
+        }
+      },
+      "semantic_checklist": {
+        "target_entity": "batting",
+        "output_columns": [
+          "batting.playerid",
+          "batting.yearid",
+          "batting.teamid",
+          "batting.hr",
+          "batting.rbi"
+        ],
+        "must_use_tables": [
+          "batting"
+        ],
+        "must_use_columns": [
+          "batting.playerid",
+          "batting.yearid",
+          "batting.teamid",
+          "batting.hr",
+          "batting.rbi"
+        ],
+        "measure_column": "batting.hr",
+        "group_by_entity": null,
+        "comparison_logic": "HR is greater than 50",
+        "required_sql_shape": "plain_select",
+        "literals": [
+          "50"
+        ],
+        "row_grain": "one row per batting record",
+        "universe": null,
+        "required_group_keys": [],
+        "forbidden_hardcoded_universe": false
+      },
+      "repair_attempted": false,
+      "repair_triggers": [],
+      "repair_executed": false,
+      "repair_score": null,
+      "repair_selected": false,
+      "selected_source_before_repair": "llm_sql_direct_variant",
+      "value_grounding": {
+        "profiled_columns": 58,
+        "grounded_from_eval_copy": false
+      },
+      "plan": null,
+      "generated_sql": {
+        "generated": true,
+        "sql": "SELECT playerID, yearID, teamID, HR, RBI FROM batting WHERE HR > 50",
+        "params": []
+      },
+      "relational_algebra": null,
+      "execution": {
+        "executed": true,
+        "columns": [
+          "playerID",
+          "yearID",
+          "teamID",
+          "HR",
+          "RBI"
+        ],
+        "rows": [
+          [
+            "alonspe01",
+            2019,
+            "NYN",
+            53,
+            120
+          ],
+          [
+            "bautijo02",
+            2010,
+            "TOR",
+            54,
+            124
+          ],
+          [
+            "bondsba01",
+            2001,
+            "SFN",
+            73,
+            137
+          ],
+          [
+            "davisch02",
+            2013,
+            "BAL",
+            53,
+            138
+          ],
+          [
+            "fieldce01",
+            1990,
+            "DET",
+            51,
+            132
+          ],
+          [
+            "fostege01",
+            1977,
+            "CIN",
+            52,
+            149
+          ],
+          [
+            "foxxji01",
+            1932,
+            "PHA",
+            58,
+            169
+          ],
+          [
+            "gonzalu01",
+            2001,
+            "ARI",
+            57,
+            142
+          ],
+          [
+            "greenha01",
+            1938,
+            "DET",
+            58,
+            146
+          ],
+          [
+            "griffke02",
+            1997,
+            "SEA",
+            56,
+            147
+          ],
+          [
+            "griffke02",
+            1998,
+            "SEA",
+            56,
+            146
+          ],
+          [
+            "howarry01",
+            2006,
+            "PHI",
+            58,
+            149
+          ],
+          [
+            "jonesan01",
+            2005,
+            "ATL",
+            51,
+            128
+          ],
+          [
+            "judgeaa01",
+            2017,
+            "NYA",
+            52,
+            114
+          ],
+          [
+            "judgeaa01",
+            2022,
+            "NYA",
+            62,
+            131
+          ],
+          [
+            "kinerra01",
+            1947,
+            "PIT",
+            51,
+            127
+          ],
+          [
+            "kinerra01",
+            1949,
+            "PIT",
+            54,
+            127
+          ],
+          [
+            "mantlmi01",
+            1956,
+            "NYA",
+            52,
+            130
+          ],
+          [
+            "mantlmi01",
+            1961,
+            "NYA",
+            54,
+            128
+          ],
+          [
+            "marisro01",
+            1961,
+            "NYA",
+            61,
+            142
+          ],
+          [
+            "mayswi01",
+            1955,
+            "NY1",
+            51,
+            127
+          ],
+          [
+            "mayswi01",
+            1965,
+            "SFN",
+            52,
+            112
+          ],
+          [
+            "mcgwima01",
+            1996,
+            "OAK",
+            52,
+            113
+          ],
+          [
+            "mcgwima01",
+            1998,
+            "SLN",
+            70,
+            147
+          ],
+          [
+            "mcgwima01",
+            1999,
+            "SLN",
+            65,
+            147
+          ],
+          [
+            "mizejo01",
+            1947,
+            "NY1",
+            51,
+            138
+          ],
+          [
+            "ortizda01",
+            2006,
+            "BOS",
+            54,
+            137
+          ],
+          [
+            "rodrial01",
+            2001,
+            "TEX",
+            52,
+            135
+          ],
+          [
+            "rodrial01",
+            2002,
+            "TEX",
+            57,
+            142
+          ],
+          [
+            "rodrial01",
+            2007,
+            "NYA",
+            54,
+            156
+          ],
+          [
+            "ruthba01",
+            1920,
+            "NYA",
+            54,
+            137
+          ],
+          [
+            "ruthba01",
+            1921,
+            "NYA",
+            59,
+            171
+          ],
+          [
+            "ruthba01",
+            1927,
+            "NYA",
+            60,
+            164
+          ],
+          [
+            "ruthba01",
+            1928,
+            "NYA",
+            54,
+            142
+          ],
+          [
+            "sosasa01",
+            1998,
+            "CHN",
+            66,
+            158
+          ],
+          [
+            "sosasa01",
+            1999,
+            "CHN",
+            63,
+            141
+          ],
+          [
+            "sosasa01",
+            2001,
+            "CHN",
+            64,
+            160
+          ],
+          [
+            "stantmi03",
+            2017,
+            "MIA",
+            59,
+            132
+          ],
+          [
+            "thomeji01",
+            2002,
+            "CLE",
+            52,
+            118
+          ],
+          [
+            "wilsoha01",
+            1930,
+            "CHN",
+            56,
+            191
+          ]
+        ],
+        "row_count": 40,
+        "truncated": false,
+        "diagnostics": {
+          "param_count": 0
+        }
+      },
+      "_http_status": 200
+    }
+  },
+  {
+    "query_number": 5,
+    "question": "For each year in Batting, show the total number of home runs and total RBIs. Order by yearID.",
+    "elapsed_seconds": 14.004,
+    "success": true,
+    "http_status": 200,
+    "row_count": 152,
+    "sql": "SELECT yearID, SUM(HR) AS total_hr, SUM(RBI) AS total_rbi\nFROM batting\nGROUP BY yearID\nORDER BY yearID",
+    "response": {
+      "success": true,
+      "database_id": 49,
+      "question": "For each year in Batting, show the total number of home runs and total RBIs. Order by yearID.",
+      "extraction": null,
+      "ir": null,
+      "validation": null,
+      "tables_considered": null,
+      "large_mode_table_fallback": false,
+      "fallback_table": null,
+      "removed_redundant_partition_date_filter": false,
+      "partition_date": null,
+      "extraction_source": "llm",
+      "query_family": "derived_aggregate_cte",
+      "query_family_confidence": 0.85,
+      "query_family_reason": "per-entity aggregate total then ranked/compared (derived relation)",
+      "family_guard_valid": null,
+      "family_guard_reasons": null,
+      "candidate_count": 5,
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_label": "llm_sql_direct_variant",
+      "selection_reason": "consensus_group",
+      "consensus_group_size": 5,
+      "consensus_sources": [
+        "llm_primary",
+        "llm_sql_direct",
+        "llm_sql_direct_grain",
+        "llm_sql_direct_variant",
+        "llm_variant"
+      ],
+      "candidate_scores": [
+        {
+          "source": "llm_primary",
+          "label": "llm_primary",
+          "score": 87.0,
+          "executed": true,
+          "row_count": 152,
+          "fatal": false,
+          "fatal_reasons": []
+        },
+        {
+          "source": "llm_variant",
+          "label": "llm_variant_1",
+          "score": 87.0,
+          "executed": true,
+          "row_count": 152,
+          "fatal": false,
+          "fatal_reasons": []
+        },
+        {
+          "source": "llm_sql_direct",
+          "label": "llm_sql_direct",
+          "score": 87.0,
+          "executed": true,
+          "row_count": 152,
+          "fatal": false,
+          "fatal_reasons": []
+        },
+        {
+          "source": "llm_sql_direct_grain",
+          "label": "llm_sql_direct_grain",
+          "score": 87.0,
+          "executed": true,
+          "row_count": 152,
+          "fatal": false,
+          "fatal_reasons": []
+        },
+        {
+          "source": "llm_sql_direct_variant",
+          "label": "llm_sql_direct_variant",
+          "score": 87.0,
+          "executed": true,
+          "row_count": 152,
+          "fatal": false,
+          "fatal_reasons": []
+        }
+      ],
+      "candidate_reasons": {
+        "llm_primary": [
+          "checklist requires shape 'group_by_having' but the SQL lacks it"
+        ],
+        "llm_variant_1": [
+          "checklist requires shape 'group_by_having' but the SQL lacks it"
+        ],
+        "llm_sql_direct": [
+          "checklist requires shape 'group_by_having' but the SQL lacks it"
+        ],
+        "llm_sql_direct_grain": [
+          "checklist requires shape 'group_by_having' but the SQL lacks it"
+        ],
+        "llm_sql_direct_variant": [
+          "checklist requires shape 'group_by_having' but the SQL lacks it"
+        ]
+      },
+      "rejected_candidates": [
+        {
+          "source": "llm_primary",
+          "label": "llm_primary",
+          "sql": "SELECT \"batting\".\"yearid\", SUM(\"batting\".\"hr\") AS \"total_home_runs\", SUM(\"batting\".\"rbi\") AS \"total_rbis\" FROM \"batting\" GROUP BY \"batting\".\"yearid\" ORDER BY \"batting\".\"yearid\" ASC",
+          "score": 87.0,
+          "executed": true,
+          "row_count": 152,
+          "reasons": [
+            "checklist requires shape 'group_by_having' but the SQL lacks it"
+          ]
+        },
+        {
+          "source": "llm_variant",
+          "label": "llm_variant_1",
+          "sql": "SELECT \"batting\".\"yearid\", SUM(\"batting\".\"hr\") AS \"total_home_runs\", SUM(\"batting\".\"rbi\") AS \"total_rbis\" FROM \"batting\" GROUP BY \"batting\".\"yearid\" ORDER BY \"batting\".\"yearid\" ASC",
+          "score": 87.0,
+          "executed": true,
+          "row_count": 152,
+          "reasons": [
+            "checklist requires shape 'group_by_having' but the SQL lacks it"
+          ]
+        },
+        {
+          "source": "llm_sql_direct",
+          "label": "llm_sql_direct",
+          "sql": "SELECT yearID, SUM(HR) AS total_home_runs, SUM(RBI) AS total_rbis\nFROM Batting\nGROUP BY yearID\nORDER BY yearID",
+          "score": 87.0,
+          "executed": true,
+          "row_count": 152,
+          "reasons": [
+            "checklist requires shape 'group_by_having' but the SQL lacks it"
+          ]
+        },
+        {
+          "source": "llm_sql_direct_grain",
+          "label": "llm_sql_direct_grain",
+          "sql": "SELECT yearID, SUM(HR) AS total_home_runs, SUM(RBI) AS total_rbis\nFROM Batting\nGROUP BY yearID\nORDER BY yearID",
+          "score": 87.0,
+          "executed": true,
+          "row_count": 152,
+          "reasons": [
+            "checklist requires shape 'group_by_having' but the SQL lacks it"
+          ]
+        }
+      ],
+      "warnings": [],
+      "low_confidence": false,
+      "selected_candidate_score": 87.0,
+      "selected_candidate_validation": {
+        "executed": true,
+        "illegal_joins": [],
+        "unknown_columns": [],
+        "missing_tables": [],
+        "missing_concepts": [],
+        "required_shapes": {},
+        "duplicate_aliases": [],
+        "undefined_aliases": [],
+        "guard_valid": null,
+        "bare_cte": null,
+        "checklist": {
+          "delta": 12.0,
+          "missing_columns": [],
+          "missing_tables": [],
+          "shape_ok": false
+        },
+        "grain": {
+          "delta": 0.0
+        },
+        "semantic_rel": {
+          "delta": 0.0
+        },
+        "semantic_join": {
+          "delta": 0.0
+        },
+        "table_lock": {
+          "locked_tables": [
+            "batting"
+          ],
+          "delta": 0.0
+        },
+        "outside_tables": [],
+        "unseen_literals": [],
+        "shape": {
+          "fatal": [],
+          "penalties": [],
+          "report_only": []
+        },
+        "fatal": [],
+        "probes": {
+          "warnings": [],
+          "penalty": 0.0,
+          "checks": {}
+        }
+      },
+      "semantic_checklist": {
+        "target_entity": "batting",
+        "output_columns": [
+          "batting.yearid"
+        ],
+        "must_use_tables": [
+          "batting"
+        ],
+        "must_use_columns": [
+          "batting.yearid",
+          "batting.hr",
+          "batting.rbi"
+        ],
+        "measure_column": "batting.hr",
+        "group_by_entity": "batting.yearid",
+        "comparison_logic": null,
+        "required_sql_shape": "group_by_having",
+        "literals": [],
+        "row_grain": "one row per year",
+        "universe": null,
+        "required_group_keys": [
+          "batting.yearid"
+        ],
+        "forbidden_hardcoded_universe": false
+      },
+      "repair_attempted": false,
+      "repair_triggers": [],
+      "repair_executed": false,
+      "repair_score": null,
+      "repair_selected": false,
+      "selected_source_before_repair": "llm_sql_direct_variant",
+      "value_grounding": {
+        "profiled_columns": 58,
+        "grounded_from_eval_copy": false
+      },
+      "plan": null,
+      "generated_sql": {
+        "generated": true,
+        "sql": "SELECT yearID, SUM(HR) AS total_hr, SUM(RBI) AS total_rbi\nFROM batting\nGROUP BY yearID\nORDER BY yearID",
+        "params": []
+      },
+      "relational_algebra": null,
+      "execution": {
+        "executed": true,
+        "columns": [
+          "yearID",
+          "total_hr",
+          "total_rbi"
+        ],
+        "rows": [
+          [
+            1871,
+            47,
+            1783
+          ],
+          [
+            1872,
+            37,
+            2132
+          ],
+          [
+            1873,
+            47,
+            2331
+          ],
+          [
+            1874,
+            40,
+            2252
+          ],
+          [
+            1875,
+            40,
+            2710
+          ],
+          [
+            1876,
+            40,
+            1984
+          ],
+          [
+            1877,
+            24,
+            1410
+          ],
+          [
+            1878,
+            23,
+            1331
+          ],
+          [
+            1879,
+            58,
+            2357
+          ],
+          [
+            1880,
+            62,
+            2223
+          ],
+          [
+            1881,
+            76,
+            2488
+          ],
+          [
+            1882,
+            178,
+            3321
+          ],
+          [
+            1883,
+            238,
+            4522
+          ],
+          [
+            1884,
+            689,
+            4897
+          ],
+          [
+            1885,
+            323,
+            6488
+          ],
+          [
+            1886,
+            413,
+            8239
+          ],
+          [
+            1887,
+            606,
+            10393
+          ],
+          [
+            1888,
+            521,
+            8036
+          ],
+          [
+            1889,
+            667,
+            10227
+          ],
+          [
+            1890,
+            764,
+            14750
+          ],
+          [
+            1891,
+            585,
+            9964
+          ],
+          [
+            1892,
+            417,
+            7360
+          ],
+          [
+            1893,
+            460,
+            8556
+          ],
+          [
+            1894,
+            629,
+            9983
+          ],
+          [
+            1895,
+            488,
+            8806
+          ],
+          [
+            1896,
+            404,
+            8045
+          ],
+          [
+            1897,
+            368,
+            8014
+          ],
+          [
+            1898,
+            299,
+            7630
+          ],
+          [
+            1899,
+            352,
+            7997
+          ],
+          [
+            1900,
+            254,
+            4924
+          ],
+          [
+            1901,
+            455,
+            9136
+          ],
+          [
+            1902,
+            354,
+            8258
+          ],
+          [
+            1903,
+            335,
+            8144
+          ],
+          [
+            1904,
+            331,
+            7591
+          ],
+          [
+            1905,
+            338,
+            7936
+          ],
+          [
+            1906,
+            261,
+            7279
+          ],
+          [
+            1907,
+            244,
+            7075
+          ],
+          [
+            1908,
+            267,
+            6822
+          ],
+          [
+            1909,
+            259,
+            7125
+          ],
+          [
+            1910,
+            361,
+            7858
+          ],
+          [
+            1911,
+            514,
+            9318
+          ],
+          [
+            1912,
+            442,
+            9346
+          ],
+          [
+            1913,
+            470,
+            8350
+          ],
+          [
+            1914,
+            710,
+            12224
+          ],
+          [
+            1915,
+            635,
+            11981
+          ],
+          [
+            1916,
+            383,
+            7518
+          ],
+          [
+            1917,
+            335,
+            7557
+          ],
+          [
+            1918,
+            235,
+            6200
+          ],
+          [
+            1919,
+            447,
+            7425
+          ],
+          [
+            1920,
+            630,
+            9342
+          ],
+          [
+            1921,
+            937,
+            10710
+          ],
+          [
+            1922,
+            1055,
+            10787
+          ],
+          [
+            1923,
+            980,
+            10668
+          ],
+          [
+            1924,
+            896,
+            10605
+          ],
+          [
+            1925,
+            1169,
+            11422
+          ],
+          [
+            1926,
+            863,
+            10448
+          ],
+          [
+            1927,
+            922,
+            10758
+          ],
+          [
+            1928,
+            1093,
+            10738
+          ],
+          [
+            1929,
+            1349,
+            11794
+          ],
+          [
+            1930,
+            1565,
+            12744
+          ],
+          [
+            1931,
+            1069,
+            11049
+          ],
+          [
+            1932,
+            1358,
+            11287
+          ],
+          [
+            1933,
+            1067,
+            10209
+          ],
+          [
+            1934,
+            1344,
+            11219
+          ],
+          [
+            1935,
+            1325,
+            11156
+          ],
+          [
+            1936,
+            1364,
+            11930
+          ],
+          [
+            1937,
+            1430,
+            11208
+          ],
+          [
+            1938,
+            1475,
+            11237
+          ],
+          [
+            1939,
+            1445,
+            11040
+          ],
+          [
+            1940,
+            1571,
+            10702
+          ],
+          [
+            1941,
+            1331,
+            10325
+          ],
+          [
+            1942,
+            1071,
+            9187
+          ],
+          [
+            1943,
+            905,
+            8954
+          ],
+          [
+            1944,
+            1034,
+            9579
+          ],
+          [
+            1945,
+            1007,
+            9499
+          ],
+          [
+            1946,
+            1215,
+            9205
+          ],
+          [
+            1947,
+            1565,
+            10110
+          ],
+          [
+            1948,
+            1555,
+            10589
+          ],
+          [
+            1949,
+            1704,
+            10642
+          ],
+          [
+            1950,
+            2073,
+            11269
+          ],
+          [
+            1951,
+            1863,
+            10524
+          ],
+          [
+            1952,
+            1701,
+            9671
+          ],
+          [
+            1953,
+            2076,
+            10714
+          ],
+          [
+            1954,
+            1937,
+            10168
+          ],
+          [
+            1955,
+            2224,
+            10381
+          ],
+          [
+            1956,
+            2294,
+            10330
+          ],
+          [
+            1957,
+            2202,
+            10023
+          ],
+          [
+            1958,
+            2240,
+            9956
+          ],
+          [
+            1959,
+            2250,
+            10177
+          ],
+          [
+            1960,
+            2128,
+            9968
+          ],
+          [
+            1961,
+            2730,
+            12062
+          ],
+          [
+            1962,
+            3001,
+            13546
+          ],
+          [
+            1963,
+            2704,
+            11904
+          ],
+          [
+            1964,
+            2762,
+            12233
+          ],
+          [
+            1965,
+            2688,
+            12012
+          ],
+          [
+            1966,
+            2743,
+            11998
+          ],
+          [
+            1967,
+            2299,
+            11265
+          ],
+          [
+            1968,
+            1995,
+            10309
+          ],
+          [
+            1969,
+            3119,
+            14662
+          ],
+          [
+            1970,
+            3429,
+            15762
+          ],
+          [
+            1971,
+            2863,
+            14077
+          ],
+          [
+            1972,
+            2534,
+            12750
+          ],
+          [
+            1973,
+            3102,
+            15254
+          ],
+          [
+            1974,
+            2649,
+            14858
+          ],
+          [
+            1975,
+            2698,
+            15153
+          ],
+          [
+            1976,
+            2235,
+            14363
+          ],
+          [
+            1977,
+            3644,
+            17596
+          ],
+          [
+            1978,
+            2956,
+            16098
+          ],
+          [
+            1979,
+            3433,
+            17558
+          ],
+          [
+            1980,
+            3087,
+            16928
+          ],
+          [
+            1981,
+            1781,
+            10451
+          ],
+          [
+            1982,
+            3379,
+            17019
+          ],
+          [
+            1983,
+            3301,
+            17067
+          ],
+          [
+            1984,
+            3258,
+            16778
+          ],
+          [
+            1985,
+            3602,
+            17129
+          ],
+          [
+            1986,
+            3813,
+            17396
+          ],
+          [
+            1987,
+            4458,
+            18713
+          ],
+          [
+            1988,
+            3180,
+            16219
+          ],
+          [
+            1989,
+            3083,
+            16229
+          ],
+          [
+            1990,
+            3317,
+            16804
+          ],
+          [
+            1991,
+            3383,
+            17048
+          ],
+          [
+            1992,
+            3038,
+            16282
+          ],
+          [
+            1993,
+            4030,
+            19596
+          ],
+          [
+            1994,
+            3306,
+            14858
+          ],
+          [
+            1995,
+            4081,
+            18436
+          ],
+          [
+            1996,
+            4962,
+            21570
+          ],
+          [
+            1997,
+            4640,
+            20468
+          ],
+          [
+            1998,
+            5064,
+            22080
+          ],
+          [
+            1999,
+            5528,
+            23461
+          ],
+          [
+            2000,
+            5693,
+            23735
+          ],
+          [
+            2001,
+            5458,
+            22088
+          ],
+          [
+            2002,
+            5059,
+            21332
+          ],
+          [
+            2003,
+            5207,
+            21886
+          ],
+          [
+            2004,
+            5451,
+            22248
+          ],
+          [
+            2005,
+            5017,
+            21248
+          ],
+          [
+            2006,
+            5386,
+            22491
+          ],
+          [
+            2007,
+            4957,
+            22257
+          ],
+          [
+            2008,
+            4878,
+            21541
+          ],
+          [
+            2009,
+            5042,
+            21364
+          ],
+          [
+            2010,
+            4613,
+            20288
+          ],
+          [
+            2011,
+            4552,
+            19804
+          ],
+          [
+            2012,
+            4934,
+            19998
+          ],
+          [
+            2013,
+            4661,
+            19271
+          ],
+          [
+            2014,
+            4186,
+            18745
+          ],
+          [
+            2015,
+            4909,
+            19650
+          ],
+          [
+            2016,
+            5610,
+            20745
+          ],
+          [
+            2017,
+            6105,
+            21558
+          ],
+          [
+            2018,
+            5585,
+            20606
+          ],
+          [
+            2019,
+            6776,
+            22471
+          ],
+          [
+            2020,
+            2304,
+            7978
+          ],
+          [
+            2021,
+            5944,
+            20993
+          ],
+          [
+            2022,
+            5215,
+            19888
+          ]
+        ],
+        "row_count": 152,
+        "truncated": false,
+        "diagnostics": {
+          "param_count": 0
+        }
+      },
+      "_http_status": 200
+    }
+  },
+  {
+    "query_number": 6,
+    "question": "Find the top 10 players by total career home runs from Batting. Show playerID and total home runs.",
+    "elapsed_seconds": 13.879,
+    "success": true,
+    "http_status": 200,
+    "row_count": 10,
+    "sql": "SELECT playerID, SUM(HR) AS total_home_runs\nFROM Batting\nGROUP BY playerID\nORDER BY total_home_runs DESC\nLIMIT 10",
+    "response": {
+      "success": true,
+      "database_id": 49,
+      "question": "Find the top 10 players by total career home runs from Batting. Show playerID and total home runs.",
+      "extraction": null,
+      "ir": null,
+      "validation": null,
+      "tables_considered": null,
+      "large_mode_table_fallback": false,
+      "fallback_table": null,
+      "removed_redundant_partition_date_filter": false,
+      "partition_date": null,
+      "extraction_source": "llm",
+      "query_family": "derived_aggregate_cte",
+      "query_family_confidence": 0.85,
+      "query_family_reason": "per-entity aggregate total then ranked/compared (derived relation)",
+      "family_guard_valid": null,
+      "family_guard_reasons": null,
+      "candidate_count": 5,
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_label": "llm_sql_direct_variant",
+      "selection_reason": "consensus_group",
+      "consensus_group_size": 4,
+      "consensus_sources": [
+        "llm_primary",
+        "llm_sql_direct",
+        "llm_sql_direct_grain",
+        "llm_sql_direct_variant"
+      ],
+      "candidate_scores": [
+        {
+          "source": "llm_primary",
+          "label": "llm_primary",
+          "score": 100.0,
+          "executed": true,
+          "row_count": 10,
+          "fatal": false,
+          "fatal_reasons": []
+        },
+        {
+          "source": "llm_variant",
+          "label": "llm_variant_1",
+          "score": 100.0,
+          "executed": true,
+          "row_count": 10,
+          "fatal": false,
+          "fatal_reasons": []
+        },
+        {
+          "source": "llm_sql_direct",
+          "label": "llm_sql_direct",
+          "score": 100.0,
+          "executed": true,
+          "row_count": 10,
+          "fatal": false,
+          "fatal_reasons": []
+        },
+        {
+          "source": "llm_sql_direct_grain",
+          "label": "llm_sql_direct_grain",
+          "score": 100.0,
+          "executed": true,
+          "row_count": 10,
+          "fatal": false,
+          "fatal_reasons": []
+        },
+        {
+          "source": "llm_sql_direct_variant",
+          "label": "llm_sql_direct_variant",
+          "score": 100.0,
+          "executed": true,
+          "row_count": 10,
+          "fatal": false,
+          "fatal_reasons": []
+        }
+      ],
+      "candidate_reasons": {
+        "llm_primary": [],
+        "llm_variant_1": [],
+        "llm_sql_direct": [],
+        "llm_sql_direct_grain": [],
+        "llm_sql_direct_variant": []
+      },
+      "rejected_candidates": [
+        {
+          "source": "llm_primary",
+          "label": "llm_primary",
+          "sql": "SELECT \"batting\".\"playerid\", SUM(\"batting\".\"hr\") AS \"total_home_runs\" FROM \"batting\" GROUP BY \"batting\".\"playerid\" ORDER BY \"total_home_runs\" DESC LIMIT 10",
+          "score": 100.0,
+          "executed": true,
+          "row_count": 10,
+          "reasons": []
+        },
+        {
+          "source": "llm_variant",
+          "label": "llm_variant_1",
+          "sql": "SELECT \"batting\".\"playerid\", \"batting\".\"hr\" AS \"total_home_runs\", SUM(\"batting\".\"hr\") AS \"total_home_runs\" FROM \"batting\" GROUP BY \"batting\".\"playerid\" ORDER BY \"total_home_runs\" DESC LIMIT 10",
+          "score": 100.0,
+          "executed": true,
+          "row_count": 10,
+          "reasons": []
+        },
+        {
+          "source": "llm_sql_direct",
+          "label": "llm_sql_direct",
+          "sql": "SELECT playerID, SUM(HR) AS total_home_runs\nFROM Batting\nGROUP BY playerID\nORDER BY total_home_runs DESC\nLIMIT 10",
+          "score": 100.0,
+          "executed": true,
+          "row_count": 10,
+          "reasons": []
+        },
+        {
+          "source": "llm_sql_direct_grain",
+          "label": "llm_sql_direct_grain",
+          "sql": "SELECT playerID, SUM(HR) AS total_home_runs\nFROM Batting\nGROUP BY playerID\nORDER BY total_home_runs DESC\nLIMIT 10",
+          "score": 100.0,
+          "executed": true,
+          "row_count": 10,
+          "reasons": []
+        }
+      ],
+      "warnings": [],
+      "low_confidence": false,
+      "selected_candidate_score": 100.0,
+      "selected_candidate_validation": {
+        "executed": true,
+        "illegal_joins": [],
+        "unknown_columns": [],
+        "missing_tables": [],
+        "missing_concepts": [],
+        "required_shapes": {},
+        "duplicate_aliases": [],
+        "undefined_aliases": [],
+        "guard_valid": null,
+        "bare_cte": null,
+        "checklist": {
+          "delta": 30.0,
+          "missing_columns": [],
+          "missing_tables": [],
+          "shape_ok": true
+        },
+        "grain": {
+          "delta": 0.0
+        },
+        "semantic_rel": {
+          "delta": 0.0
+        },
+        "semantic_join": {
+          "delta": 0.0
+        },
+        "table_lock": {
+          "locked_tables": [
+            "batting"
+          ],
+          "delta": 0.0
+        },
+        "outside_tables": [],
+        "unseen_literals": [],
+        "shape": {
+          "fatal": [],
+          "penalties": [],
+          "report_only": []
+        },
+        "fatal": [],
+        "probes": {
+          "warnings": [],
+          "penalty": 0.0,
+          "checks": {}
+        }
+      },
+      "semantic_checklist": {
+        "target_entity": "batting",
+        "output_columns": [
+          "batting.playerid"
+        ],
+        "must_use_tables": [
+          "batting"
+        ],
+        "must_use_columns": [
+          "batting.playerid",
+          "batting.hr"
+        ],
+        "measure_column": "batting.hr",
+        "group_by_entity": "batting.playerid",
+        "comparison_logic": "Sort by total home runs in descending order and take the top 10",
+        "required_sql_shape": "order_by_limit",
+        "literals": [
+          "10"
+        ],
+        "row_grain": "one row per player",
+        "universe": null,
+        "required_group_keys": [
+          "batting.playerid"
+        ],
+        "forbidden_hardcoded_universe": false
+      },
+      "repair_attempted": false,
+      "repair_triggers": [],
+      "repair_executed": false,
+      "repair_score": null,
+      "repair_selected": false,
+      "selected_source_before_repair": "llm_sql_direct_variant",
+      "value_grounding": {
+        "profiled_columns": 58,
+        "grounded_from_eval_copy": false
+      },
+      "plan": null,
+      "generated_sql": {
+        "generated": true,
+        "sql": "SELECT playerID, SUM(HR) AS total_home_runs\nFROM Batting\nGROUP BY playerID\nORDER BY total_home_runs DESC\nLIMIT 10",
+        "params": []
+      },
+      "relational_algebra": null,
+      "execution": {
+        "executed": true,
+        "columns": [
+          "playerID",
+          "total_home_runs"
+        ],
+        "rows": [
+          [
+            "bondsba01",
+            762
+          ],
+          [
+            "aaronha01",
+            755
+          ],
+          [
+            "ruthba01",
+            714
+          ],
+          [
+            "pujolal01",
+            703
+          ],
+          [
+            "rodrial01",
+            696
+          ],
+          [
+            "mayswi01",
+            660
+          ],
+          [
+            "griffke02",
+            630
+          ],
+          [
+            "thomeji01",
+            612
+          ],
+          [
+            "sosasa01",
+            609
+          ],
+          [
+            "robinfr02",
+            586
+          ]
+        ],
+        "row_count": 10,
+        "truncated": false,
+        "diagnostics": {
+          "param_count": 0
+        }
+      },
+      "_http_status": 200
+    }
+  },
+  {
+    "query_number": 7,
+    "question": "Join People and Batting using playerID. Show player names, yearID, teamID, and home runs for rows where HR is greater than 50.",
+    "elapsed_seconds": 15.785,
+    "success": true,
+    "http_status": 200,
+    "row_count": 40,
+    "sql": "SELECT p.nameFirst, p.nameLast, b.yearID, b.teamID, b.HR\nFROM People p, Batting b\nWHERE p.playerID = b.playerID AND b.HR > 50",
+    "response": {
+      "success": true,
+      "database_id": 49,
+      "question": "Join People and Batting using playerID. Show player names, yearID, teamID, and home runs for rows where HR is greater than 50.",
+      "extraction": null,
+      "ir": null,
+      "validation": null,
+      "tables_considered": null,
+      "large_mode_table_fallback": false,
+      "fallback_table": null,
+      "removed_redundant_partition_date_filter": false,
+      "partition_date": null,
+      "extraction_source": "llm",
+      "query_family": "normal_join_filter_group",
+      "query_family_confidence": 0.3,
+      "query_family_reason": "no distinctive relational pattern; use base pipeline",
+      "family_guard_valid": null,
+      "family_guard_reasons": null,
+      "candidate_count": 5,
+      "selected_candidate_source": "llm_sql_repair",
+      "selected_candidate_label": "llm_sql_repair",
+      "selection_reason": "best_scored_executed",
+      "consensus_group_size": 1,
+      "consensus_sources": [
+        "llm_sql_repair"
+      ],
+      "candidate_scores": [
+        {
+          "source": "llm_primary",
+          "label": "llm_primary",
+          "score": 5.0,
+          "executed": false,
+          "row_count": null,
+          "fatal": false,
+          "fatal_reasons": []
+        },
+        {
+          "source": "llm_sql_direct",
+          "label": "llm_sql_direct",
+          "score": 69.0,
+          "executed": true,
+          "row_count": 40,
+          "fatal": true,
+          "fatal_reasons": [
+            "illegal join: people.playerid = batting.playerid"
+          ]
+        },
+        {
+          "source": "llm_sql_direct_grain",
+          "label": "llm_sql_direct_grain",
+          "score": 69.0,
+          "executed": true,
+          "row_count": 40,
+          "fatal": true,
+          "fatal_reasons": [
+            "illegal join: people.playerid = batting.playerid"
+          ]
+        },
+        {
+          "source": "llm_sql_direct_variant",
+          "label": "llm_sql_direct_variant",
+          "score": 69.0,
+          "executed": true,
+          "row_count": 40,
+          "fatal": true,
+          "fatal_reasons": [
+            "illegal join: people.playerid = batting.playerid"
+          ]
+        },
+        {
+          "source": "llm_sql_repair",
+          "label": "llm_sql_repair",
+          "score": 69.0,
+          "executed": true,
+          "row_count": 40,
+          "fatal": false,
+          "fatal_reasons": []
+        }
+      ],
+      "candidate_reasons": {
+        "llm_primary": [
+          "no SQL produced (invalid IR / unresolved plan / generation failure)"
+        ],
+        "llm_sql_direct": [
+          "illegal join/correlation people.playerid = batting.playerid (not a declared FK; e.g. key = measure)"
+        ],
+        "llm_sql_direct_grain": [
+          "illegal join/correlation people.playerid = batting.playerid (not a declared FK; e.g. key = measure)"
+        ],
+        "llm_sql_direct_variant": [
+          "illegal join/correlation people.playerid = batting.playerid (not a declared FK; e.g. key = measure)"
+        ],
+        "llm_sql_repair": [
+          "undefined alias referenced: b",
+          "generic fallback SQL (no_aggregation) ignores the requested aggregation/join/filter the question needs"
+        ]
+      },
+      "rejected_candidates": [
+        {
+          "source": "llm_primary",
+          "label": "llm_primary",
+          "sql": null,
+          "score": 5.0,
+          "executed": false,
+          "row_count": null,
+          "reasons": [
+            "no SQL produced (invalid IR / unresolved plan / generation failure)"
+          ]
+        },
+        {
+          "source": "llm_sql_direct",
+          "label": "llm_sql_direct",
+          "sql": "SELECT p.nameFirst, p.nameLast, b.yearID, b.teamID, b.HR\nFROM People p\nJOIN Batting b ON p.playerID = b.playerID\nWHERE b.HR > 50",
+          "score": 69.0,
+          "executed": true,
+          "row_count": 40,
+          "reasons": [
+            "illegal join/correlation people.playerid = batting.playerid (not a declared FK; e.g. key = measure)"
+          ]
+        },
+        {
+          "source": "llm_sql_direct_grain",
+          "label": "llm_sql_direct_grain",
+          "sql": "SELECT p.nameFirst, p.nameLast, b.yearID, b.teamID, b.HR\nFROM People p\nJOIN Batting b ON p.playerID = b.playerID\nWHERE b.HR > 50",
+          "score": 69.0,
+          "executed": true,
+          "row_count": 40,
+          "reasons": [
+            "illegal join/correlation people.playerid = batting.playerid (not a declared FK; e.g. key = measure)"
+          ]
+        },
+        {
+          "source": "llm_sql_direct_variant",
+          "label": "llm_sql_direct_variant",
+          "sql": "SELECT p.nameFirst, p.nameLast, b.yearID, b.teamID, b.HR\nFROM People p\nJOIN Batting b ON p.playerID = b.playerID\nWHERE b.HR > 50",
+          "score": 69.0,
+          "executed": true,
+          "row_count": 40,
+          "reasons": [
+            "illegal join/correlation people.playerid = batting.playerid (not a declared FK; e.g. key = measure)"
+          ]
+        }
+      ],
+      "warnings": [],
+      "low_confidence": false,
+      "selected_candidate_score": 69.0,
+      "selected_candidate_validation": {
+        "executed": true,
+        "illegal_joins": [],
+        "unknown_columns": [],
+        "missing_tables": [],
+        "missing_concepts": [],
+        "required_shapes": {},
+        "duplicate_aliases": [],
+        "undefined_aliases": [
+          "b"
+        ],
+        "guard_valid": null,
+        "bare_cte": null,
+        "checklist": {
+          "delta": 30.0,
+          "missing_columns": [],
+          "missing_tables": [],
+          "shape_ok": null
+        },
+        "grain": {
+          "delta": 0.0
+        },
+        "semantic_rel": {
+          "generic_fallback": "no_aggregation",
+          "delta": -15.0
+        },
+        "semantic_join": {
+          "purpose_match": true,
+          "delta": 4.0
+        },
+        "table_lock": {
+          "locked_tables": [
+            "batting",
+            "people"
+          ],
+          "delta": 0.0
+        },
+        "outside_tables": [],
+        "unseen_literals": [],
+        "shape": {
+          "fatal": [],
+          "penalties": [],
+          "report_only": []
+        },
+        "fatal": [],
+        "probes": {
+          "warnings": [],
+          "penalty": 0.0,
+          "checks": {}
+        }
+      },
+      "semantic_checklist": {
+        "target_entity": "batting",
+        "output_columns": [
+          "people.namefirst",
+          "people.namelast",
+          "batting.yearid",
+          "batting.teamid",
+          "batting.hr"
+        ],
+        "must_use_tables": [
+          "batting",
+          "people"
+        ],
+        "must_use_columns": [
+          "people.namefirst",
+          "people.namelast",
+          "batting.yearid",
+          "batting.teamid",
+          "batting.hr"
+        ],
+        "measure_column": "batting.hr",
+        "group_by_entity": null,
+        "comparison_logic": "HR is greater than 50",
+        "required_sql_shape": "plain_select",
+        "literals": [
+          "50"
+        ],
+        "row_grain": "one row per player per year per team with more than 50 home runs",
+        "universe": null,
+        "required_group_keys": [],
+        "forbidden_hardcoded_universe": false
+      },
+      "repair_attempted": true,
+      "repair_triggers": [
+        "selected candidate failed hard semantic checks",
+        "selected score 69.0 < 75.0"
+      ],
+      "repair_executed": true,
+      "repair_score": 69.0,
+      "repair_selected": true,
+      "selected_source_before_repair": "llm_sql_direct_variant",
+      "value_grounding": {
+        "profiled_columns": 58,
+        "grounded_from_eval_copy": false
+      },
+      "plan": null,
+      "generated_sql": {
+        "generated": true,
+        "sql": "SELECT p.nameFirst, p.nameLast, b.yearID, b.teamID, b.HR\nFROM People p, Batting b\nWHERE p.playerID = b.playerID AND b.HR > 50",
+        "params": []
+      },
+      "relational_algebra": null,
+      "execution": {
+        "executed": true,
+        "columns": [
+          "nameFirst",
+          "nameLast",
+          "yearID",
+          "teamID",
+          "HR"
+        ],
+        "rows": [
+          [
+            "Pete",
+            "Alonso",
+            2019,
+            "NYN",
+            53
+          ],
+          [
+            "Jose",
+            "Bautista",
+            2010,
+            "TOR",
+            54
+          ],
+          [
+            "Barry",
+            "Bonds",
+            2001,
+            "SFN",
+            73
+          ],
+          [
+            "Chris",
+            "Davis",
+            2013,
+            "BAL",
+            53
+          ],
+          [
+            "Cecil",
+            "Fielder",
+            1990,
+            "DET",
+            51
+          ],
+          [
+            "George",
+            "Foster",
+            1977,
+            "CIN",
+            52
+          ],
+          [
+            "Jimmie",
+            "Foxx",
+            1932,
+            "PHA",
+            58
+          ],
+          [
+            "Luis",
+            "Gonzalez",
+            2001,
+            "ARI",
+            57
+          ],
+          [
+            "Hank",
+            "Greenberg",
+            1938,
+            "DET",
+            58
+          ],
+          [
+            "Ken",
+            "Griffey",
+            1997,
+            "SEA",
+            56
+          ],
+          [
+            "Ken",
+            "Griffey",
+            1998,
+            "SEA",
+            56
+          ],
+          [
+            "Ryan",
+            "Howard",
+            2006,
+            "PHI",
+            58
+          ],
+          [
+            "Andruw",
+            "Jones",
+            2005,
+            "ATL",
+            51
+          ],
+          [
+            "Aaron",
+            "Judge",
+            2017,
+            "NYA",
+            52
+          ],
+          [
+            "Aaron",
+            "Judge",
+            2022,
+            "NYA",
+            62
+          ],
+          [
+            "Ralph",
+            "Kiner",
+            1947,
+            "PIT",
+            51
+          ],
+          [
+            "Ralph",
+            "Kiner",
+            1949,
+            "PIT",
+            54
+          ],
+          [
+            "Mickey",
+            "Mantle",
+            1956,
+            "NYA",
+            52
+          ],
+          [
+            "Mickey",
+            "Mantle",
+            1961,
+            "NYA",
+            54
+          ],
+          [
+            "Roger",
+            "Maris",
+            1961,
+            "NYA",
+            61
+          ],
+          [
+            "Willie",
+            "Mays",
+            1955,
+            "NY1",
+            51
+          ],
+          [
+            "Willie",
+            "Mays",
+            1965,
+            "SFN",
+            52
+          ],
+          [
+            "Mark",
+            "McGwire",
+            1996,
+            "OAK",
+            52
+          ],
+          [
+            "Mark",
+            "McGwire",
+            1998,
+            "SLN",
+            70
+          ],
+          [
+            "Mark",
+            "McGwire",
+            1999,
+            "SLN",
+            65
+          ],
+          [
+            "Johnny",
+            "Mize",
+            1947,
+            "NY1",
+            51
+          ],
+          [
+            "David",
+            "Ortiz",
+            2006,
+            "BOS",
+            54
+          ],
+          [
+            "Alex",
+            "Rodriguez",
+            2001,
+            "TEX",
+            52
+          ],
+          [
+            "Alex",
+            "Rodriguez",
+            2002,
+            "TEX",
+            57
+          ],
+          [
+            "Alex",
+            "Rodriguez",
+            2007,
+            "NYA",
+            54
+          ],
+          [
+            "Babe",
+            "Ruth",
+            1920,
+            "NYA",
+            54
+          ],
+          [
+            "Babe",
+            "Ruth",
+            1921,
+            "NYA",
+            59
+          ],
+          [
+            "Babe",
+            "Ruth",
+            1927,
+            "NYA",
+            60
+          ],
+          [
+            "Babe",
+            "Ruth",
+            1928,
+            "NYA",
+            54
+          ],
+          [
+            "Sammy",
+            "Sosa",
+            1998,
+            "CHN",
+            66
+          ],
+          [
+            "Sammy",
+            "Sosa",
+            1999,
+            "CHN",
+            63
+          ],
+          [
+            "Sammy",
+            "Sosa",
+            2001,
+            "CHN",
+            64
+          ],
+          [
+            "Giancarlo",
+            "Stanton",
+            2017,
+            "MIA",
+            59
+          ],
+          [
+            "Jim",
+            "Thome",
+            2002,
+            "CLE",
+            52
+          ],
+          [
+            "Hack",
+            "Wilson",
+            1930,
+            "CHN",
+            56
+          ]
+        ],
+        "row_count": 40,
+        "truncated": false,
+        "diagnostics": {
+          "param_count": 0
+        }
+      },
+      "_http_status": 200
+    }
+  },
+  {
+    "query_number": 8,
+    "question": "Join Teams and Batting using yearID, teamID, and lgID. For year 2001, show team name, playerID, and HR for batting rows with HR greater than 40.",
+    "elapsed_seconds": 15.704,
+    "success": true,
+    "http_status": 200,
+    "row_count": 12,
+    "sql": "SELECT T.name, B.playerID, B.HR\nFROM batting AS B\nJOIN Teams AS T\n  ON B.yearID = T.yearID\n AND B.teamID = T.teamID\n AND B.lgID = T.lgID\nWHERE B.yearID = 2001\n  AND B.HR > 40",
+    "response": {
+      "success": true,
+      "database_id": 49,
+      "question": "Join Teams and Batting using yearID, teamID, and lgID. For year 2001, show team name, playerID, and HR for batting rows with HR greater than 40.",
+      "extraction": null,
+      "ir": null,
+      "validation": null,
+      "tables_considered": null,
+      "large_mode_table_fallback": false,
+      "fallback_table": null,
+      "removed_redundant_partition_date_filter": false,
+      "partition_date": null,
+      "extraction_source": "llm",
+      "query_family": "normal_join_filter_group",
+      "query_family_confidence": 0.3,
+      "query_family_reason": "no distinctive relational pattern; use base pipeline",
+      "family_guard_valid": null,
+      "family_guard_reasons": null,
+      "candidate_count": 6,
+      "selected_candidate_source": "llm_sql_direct_variant",
+      "selected_candidate_label": "llm_sql_direct_variant",
+      "selection_reason": "consensus_group",
+      "consensus_group_size": 3,
+      "consensus_sources": [
+        "llm_sql_direct",
+        "llm_sql_direct_grain",
+        "llm_sql_direct_variant"
+      ],
+      "candidate_scores": [
+        {
+          "source": "llm_primary",
+          "label": "llm_primary",
+          "score": 5.0,
+          "executed": false,
+          "row_count": null,
+          "fatal": false,
+          "fatal_reasons": []
+        },
+        {
+          "source": "llm_variant",
+          "label": "llm_variant_1",
+          "score": 5.0,
+          "executed": false,
+          "row_count": null,
+          "fatal": false,
+          "fatal_reasons": []
+        },
+        {
+          "source": "llm_variant",
+          "label": "llm_variant_2",
+          "score": 5.0,
+          "executed": false,
+          "row_count": null,
+          "fatal": false,
+          "fatal_reasons": []
+        },
+        {
+          "source": "llm_sql_direct",
+          "label": "llm_sql_direct",
+          "score": 99.0,
+          "executed": true,
+          "row_count": 12,
+          "fatal": false,
+          "fatal_reasons": []
+        },
+        {
+          "source": "llm_sql_direct_grain",
+          "label": "llm_sql_direct_grain",
+          "score": 99.0,
+          "executed": true,
+          "row_count": 12,
+          "fatal": false,
+          "fatal_reasons": []
+        },
+        {
+          "source": "llm_sql_direct_variant",
+          "label": "llm_sql_direct_variant",
+          "score": 99.0,
+          "executed": true,
+          "row_count": 12,
+          "fatal": false,
+          "fatal_reasons": []
+        }
+      ],
+      "candidate_reasons": {
+        "llm_primary": [
+          "no SQL produced (invalid IR / unresolved plan / generation failure)"
+        ],
+        "llm_variant_1": [
+          "no SQL produced (invalid IR / unresolved plan / generation failure)"
+        ],
+        "llm_variant_2": [
+          "no SQL produced (invalid IR / unresolved plan / generation failure)"
+        ],
+        "llm_sql_direct": [
+          "SQL uses unmentioned table 'teams' while the question names specific tables ['batting']"
+        ],
+        "llm_sql_direct_grain": [
+          "SQL uses unmentioned table 'teams' while the question names specific tables ['batting']"
+        ],
+        "llm_sql_direct_variant": [
+          "SQL uses unmentioned table 'teams' while the question names specific tables ['batting']"
+        ]
+      },
+      "rejected_candidates": [
+        {
+          "source": "llm_primary",
+          "label": "llm_primary",
+          "sql": null,
+          "score": 5.0,
+          "executed": false,
+          "row_count": null,
+          "reasons": [
+            "no SQL produced (invalid IR / unresolved plan / generation failure)"
+          ]
+        },
+        {
+          "source": "llm_variant",
+          "label": "llm_variant_1",
+          "sql": null,
+          "score": 5.0,
+          "executed": false,
+          "row_count": null,
+          "reasons": [
+            "no SQL produced (invalid IR / unresolved plan / generation failure)"
+          ]
+        },
+        {
+          "source": "llm_variant",
+          "label": "llm_variant_2",
+          "sql": null,
+          "score": 5.0,
+          "executed": false,
+          "row_count": null,
+          "reasons": [
+            "no SQL produced (invalid IR / unresolved plan / generation failure)"
+          ]
+        },
+        {
+          "source": "llm_sql_direct",
+          "label": "llm_sql_direct",
+          "sql": "SELECT t.name, b.playerID, b.HR\nFROM batting b\nJOIN teams t\n  ON b.yearID = t.yearID\n  AND b.teamID = t.teamID\n  AND b.lgID = t.lgID\nWHERE b.yearID = 2001\n  AND b.HR > 40",
+          "score": 99.0,
+          "executed": true,
+          "row_count": 12,
+          "reasons": [
+            "SQL uses unmentioned table 'teams' while the question names specific tables ['batting']"
+          ]
+        },
+        {
+          "source": "llm_sql_direct_grain",
+          "label": "llm_sql_direct_grain",
+          "sql": "SELECT t.name, b.playerID, b.HR\nFROM Batting b\nJOIN Teams t ON b.yearID = t.yearID AND b.teamID = t.teamID AND b.lgid = t.lgid\nWHERE b.yearID = 2001 AND b.HR > 40",
+          "score": 99.0,
+          "executed": true,
+          "row_count": 12,
+          "reasons": [
+            "SQL uses unmentioned table 'teams' while the question names specific tables ['batting']"
+          ]
+        }
+      ],
+      "warnings": [],
+      "low_confidence": false,
+      "selected_candidate_score": 99.0,
+      "selected_candidate_validation": {
+        "executed": true,
+        "illegal_joins": [],
+        "unknown_columns": [],
+        "missing_tables": [],
+        "missing_concepts": [],
+        "required_shapes": {},
+        "duplicate_aliases": [],
+        "undefined_aliases": [],
+        "guard_valid": null,
+        "bare_cte": null,
+        "checklist": {
+          "delta": 30.0,
+          "missing_columns": [],
+          "missing_tables": [],
+          "shape_ok": null
+        },
+        "grain": {
+          "delta": 0.0
+        },
+        "semantic_rel": {
+          "delta": 0.0
+        },
+        "semantic_join": {
+          "delta": 0.0
+        },
+        "table_lock": {
+          "locked_tables": [
+            "batting"
+          ],
+          "unmentioned_tables": [
+            "teams"
+          ],
+          "delta": -6.0
+        },
+        "outside_tables": [],
+        "unseen_literals": [],
+        "shape": {
+          "fatal": [],
+          "penalties": [],
+          "report_only": []
+        },
+        "fatal": [],
+        "probes": {
+          "warnings": [],
+          "penalty": 0.0,
+          "checks": {}
+        }
+      },
+      "semantic_checklist": {
+        "target_entity": "batting",
+        "output_columns": [
+          "teams.name",
+          "batting.playerid",
+          "batting.hr"
+        ],
+        "must_use_tables": [
+          "batting",
+          "teams"
+        ],
+        "must_use_columns": [
+          "teams.name",
+          "batting.playerid",
+          "batting.hr",
+          "batting.yearid",
+          "batting.teamid",
+          "batting.lgid",
+          "teams.yearid",
+          "teams.teamid",
+          "teams.lgid"
+        ],
+        "measure_column": "batting.hr",
+        "group_by_entity": null,
+        "comparison_logic": "Filter rows where HR is greater than 40",
+        "required_sql_shape": "plain_select",
+        "literals": [
+          "2001",
+          "40"
+        ],
+        "row_grain": "one row per player-team-year combination with HR > 40",
+        "universe": null,
+        "required_group_keys": [],
+        "forbidden_hardcoded_universe": false
+      },
+      "repair_attempted": false,
+      "repair_triggers": [],
+      "repair_executed": false,
+      "repair_score": null,
+      "repair_selected": false,
+      "selected_source_before_repair": "llm_sql_direct_variant",
+      "value_grounding": {
+        "profiled_columns": 58,
+        "grounded_from_eval_copy": false
+      },
+      "plan": null,
+      "generated_sql": {
+        "generated": true,
+        "sql": "SELECT T.name, B.playerID, B.HR\nFROM batting AS B\nJOIN Teams AS T\n  ON B.yearID = T.yearID\n AND B.teamID = T.teamID\n AND B.lgID = T.lgID\nWHERE B.yearID = 2001\n  AND B.HR > 40",
+        "params": []
+      },
+      "relational_algebra": null,
+      "execution": {
+        "executed": true,
+        "columns": [
+          "name",
+          "playerID",
+          "HR"
+        ],
+        "rows": [
+          [
+            "Anaheim Angels",
+            "glaustr01",
+            41
+          ],
+          [
+            "Boston Red Sox",
+            "ramirma02",
+            41
+          ],
+          [
+            "Cleveland Indians",
+            "thomeji01",
+            49
+          ],
+          [
+            "Texas Rangers",
+            "palmera01",
+            47
+          ],
+          [
+            "Texas Rangers",
+            "rodrial01",
+            52
+          ],
+          [
+            "Arizona Diamondbacks",
+            "gonzalu01",
+            57
+          ],
+          [
+            "Chicago Cubs",
+            "sosasa01",
+            64
+          ],
+          [
+            "Colorado Rockies",
+            "heltoto01",
+            49
+          ],
+          [
+            "Los Angeles Dodgers",
+            "greensh01",
+            49
+          ],
+          [
+            "Milwaukee Brewers",
+            "sexsori01",
+            45
+          ],
+          [
+            "San Diego Padres",
+            "nevinph01",
+            41
+          ],
+          [
+            "San Francisco Giants",
+            "bondsba01",
+            73
+          ]
+        ],
+        "row_count": 12,
+        "truncated": false,
+        "diagnostics": {
+          "param_count": 0
+        }
+      },
+      "_http_status": 200
+    }
+  },
+  {
+    "query_number": 9,
+    "question": "Join People and Pitching using playerID. Show player names, yearID, teamID, wins, losses, and strikeouts for pitching rows where strikeouts are greater than 250.",
+    "elapsed_seconds": 18.031,
+    "success": true,
+    "http_status": 200,
+    "row_count": 180,
+    "sql": "SELECT p.nameFirst, p.nameLast, pit.yearID, pit.teamID, pit.W, pit.L, pit.SO\nFROM People p, Pitching pit\nWHERE p.playerID = pit.playerID\nAND pit.SO > 250",
+    "response": {
+      "success": true,
+      "database_id": 49,
+      "question": "Join People and Pitching using playerID. Show player names, yearID, teamID, wins, losses, and strikeouts for pitching rows where strikeouts are greater than 250.",
+      "extraction": null,
+      "ir": null,
+      "validation": null,
+      "tables_considered": null,
+      "large_mode_table_fallback": false,
+      "fallback_table": null,
+      "removed_redundant_partition_date_filter": false,
+      "partition_date": null,
+      "extraction_source": "llm",
+      "query_family": "normal_join_filter_group",
+      "query_family_confidence": 0.3,
+      "query_family_reason": "no distinctive relational pattern; use base pipeline",
+      "family_guard_valid": null,
+      "family_guard_reasons": null,
+      "candidate_count": 5,
+      "selected_candidate_source": "llm_sql_repair",
+      "selected_candidate_label": "llm_sql_repair",
+      "selection_reason": "best_scored_executed",
+      "consensus_group_size": 1,
+      "consensus_sources": [
+        "llm_sql_repair"
+      ],
+      "candidate_scores": [
+        {
+          "source": "llm_primary",
+          "label": "llm_primary",
+          "score": 5.0,
+          "executed": false,
+          "row_count": null,
+          "fatal": false,
+          "fatal_reasons": []
+        },
+        {
+          "source": "llm_sql_direct",
+          "label": "llm_sql_direct",
+          "score": 69.0,
+          "executed": true,
+          "row_count": 180,
+          "fatal": true,
+          "fatal_reasons": [
+            "illegal join: people.playerid = pitching.playerid"
+          ]
+        },
+        {
+          "source": "llm_sql_direct_grain",
+          "label": "llm_sql_direct_grain",
+          "score": 69.0,
+          "executed": true,
+          "row_count": 180,
+          "fatal": true,
+          "fatal_reasons": [
+            "illegal join: people.playerid = pitching.playerid"
+          ]
+        },
+        {
+          "source": "llm_sql_direct_variant",
+          "label": "llm_sql_direct_variant",
+          "score": 69.0,
+          "executed": true,
+          "row_count": 180,
+          "fatal": true,
+          "fatal_reasons": [
+            "illegal join: people.playerid = pitching.playerid"
+          ]
+        },
+        {
+          "source": "llm_sql_repair",
+          "label": "llm_sql_repair",
+          "score": 69.0,
+          "executed": true,
+          "row_count": 180,
+          "fatal": false,
+          "fatal_reasons": []
+        }
+      ],
+      "candidate_reasons": {
+        "llm_primary": [
+          "no SQL produced (invalid IR / unresolved plan / generation failure)"
+        ],
+        "llm_sql_direct": [
+          "illegal join/correlation people.playerid = pitching.playerid (not a declared FK; e.g. key = measure)"
+        ],
+        "llm_sql_direct_grain": [
+          "illegal join/correlation people.playerid = pitching.playerid (not a declared FK; e.g. key = measure)"
+        ],
+        "llm_sql_direct_variant": [
+          "illegal join/correlation people.playerid = pitching.playerid (not a declared FK; e.g. key = measure)"
+        ],
+        "llm_sql_repair": [
+          "undefined alias referenced: pit",
+          "generic fallback SQL (no_aggregation) ignores the requested aggregation/join/filter the question needs"
+        ]
+      },
+      "rejected_candidates": [
+        {
+          "source": "llm_primary",
+          "label": "llm_primary",
+          "sql": null,
+          "score": 5.0,
+          "executed": false,
+          "row_count": null,
+          "reasons": [
+            "no SQL produced (invalid IR / unresolved plan / generation failure)"
+          ]
+        },
+        {
+          "source": "llm_sql_direct",
+          "label": "llm_sql_direct",
+          "sql": "SELECT p.nameFirst, p.nameLast, pi.yearID, pi.teamID, pi.W, pi.L, pi.SO\nFROM People p\nJOIN Pitching pi ON p.playerID = pi.playerID\nWHERE pi.SO > 250",
+          "score": 69.0,
+          "executed": true,
+          "row_count": 180,
+          "reasons": [
+            "illegal join/correlation people.playerid = pitching.playerid (not a declared FK; e.g. key = measure)"
+          ]
+        },
+        {
+          "source": "llm_sql_direct_grain",
+          "label": "llm_sql_direct_grain",
+          "sql": "SELECT p.nameFirst, p.nameLast, pi.yearID, pi.teamID, pi.W, pi.L, pi.SO\nFROM People p\nJOIN Pitching pi ON p.playerID = pi.playerID\nWHERE pi.SO > 250",
+          "score": 69.0,
+          "executed": true,
+          "row_count": 180,
+          "reasons": [
+            "illegal join/correlation people.playerid = pitching.playerid (not a declared FK; e.g. key = measure)"
+          ]
+        },
+        {
+          "source": "llm_sql_direct_variant",
+          "label": "llm_sql_direct_variant",
+          "sql": "SELECT p.nameFirst, p.nameLast, pit.yearID, pit.teamID, pit.W, pit.L, pit.SO\nFROM People p\nJOIN Pitching pit ON p.playerID = pit.playerID\nWHERE pit.SO > 250",
+          "score": 69.0,
+          "executed": true,
+          "row_count": 180,
+          "reasons": [
+            "illegal join/correlation people.playerid = pitching.playerid (not a declared FK; e.g. key = measure)"
+          ]
+        }
+      ],
+      "warnings": [],
+      "low_confidence": false,
+      "selected_candidate_score": 69.0,
+      "selected_candidate_validation": {
+        "executed": true,
+        "illegal_joins": [],
+        "unknown_columns": [],
+        "missing_tables": [],
+        "missing_concepts": [],
+        "required_shapes": {},
+        "duplicate_aliases": [],
+        "undefined_aliases": [
+          "pit"
+        ],
+        "guard_valid": null,
+        "bare_cte": null,
+        "checklist": {
+          "delta": 30.0,
+          "missing_columns": [],
+          "missing_tables": [],
+          "shape_ok": null
+        },
+        "grain": {
+          "delta": 0.0
+        },
+        "semantic_rel": {
+          "generic_fallback": "no_aggregation",
+          "delta": -15.0
+        },
+        "semantic_join": {
+          "purpose_match": true,
+          "delta": 4.0
+        },
+        "table_lock": {
+          "locked_tables": [
+            "people",
+            "pitching"
+          ],
+          "delta": 0.0
+        },
+        "outside_tables": [],
+        "unseen_literals": [],
+        "shape": {
+          "fatal": [],
+          "penalties": [],
+          "report_only": []
+        },
+        "fatal": [],
+        "probes": {
+          "warnings": [],
+          "penalty": 0.0,
+          "checks": {}
+        }
+      },
+      "semantic_checklist": {
+        "target_entity": "pitching",
+        "output_columns": [
+          "people.namefirst",
+          "people.namelast",
+          "pitching.yearid",
+          "pitching.teamid",
+          "pitching.w",
+          "pitching.l",
+          "pitching.so"
+        ],
+        "must_use_tables": [
+          "people",
+          "pitching"
+        ],
+        "must_use_columns": [
+          "people.namefirst",
+          "people.namelast",
+          "pitching.yearid",
+          "pitching.teamid",
+          "pitching.w",
+          "pitching.l",
+          "pitching.so"
+        ],
+        "measure_column": "pitching.so",
+        "group_by_entity": null,
+        "comparison_logic": "strikeouts must be greater than 250",
+        "required_sql_shape": "plain_select",
+        "literals": [
+          "250"
+        ],
+        "row_grain": "one row per pitching record",
+        "universe": null,
+        "required_group_keys": [],
+        "forbidden_hardcoded_universe": false
+      },
+      "repair_attempted": true,
+      "repair_triggers": [
+        "selected candidate failed hard semantic checks",
+        "selected score 69.0 < 75.0"
+      ],
+      "repair_executed": true,
+      "repair_score": 69.0,
+      "repair_selected": true,
+      "selected_source_before_repair": "llm_sql_direct_variant",
+      "value_grounding": {
+        "profiled_columns": 58,
+        "grounded_from_eval_copy": false
+      },
+      "plan": null,
+      "generated_sql": {
+        "generated": true,
+        "sql": "SELECT p.nameFirst, p.nameLast, pit.yearID, pit.teamID, pit.W, pit.L, pit.SO\nFROM People p, Pitching pit\nWHERE p.playerID = pit.playerID\nAND pit.SO > 250",
+        "params": []
+      },
+      "relational_algebra": null,
+      "execution": {
+        "executed": true,
+        "columns": [
+          "nameFirst",
+          "nameLast",
+          "yearID",
+          "teamID",
+          "W",
+          "L",
+          "SO"
+        ],
+        "rows": [
+          [
+            "Chris",
+            "Archer",
+            2015,
+            "TBA",
+            12,
+            13,
+            252
+          ],
+          [
+            "Lady",
+            "Baldwin",
+            1886,
+            "DTN",
+            42,
+            13,
+            323
+          ],
+          [
+            "Mark",
+            "Baldwin",
+            1889,
+            "CL6",
+            27,
+            34,
+            368
+          ],
+          [
+            "Shane",
+            "Bieber",
+            2019,
+            "CLE",
+            15,
+            8,
+            259
+          ],
+          [
+            "Vida",
+            "Blue",
+            1971,
+            "OAK",
+            24,
+            8,
+            301
+          ],
+          [
+            "Bert",
+            "Blyleven",
+            1973,
+            "MIN",
+            20,
+            17,
+            258
+          ],
+          [
+            "Kevin",
+            "Brown",
+            1998,
+            "SDN",
+            18,
+            7,
+            257
+          ],
+          [
+            "Charlie",
+            "Buffinton",
+            1884,
+            "BSN",
+            48,
+            16,
+            417
+          ],
+          [
+            "Madison",
+            "Bumgarner",
+            2016,
+            "SFN",
+            15,
+            9,
+            251
+          ],
+          [
+            "Jim",
+            "Bunning",
+            1965,
+            "PHI",
+            19,
+            9,
+            268
+          ],
+          [
+            "Jim",
+            "Bunning",
+            1966,
+            "PHI",
+            19,
+            14,
+            252
+          ],
+          [
+            "Jim",
+            "Bunning",
+            1967,
+            "PHI",
+            17,
+            15,
+            253
+          ],
+          [
+            "James",
+            "Burke",
+            1884,
+            "BSU",
+            19,
+            15,
+            255
+          ],
+          [
+            "Steve",
+            "Carlton",
+            1972,
+            "PHI",
+            27,
+            10,
+            310
+          ],
+          [
+            "Steve",
+            "Carlton",
+            1980,
+            "PHI",
+            24,
+            9,
+            286
+          ],
+          [
+            "Steve",
+            "Carlton",
+            1982,
+            "PHI",
+            23,
+            11,
+            286
+          ],
+          [
+            "Steve",
+            "Carlton",
+            1983,
+            "PHI",
+            15,
+            16,
+            275
+          ],
+          [
+            "John",
+            "Clarkson",
+            1885,
+            "CHN",
+            53,
+            16,
+            308
+          ],
+          [
+            "John",
+            "Clarkson",
+            1886,
+            "CHN",
+            36,
+            17,
+            313
+          ],
+          [
+            "John",
+            "Clarkson",
+            1889,
+            "BSN",
+            49,
+            19,
+            284
+          ],
+          [
+            "Roger",
+            "Clemens",
+            1987,
+            "BOS",
+            20,
+            9,
+            256
+          ],
+          [
+            "Roger",
+            "Clemens",
+            1988,
+            "BOS",
+            18,
+            12,
+            291
+          ],
+          [
+            "Roger",
+            "Clemens",
+            1996,
+            "BOS",
+            10,
+            13,
+            257
+          ],
+          [
+            "Roger",
+            "Clemens",
+            1997,
+            "TOR",
+            21,
+            7,
+            292
+          ],
+          [
+            "Roger",
+            "Clemens",
+            1998,
+            "TOR",
+            20,
+            6,
+            271
+          ],
+          [
+            "Gerrit",
+            "Cole",
+            2018,
+            "HOU",
+            15,
+            5,
+            276
+          ],
+          [
+            "Gerrit",
+            "Cole",
+            2019,
+            "HOU",
+            20,
+            5,
+            326
+          ],
+          [
+            "Gerrit",
+            "Cole",
+            2022,
+            "NYA",
+            13,
+            8,
+            257
+          ],
+          [
+            "Larry",
+            "Corcoran",
+            1880,
+            "CHN",
+            43,
+            14,
+            268
+          ],
+          [
+            "Larry",
+            "Corcoran",
+            1884,
+            "CHN",
+            35,
+            23,
+            272
+          ],
+          [
+            "Hugh",
+            "Daily",
+            1884,
+            "CHU",
+            27,
+            27,
+            469
+          ],
+          [
+            "Yu",
+            "Darvish",
+            2013,
+            "TEX",
+            13,
+            9,
+            277
+          ],
+          [
+            "Jacob",
+            "deGrom",
+            2018,
+            "NYN",
+            10,
+            9,
+            269
+          ],
+          [
+            "Jacob",
+            "deGrom",
+            2019,
+            "NYN",
+            11,
+            8,
+            255
+          ],
+          [
+            "Don",
+            "Drysdale",
+            1963,
+            "LAN",
+            19,
+            17,
+            251
+          ],
+          [
+            "Bob",
+            "Emslie",
+            1884,
+            "BL2",
+            32,
+            17,
+            264
+          ],
+          [
+            "Bob",
+            "Feller",
+            1940,
+            "CLE",
+            27,
+            11,
+            261
+          ],
+          [
+            "Bob",
+            "Feller",
+            1941,
+            "CLE",
+            25,
+            13,
+            260
+          ],
+          [
+            "Bob",
+            "Feller",
+            1946,
+            "CLE",
+            26,
+            15,
+            348
+          ],
+          [
+            "Jose",
+            "Fernandez",
+            2016,
+            "MIA",
+            16,
+            8,
+            253
+          ],
+          [
+            "Dave",
+            "Foutz",
+            1886,
+            "SL4",
+            41,
+            16,
+            283
+          ],
+          [
+            "Pud",
+            "Galvin",
+            1883,
+            "BFN",
+            46,
+            29,
+            279
+          ],
+          [
+            "Pud",
+            "Galvin",
+            1884,
+            "BFN",
+            46,
+            22,
+            369
+          ],
+          [
+            "Bob",
+            "Gibson",
+            1965,
+            "SLN",
+            20,
+            12,
+            270
+          ],
+          [
+            "Bob",
+            "Gibson",
+            1968,
+            "SLN",
+            22,
+            9,
+            268
+          ],
+          [
+            "Bob",
+            "Gibson",
+            1969,
+            "SLN",
+            20,
+            13,
+            269
+          ],
+          [
+            "Bob",
+            "Gibson",
+            1970,
+            "SLN",
+            23,
+            7,
+            274
+          ],
+          [
+            "Dwight",
+            "Gooden",
+            1984,
+            "NYN",
+            17,
+            9,
+            276
+          ],
+          [
+            "Dwight",
+            "Gooden",
+            1985,
+            "NYN",
+            24,
+            4,
+            268
+          ],
+          [
+            "Guy",
+            "Hecker",
+            1884,
+            "LS2",
+            52,
+            20,
+            385
+          ],
+          [
+            "Hardie",
+            "Henderson",
+            1884,
+            "BL2",
+            27,
+            23,
+            346
+          ],
+          [
+            "Hardie",
+            "Henderson",
+            1885,
+            "BL2",
+            25,
+            35,
+            263
+          ],
+          [
+            "Bill",
+            "Hutchison",
+            1890,
+            "CHN",
+            41,
+            25,
+            289
+          ],
+          [
+            "Bill",
+            "Hutchison",
+            1891,
+            "CHN",
+            44,
+            19,
+            261
+          ],
+          [
+            "Bill",
+            "Hutchison",
+            1892,
+            "CHN",
+            36,
+            36,
+            314
+          ],
+          [
+            "Fergie",
+            "Jenkins",
+            1968,
+            "CHN",
+            20,
+            15,
+            260
+          ],
+          [
+            "Fergie",
+            "Jenkins",
+            1969,
+            "CHN",
+            21,
+            15,
+            273
+          ],
+          [
+            "Fergie",
+            "Jenkins",
+            1970,
+            "CHN",
+            22,
+            16,
+            274
+          ],
+          [
+            "Fergie",
+            "Jenkins",
+            1971,
+            "CHN",
+            24,
+            13,
+            263
+          ],
+          [
+            "Randy",
+            "Johnson",
+            1993,
+            "SEA",
+            19,
+            8,
+            308
+          ],
+          [
+            "Randy",
+            "Johnson",
+            1995,
+            "SEA",
+            18,
+            2,
+            294
+          ],
+          [
+            "Randy",
+            "Johnson",
+            1997,
+            "SEA",
+            20,
+            4,
+            291
+          ],
+          [
+            "Randy",
+            "Johnson",
+            1999,
+            "ARI",
+            17,
+            9,
+            364
+          ],
+          [
+            "Randy",
+            "Johnson",
+            2000,
+            "ARI",
+            19,
+            7,
+            347
+          ],
+          [
+            "Randy",
+            "Johnson",
+            2001,
+            "ARI",
+            21,
+            6,
+            372
+          ],
+          [
+            "Randy",
+            "Johnson",
+            2002,
+            "ARI",
+            24,
+            5,
+            334
+          ],
+          [
+            "Randy",
+            "Johnson",
+            2004,
+            "ARI",
+            16,
+            14,
+            290
+          ],
+          [
+            "Walter",
+            "Johnson",
+            1910,
+            "WS1",
+            25,
+            17,
+            313
+          ],
+          [
+            "Walter",
+            "Johnson",
+            1912,
+            "WS1",
+            33,
+            12,
+            303
+          ],
+          [
+            "Tim",
+            "Keefe",
+            1883,
+            "NY4",
+            41,
+            27,
+            359
+          ],
+          [
+            "Tim",
+            "Keefe",
+            1884,
+            "NY4",
+            37,
+            17,
+            334
+          ],
+          [
+            "Tim",
+            "Keefe",
+            1886,
+            "NY1",
+            42,
+            20,
+            297
+          ],
+          [
+            "Tim",
+            "Keefe",
+            1888,
+            "NY1",
+            35,
+            12,
+            335
+          ],
+          [
+            "Clayton",
+            "Kershaw",
+            2015,
+            "LAN",
+            16,
+            7,
+            301
+          ],
+          [
+            "Matt",
+            "Kilroy",
+            1886,
+            "BL2",
+            29,
+            34,
+            513
+          ],
+          [
+            "Silver",
+            "King",
+            1888,
+            "SL4",
+            45,
+            20,
+            258
+          ],
+          [
+            "Corey",
+            "Kluber",
+            2014,
+            "CLE",
+            18,
+            9,
+            269
+          ],
+          [
+            "Corey",
+            "Kluber",
+            2017,
+            "CLE",
+            18,
+            4,
+            265
+          ],
+          [
+            "Sandy",
+            "Koufax",
+            1961,
+            "LAN",
+            18,
+            13,
+            269
+          ],
+          [
+            "Sandy",
+            "Koufax",
+            1963,
+            "LAN",
+            25,
+            5,
+            306
+          ],
+          [
+            "Sandy",
+            "Koufax",
+            1965,
+            "LAN",
+            26,
+            8,
+            382
+          ],
+          [
+            "Sandy",
+            "Koufax",
+            1966,
+            "LAN",
+            27,
+            9,
+            317
+          ],
+          [
+            "Mark",
+            "Langston",
+            1987,
+            "SEA",
+            19,
+            13,
+            262
+          ],
+          [
+            "Tim",
+            "Lincecum",
+            2008,
+            "SFN",
+            18,
+            5,
+            265
+          ],
+          [
+            "Tim",
+            "Lincecum",
+            2009,
+            "SFN",
+            15,
+            7,
+            261
+          ],
+          [
+            "Mickey",
+            "Lolich",
+            1969,
+            "DET",
+            19,
+            11,
+            271
+          ],
+          [
+            "Mickey",
+            "Lolich",
+            1971,
+            "DET",
+            25,
+            14,
+            308
+          ],
+          [
+            "Jack",
+            "Lynch",
+            1884,
+            "NY4",
+            37,
+            15,
+            292
+          ],
+          [
+            "Jim",
+            "Maloney",
+            1963,
+            "CIN",
+            23,
+            7,
+            265
+          ],
+          [
+            "Pedro",
+            "Martinez",
+            1997,
+            "MON",
+            17,
+            8,
+            305
+          ],
+          [
+            "Pedro",
+            "Martinez",
+            1998,
+            "BOS",
+            19,
+            7,
+            251
+          ],
+          [
+            "Pedro",
+            "Martinez",
+            1999,
+            "BOS",
+            23,
+            4,
+            313
+          ],
+          [
+            "Pedro",
+            "Martinez",
+            2000,
+            "BOS",
+            18,
+            6,
+            284
+          ],
+          [
+            "Bobby",
+            "Mathews",
+            1884,
+            "PH4",
+            30,
+            18,
+            286
+          ],
+          [
+            "Bobby",
+            "Mathews",
+            1885,
+            "PH4",
+            30,
+            17,
+            286
+          ],
+          [
+            "Christy",
+            "Mathewson",
+            1903,
+            "NY1",
+            30,
+            13,
+            267
+          ],
+          [
+            "Christy",
+            "Mathewson",
+            1908,
+            "NY1",
+            37,
+            11,
+            259
+          ],
+          [
+            "Jim",
+            "McCormick",
+            1880,
+            "CL2",
+            45,
+            28,
+            260
+          ],
+          [
+            "Sam",
+            "McDowell",
+            1965,
+            "CLE",
+            17,
+            11,
+            325
+          ],
+          [
+            "Sam",
+            "McDowell",
+            1968,
+            "CLE",
+            15,
+            14,
+            283
+          ],
+          [
+            "Sam",
+            "McDowell",
+            1969,
+            "CLE",
+            18,
+            14,
+            279
+          ],
+          [
+            "Sam",
+            "McDowell",
+            1970,
+            "CLE",
+            20,
+            12,
+            304
+          ],
+          [
+            "Larry",
+            "McKeon",
+            1884,
+            "IN2",
+            18,
+            41,
+            308
+          ],
+          [
+            "Denny",
+            "McLain",
+            1968,
+            "DET",
+            31,
+            6,
+            280
+          ],
+          [
+            "Ed",
+            "Morris",
+            1884,
+            "CL5",
+            34,
+            13,
+            302
+          ],
+          [
+            "Ed",
+            "Morris",
+            1885,
+            "PT1",
+            39,
+            24,
+            298
+          ],
+          [
+            "Ed",
+            "Morris",
+            1886,
+            "PT1",
+            41,
+            20,
+            326
+          ],
+          [
+            "Tony",
+            "Mullane",
+            1884,
+            "TL1",
+            36,
+            26,
+            325
+          ],
+          [
+            "Hal",
+            "Newhouser",
+            1946,
+            "DET",
+            26,
+            9,
+            275
+          ],
+          [
+            "Phil",
+            "Niekro",
+            1977,
+            "ATL",
+            16,
+            20,
+            262
+          ],
+          [
+            "Old Hoss",
+            "Radbourn",
+            1883,
+            "PRO",
+            48,
+            25,
+            315
+          ],
+          [
+            "Old Hoss",
+            "Radbourn",
+            1884,
+            "PRO",
+            60,
+            12,
+            441
+          ],
+          [
+            "Toad",
+            "Ramsey",
+            1886,
+            "LS2",
+            38,
+            27,
+            499
+          ],
+          [
+            "Toad",
+            "Ramsey",
+            1887,
+            "LS2",
+            37,
+            27,
+            355
+          ],
+          [
+            "Toad",
+            "Ramsey",
+            1890,
+            "SL4",
+            23,
+            17,
+            257
+          ],
+          [
+            "J. R.",
+            "Richard",
+            1978,
+            "HOU",
+            18,
+            11,
+            303
+          ],
+          [
+            "J. R.",
+            "Richard",
+            1979,
+            "HOU",
+            18,
+            13,
+            313
+          ],
+          [
+            "Amos",
+            "Rusie",
+            1890,
+            "NY1",
+            29,
+            34,
+            341
+          ],
+          [
+            "Amos",
+            "Rusie",
+            1891,
+            "NY1",
+            33,
+            20,
+            337
+          ],
+          [
+            "Amos",
+            "Rusie",
+            1892,
+            "NY1",
+            32,
+            31,
+            304
+          ],
+          [
+            "Nolan",
+            "Ryan",
+            1972,
+            "CAL",
+            19,
+            16,
+            329
+          ],
+          [
+            "Nolan",
+            "Ryan",
+            1973,
+            "CAL",
+            21,
+            16,
+            383
+          ],
+          [
+            "Nolan",
+            "Ryan",
+            1974,
+            "CAL",
+            22,
+            16,
+            367
+          ],
+          [
+            "Nolan",
+            "Ryan",
+            1976,
+            "CAL",
+            17,
+            18,
+            327
+          ],
+          [
+            "Nolan",
+            "Ryan",
+            1977,
+            "CAL",
+            19,
+            16,
+            341
+          ],
+          [
+            "Nolan",
+            "Ryan",
+            1978,
+            "CAL",
+            10,
+            13,
+            260
+          ],
+          [
+            "Nolan",
+            "Ryan",
+            1987,
+            "HOU",
+            8,
+            16,
+            270
+          ],
+          [
+            "Nolan",
+            "Ryan",
+            1989,
+            "TEX",
+            16,
+            10,
+            301
+          ],
+          [
+            "Chris",
+            "Sale",
+            2015,
+            "CHA",
+            13,
+            11,
+            274
+          ],
+          [
+            "Chris",
+            "Sale",
+            2017,
+            "BOS",
+            17,
+            8,
+            308
+          ],
+          [
+            "Johan",
+            "Santana",
+            2004,
+            "MIN",
+            20,
+            6,
+            265
+          ],
+          [
+            "Max",
+            "Scherzer",
+            2014,
+            "DET",
+            18,
+            5,
+            252
+          ],
+          [
+            "Max",
+            "Scherzer",
+            2015,
+            "WAS",
+            14,
+            12,
+            276
+          ],
+          [
+            "Max",
+            "Scherzer",
+            2016,
+            "WAS",
+            20,
+            7,
+            284
+          ],
+          [
+            "Max",
+            "Scherzer",
+            2017,
+            "WAS",
+            16,
+            6,
+            268
+          ],
+          [
+            "Max",
+            "Scherzer",
+            2018,
+            "WAS",
+            18,
+            7,
+            300
+          ],
+          [
+            "Curt",
+            "Schilling",
+            1997,
+            "PHI",
+            17,
+            11,
+            319
+          ],
+          [
+            "Curt",
+            "Schilling",
+            1998,
+            "PHI",
+            15,
+            14,
+            300
+          ],
+          [
+            "Curt",
+            "Schilling",
+            2001,
+            "ARI",
+            22,
+            6,
+            293
+          ],
+          [
+            "Curt",
+            "Schilling",
+            2002,
+            "ARI",
+            23,
+            7,
+            316
+          ],
+          [
+            "Jason",
+            "Schmidt",
+            2004,
+            "SFN",
+            18,
+            7,
+            251
+          ],
+          [
+            "Herb",
+            "Score",
+            1956,
+            "CLE",
+            20,
+            9,
+            263
+          ],
+          [
+            "Mike",
+            "Scott",
+            1986,
+            "HOU",
+            18,
+            10,
+            306
+          ],
+          [
+            "Tom",
+            "Seaver",
+            1970,
+            "NYN",
+            18,
+            12,
+            283
+          ],
+          [
+            "Tom",
+            "Seaver",
+            1971,
+            "NYN",
+            20,
+            10,
+            289
+          ],
+          [
+            "Tom",
+            "Seaver",
+            1973,
+            "NYN",
+            19,
+            10,
+            251
+          ],
+          [
+            "Ed",
+            "Seward",
+            1888,
+            "PH4",
+            35,
+            19,
+            272
+          ],
+          [
+            "Dupee",
+            "Shaw",
+            1884,
+            "BSU",
+            21,
+            15,
+            309
+          ],
+          [
+            "Ben",
+            "Sheets",
+            2004,
+            "MIL",
+            12,
+            14,
+            264
+          ],
+          [
+            "John",
+            "Smoltz",
+            1996,
+            "ATL",
+            24,
+            8,
+            276
+          ],
+          [
+            "Mario",
+            "Soto",
+            1982,
+            "CIN",
+            14,
+            13,
+            274
+          ],
+          [
+            "Jack",
+            "Stivetts",
+            1890,
+            "SL4",
+            27,
+            21,
+            289
+          ],
+          [
+            "Jack",
+            "Stivetts",
+            1891,
+            "SL4",
+            33,
+            22,
+            259
+          ],
+          [
+            "Bill",
+            "Stoneman",
+            1971,
+            "MON",
+            17,
+            16,
+            251
+          ],
+          [
+            "Stephen",
+            "Strasburg",
+            2019,
+            "WAS",
+            18,
+            6,
+            251
+          ],
+          [
+            "Bill",
+            "Sweeney",
+            1884,
+            "BLU",
+            40,
+            21,
+            374
+          ],
+          [
+            "Frank",
+            "Tanana",
+            1975,
+            "CAL",
+            16,
+            9,
+            269
+          ],
+          [
+            "Frank",
+            "Tanana",
+            1976,
+            "CAL",
+            19,
+            10,
+            261
+          ],
+          [
+            "Luis",
+            "Tiant",
+            1968,
+            "CLE",
+            21,
+            9,
+            264
+          ],
+          [
+            "Dazzy",
+            "Vance",
+            1924,
+            "BRO",
+            28,
+            6,
+            262
+          ],
+          [
+            "Bob",
+            "Veale",
+            1965,
+            "PIT",
+            17,
+            12,
+            276
+          ],
+          [
+            "Justin",
+            "Verlander",
+            2009,
+            "DET",
+            19,
+            9,
+            269
+          ],
+          [
+            "Justin",
+            "Verlander",
+            2016,
+            "DET",
+            16,
+            9,
+            254
+          ],
+          [
+            "Justin",
+            "Verlander",
+            2018,
+            "HOU",
+            16,
+            9,
+            290
+          ],
+          [
+            "Justin",
+            "Verlander",
+            2019,
+            "HOU",
+            21,
+            6,
+            300
+          ],
+          [
+            "Rube",
+            "Waddell",
+            1903,
+            "PHA",
+            21,
+            16,
+            302
+          ],
+          [
+            "Rube",
+            "Waddell",
+            1904,
+            "PHA",
+            25,
+            19,
+            349
+          ],
+          [
+            "Rube",
+            "Waddell",
+            1905,
+            "PHA",
+            27,
+            10,
+            287
+          ],
+          [
+            "Ed",
+            "Walsh",
+            1908,
+            "CHA",
+            40,
+            15,
+            269
+          ],
+          [
+            "Ed",
+            "Walsh",
+            1910,
+            "CHA",
+            18,
+            20,
+            258
+          ],
+          [
+            "Ed",
+            "Walsh",
+            1911,
+            "CHA",
+            27,
+            18,
+            255
+          ],
+          [
+            "Ed",
+            "Walsh",
+            1912,
+            "CHA",
+            27,
+            17,
+            254
+          ],
+          [
+            "Mickey",
+            "Welch",
+            1884,
+            "NY1",
+            39,
+            21,
+            345
+          ],
+          [
+            "Mickey",
+            "Welch",
+            1885,
+            "NY1",
+            44,
+            11,
+            258
+          ],
+          [
+            "Mickey",
+            "Welch",
+            1886,
+            "NY1",
+            33,
+            22,
+            272
+          ],
+          [
+            "Jim",
+            "Whitney",
+            1883,
+            "BSN",
+            37,
+            21,
+            345
+          ],
+          [
+            "Jim",
+            "Whitney",
+            1884,
+            "BSN",
+            23,
+            14,
+            270
+          ],
+          [
+            "Bill",
+            "Wise",
+            1884,
+            "WSU",
+            23,
+            18,
+            268
+          ],
+          [
+            "Smoky Joe",
+            "Wood",
+            1912,
+            "BOS",
+            34,
+            5,
+            258
+          ],
+          [
+            "Kerry",
+            "Wood",
+            2003,
+            "CHN",
+            14,
+            11,
+            266
+          ]
+        ],
+        "row_count": 180,
+        "truncated": false,
+        "diagnostics": {
+          "param_count": 0
+        }
+      },
+      "_http_status": 200
+    }
+  },
+  {
+    "query_number": 10,
+    "question": "Join Schools and CollegePlaying using schoolID. Show school name, playerID, and yearID for the first 20 college playing rows.",
+    "elapsed_seconds": 13.671,
+    "success": true,
+    "http_status": 200,
+    "row_count": 20,
+    "sql": "SELECT s.name_full, cp.playerID, cp.yearID\nFROM CollegePlaying cp\nJOIN Schools s ON cp.schoolID = s.schoolID\nORDER BY cp.playerID, cp.yearID\nLIMIT 20",
+    "response": {
+      "success": true,
+      "database_id": 49,
+      "question": "Join Schools and CollegePlaying using schoolID. Show school name, playerID, and yearID for the first 20 college playing rows.",
+      "extraction": null,
+      "ir": null,
+      "validation": null,
+      "tables_considered": null,
+      "large_mode_table_fallback": false,
+      "fallback_table": null,
+      "removed_redundant_partition_date_filter": false,
+      "partition_date": null,
+      "extraction_source": "llm",
+      "query_family": "latest_earliest_per_entity",
+      "query_family_confidence": 0.72,
+      "query_family_reason": "latest/earliest per entity (implicit)",
+      "family_guard_valid": null,
+      "family_guard_reasons": null,
+      "candidate_count": 5,
+      "selected_candidate_source": "llm_sql_repair",
+      "selected_candidate_label": "llm_sql_repair",
+      "selection_reason": "consensus_group",
+      "consensus_group_size": 4,
+      "consensus_sources": [
+        "llm_sql_direct",
+        "llm_sql_direct_grain",
+        "llm_sql_direct_variant",
+        "llm_sql_repair"
+      ],
+      "candidate_scores": [
+        {
+          "source": "llm_primary",
+          "label": "llm_primary",
+          "score": 5.0,
+          "executed": false,
+          "row_count": null,
+          "fatal": false,
+          "fatal_reasons": []
+        },
+        {
+          "source": "llm_sql_direct",
+          "label": "llm_sql_direct",
+          "score": 56.0,
+          "executed": true,
+          "row_count": 20,
+          "fatal": true,
+          "fatal_reasons": [
+            "illegal join: collegeplaying.schoolid = schools.schoolid"
+          ]
+        },
+        {
+          "source": "llm_sql_direct_grain",
+          "label": "llm_sql_direct_grain",
+          "score": 65.0,
+          "executed": true,
+          "row_count": 20,
+          "fatal": true,
+          "fatal_reasons": [
+            "illegal join: collegeplaying.schoolid = schools.schoolid"
+          ]
+        },
+        {
+          "source": "llm_sql_direct_variant",
+          "label": "llm_sql_direct_variant",
+          "score": 56.0,
+          "executed": true,
+          "row_count": 20,
+          "fatal": true,
+          "fatal_reasons": [
+            "illegal join: collegeplaying.schoolid = schools.schoolid"
+          ]
+        },
+        {
+          "source": "llm_sql_repair",
+          "label": "llm_sql_repair",
+          "score": 65.0,
+          "executed": true,
+          "row_count": 20,
+          "fatal": true,
+          "fatal_reasons": [
+            "illegal join: collegeplaying.schoolid = schools.schoolid"
+          ]
+        }
+      ],
+      "candidate_reasons": {
+        "llm_primary": [
+          "no SQL produced (invalid IR / unresolved plan / generation failure)"
+        ],
+        "llm_sql_direct": [
+          "illegal join/correlation collegeplaying.schoolid = schools.schoolid (not a declared FK; e.g. key = measure)",
+          "checklist requires shape 'order_by_limit' but the SQL lacks it"
+        ],
+        "llm_sql_direct_grain": [
+          "illegal join/correlation collegeplaying.schoolid = schools.schoolid (not a declared FK; e.g. key = measure)"
+        ],
+        "llm_sql_direct_variant": [
+          "illegal join/correlation collegeplaying.schoolid = schools.schoolid (not a declared FK; e.g. key = measure)",
+          "checklist requires shape 'order_by_limit' but the SQL lacks it"
+        ],
+        "llm_sql_repair": [
+          "illegal join/correlation collegeplaying.schoolid = schools.schoolid (not a declared FK; e.g. key = measure)"
+        ]
+      },
+      "rejected_candidates": [
+        {
+          "source": "llm_primary",
+          "label": "llm_primary",
+          "sql": null,
+          "score": 5.0,
+          "executed": false,
+          "row_count": null,
+          "reasons": [
+            "no SQL produced (invalid IR / unresolved plan / generation failure)"
+          ]
+        },
+        {
+          "source": "llm_sql_direct",
+          "label": "llm_sql_direct",
+          "sql": "SELECT s.name_full, cp.playerID, cp.yearID\nFROM CollegePlaying cp\nJOIN Schools s ON cp.schoolID = s.schoolID\nLIMIT 20",
+          "score": 56.0,
+          "executed": true,
+          "row_count": 20,
+          "reasons": [
+            "illegal join/correlation collegeplaying.schoolid = schools.schoolid (not a declared FK; e.g. key = measure)",
+            "checklist requires shape 'order_by_limit' but the SQL lacks it"
+          ]
+        },
+        {
+          "source": "llm_sql_direct_grain",
+          "label": "llm_sql_direct_grain",
+          "sql": "SELECT s.name_full, cp.playerID, cp.yearID\nFROM CollegePlaying cp\nJOIN Schools s ON cp.schoolID = s.schoolID\nORDER BY cp.playerID, cp.yearID, cp.schoolID\nLIMIT 20",
+          "score": 65.0,
+          "executed": true,
+          "row_count": 20,
+          "reasons": [
+            "illegal join/correlation collegeplaying.schoolid = schools.schoolid (not a declared FK; e.g. key = measure)"
+          ]
+        },
+        {
+          "source": "llm_sql_direct_variant",
+          "label": "llm_sql_direct_variant",
+          "sql": "SELECT s.name_full, cp.playerID, cp.yearID\nFROM CollegePlaying cp\nJOIN Schools s ON cp.schoolID = s.schoolID\nLIMIT 20",
+          "score": 56.0,
+          "executed": true,
+          "row_count": 20,
+          "reasons": [
+            "illegal join/correlation collegeplaying.schoolid = schools.schoolid (not a declared FK; e.g. key = measure)",
+            "checklist requires shape 'order_by_limit' but the SQL lacks it"
+          ]
+        }
+      ],
+      "warnings": [
+        "all executed candidates failed hard semantic checks; low confidence",
+        "LOW CONFIDENCE RESULT: every usable candidate failed hard semantic checks; this SQL is a best-effort fallback, NOT a normal success. Fatal reasons: illegal join: collegeplaying.schoolid = schools.schoolid"
+      ],
+      "low_confidence": true,
+      "selected_candidate_score": 65.0,
+      "selected_candidate_validation": {
+        "executed": true,
+        "illegal_joins": [
+          "collegeplaying.schoolid = schools.schoolid"
+        ],
+        "unknown_columns": [],
+        "missing_tables": [],
+        "missing_concepts": [],
+        "required_shapes": {},
+        "duplicate_aliases": [],
+        "undefined_aliases": [],
+        "guard_valid": null,
+        "bare_cte": null,
+        "checklist": {
+          "delta": 30.0,
+          "missing_columns": [],
+          "missing_tables": [],
+          "shape_ok": true
+        },
+        "grain": {
+          "delta": 0.0
+        },
+        "semantic_rel": {
+          "delta": 0.0
+        },
+        "semantic_join": {
+          "delta": 0.0
+        },
+        "table_lock": {
+          "locked_tables": [
+            "collegeplaying",
+            "schools"
+          ],
+          "delta": 0.0
+        },
+        "outside_tables": [],
+        "unseen_literals": [],
+        "shape": {
+          "fatal": [],
+          "penalties": [],
+          "report_only": []
+        },
+        "fatal": [
+          "illegal join: collegeplaying.schoolid = schools.schoolid"
+        ],
+        "probes": {
+          "warnings": [],
+          "penalty": 0.0,
+          "checks": {}
+        }
+      },
+      "semantic_checklist": {
+        "target_entity": "collegeplaying",
+        "output_columns": [
+          "schools.name_full",
+          "collegeplaying.playerid",
+          "collegeplaying.yearid"
+        ],
+        "must_use_tables": [
+          "collegeplaying",
+          "schools"
+        ],
+        "must_use_columns": [
+          "schools.name_full",
+          "collegeplaying.playerid",
+          "collegeplaying.yearid",
+          "schools.schoolid",
+          "collegeplaying.schoolid"
+        ],
+        "measure_column": null,
+        "group_by_entity": null,
+        "comparison_logic": null,
+        "required_sql_shape": "order_by_limit",
+        "literals": [
+          "20"
+        ],
+        "row_grain": "one row per college playing record",
+        "universe": null,
+        "required_group_keys": [],
+        "forbidden_hardcoded_universe": false
+      },
+      "repair_attempted": true,
+      "repair_triggers": [
+        "selected candidate failed hard semantic checks",
+        "selected score 65.0 < 75.0"
+      ],
+      "repair_executed": true,
+      "repair_score": 65.0,
+      "repair_selected": true,
+      "selected_source_before_repair": "llm_sql_direct_grain",
+      "value_grounding": {
+        "profiled_columns": 58,
+        "grounded_from_eval_copy": false
+      },
+      "plan": null,
+      "generated_sql": {
+        "generated": true,
+        "sql": "SELECT s.name_full, cp.playerID, cp.yearID\nFROM CollegePlaying cp\nJOIN Schools s ON cp.schoolID = s.schoolID\nORDER BY cp.playerID, cp.yearID\nLIMIT 20",
+        "params": []
+      },
+      "relational_algebra": null,
+      "execution": {
+        "executed": true,
+        "columns": [
+          "name_full",
+          "playerID",
+          "yearID"
+        ],
+        "rows": [
+          [
+            "Pennsylvania State University",
+            "aardsda01",
+            2001
+          ],
+          [
+            "Rice University",
+            "aardsda01",
+            2002
+          ],
+          [
+            "Rice University",
+            "aardsda01",
+            2003
+          ],
+          [
+            "Middle Georgia College",
+            "abadan01",
+            1992
+          ],
+          [
+            "Middle Georgia College",
+            "abadan01",
+            1993
+          ],
+          [
+            "University of Vermont",
+            "abbeybe01",
+            1889
+          ],
+          [
+            "University of Vermont",
+            "abbeybe01",
+            1890
+          ],
+          [
+            "University of Vermont",
+            "abbeybe01",
+            1891
+          ],
+          [
+            "University of Vermont",
+            "abbeybe01",
+            1892
+          ],
+          [
+            "University of Kentucky",
+            "abbotje01",
+            1991
+          ],
+          [
+            "University of Kentucky",
+            "abbotje01",
+            1992
+          ],
+          [
+            "University of Kentucky",
+            "abbotje01",
+            1994
+          ],
+          [
+            "University of Michigan",
+            "abbotji01",
+            1986
+          ],
+          [
+            "University of Michigan",
+            "abbotji01",
+            1987
+          ],
+          [
+            "University of Michigan",
+            "abbotji01",
+            1988
+          ],
+          [
+            "University of California, San Diego",
+            "abbotky01",
+            1987
+          ],
+          [
+            "University of California, San Diego",
+            "abbotky01",
+            1988
+          ],
+          [
+            "California State University Long Beach",
+            "abbotky01",
+            1989
+          ],
+          [
+            "Florida Gateway College",
+            "abercre01",
+            2000
+          ],
+          [
+            "Elon University",
+            "abernte01",
+            1939
+          ]
+        ],
+        "row_count": 20,
+        "truncated": false,
+        "diagnostics": {
+          "param_count": 0
+        }
+      },
+      "_http_status": 200
+    }
+  }
+]

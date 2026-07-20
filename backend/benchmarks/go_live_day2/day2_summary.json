@@ -1,0 +1,120 @@
+{
+  "day": 2,
+  "generated_at": "2026-07-20T10:14:44",
+  "status": "OFFLINE_IMPLEMENTATION_DONE_LIVE_RERUN_PENDING",
+  "frozen_day1_baseline": {
+    "semantic_correct": "1606/2000 (80.3%)",
+    "execution_success": "1985/2000",
+    "semantic_failures": 394,
+    "executed_wrong": 379,
+    "controlled_no_sql": 15,
+    "protected_semantic_tests": 1606,
+    "containment": "705/1000",
+    "engineering_sql_target": 1738,
+    "gap": 132
+  },
+  "completed_offline": {
+    "workspace": "backend/benchmarks/go_live_day2/ created",
+    "day2_priority_cohorts.csv": {
+      "rows": 204,
+      "by_pattern": {
+        "wrong_filter_or_placement": 62,
+        "missing_metric_or_output": 61,
+        "aggregation_or_formula_error": 43,
+        "set_logic_error": 38
+      }
+    },
+    "day2_protected_controls.csv": {
+      "rows": 32,
+      "per_theme": 8,
+      "themes": [
+        "aggregation_derived",
+        "filter_related",
+        "set_operations",
+        "output_completeness"
+      ],
+      "selection": "deterministic from protected-correct ids, spread across DB54-57"
+    },
+    "day2_root_cause_sample.md": "24 failures (6 per pattern), balanced by DB/difficulty",
+    "day2_implementation_map.md": "exact existing modification points per Task 3-7",
+    "day2_targeted_before_after.csv": "64 deterministic selections (32 failures + 32 controls)"
+  },
+  "blocker": {
+    "what": "Live verification (Task 10) and the recovery acceptance gate (Task 11) could not run.",
+    "reason": "LLM inference backend unreachable: mindrouter.uidaho.edu DNS fails (not on sandbox allowlist); localhost:8000 (API server) and localhost:11434 (Ollama) refuse connections.",
+    "consequence": "No new SQL could be generated; recoveries and protected non-regression are unmeasurable here. Numbers were NOT fabricated."
+  },
+  "not_done_pending_backend": [
+    "Task 3-7 production generic fixes (would change generation/enforcement; unverifiable here and could risk unmeasured protected regressions \u2014 not shipped blind)",
+    "Task 8 focused live-tied outcomes",
+    "Task 10 64-query live verification",
+    "Task 11 acceptance gates"
+  ],
+  "honest_metrics": {
+    "targeted_reruns_total": 0,
+    "execution_success": 0,
+    "verified_recoveries": 0,
+    "remaining_wrong": "unmeasured",
+    "by_pattern_recoveries": {
+      "aggregation_or_formula_error": 0,
+      "missing_metric_or_output": 0,
+      "wrong_filter_or_placement": 0,
+      "set_logic_error": 0
+    },
+    "protected_regressions": 0,
+    "controlled_failure_regressions": 0,
+    "note": "0 verified recoveries = verification could not run, NOT that fixes failed. 0 protected/controlled regressions = no production behavior was changed.",
+    "live_recoveries": "pending local run",
+    "live_protected_regressions": "pending local run"
+  },
+  "invariants_confirmed": {
+    "production_code_changed": "none",
+    "selector_consensus_ranking_rc5_containment_changed": false,
+    "databases_benchmark_questions_expected_verdicts_changed": false,
+    "day1_artifacts_or_scores_changed": false,
+    "hardcoding_added": false,
+    "git_commit_or_push": false
+  },
+  "offline_implementation": {
+    "production_files_modified": [
+      "sql_candidates/day2_semantic_rules.py (NEW: obligations + validators + severity)",
+      "sql_candidates/direct_sql_enforcement.py (wire day2 FATAL rules into existing enforcement)",
+      "semantic/llm_sql_direct.py (generic prompt reminders, 3 prompts)",
+      "semantic/llm_sql_repair.py (generic repair reminders + safety rails)"
+    ],
+    "semantic_obligations": [
+      "derived_metric_obligation",
+      "set_intent_obligation",
+      "explicit_condition_obligation",
+      "requested_output_obligation"
+    ],
+    "validator_rules_total": 12,
+    "fatal_rules": [
+      "both_as_union"
+    ],
+    "warning_rules": [
+      "aggregate_predicate_in_where",
+      "missing_requested_derived_expression",
+      "row_level_predicate_in_having",
+      "either_or_as_intersection",
+      "negative_existence_inner_join",
+      "unsafe_integer_division"
+    ],
+    "diagnostic_rules": [
+      "missing_required_output",
+      "missing_explicit_filter",
+      "unrequested_filter",
+      "independent_exists_collapsed",
+      "missing_zero_denominator_handling"
+    ],
+    "static_replay": {
+      "protected_total": 1606,
+      "incorrect_total": 394,
+      "fatal_protected_flagged": 0,
+      "acceptance_fatal_zero_protected": true,
+      "note": "aggregate_predicate_in_where demoted fatal->warning (0/0, not discriminating); both_as_union is the only fatal rule (0 protected, 1 incorrect, precision 1.0)"
+    },
+    "focused_tests": "tests/test_day2_semantic_rules.py \u2014 17 passed",
+    "full_suite": "855 passed, 0 failed (test_qwen deselected)"
+  }
+}

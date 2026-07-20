@@ -345,9 +345,10 @@ def add_relationships(database_id, edges):
                 name_similarity,
                 value_overlap,
                 confidence,
-                confirmed
+                confirmed,
+                source
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 database_id,
@@ -360,6 +361,7 @@ def add_relationships(database_id, edges):
                 edge.get("value_overlap"),
                 edge.get("confidence"),
                 1 if edge.get("confirmed") else 0,
+                edge.get("source"),
             ),
         )
 
@@ -376,7 +378,7 @@ def get_relationships(database_id):
         """
         SELECT id, from_table, from_column, to_table, to_column,
                relationship_type, name_similarity, value_overlap,
-               confidence, confirmed
+               confidence, confirmed, source
         FROM database_relationships
         WHERE database_id = ?
         ORDER BY confidence DESC
@@ -399,6 +401,7 @@ def get_relationships(database_id):
             "value_overlap": r[7],
             "confidence": r[8],
             "confirmed": bool(r[9]),
+            "source": r[10],
         }
         for r in rows
     ]
@@ -425,6 +428,200 @@ def get_database_graph(database_id):
         return None
     schema["relationships"] = get_relationships(database_id)
     return schema
+
+
+# ----------------------------------------------------------------------------
+# Relationship finality (origin vs finality) + user-declared editing
+#
+# `relationships_finalized` on `databases` gates the query interface: 1 means
+# the stored relationship set is authoritative and queries run on it; 0/NULL
+# means the set is an unfinalized suggestion and querying is disabled. Origin is
+# tracked per edge via `source` (declared_fk | user | inferred | benchmark_trusted);
+# origin never implies legality, finality does.
+# ----------------------------------------------------------------------------
+
+def set_relationship_status(database_id, status):
+    """Set the per-database review state ('review' or 'finalized') and keep the
+    relationships_finalized mirror in sync (1 only when finalized)."""
+    status = status if status in ("review", "finalized") else "review"
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute(
+        "UPDATE databases SET relationship_status = ?, "
+        "relationships_finalized = ? WHERE id = ?",
+        (status, 1 if status == "finalized" else 0, database_id),
+    )
+    conn.commit()
+    conn.close()
+
+
+def get_relationship_status(database_id):
+    """Return 'finalized' / 'review'. Missing row or NULL -> 'review'."""
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT relationship_status, relationships_finalized "
+        "FROM databases WHERE id = ?",
+        (database_id,),
+    )
+    row = cursor.fetchone()
+    conn.close()
+    if row and row[0]:
+        return row[0]
+    if row and row[1]:
+        return "finalized"
+    return "review"
+
+
+def set_relationships_finalized(database_id, finalized):
+    """Compat wrapper: finalize=True -> status 'finalized', else 'review'."""
+    set_relationship_status(database_id, "finalized" if finalized else "review")
+
+
+def get_relationships_finalized(database_id):
+    """True only when the database's relationship set is finalized."""
+    return get_relationship_status(database_id) == "finalized"
+
+
+def delete_database(database_id):
+    """Roll back a database instance: remove its relationships, columns, table
+    rows, and the databases row. Returns the recorded db_path (for the caller to
+    remove the SpiderSQL-managed db_<id> folder). Does NOT touch any file outside
+    that managed folder."""
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("SELECT db_path FROM databases WHERE id = ?", (database_id,))
+    row = cursor.fetchone()
+    db_path = row[0] if row else None
+    cursor.execute(
+        "DELETE FROM table_columns WHERE table_id IN "
+        "(SELECT id FROM database_tables WHERE database_id = ?)", (database_id,))
+    cursor.execute("DELETE FROM database_relationships WHERE database_id = ?",
+                   (database_id,))
+    cursor.execute("DELETE FROM database_tables WHERE database_id = ?",
+                   (database_id,))
+    cursor.execute("DELETE FROM databases WHERE id = ?", (database_id,))
+    conn.commit()
+    conn.close()
+    return db_path
+
+
+def verify_database_access(user_id, username, conversation_id, database_id):
+    """Ownership enforcement without a token layer: verify the login-issued
+    (user_id, username) pair is a real user, that the database belongs to that
+    user AND to the specified conversation, and that the conversation belongs to
+    the same user. Returns (ok: bool, reason: str). Any mismatch -> not ok."""
+    try:
+        uid = int(user_id)
+    except (TypeError, ValueError):
+        return False, "invalid user"
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT 1 FROM users WHERE id = ? AND username = ?",
+                       (uid, username))
+        if not cursor.fetchone():
+            return False, "unknown or mismatched user"
+        cursor.execute(
+            "SELECT user_id, conversation_id FROM databases WHERE id = ?",
+            (database_id,))
+        db = cursor.fetchone()
+        if not db:
+            return False, "database not found"
+        if db[0] != uid:
+            return False, "database does not belong to this user"
+        if conversation_id is not None and db[1] is not None \
+                and int(db[1]) != int(conversation_id):
+            return False, "database does not belong to this conversation"
+        if conversation_id is not None:
+            cursor.execute(
+                "SELECT user_id FROM conversations WHERE id = ?",
+                (conversation_id,))
+            conv = cursor.fetchone()
+            if not conv or int(conv[0]) != uid:
+                return False, "conversation does not belong to this user"
+        return True, ""
+    finally:
+        conn.close()
+
+
+def get_declared_relationships(database_id):
+    """Return only authoritative edges (source in declared_fk / user)."""
+    return [
+        r for r in get_relationships(database_id)
+        if (r.get("source") or "") in ("declared_fk", "user")
+    ]
+
+
+def add_user_relationship(database_id, from_table, from_column,
+                          to_table, to_column,
+                          relationship_type="foreign_key"):
+    """Insert one user-declared (authoritative) relationship and return its id.
+    User edges are confirmed=1, confidence=1.0, source='user'. Finality is
+    managed by the caller/endpoint, not here."""
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        INSERT INTO database_relationships(
+            database_id, from_table, from_column, to_table, to_column,
+            relationship_type, name_similarity, value_overlap,
+            confidence, confirmed, source
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (database_id, from_table, from_column, to_table, to_column,
+         relationship_type, None, None, 1.0, 0, "user"),
+    )
+    rel_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
+    return rel_id
+
+
+def update_relationship(rel_id, **fields):
+    """Update editable columns of one relationship row. A user edit re-stamps
+    the row as source='user', confirmed=1 unless explicitly overridden."""
+    allowed = ("from_table", "from_column", "to_table", "to_column",
+               "relationship_type", "confidence", "confirmed", "source")
+    sets = {k: v for k, v in fields.items() if k in allowed}
+    # An edit leaves the set unapproved until it is finalized again; origin
+    # (source) is preserved unless the caller explicitly changes it.
+    sets.setdefault("confirmed", 0)
+    if not sets:
+        return
+    cols = ", ".join(f"{k} = ?" for k in sets)
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute(
+        f"UPDATE database_relationships SET {cols} WHERE id = ?",
+        (*sets.values(), rel_id),
+    )
+    conn.commit()
+    conn.close()
+
+
+def set_all_relationships_confirmed(database_id, confirmed):
+    """Mark every relationship row of a database confirmed (approved) or not.
+    Finalization confirms the whole current set; returning to review clears it.
+    Origin (`source`) is untouched — approval is separate from origin."""
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute(
+        "UPDATE database_relationships SET confirmed = ? WHERE database_id = ?",
+        (1 if confirmed else 0, database_id),
+    )
+    conn.commit()
+    conn.close()
+
+
+def delete_relationship(rel_id):
+    """Delete one relationship row by id."""
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM database_relationships WHERE id = ?", (rel_id,))
+    conn.commit()
+    conn.close()
 
 
 # ----------------------------------------------------------------------------

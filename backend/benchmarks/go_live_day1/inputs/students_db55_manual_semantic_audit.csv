@@ -1,0 +1,2774 @@
+test_id,category,difficulty,execution_status,semantic_audit,query,sql,audit_note
+1,aggregation,easy,PASS,CORRECT,How many students currently have active status?,SELECT COUNT(student_id) FROM students WHERE student_status = 'active',
+2,aggregation,easy,PASS,CORRECT,What is the average cumulative GPA across all students?,SELECT AVG(students.cumulative_gpa) FROM students,
+3,aggregation,easy,PASS,INCORRECT,What is the highest number of credits earned by any student?,SELECT MAX(credits_earned) FROM enrollments,Uses the maximum credits from one enrollment row instead of the credits earned by a student at student grain.
+4,aggregation,easy,PASS,CORRECT,How many departments are currently active?,SELECT COUNT(department_id) FROM departments WHERE active_flag = '1',
+5,aggregation,easy,PASS,CORRECT,What is the combined annual budget of all departments?,SELECT SUM(annual_budget) FROM departments,
+6,aggregation,easy,PASS,CORRECT,What is the average faculty count across departments?,SELECT AVG(faculty_count) FROM departments,
+7,aggregation,easy,PASS,CORRECT,How many instructors are employed full time?,SELECT COUNT(instructor_id) FROM instructors WHERE employment_type = 'full_time',
+8,aggregation,easy,PASS,CORRECT,What is the average salary of all instructors?,SELECT AVG(salary) FROM instructors,
+9,aggregation,easy,PASS,CORRECT,What is the highest performance rating among instructors?,SELECT performance_rating FROM instructors ORDER BY performance_rating DESC LIMIT 1,
+10,aggregation,easy,PASS,CORRECT,How many programs are delivered online?,SELECT COUNT(program_id) FROM programs WHERE delivery_mode = 'online',
+11,aggregation,easy,PASS,CORRECT,What is the average tuition per credit across all programs?,SELECT AVG(tuition_per_credit) FROM programs,
+12,aggregation,easy,PASS,CORRECT,How many courses are currently active?,SELECT COUNT(course_id) FROM courses WHERE active_flag = '1',
+13,aggregation,easy,PASS,CORRECT,What is the total enrollment count recorded across all courses?,SELECT SUM(enrolled_count) FROM courses,
+14,aggregation,easy,PASS,CORRECT,How many enrollments have completed status?,SELECT COUNT(enrollment_id) FROM enrollments WHERE enrollment_status = 'completed',
+15,aggregation,easy,PASS,CORRECT,What is the average attendance percentage across all enrollment records?,"SELECT AVG(att.attendance_percentage) AS average_attendance_percentage
+FROM enrollments att",
+16,aggregation,moderate,PASS,CORRECT,How many active students are enrolled in bachelor programs?,"SELECT COUNT(DISTINCT s.student_id)
+FROM students s
+JOIN programs p ON s.program_id = p.program_id
+WHERE s.student_status = 'active' AND p.degree_level = 'bachelor'",
+17,aggregation,moderate,PASS,CORRECT,What is the average GPA of international students?,"SELECT AVG(students.cumulative_gpa)
+FROM students
+WHERE students.citizenship_status = 'international'",
+18,aggregation,moderate,PASS,INCORRECT,What is the total number of credits earned by students receiving financial aid?,"SELECT SUM(e.credits_earned)
+FROM enrollments e
+JOIN students s ON e.student_id = s.student_id
+WHERE s.financial_aid_flag = '1'",Sums enrollment-level credits rather than the cumulative credits of financial-aid students.
+19,aggregation,moderate,PASS,INCORRECT,How many students are expected to graduate in 2027?,"SELECT COUNT(*) 
+FROM students 
+WHERE expected_graduation_date LIKE '%2027'","Uses LIKE '%2027' on ISO dates, which searches for dates ending in 2027 instead of dates in the year 2027."
+20,aggregation,moderate,PASS,CORRECT,What is the average annual budget of accredited departments?,"SELECT AVG(departments.annual_budget)
+FROM departments
+WHERE departments.accreditation_status = 'accredited'",
+21,aggregation,moderate,PASS,CORRECT,What is the combined student count of departments on the main campus?,"SELECT SUM(departments.student_count)
+FROM departments
+WHERE departments.campus_code = 'MAIN'",
+22,aggregation,moderate,PASS,CORRECT,What is the average salary of tenured instructors?,"SELECT AVG(instructors.salary)
+FROM instructors
+WHERE instructors.tenure_status = 'tenured'",
+23,aggregation,moderate,PASS,CORRECT,How many instructors hired after 2020 are still active?,SELECT COUNT(instructor_id) FROM instructors WHERE hire_date > '2020-12-31' AND active_flag = '1',
+24,aggregation,moderate,PASS,CORRECT,What is the average performance rating of instructors researching artificial intelligence?,"SELECT AVG(instructors.performance_rating)
+FROM instructors
+WHERE instructors.research_area = 'AI'",
+25,aggregation,moderate,PASS,CORRECT,What is the total current enrollment across active master programs?,SELECT SUM(current_enrollment) FROM programs WHERE degree_level = 'master' AND active_flag = '1',
+26,aggregation,moderate,PASS,CORRECT,What is the average application fee for hybrid programs?,"SELECT AVG(programs.application_fee)
+FROM programs
+WHERE programs.delivery_mode = 'hybrid'",
+27,aggregation,moderate,PASS,CORRECT,How many courses offered in 2025 use online delivery?,"SELECT COUNT(course_id)
+FROM courses
+WHERE academic_year = 2025
+  AND delivery_mode = 'online'",
+28,aggregation,moderate,PASS,CORRECT,What is the average course capacity for graduate-level courses?,"SELECT AVG(courses.capacity)
+FROM courses
+WHERE courses.course_level = 'graduate'",
+29,aggregation,moderate,PASS,CORRECT,What is the total tuition amount across completed enrollments?,"SELECT SUM(tuition_amount)
+FROM enrollments
+WHERE enrollment_status = 'completed'",
+30,aggregation,moderate,PASS,CORRECT,What is the average numeric grade for completed letter-graded enrollments?,"SELECT AVG(numeric_grade)
+FROM enrollments
+WHERE enrollment_status = 'completed'
+  AND grading_option = 'letter'",
+31,aggregation,moderate,PASS,CORRECT,How many advising appointments were completed?,SELECT COUNT(*) FROM academic_advising WHERE completed_flag = '1',
+32,aggregation,moderate,PASS,CORRECT,What is the average advising satisfaction score for career appointments?,"SELECT AVG(student_satisfaction)
+FROM academic_advising
+WHERE appointment_type = 'career'",
+33,aggregation,moderate,PASS,CORRECT,How many attendance records were marked absent?,SELECT COUNT(attendance_id) FROM attendance_records WHERE attendance_status = 'absent',
+34,aggregation,moderate,PASS,CORRECT,What is the average number of minutes late among late attendance records?,"SELECT AVG(minutes_late)
+FROM attendance_records
+WHERE attendance_status = 'late'",
+35,aggregation,moderate,PASS,CORRECT,What is the total participation score recorded for seminar sessions?,"SELECT SUM(participation_points)
+FROM attendance_records
+WHERE session_type = 'seminar'",
+36,aggregation,hard,PASS,CORRECT,What is the average GPA of active students in online bachelor programs?,"SELECT AVG(s.cumulative_gpa)
+FROM students s
+JOIN programs p ON s.program_id = p.program_id
+WHERE s.student_status = 'active'
+  AND p.degree_level = 'bachelor'
+  AND p.delivery_mode = 'online'",
+37,aggregation,hard,PASS,CORRECT,How many students in accredited departments are currently on leave?,"SELECT COUNT(*) 
+FROM students
+JOIN programs ON students.program_id = programs.program_id
+JOIN departments ON programs.department_id = departments.department_id
+WHERE departments.accreditation_status = 'accredited'
+  AND students.student_status = 'leave'",
+38,aggregation,hard,PASS,INCORRECT,What is the total tuition charged to students in master programs during 2025 enrollments?,"SELECT SUM(""enrollments"".""tuition_amount"") AS ""total_tuition"" FROM ""enrollments"" INNER JOIN ""courses"" ON ""enrollments"".""course_id"" = ""courses"".""course_id"" INNER JOIN ""programs"" ON ""courses"".""program_id"" = ""programs"".""program_id"" WHERE ""programs"".""degree_level"" = ? AND ""enrollments"".""enrollment_date"" >= ? AND ""enrollments"".""enrollment_date"" < ?",Determines the master program from the enrolled course's program rather than from the student's own program.
+39,aggregation,hard,PASS,CORRECT,What is the average scholarship amount for international students with completed enrollments?,"SELECT AVG(e.scholarship_amount)
+FROM enrollments e
+JOIN students s ON e.student_id = s.student_id
+WHERE e.enrollment_status = 'completed'
+  AND s.citizenship_status = 'international'",
+40,aggregation,hard,PASS,CORRECT,How many active students have an advisor whose performance rating is above 4?,"SELECT COUNT(DISTINCT students.student_id)
+FROM students
+JOIN instructors ON students.advisor_instructor_id = instructors.instructor_id
+WHERE instructors.performance_rating > 4
+AND students.student_status = 'active'",
+41,aggregation,hard,PASS,CORRECT,What is the average salary of instructors teaching active courses with more than 100 enrolled students?,"SELECT AVG(salary)
+FROM instructors
+WHERE instructor_id IN (
+    SELECT instructor_id
+    FROM courses
+    WHERE active_flag = '1' AND enrolled_count > 100
+)",
+42,aggregation,hard,PASS,CORRECT,What is the total number of credits earned in courses offered by departments in the College of Engineering?,"SELECT SUM(e.credits_earned)
+FROM enrollments e
+JOIN courses c ON e.course_id = c.course_id
+JOIN departments d ON c.department_id = d.department_id
+WHERE d.school_name = 'College of Engineering'",
+43,aggregation,hard,PASS,CORRECT,How many completed enrollments belong to courses taught by tenured instructors?,"SELECT COUNT(e.enrollment_id)
+FROM enrollments e
+JOIN courses c ON e.course_id = c.course_id
+JOIN instructors i ON c.instructor_id = i.instructor_id
+WHERE e.enrollment_status = 'completed'
+  AND i.tenure_status = 'tenured'",
+44,aggregation,hard,PASS,INCORRECT,What is the average numeric grade for students whose advising risk level is high?,"WITH high_risk_students AS (
+    SELECT DISTINCT student_id
+    FROM academic_advising
+    WHERE academic_risk_level = 'high'
+),
+student_grades AS (
+    SELECT e.student_id, AVG(e.numeric_grade) AS avg_grade
+    FROM enrollments e
+    GROUP BY e.student_id
+)
+SELECT AVG(sg.avg_grade)
+FROM student_grades sg
+JOIN high_risk_students hrs ON sg.student_id = hrs.student_id",Averages per-student averages equally instead of averaging the numeric-grade records belonging to high-risk students.
+45,aggregation,hard,PASS,CORRECT,What is the total advising time spent with students in doctorate programs?,"SELECT SUM(aa.duration_minutes)
+FROM academic_advising aa
+JOIN programs p ON aa.program_id = p.program_id
+WHERE p.degree_level = 'doctorate'",
+46,aggregation,hard,PASS,CORRECT,How many absent attendance records belong to students receiving financial aid?,"SELECT COUNT(*)
+FROM attendance_records
+JOIN students ON attendance_records.student_id = students.student_id
+WHERE attendance_records.attendance_status = 'absent'
+  AND students.financial_aid_flag = '1'",
+47,aggregation,hard,PASS,CORRECT,What is the average quiz score for attendance records in courses delivered online?,"SELECT AVG(ar.quiz_score)
+FROM attendance_records ar
+JOIN courses c ON ar.course_id = c.course_id
+WHERE c.delivery_mode = 'online'",
+48,aggregation,hard,PASS,CORRECT,What is the total tuition amount for students whose cumulative GPA is above 3.5?,"SELECT SUM(e.tuition_amount)
+FROM students s
+JOIN enrollments e ON s.student_id = e.student_id
+WHERE s.cumulative_gpa > 3.5",
+49,aggregation,hard,PASS,INCORRECT,How many students completed courses that required a prerequisite?,"SELECT COUNT(e.enrollment_id)
+FROM enrollments e
+JOIN courses c ON e.course_id = c.course_id
+WHERE c.prerequisite_course_id IS NOT NULL
+  AND e.enrollment_status = 'completed'",Counts completed enrollment rows rather than distinct students who completed a course with a prerequisite.
+50,aggregation,hard,PASS,CORRECT,What is the average attendance percentage for active students in programs requiring internships?,"SELECT AVG(e.attendance_percentage)
+FROM students s
+JOIN programs p ON s.program_id = p.program_id
+JOIN enrollments e ON s.student_id = e.student_id
+WHERE p.internship_required = '1'
+  AND s.student_status = 'active'",
+51,derived_metric,easy,PASS,INCORRECT,Show each department with the number of employees formed by adding its faculty count and staff count.,"SELECT ""departments"".""department_name"", SUM(""departments"".""faculty_count"") AS ""total_employees"", SUM(""departments"".""staff_count"") AS ""total_employees"" FROM ""departments"" GROUP BY ""departments"".""department_name""",Returns separate faculty and staff sums with the same alias instead of adding faculty_count and staff_count.
+52,derived_metric,easy,PASS,INCORRECT,Show each department with its annual budget per enrolled department student.,"SELECT ""departments"".""department_id"", ""departments"".""department_name"", ""departments"".""annual_budget"", SUM(""programs"".""current_enrollment"") AS ""total_enrolled_students"" FROM ""departments"" INNER JOIN ""programs"" ON ""departments"".""department_id"" = ""programs"".""department_id"" GROUP BY ""departments"".""department_id"", ""departments"".""department_name"", ""departments"".""annual_budget""",Returns annual budget and enrollment totals but never divides budget by enrolled students.
+53,derived_metric,easy,PASS,CORRECT,Show each program with the number of remaining seats based on capacity minus current enrollment.,"SELECT program_id, program_name, capacity, current_enrollment, (capacity - current_enrollment) AS remaining_seats
+FROM programs",
+54,derived_metric,easy,PASS,CORRECT,Show each program with its estimated total tuition based on total credits times tuition per credit.,"SELECT
+  p.program_id,
+  p.program_name,
+  p.total_credits,
+  p.tuition_per_credit,
+  p.total_credits * p.tuition_per_credit AS estimated_total_tuition
+FROM programs p",
+55,derived_metric,easy,PASS,CORRECT,Show each program with its average credits per year based on total credits divided by duration.,"SELECT program_id, program_name, CAST(total_credits AS REAL) / duration_years AS avg_credits_per_year
+FROM programs
+GROUP BY program_id, program_name, total_credits, duration_years
+HAVING duration_years > 0",
+56,derived_metric,easy,PASS,INCORRECT,Show each instructor with their salary per year of service since the hire date.,"SELECT first_name, last_name, salary, hire_date
+FROM instructors",Returns salary and hire date only; years of service and salary per year of service are missing.
+57,derived_metric,easy,PASS,CORRECT,Show each instructor with a salary-adjusted performance value based on salary divided by performance rating.,"SELECT instructor_id, first_name, last_name, salary, performance_rating, CAST(salary AS REAL) / performance_rating AS salary_adjusted_performance
+FROM instructors
+WHERE performance_rating > 0",
+58,derived_metric,easy,PASS,INCORRECT,Show each student with the number of credits still needed to reach 120 credits.,"SELECT student_id, first_name, last_name, 120 - credits_earned AS credits_needed
+FROM students
+WHERE credits_earned < 120",Excludes students with 120 or more credits even though the request asks for each student.
+59,derived_metric,easy,PASS,INCORRECT,Show each student with the percentage of 120 credits they have completed.,"SELECT ""students"".""student_id"", ""students"".""first_name"", ""students"".""last_name"", ""students"".""credits_earned"", ""students"".""credits_earned"" AS ""percentage_of_120"", SUM(""enrollments"".""credits_earned"") AS ""total_credits_earned"" FROM ""students"" INNER JOIN ""enrollments"" ON ""students"".""student_id"" = ""enrollments"".""student_id"" GROUP BY ""students"".""student_id"", ""students"".""first_name"", ""students"".""last_name""",Labels raw credits as a percentage and never divides credits earned by 120.
+60,derived_metric,easy,PASS,CORRECT,Show each course with the number of open seats based on capacity minus enrolled count.,"SELECT course_id, course_code, course_title, capacity, enrolled_count, (capacity - enrolled_count) AS open_seats
+FROM courses",
+61,derived_metric,easy,PASS,CORRECT,Show each course with its enrollment percentage based on enrolled count divided by capacity.,"SELECT 
+  courses.course_id,
+  courses.course_code,
+  courses.course_title,
+  courses.enrolled_count,
+  courses.capacity,
+  CAST(courses.enrolled_count AS REAL) * 100.0 / courses.capacity AS enrollment_percentage
+FROM courses
+WHERE courses.capacity > 0",
+62,derived_metric,easy,PASS,CORRECT,Show each enrollment with the unpaid tuition amount after subtracting scholarship amount.,"SELECT enrollment_id, tuition_amount, scholarship_amount, (tuition_amount - scholarship_amount) AS unpaid_tuition_amount FROM enrollments",
+63,derived_metric,easy,PASS,CORRECT,Show each enrollment with the percentage of attempted credits that were earned.,"SELECT enrollment_id, credits_attempted, credits_earned,
+       CAST(credits_earned AS REAL) * 100.0 / credits_attempted AS percentage_earned
+FROM enrollments
+WHERE credits_attempted > 0",
+64,derived_metric,easy,PASS,CORRECT,Show each attendance record with the percentage of scheduled participation points earned out of 10.,"SELECT 
+  attendance_records.attendance_id,
+  attendance_records.student_id,
+  attendance_records.course_id,
+  attendance_records.participation_points,
+  attendance_records.minutes_present,
+  attendance_records.session_type,
+  (attendance_records.participation_points * 100.0 / 10) AS participation_percentage
+FROM attendance_records
+WHERE attendance_records.participation_points IS NOT NULL",
+65,derived_metric,easy,PASS,CORRECT,Show each advising appointment with its satisfaction score per 15 minutes of meeting time.,"SELECT advising_id, student_id, appointment_date, student_satisfaction, duration_minutes, (student_satisfaction * 15.0) / duration_minutes AS satisfaction_per_15_minutes FROM academic_advising WHERE duration_minutes > 0",
+66,derived_metric,moderate,PASS,CORRECT,Calculate the percentage of active students for each program.,"SELECT p.program_id, p.program_name, CAST(SUM(CASE WHEN s.student_status = 'active' THEN 1 ELSE 0 END) AS REAL) * 100.0 / COUNT(s.student_id) AS active_percentage
+FROM programs p
+JOIN students s ON p.program_id = s.program_id
+GROUP BY p.program_id, p.program_name",
+67,derived_metric,moderate,PASS,INCORRECT,Calculate the average credits earned for each student year level.,"SELECT s.current_year, AVG(e.credits_earned) AS average_credits_earned
+FROM students s
+JOIN enrollments e ON s.student_id = e.student_id
+GROUP BY s.current_year",Averages enrollment-level credits instead of each student's cumulative credits at year-level grain.
+68,derived_metric,moderate,PASS,CORRECT,Calculate the percentage of students receiving financial aid for each degree level.,"SELECT p.degree_level, CAST(SUM(CASE WHEN s.financial_aid_flag = '1' THEN 1 ELSE 0 END) AS REAL) * 100.0 / COUNT(*) AS percentage
+FROM students s
+JOIN programs p ON s.program_id = p.program_id
+GROUP BY p.degree_level
+HAVING COUNT(*) > 0",
+69,derived_metric,moderate,PASS,CORRECT,Calculate the average GPA for each citizenship status.,"SELECT citizenship_status, AVG(cumulative_gpa) AS average_gpa
+FROM students
+GROUP BY citizenship_status",
+70,derived_metric,moderate,PASS,CORRECT,Calculate the percentage of active departments for each campus.,"SELECT campus_code, CAST(SUM(CASE WHEN active_flag = '1' THEN 1 ELSE 0 END) AS REAL) * 100.0 / COUNT(*) AS percentage_active
+FROM departments
+GROUP BY campus_code
+HAVING COUNT(*) > 0",
+71,derived_metric,moderate,PASS,CORRECT,Calculate the average department budget per reported student for each school.,"SELECT school_name, AVG(annual_budget * 1.0 / student_count) AS avg_budget_per_student
+FROM departments
+GROUP BY school_name",
+72,derived_metric,moderate,PASS,CORRECT,Calculate the average instructor salary for each academic rank.,"SELECT academic_rank, AVG(salary) AS average_salary
+FROM instructors
+GROUP BY academic_rank",
+73,derived_metric,moderate,PASS,INCORRECT,Calculate the percentage of tenured instructors for each department.,"SELECT d.department_name
+FROM departments d
+JOIN instructors i ON d.department_id = i.department_id
+GROUP BY d.department_id, d.department_name
+HAVING SUM(CASE WHEN i.tenure_status = 'tenured' THEN 1 ELSE 0 END) * 100.0 / COUNT(*) = (
+    SELECT SUM(CASE WHEN i2.tenure_status = 'tenured' THEN 1 ELSE 0 END) * 100.0 / COUNT(*)
+    FROM instructors i2
+    WHERE i2.department_id = d.department_id
+)",Returns only department names and uses a tautological HAVING comparison; the tenure percentage is never returned.
+74,derived_metric,moderate,PASS,CORRECT,Calculate the average instructor performance rating for each research area.,"SELECT research_area, AVG(performance_rating) AS average_performance_rating
+FROM instructors
+GROUP BY research_area",
+75,derived_metric,moderate,PASS,CORRECT,Calculate the capacity utilization percentage for each program.,"SELECT program_id, program_name, capacity, current_enrollment, (CAST(current_enrollment AS REAL) / capacity) * 100 AS capacity_utilization_percentage FROM programs",
+76,derived_metric,moderate,PASS,CORRECT,Calculate the average estimated total tuition for each degree level.,"SELECT degree_level, AVG(tuition_per_credit * total_credits) AS average_estimated_total_tuition
+FROM programs
+GROUP BY degree_level",
+77,derived_metric,moderate,PASS,CORRECT,Calculate the seat utilization percentage for each course delivery mode.,"SELECT courses.delivery_mode, (SUM(courses.enrolled_count) * 100.0 / SUM(courses.capacity)) AS seat_utilization_percentage
+FROM courses
+GROUP BY courses.delivery_mode",
+78,derived_metric,moderate,PASS,CORRECT,Calculate the average earned-credit rate for each enrollment status.,"SELECT e.enrollment_status, AVG(CAST(e.credits_earned AS REAL) / e.credits_attempted) AS avg_earned_credit_rate
+FROM enrollments e
+WHERE e.credits_attempted > 0
+GROUP BY e.enrollment_status",
+79,derived_metric,moderate,PASS,INCORRECT,Calculate the average scholarship as a percentage of tuition for each program.,"SELECT p.program_id, AVG(e.scholarship_amount * 100.0 / e.tuition_amount) AS avg_scholarship_percentage
+FROM enrollments e
+JOIN programs p ON e.course_id = (SELECT course_id FROM courses WHERE program_id = p.program_id LIMIT 1)
+GROUP BY p.program_id
+HAVING COUNT(e.enrollment_id) > 0","Maps each program through an arbitrary first course, so scholarships from the program's other courses are misassigned or omitted."
+80,derived_metric,moderate,PASS,CORRECT,Calculate the completed-advising rate for each appointment type.,"SELECT appointment_type, CAST(SUM(CASE WHEN completed_flag = '1' THEN 1 ELSE 0 END) AS REAL) * 100.0 / COUNT(*) AS completed_advising_rate
+FROM academic_advising
+GROUP BY appointment_type",
+81,derived_metric,moderate,PASS,CORRECT,Calculate the referral rate for each academic risk level.,"SELECT academic_risk_level, CAST(SUM(CASE WHEN referral_made = '1' THEN 1 ELSE 0 END) AS REAL) * 100.0 / COUNT(*) AS referral_rate
+FROM academic_advising
+GROUP BY academic_risk_level
+HAVING COUNT(*) > 0",
+82,derived_metric,moderate,PASS,CORRECT,"Calculate the attendance rate for each course using present, late, and excused records as attended.","SELECT 
+  c.course_id,
+  c.course_title,
+  CAST(SUM(CASE WHEN ar.attendance_status IN ('present', 'late', 'excused') THEN 1 ELSE 0 END) AS REAL) * 100.0 / COUNT(*) AS attendance_rate
+FROM attendance_records ar
+JOIN courses c ON ar.course_id = c.course_id
+GROUP BY c.course_id, c.course_title",
+83,derived_metric,moderate,PASS,CORRECT,Calculate the average lateness in minutes for each course.,"SELECT course_id, AVG(minutes_late) AS average_lateness
+FROM attendance_records
+GROUP BY course_id",
+84,derived_metric,moderate,PASS,CORRECT,Calculate the average quiz score per participation point for each session type.,"SELECT session_type, AVG(quiz_score) * 1.0 / AVG(participation_points) AS avg_quiz_score_per_participation_point
+FROM attendance_records
+GROUP BY session_type
+HAVING AVG(participation_points) > 0",
+85,derived_metric,moderate,PASS,INCORRECT,Calculate the percentage of enrollment records with attendance above 90 percent for each instructor.,"SELECT i.instructor_id, i.first_name, i.last_name
+FROM enrollments e
+JOIN instructors i ON e.instructor_id = i.instructor_id
+GROUP BY i.instructor_id, i.first_name, i.last_name
+HAVING (COUNT(CASE WHEN e.attendance_percentage > 90 THEN 1 END) * 100.0 / COUNT(e.attendance_percentage)) > 90",Filters to instructors whose percentage exceeds 90 instead of calculating and returning the requested percentage for every instructor.
+86,derived_metric,hard,PASS,CORRECT,"For each department, calculate total instructor payroll as a percentage of the department annual budget.","SELECT 
+  d.department_id,
+  d.department_name,
+  d.annual_budget,
+  (SUM(i.salary) * 100.0 / d.annual_budget) AS payroll_percentage
+FROM departments d
+JOIN instructors i ON d.department_id = i.department_id
+GROUP BY d.department_id, d.department_name, d.annual_budget",
+87,derived_metric,hard,PASS,INCORRECT,"For each program, calculate total student credits earned divided by the program's current enrollment.","SELECT ""programs"".""program_id"", ""programs"".""program_name"", ""programs"".""current_enrollment"", ""programs"".""program_id"" AS ""total_credits_earned"", SUM(""enrollments"".""credits_earned"") AS ""total_credits_earned"", COUNT(*) AS ""enrollment_count"" FROM ""programs"" LEFT JOIN ""courses"" ON ""programs"".""program_id"" = ""courses"".""program_id"" LEFT JOIN ""enrollments"" ON ""courses"".""course_id"" = ""enrollments"".""course_id"" GROUP BY ""programs"".""program_id"", ""programs"".""program_name"", ""programs"".""current_enrollment""",Returns total credits and enrollment count but never divides total credits by current enrollment.
+88,derived_metric,hard,FAIL,INCORRECT,"For each program, calculate completed course credits as a percentage of all attempted course credits.",<NO SQL GENERATED>,No SQL was returned.
+89,derived_metric,hard,PASS,CORRECT,"For each instructor, calculate the average numeric grade of their students divided by their performance rating.","SELECT i.instructor_id, AVG(e.numeric_grade) / i.performance_rating AS avg_grade_per_rating
+FROM instructors i
+JOIN enrollments e ON i.instructor_id = e.instructor_id
+GROUP BY i.instructor_id",
+90,derived_metric,hard,PASS,INCORRECT,"For each instructor, calculate completed enrollments per active course taught.","SELECT ""instructors"".""instructor_id"", ""courses"".""course_id"", COUNT(*) AS ""completed_enrollments"" FROM ""courses"" LEFT JOIN ""enrollments"" ON ""courses"".""course_id"" = ""enrollments"".""course_id"" INNER JOIN ""instructors"" ON ""courses"".""instructor_id"" = ""instructors"".""instructor_id"" WHERE ""courses"".""active_flag"" = ? AND ""enrollments"".""enrollment_status"" = ? GROUP BY ""instructors"".""instructor_id"", ""courses"".""course_id""","Groups by instructor and individual course and returns completed counts, not completed enrollments per active course for each instructor."
+91,derived_metric,hard,PASS,CORRECT,"For each student, calculate total scholarship received as a percentage of total tuition charged.","SELECT s.student_id, (SUM(e.scholarship_amount) * 100.0 / SUM(e.tuition_amount)) AS scholarship_percentage
+FROM students s
+JOIN enrollments e ON s.student_id = e.student_id
+GROUP BY s.student_id",
+92,derived_metric,hard,PASS,INCORRECT,"For each student, calculate completed credits per advising appointment.","SELECT ""academic_advising"".""student_id"", ""academic_advising"".""advising_id"", ""enrollments"".""credits_earned"", SUM(""enrollments"".""credits_earned"") AS ""total_completed_credits"" FROM ""academic_advising"" INNER JOIN ""instructors"" ON ""academic_advising"".""instructor_id"" = ""instructors"".""instructor_id"" INNER JOIN ""enrollments"" ON ""instructors"".""instructor_id"" = ""enrollments"".""instructor_id"" WHERE ""enrollments"".""enrollment_status"" = ? GROUP BY ""academic_advising"".""student_id"", ""academic_advising"".""advising_id""",Joins enrollments through the advising instructor rather than the student and never divides credits by appointment count.
+93,derived_metric,hard,PASS,INCORRECT,"For each student, calculate attended class sessions as a percentage of all recorded class sessions.","SELECT 
+    s.student_id,
+    s.first_name,
+    s.last_name,
+    CAST(SUM(CASE WHEN ar.attendance_status = 'present' THEN 1 ELSE 0 END) AS REAL) * 100.0 / COUNT(ar.attendance_status) AS attendance_percentage
+FROM students s
+JOIN enrollments e ON s.student_id = e.student_id
+JOIN attendance_records ar ON e.enrollment_id = ar.enrollment_id
+GROUP BY s.student_id, s.first_name, s.last_name
+HAVING COUNT(ar.session_type) > 0",Counts only present records as attended and omits late and excused attendance records.
+94,derived_metric,hard,PASS,INCORRECT,"For each department, calculate active student count per active instructor.","SELECT d.department_name, d.department_code
+FROM departments d
+JOIN programs p ON d.department_id = p.department_id
+JOIN students s ON p.program_id = s.program_id
+JOIN academic_advising aa ON s.student_id = aa.student_id
+JOIN instructors i ON aa.instructor_id = i.instructor_id
+JOIN courses c ON i.instructor_id = c.instructor_id
+GROUP BY d.department_id
+HAVING COUNT(DISTINCT s.student_id) = (
+    SELECT COUNT(DISTINCT s2.student_id)
+    FROM programs p2
+    JOIN students s2 ON p2.program_id = s2.program_id
+    JOIN academic_advising aa2 ON s2.student_id = aa2.student_id
+    JOIN instructors i2 ON aa2.instructor_id = i2.instructor_id
+    JOIN courses c2 ON i2.instructor_id = c2.instructor_id
+    WHERE i2.department_id = d.department_id
+)
+AND COUNT(DISTINCT i.instructor_id) = (
+    SELECT COUNT(DISTINCT i3.instructor_id)
+    FROM instructors i3
+    WHERE i3.department_id = d.department_id
+)
+AND 1 = 1",Returns department names after equality checks and never calculates active students divided by active instructors.
+95,derived_metric,hard,PASS,CORRECT,"For each department, calculate course seat utilization using total enrolled count divided by total capacity.","SELECT 
+    d.department_id,
+    d.department_name,
+    SUM(c.enrolled_count) * 1.0 / SUM(c.capacity) AS seat_utilization
+FROM departments d
+JOIN courses c ON d.department_id = c.department_id
+GROUP BY d.department_id, d.department_name",
+96,derived_metric,hard,PASS,CORRECT,"For each degree level, calculate completed enrollment tuition as a percentage of all enrollment tuition.","SELECT p.degree_level,
+       (SUM(CASE WHEN e.enrollment_status = 'completed' THEN e.tuition_amount ELSE 0 END) * 100.0 / SUM(e.tuition_amount)) AS completed_tuition_percentage
+FROM enrollments e
+JOIN courses c ON e.course_id = c.course_id
+JOIN programs p ON c.program_id = p.program_id
+GROUP BY p.degree_level",
+97,derived_metric,hard,PASS,CORRECT,"For each course, calculate average numeric grade per credit hour.","SELECT c.course_id, AVG(e.numeric_grade) / c.credit_hours AS avg_numeric_grade_per_credit_hour
+FROM courses c
+JOIN enrollments e ON c.course_id = e.course_id
+GROUP BY c.course_id",
+98,derived_metric,hard,PASS,INCORRECT,"For each course, calculate average participation points as a percentage of the maximum possible points.","SELECT c.course_id, AVG(ar.participation_points) * 100.0 / MAX(ar.participation_points) OVER (PARTITION BY c.course_id) AS participation_percentage
+FROM attendance_records ar
+JOIN courses c ON ar.course_id = c.course_id
+GROUP BY c.course_id",Uses the maximum observed participation value as the maximum possible score instead of the known 10-point maximum.
+99,derived_metric,hard,PASS,CORRECT,"For each academic risk level, calculate completed advising appointments per referred appointment.","SELECT academic_risk_level,
+       CAST(SUM(CASE WHEN completed_flag = '1' THEN 1 ELSE 0 END) AS REAL) /
+       NULLIF(SUM(CASE WHEN referral_made = '1' THEN 1 ELSE 0 END), 0) AS completed_per_referred
+FROM academic_advising
+GROUP BY academic_risk_level
+HAVING SUM(CASE WHEN referral_made = '1' THEN 1 ELSE 0 END) > 0",
+100,derived_metric,hard,PASS,CORRECT,"For each program, calculate the share of all active students who belong to that program.","SELECT p.program_id, p.program_name, COUNT(s.student_id) * 1.0 / (SELECT COUNT(*) FROM students WHERE student_status = 'active') AS share
+FROM programs p
+JOIN students s ON p.program_id = s.program_id
+WHERE s.student_status = 'active'
+GROUP BY p.program_id, p.program_name",
+101,distinct_count,easy,PASS,CORRECT,How many different student status values are represented?,SELECT COUNT(DISTINCT student_status) FROM students,
+102,distinct_count,easy,PASS,CORRECT,How many distinct citizenship statuses do students have?,SELECT COUNT(DISTINCT citizenship_status) FROM students,
+103,distinct_count,easy,PASS,CORRECT,How many different housing statuses appear among students?,SELECT COUNT(DISTINCT housing_status) FROM students,
+104,distinct_count,easy,PASS,CORRECT,How many distinct schools are represented by departments?,SELECT COUNT(DISTINCT school_name) FROM departments,
+105,distinct_count,easy,PASS,CORRECT,How many different campus codes appear in departments?,SELECT COUNT(DISTINCT campus_code) FROM departments,
+106,distinct_count,easy,PASS,CORRECT,How many distinct research areas are represented by instructors?,SELECT COUNT(DISTINCT research_area) FROM instructors,
+107,distinct_count,easy,PASS,CORRECT,How many different academic ranks are used by instructors?,SELECT COUNT(DISTINCT academic_rank) FROM instructors,
+108,distinct_count,easy,PASS,CORRECT,How many distinct degree levels are offered by programs?,SELECT COUNT(DISTINCT degree_level) FROM programs,
+109,distinct_count,easy,PASS,CORRECT,How many different program delivery modes are available?,SELECT COUNT(DISTINCT delivery_mode) FROM programs,
+110,distinct_count,easy,PASS,CORRECT,How many distinct course levels appear in the course catalog?,SELECT COUNT(DISTINCT course_level) FROM courses,
+111,distinct_count,easy,PASS,CORRECT,How many different semesters are represented by courses?,SELECT COUNT(DISTINCT semester) FROM courses,
+112,distinct_count,easy,PASS,CORRECT,How many distinct enrollment statuses appear?,SELECT COUNT(DISTINCT enrollment_status) FROM enrollments,
+113,distinct_count,easy,PASS,CORRECT,How many different grading options are used?,SELECT COUNT(DISTINCT grading_option) FROM enrollments,
+114,distinct_count,easy,PASS,CORRECT,How many distinct advising appointment types are recorded?,SELECT COUNT(DISTINCT appointment_type) FROM academic_advising,
+115,distinct_count,easy,PASS,CORRECT,How many different attendance statuses appear?,SELECT COUNT(DISTINCT attendance_status) FROM attendance_records,
+116,distinct_count,moderate,PASS,CORRECT,How many distinct students have at least one completed enrollment?,"SELECT COUNT(DISTINCT students.student_id)
+FROM students
+JOIN enrollments ON students.student_id = enrollments.student_id
+WHERE enrollments.enrollment_status = 'completed'",
+117,distinct_count,moderate,PASS,CORRECT,How many distinct courses have at least one completed enrollment?,"SELECT COUNT(DISTINCT c.course_id)
+FROM courses c
+JOIN enrollments e ON c.course_id = e.course_id
+WHERE e.enrollment_status = 'completed'",
+118,distinct_count,moderate,PASS,CORRECT,How many distinct instructors teach active courses?,"SELECT COUNT(DISTINCT instructors.instructor_id)
+FROM instructors
+JOIN courses ON instructors.instructor_id = courses.instructor_id
+WHERE courses.active_flag = '1'",
+119,distinct_count,moderate,PASS,CORRECT,How many distinct departments offer online courses?,"SELECT COUNT(DISTINCT d.department_id)
+FROM departments d
+JOIN courses c ON d.department_id = c.department_id
+WHERE c.delivery_mode = 'online'",
+120,distinct_count,moderate,PASS,CORRECT,How many distinct programs currently have active students?,"SELECT COUNT(DISTINCT p.program_id)
+FROM programs p
+JOIN students s ON p.program_id = s.program_id
+WHERE s.student_status = 'active'",
+121,distinct_count,moderate,PASS,CORRECT,How many distinct students have received academic advising?,SELECT COUNT(DISTINCT student_id) FROM academic_advising,
+122,distinct_count,moderate,PASS,CORRECT,How many distinct instructors have conducted advising appointments?,SELECT COUNT(DISTINCT instructor_id) FROM academic_advising,
+123,distinct_count,moderate,PASS,CORRECT,How many distinct students have at least one absent attendance record?,"SELECT COUNT(DISTINCT student_id)
+FROM attendance_records
+WHERE attendance_status = 'absent'",
+124,distinct_count,moderate,PASS,CORRECT,How many distinct courses recorded a late student?,"SELECT COUNT(DISTINCT course_id)
+FROM attendance_records
+WHERE attendance_status = 'late'",
+125,distinct_count,moderate,PASS,CORRECT,How many distinct students completed a course with a numeric grade above 90?,"SELECT COUNT(DISTINCT s.student_id)
+FROM students s
+JOIN enrollments e ON s.student_id = e.student_id
+WHERE e.numeric_grade > 90
+  AND e.enrollment_status = 'completed'",
+126,distinct_count,moderate,PASS,CORRECT,How many distinct departments employ tenured instructors?,"SELECT COUNT(DISTINCT d.department_id)
+FROM departments d
+JOIN instructors i ON d.department_id = i.department_id
+WHERE i.tenure_status = 'tenured'",
+127,distinct_count,moderate,PASS,CORRECT,How many distinct programs require internships?,SELECT COUNT(DISTINCT program_id) FROM programs WHERE internship_required = '1',
+128,distinct_count,moderate,PASS,CORRECT,How many distinct courses have a prerequisite?,SELECT COUNT(DISTINCT course_id) FROM courses WHERE prerequisite_course_id IS NOT NULL,
+129,distinct_count,moderate,PASS,CORRECT,How many distinct students are enrolled in courses taught by their academic advisor?,"SELECT COUNT(DISTINCT e.student_id)
+FROM enrollments e
+JOIN courses c ON e.course_id = c.course_id
+JOIN instructors i ON c.instructor_id = i.instructor_id
+JOIN students s ON e.student_id = s.student_id
+WHERE i.instructor_id = s.advisor_instructor_id",
+130,distinct_count,moderate,PASS,INCORRECT,How many distinct instructors taught students receiving financial aid?,"SELECT COUNT(DISTINCT i.instructor_id)
+FROM instructors i
+JOIN students s ON i.instructor_id = s.advisor_instructor_id
+WHERE s.financial_aid_flag = '1'",Uses the student-advisor relationship instead of identifying instructors who taught financial-aid students.
+131,distinct_count,moderate,PASS,CORRECT,How many distinct departments have students with a GPA above 3.5?,"SELECT COUNT(DISTINCT departments.department_id)
+FROM students
+JOIN departments ON students.program_id = programs.program_id
+JOIN programs ON programs.department_id = departments.department_id
+WHERE students.cumulative_gpa > 3.5",
+132,distinct_count,moderate,PASS,INCORRECT,How many distinct programs had completed enrollments during 2025?,"SELECT COUNT(DISTINCT p.program_id)
+FROM enrollments e
+JOIN programs p ON e.course_id = (SELECT course_id FROM courses WHERE program_id = p.program_id LIMIT 1)
+WHERE e.enrollment_status = 'completed'
+  AND strftime('%Y', e.enrollment_date) = '2025'",Maps each program to an arbitrary first course instead of joining all program courses and their 2025 completed enrollments.
+133,distinct_count,moderate,PASS,CORRECT,How many distinct students attended seminar sessions?,"SELECT COUNT(DISTINCT student_id)
+FROM attendance_records
+WHERE session_type = 'seminar'",
+134,distinct_count,moderate,PASS,INCORRECT,How many distinct courses have enrollment above 100 students?,"SELECT COUNT(*)
+FROM (
+    SELECT courses.course_id
+    FROM courses
+    JOIN enrollments ON courses.course_id = enrollments.course_id
+    GROUP BY courses.course_id
+    HAVING COUNT(DISTINCT enrollments.student_id) > 100
+)",Counts enrollment-table rows rather than courses whose recorded enrolled_count is above 100.
+135,distinct_count,moderate,PASS,CORRECT,How many distinct instructors have students with attendance below 60 percent?,"SELECT COUNT(DISTINCT e.instructor_id)
+FROM enrollments e
+JOIN instructors i ON e.instructor_id = i.instructor_id
+WHERE e.attendance_percentage < 60",
+136,distinct_count,hard,PASS,INCORRECT,How many distinct students have completed courses in both 2024 and 2025?,"SELECT COUNT(DISTINCT s.student_id)
+FROM students s
+JOIN enrollments e ON s.student_id = e.student_id
+JOIN academic_advising aa ON s.student_id = aa.student_id
+WHERE e.enrollment_status = 'completed'
+  AND e.course_id IN (
+    SELECT c.course_id
+    FROM courses c
+    WHERE c.academic_year = 2024
+  )
+  AND e.course_id IN (
+    SELECT c.course_id
+    FROM courses c
+    WHERE c.academic_year = 2025
+  )","Requires the same course_id to belong to both 2024 and 2025, so it cannot identify students with different completed courses in both years."
+137,distinct_count,hard,PASS,CORRECT,How many distinct students have taken both online and in-person courses?,"SELECT COUNT(DISTINCT e.student_id) AS total_count
+FROM enrollments e
+JOIN courses c ON e.course_id = c.course_id
+JOIN students s ON e.student_id = s.student_id
+WHERE e.student_id IN (
+    SELECT e2.student_id
+    FROM enrollments e2
+    JOIN courses c2 ON e2.course_id = c2.course_id
+    WHERE c2.delivery_mode = 'online'
+    INTERSECT
+    SELECT e3.student_id
+    FROM enrollments e3
+    JOIN courses c3 ON e3.course_id = c3.course_id
+    WHERE c3.delivery_mode = 'in_person'
+)",
+138,distinct_count,hard,PASS,CORRECT,How many distinct instructors have both taught a course and conducted an advising appointment?,"SELECT COUNT(DISTINCT i.instructor_id)
+FROM instructors i
+JOIN courses c ON i.instructor_id = c.instructor_id
+JOIN academic_advising aa ON i.instructor_id = aa.instructor_id",
+139,distinct_count,hard,PASS,INCORRECT,How many distinct departments have both bachelor and master programs?,"SELECT DISTINCT ""programs"".""department_id"", COUNT(*) AS ""level_count"" FROM ""programs"" WHERE ""programs"".""degree_level"" = ? OR ""programs"".""degree_level"" = ? GROUP BY ""programs"".""department_id"" HAVING ""level_count"" >= ?","Returns one row per department with a level count instead of one count of qualifying departments, and it does not count distinct degree levels."
+140,distinct_count,hard,PASS,CORRECT,How many distinct students have both a completed enrollment and a high-risk advising appointment?,"SELECT COUNT(DISTINCT s.student_id)
+FROM students s
+JOIN academic_advising aa ON s.student_id = aa.student_id
+JOIN enrollments e ON s.student_id = e.student_id
+WHERE aa.academic_risk_level = 'high'
+  AND e.enrollment_status = 'completed'",
+141,distinct_count,hard,PASS,CORRECT,How many distinct courses have students from more than one degree level?,"SELECT COUNT(*)
+FROM (
+    SELECT c.course_id
+    FROM courses c
+    JOIN enrollments e ON c.course_id = e.course_id
+    JOIN students s ON e.student_id = s.student_id
+    JOIN programs p ON s.program_id = p.program_id
+    GROUP BY c.course_id
+    HAVING COUNT(DISTINCT p.degree_level) > 1
+)",
+142,distinct_count,hard,PASS,INCORRECT,How many distinct programs have students advised by instructors from the same department as the program?,"SELECT COUNT(DISTINCT p.program_id)
+FROM programs p
+JOIN students s ON p.program_id = s.program_id
+JOIN instructors i ON s.advisor_instructor_id = i.instructor_id
+JOIN departments d ON i.department_id = d.department_id
+JOIN academic_advising aa ON s.student_id = aa.student_id
+WHERE i.department_id = p.department_id","Adds an unrequested academic-advising appointment requirement, excluding otherwise qualifying assigned-advisor relationships."
+143,distinct_count,hard,PASS,CORRECT,How many distinct students completed a course taught by their assigned advisor?,"SELECT COUNT(DISTINCT e.student_id)
+FROM enrollments e
+JOIN students s ON e.student_id = s.student_id
+JOIN courses c ON e.course_id = c.course_id
+WHERE e.enrollment_status = 'completed'
+  AND c.instructor_id = s.advisor_instructor_id",
+144,distinct_count,hard,PASS,CORRECT,How many distinct instructors taught both active and inactive courses?,"SELECT COUNT(*) FROM (
+    SELECT i.instructor_id
+    FROM instructors i
+    JOIN courses c ON i.instructor_id = c.instructor_id
+    GROUP BY i.instructor_id
+    HAVING COUNT(DISTINCT CASE WHEN c.active_flag = '1' THEN c.course_id END) >= 1
+       AND COUNT(DISTINCT CASE WHEN c.active_flag = '0' THEN c.course_id END) >= 1
+)",
+145,distinct_count,hard,PASS,INCORRECT,How many distinct departments had courses with both completed and withdrawn enrollments?,"SELECT DISTINCT ""courses"".""department_id"", COUNT(*) AS ""completed_count"", COUNT(*) AS ""withdrawn_count"" FROM ""courses"" INNER JOIN ""enrollments"" ON ""courses"".""course_id"" = ""enrollments"".""course_id"" GROUP BY ""courses"".""department_id"" HAVING ""completed_count"" > ? AND ""withdrawn_count"" > ?",Uses identical COUNT(*) expressions for completed and withdrawn counts without filtering either status.
+146,distinct_count,hard,PASS,CORRECT,How many distinct students had attendance records in at least three different courses?,"SELECT COUNT(*) FROM (
+  SELECT ar.student_id
+  FROM attendance_records ar
+  JOIN students s ON ar.student_id = s.student_id
+  GROUP BY ar.student_id
+  HAVING COUNT(DISTINCT ar.course_id) >= 3
+)",
+147,distinct_count,hard,PASS,CORRECT,How many distinct courses were attended by both domestic and international students?,"SELECT COUNT(DISTINCT c.course_id)
+FROM courses c
+JOIN enrollments e ON c.course_id = e.course_id
+JOIN students s ON e.student_id = s.student_id
+WHERE c.course_id IN (
+    SELECT course_id
+    FROM enrollments
+    JOIN students ON enrollments.student_id = students.student_id
+    WHERE students.citizenship_status = 'domestic'
+)
+AND c.course_id IN (
+    SELECT course_id
+    FROM enrollments
+    JOIN students ON enrollments.student_id = students.student_id
+    WHERE students.citizenship_status = 'international'
+)",
+148,distinct_count,hard,PASS,CORRECT,How many distinct programs include courses taught by at least three different instructors?,"SELECT COUNT(*) 
+FROM (
+    SELECT programs.program_id
+    FROM programs
+    JOIN courses ON programs.program_id = courses.program_id
+    JOIN instructors ON courses.instructor_id = instructors.instructor_id
+    GROUP BY programs.program_id
+    HAVING COUNT(DISTINCT courses.instructor_id) >= 3
+)",
+149,distinct_count,hard,PASS,CORRECT,How many distinct students earned credits in courses outside their program's department?,"SELECT COUNT(DISTINCT e.student_id)
+FROM enrollments e
+JOIN students s ON e.student_id = s.student_id
+JOIN programs p ON s.program_id = p.program_id
+JOIN courses c ON e.course_id = c.course_id
+WHERE e.credits_earned > 0
+  AND p.department_id != c.department_id",
+150,distinct_count,hard,PASS,INCORRECT,How many distinct instructors taught courses with students from both resident and nonresident groups?,"SELECT COUNT(DISTINCT i.instructor_id)
+FROM instructors i
+JOIN courses c ON i.instructor_id = c.instructor_id
+JOIN enrollments e ON c.course_id = e.course_id
+JOIN students s ON e.student_id = s.student_id
+GROUP BY i.instructor_id
+HAVING COUNT(DISTINCT CASE WHEN s.residency_status = 'resident' THEN s.student_id END) > 0
+   AND COUNT(DISTINCT CASE WHEN s.residency_status = 'nonresident' THEN s.student_id END) > 0","Groups by instructor while selecting COUNT(DISTINCT instructor_id), producing separate one-value rows instead of one total count."
+151,group_by,easy,PASS,CORRECT,Count students by student status.,"SELECT students.student_status, COUNT(*) AS student_count
+FROM students
+GROUP BY students.student_status",
+152,group_by,easy,PASS,CORRECT,Count students by current year level.,"SELECT current_year, COUNT(*) AS student_count
+FROM students
+GROUP BY current_year",
+153,group_by,easy,PASS,CORRECT,Show average student GPA by citizenship status.,"SELECT students.citizenship_status, AVG(students.cumulative_gpa) AS average_gpa
+FROM students
+GROUP BY students.citizenship_status",
+154,group_by,easy,PASS,CORRECT,Count departments by campus code.,"SELECT campus_code, COUNT(*) AS department_count
+FROM departments
+GROUP BY campus_code",
+155,group_by,easy,PASS,CORRECT,Show total annual budget by school name.,"SELECT school_name, SUM(annual_budget) AS total_annual_budget
+FROM departments
+GROUP BY school_name",
+156,group_by,easy,PASS,CORRECT,Count instructors by employment type.,"SELECT employment_type, COUNT(*) AS instructor_count
+FROM instructors
+GROUP BY employment_type",
+157,group_by,easy,PASS,CORRECT,Show average instructor salary by academic rank.,"SELECT academic_rank, AVG(salary) AS average_salary
+FROM instructors
+GROUP BY academic_rank",
+158,group_by,easy,PASS,CORRECT,Count programs by degree level.,"SELECT degree_level, COUNT(program_id) AS program_count
+FROM programs
+GROUP BY degree_level",
+159,group_by,easy,PASS,CORRECT,Show average tuition per credit by delivery mode.,"SELECT delivery_mode, AVG(tuition_per_credit) AS average_tuition_per_credit
+FROM programs
+GROUP BY delivery_mode",
+160,group_by,easy,PASS,CORRECT,Count courses by semester.,"SELECT semester, COUNT(*) AS course_count
+FROM courses
+GROUP BY semester",
+161,group_by,easy,PASS,CORRECT,Show average course capacity by course level.,"SELECT course_level, AVG(capacity) as average_capacity
+FROM courses
+GROUP BY course_level",
+162,group_by,easy,PASS,CORRECT,Count enrollments by enrollment status.,"SELECT enrollment_status, COUNT(*) AS enrollment_count
+FROM enrollments
+GROUP BY enrollment_status",
+163,group_by,easy,PASS,CORRECT,Show average numeric grade by final grade.,"SELECT e.final_grade, AVG(e.numeric_grade) AS average_numeric_grade
+FROM enrollments e
+GROUP BY e.final_grade",
+164,group_by,easy,PASS,CORRECT,Count advising appointments by appointment type.,"SELECT appointment_type, COUNT(*) AS appointment_count
+FROM academic_advising
+GROUP BY appointment_type",
+165,group_by,easy,PASS,CORRECT,Count attendance records by attendance status.,"SELECT attendance_status, COUNT(*) AS record_count
+FROM attendance_records
+GROUP BY attendance_status",
+166,group_by,moderate,PASS,CORRECT,Count active students by program.,"SELECT ""programs"".""program_name"", COUNT(*) AS ""student_count"" FROM ""students"" INNER JOIN ""programs"" ON ""students"".""program_id"" = ""programs"".""program_id"" WHERE ""students"".""student_status"" = ? GROUP BY ""programs"".""program_name""",
+167,group_by,moderate,PASS,CORRECT,Show average GPA by program degree level.,"SELECT p.degree_level, AVG(s.cumulative_gpa) AS average_gpa
+FROM programs p
+JOIN students s ON p.program_id = s.program_id
+GROUP BY p.degree_level",
+168,group_by,moderate,PASS,INCORRECT,Show total credits earned by student year level.,"SELECT s.current_year, SUM(e.credits_earned) AS total_credits_earned
+FROM enrollments e
+JOIN students s ON e.student_id = s.student_id
+GROUP BY s.current_year",Sums enrollment-level credits instead of student cumulative credits by current year.
+169,group_by,moderate,PASS,CORRECT,Count instructors by department and tenure status.,"SELECT d.department_name, i.tenure_status, COUNT(*) AS instructor_count
+FROM departments d
+JOIN instructors i ON d.department_id = i.department_id
+GROUP BY d.department_name, i.tenure_status",
+170,group_by,moderate,PASS,CORRECT,Show average instructor salary by department.,"SELECT d.department_name, AVG(i.salary) AS average_salary
+FROM departments d
+JOIN instructors i ON d.department_id = i.department_id
+GROUP BY d.department_id",
+171,group_by,moderate,PASS,CORRECT,Count active programs by department.,"SELECT ""departments"".""department_name"", COUNT(*) AS ""program_count"" FROM ""programs"" INNER JOIN ""departments"" ON ""programs"".""department_id"" = ""departments"".""department_id"" WHERE ""programs"".""active_flag"" = ? GROUP BY ""departments"".""department_name""",
+172,group_by,moderate,PASS,CORRECT,Show total current enrollment by degree level.,"SELECT degree_level, SUM(current_enrollment) AS total_current_enrollment
+FROM programs
+GROUP BY degree_level",
+173,group_by,moderate,PASS,CORRECT,Count courses by department and delivery mode.,"SELECT d.department_name, c.delivery_mode, COUNT(*) AS course_count
+FROM courses c
+JOIN departments d ON c.department_id = d.department_id
+GROUP BY d.department_name, c.delivery_mode",
+174,group_by,moderate,PASS,INCORRECT,Show total enrolled course seats by academic year.,"SELECT courses.academic_year, SUM(courses.capacity) AS total_enrolled_course_seats
+FROM courses
+GROUP BY courses.academic_year","Sums course capacity, not the recorded enrolled_count requested as enrolled course seats."
+175,group_by,moderate,PASS,CORRECT,Show completed enrollment count by course.,"SELECT c.course_id, c.course_title, COUNT(e.enrollment_id) AS completed_enrollment_count
+FROM courses c
+JOIN enrollments e ON c.course_id = e.course_id
+WHERE e.enrollment_status = 'completed'
+GROUP BY c.course_id, c.course_title",
+176,group_by,moderate,PASS,CORRECT,Show average attendance percentage by instructor.,"SELECT i.instructor_id, AVG(e.attendance_percentage) AS average_attendance_percentage
+FROM enrollments e
+JOIN instructors i ON e.instructor_id = i.instructor_id
+GROUP BY i.instructor_id",
+177,group_by,moderate,PASS,CORRECT,Show total tuition amount by enrollment status.,"SELECT enrollment_status, SUM(tuition_amount)
+FROM enrollments
+GROUP BY enrollment_status",
+178,group_by,moderate,PASS,INCORRECT,Show total scholarship amount by program.,"SELECT p.program_id, SUM(e.scholarship_amount) AS total_scholarship_amount
+FROM enrollments e
+JOIN programs p ON e.course_id = (SELECT course_id FROM courses WHERE program_id = p.program_id LIMIT 1)
+GROUP BY p.program_id","Maps each program through one arbitrary course, omitting scholarships from the program's other courses."
+179,group_by,moderate,PASS,CORRECT,Count advising appointments by risk level and meeting mode.,"SELECT academic_risk_level, meeting_mode, COUNT(*) as appointment_count
+FROM academic_advising
+GROUP BY academic_risk_level, meeting_mode
+HAVING COUNT(*) > 0",
+180,group_by,moderate,PASS,CORRECT,Show average advising satisfaction by instructor.,"SELECT i.instructor_id, AVG(aa.student_satisfaction) AS avg_satisfaction
+FROM academic_advising aa
+JOIN instructors i ON aa.instructor_id = i.instructor_id
+GROUP BY i.instructor_id",
+181,group_by,moderate,PASS,CORRECT,Count attendance records by course and session type.,"SELECT course_id, session_type, COUNT(attendance_id) AS attendance_count
+FROM attendance_records
+GROUP BY course_id, session_type",
+182,group_by,moderate,PASS,CORRECT,Show average quiz score by attendance status.,"SELECT attendance_status, AVG(quiz_score) AS average_quiz_score
+FROM attendance_records
+GROUP BY attendance_status",
+183,group_by,moderate,PASS,CORRECT,Show total participation points by course.,"SELECT course_id, SUM(participation_points) AS total_participation_points
+FROM attendance_records
+GROUP BY course_id",
+184,group_by,moderate,PASS,CORRECT,Count students by program and financial-aid status.,"SELECT students.program_id, students.financial_aid_flag, COUNT(*) AS student_count
+FROM students
+GROUP BY students.program_id, students.financial_aid_flag",
+185,group_by,moderate,PASS,CORRECT,Show average GPA by housing status and residency status.,"SELECT students.housing_status, students.residency_status, AVG(students.cumulative_gpa) AS average_gpa
+FROM students
+GROUP BY students.housing_status, students.residency_status",
+186,group_by,hard,PASS,CORRECT,Show completed enrollment count by department and degree level.,"SELECT d.department_name, p.degree_level, COUNT(e.enrollment_id) AS completed_enrollment_count
+FROM enrollments e
+JOIN courses c ON e.course_id = c.course_id
+JOIN departments d ON c.department_id = d.department_id
+JOIN programs p ON c.program_id = p.program_id
+WHERE e.enrollment_status = 'completed'
+GROUP BY d.department_name, p.degree_level",
+187,group_by,hard,PASS,CORRECT,Show average numeric grade by program and course delivery mode.,"SELECT p.program_name, c.delivery_mode, AVG(e.numeric_grade) AS avg_numeric_grade
+FROM enrollments e
+JOIN courses c ON e.course_id = c.course_id
+JOIN programs p ON c.program_id = p.program_id
+GROUP BY p.program_name, c.delivery_mode",
+188,group_by,hard,PASS,CORRECT,Show total tuition and scholarship amounts by department.,"SELECT d.department_name, SUM(e.tuition_amount) AS total_tuition, SUM(e.scholarship_amount) AS total_scholarship
+FROM enrollments e
+JOIN courses c ON e.course_id = c.course_id
+JOIN departments d ON c.department_id = d.department_id
+GROUP BY d.department_id, d.department_name",
+189,group_by,hard,PASS,INCORRECT,Show active student count by department and citizenship status.,"SELECT d.department_name, s.citizenship_status, COUNT(s.student_id) AS active_student_count
+FROM students s
+JOIN programs p ON s.program_id = p.program_id
+JOIN departments d ON p.department_id = d.department_id
+GROUP BY d.department_name, s.citizenship_status
+HAVING COUNT(s.student_id) > 0",Never filters students to active status.
+190,group_by,hard,PASS,CORRECT,Show average instructor salary by school and academic rank.,"SELECT d.school_name, i.academic_rank, AVG(i.salary) AS average_salary
+FROM instructors i
+JOIN departments d ON i.department_id = d.department_id
+GROUP BY d.school_name, i.academic_rank",
+191,group_by,hard,PASS,CORRECT,Show course capacity and enrolled count by program and semester.,"SELECT
+    courses.program_id,
+    courses.semester,
+    SUM(courses.capacity) AS total_capacity,
+    SUM(courses.enrolled_count) AS total_enrolled_count
+FROM courses
+GROUP BY courses.program_id, courses.semester",
+192,group_by,hard,PASS,CORRECT,Show advising appointment count by program and academic risk level.,"SELECT 
+    p.program_name, 
+    aa.academic_risk_level, 
+    COUNT(*) AS advising_appointment_count
+FROM academic_advising aa
+JOIN programs p ON aa.program_id = p.program_id
+GROUP BY p.program_name, aa.academic_risk_level",
+193,group_by,hard,PASS,CORRECT,Show average advising satisfaction by student year level and appointment type.,"SELECT s.current_year, aa.appointment_type, AVG(aa.student_satisfaction) AS avg_satisfaction
+FROM academic_advising aa
+JOIN students s ON aa.student_id = s.student_id
+GROUP BY s.current_year, aa.appointment_type",
+194,group_by,hard,PASS,CORRECT,Show attendance record count by program and attendance status.,"SELECT p.program_id, ar.attendance_status, COUNT(ar.attendance_id) AS attendance_count
+FROM attendance_records ar
+JOIN enrollments e ON ar.enrollment_id = e.enrollment_id
+JOIN students s ON e.student_id = s.student_id
+JOIN programs p ON s.program_id = p.program_id
+GROUP BY p.program_id, ar.attendance_status",
+195,group_by,hard,PASS,CORRECT,Show average quiz score by department and session type.,"SELECT d.department_name, ar.session_type, AVG(ar.quiz_score) AS avg_quiz_score
+FROM attendance_records ar
+JOIN courses c ON ar.course_id = c.course_id
+JOIN departments d ON c.department_id = d.department_id
+GROUP BY d.department_name, ar.session_type",
+196,group_by,hard,PASS,CORRECT,Show credits earned by instructor and course level.,"SELECT e.instructor_id, c.course_level, SUM(e.credits_earned) AS total_credits_earned
+FROM enrollments e
+JOIN courses c ON e.course_id = c.course_id
+JOIN instructors i ON e.instructor_id = i.instructor_id
+GROUP BY e.instructor_id, c.course_level",
+197,group_by,hard,PASS,CORRECT,Show completed enrollment tuition by degree level and academic year.,"SELECT p.degree_level, c.academic_year, SUM(e.tuition_amount)
+FROM enrollments e
+JOIN courses c ON e.course_id = c.course_id
+JOIN programs p ON c.program_id = p.program_id
+WHERE e.enrollment_status = 'completed'
+GROUP BY p.degree_level, c.academic_year
+HAVING SUM(e.tuition_amount) > 0",
+198,group_by,hard,PASS,INCORRECT,"Show active student count, course count, and instructor count by department.","SELECT ""departments"".""department_name"", COUNT(*) AS ""active_student_count"", COUNT(*) AS ""course_count"", COUNT(*) AS ""instructor_count"" FROM ""courses"" INNER JOIN ""departments"" ON ""courses"".""department_id"" = ""departments"".""department_id"" INNER JOIN ""instructors"" ON ""courses"".""instructor_id"" = ""instructors"".""instructor_id"" INNER JOIN ""students"" ON ""instructors"".""instructor_id"" = ""students"".""advisor_instructor_id"" WHERE ""departments"".""active_flag"" = ? GROUP BY ""departments"".""department_name""","Uses the same fanout-inflated COUNT(*) for students, courses, and instructors and joins students through advisor assignments."
+199,group_by,hard,PASS,CORRECT,Show average attendance percentage by program and course delivery mode.,"SELECT p.program_name, c.delivery_mode, AVG(e.attendance_percentage) AS avg_attendance
+FROM enrollments e
+JOIN courses c ON e.course_id = c.course_id
+JOIN programs p ON c.program_id = p.program_id
+GROUP BY p.program_name, c.delivery_mode",
+200,group_by,hard,PASS,INCORRECT,Show student count and average GPA by advisor and degree level.,"SELECT i.last_name, p.degree_level, COUNT(*) AS student_count, AVG(s.cumulative_gpa) AS average_gpa
+FROM students s
+JOIN instructors i ON s.advisor_instructor_id = i.instructor_id
+JOIN programs p ON s.program_id = p.program_id
+GROUP BY i.last_name, p.degree_level","Groups advisors by last name, merging different instructors who share a surname."
+201,having,easy,PASS,CORRECT,List student statuses represented by more than 10 students.,"SELECT student_status
+FROM students
+GROUP BY student_status
+HAVING COUNT(student_id) > 10",
+202,having,easy,PASS,CORRECT,List year levels with an average GPA above 3.,"SELECT current_year
+FROM students
+GROUP BY current_year
+HAVING AVG(cumulative_gpa) > 3",
+203,having,easy,PASS,CORRECT,List departments with annual budgets above 2 million dollars.,"SELECT departments.department_id, departments.department_name, departments.annual_budget
+FROM departments
+WHERE departments.annual_budget > 2000000",
+204,having,easy,PASS,CORRECT,List schools with more than 5 departments.,"SELECT school_name
+FROM departments
+GROUP BY school_name
+HAVING COUNT(department_id) > 5",
+205,having,easy,PASS,CORRECT,List employment types with more than 10 instructors.,"SELECT employment_type
+FROM instructors
+GROUP BY employment_type
+HAVING COUNT(instructor_id) > 10",
+206,having,easy,PASS,CORRECT,List academic ranks with an average salary above 90000 dollars.,"SELECT academic_rank
+FROM instructors
+GROUP BY academic_rank
+HAVING AVG(salary) > 90000",
+207,having,easy,PASS,CORRECT,List degree levels offered by more than 5 programs.,"SELECT degree_level
+FROM programs
+GROUP BY degree_level
+HAVING COUNT(program_id) > 5",
+208,having,easy,PASS,CORRECT,List delivery modes with an average tuition per credit above 500 dollars.,"SELECT delivery_mode
+FROM programs
+GROUP BY delivery_mode
+HAVING AVG(tuition_per_credit) > 500",
+209,having,easy,PASS,CORRECT,List semesters containing more than 10 courses.,"SELECT courses.semester
+FROM courses
+GROUP BY courses.semester
+HAVING COUNT(courses.course_id) > 10",
+210,having,easy,PASS,CORRECT,List course levels with an average capacity above 70 students.,"SELECT course_level
+FROM courses
+GROUP BY course_level
+HAVING AVG(capacity) > 70",
+211,having,easy,PASS,CORRECT,List enrollment statuses represented by more than 10 records.,"SELECT enrollment_status
+FROM enrollments
+GROUP BY enrollment_status
+HAVING COUNT(enrollment_id) > 10",
+212,having,easy,PASS,CORRECT,List final grades with an average numeric grade above 80.,"SELECT enrollments.final_grade, AVG(enrollments.numeric_grade) AS avg_numeric_grade
+FROM enrollments
+GROUP BY enrollments.final_grade
+HAVING AVG(enrollments.numeric_grade) > 80",
+213,having,easy,PASS,CORRECT,List advising appointment types with more than 5 meetings.,"SELECT appointment_type
+FROM academic_advising
+GROUP BY appointment_type
+HAVING COUNT(*) > 5",
+214,having,easy,PASS,CORRECT,List attendance statuses appearing more than 10 times.,"SELECT attendance_records.attendance_status
+FROM attendance_records
+GROUP BY attendance_records.attendance_status
+HAVING COUNT(*) > 10",
+215,having,easy,PASS,CORRECT,List session types with an average quiz score above 70.,"SELECT session_type
+FROM attendance_records
+GROUP BY session_type
+HAVING AVG(quiz_score) > 70",
+216,having,moderate,PASS,CORRECT,List programs with more than 3 active students.,"SELECT p.program_id, p.program_name
+FROM programs p
+JOIN students s ON p.program_id = s.program_id
+WHERE s.student_status = 'active'
+GROUP BY p.program_id
+HAVING COUNT(s.student_id) > 3",
+217,having,moderate,PASS,CORRECT,List departments with more than 2 active instructors.,"SELECT d.department_id, d.department_name
+FROM departments d
+JOIN instructors i ON d.department_id = i.department_id
+WHERE i.active_flag = '1'
+GROUP BY d.department_id, d.department_name
+HAVING COUNT(i.instructor_id) > 2",
+218,having,moderate,PASS,CORRECT,List instructors teaching more than 2 courses.,"SELECT i.instructor_id, i.first_name, i.last_name
+FROM instructors i
+JOIN courses c ON i.instructor_id = c.instructor_id
+GROUP BY i.instructor_id, i.first_name, i.last_name
+HAVING COUNT(DISTINCT c.course_id) > 2",
+219,having,moderate,PASS,CORRECT,List courses with more than 2 completed enrollments.,"SELECT c.course_id, c.course_code, c.course_title
+FROM courses c
+JOIN enrollments e ON c.course_id = e.course_id
+WHERE e.enrollment_status = 'completed'
+GROUP BY c.course_id, c.course_code, c.course_title
+HAVING COUNT(e.enrollment_id) > 2",
+220,having,moderate,PASS,CORRECT,List students with more than 2 enrollment records.,"SELECT s.student_id, s.first_name, s.last_name
+FROM students s
+JOIN enrollments e ON s.student_id = e.student_id
+GROUP BY s.student_id, s.first_name, s.last_name
+HAVING COUNT(e.enrollment_id) > 2",
+221,having,moderate,PASS,CORRECT,List students whose total earned credits from enrollments exceed 6.,"SELECT s.student_id, s.first_name, s.last_name
+FROM students s
+JOIN enrollments e ON s.student_id = e.student_id
+GROUP BY s.student_id, s.first_name, s.last_name
+HAVING SUM(e.credits_earned) > 6",
+222,having,moderate,PASS,CORRECT,List programs whose total scholarship amount exceeds 5000 dollars.,"SELECT ""programs"".""program_id"", ""programs"".""program_name"", SUM(""enrollments"".""scholarship_amount"") AS ""total_scholarship"" FROM ""programs"" INNER JOIN ""courses"" ON ""programs"".""program_id"" = ""courses"".""program_id"" INNER JOIN ""enrollments"" ON ""courses"".""course_id"" = ""enrollments"".""course_id"" GROUP BY ""programs"".""program_id"", ""programs"".""program_name"" HAVING ""total_scholarship"" > ?",
+223,having,moderate,PASS,CORRECT,List departments whose total instructor payroll exceeds 200000 dollars.,"SELECT d.department_id, d.department_name
+FROM departments d
+JOIN instructors i ON d.department_id = i.department_id
+GROUP BY d.department_id, d.department_name
+HAVING SUM(i.salary) > 200000",
+224,having,moderate,PASS,CORRECT,List courses with an average attendance percentage above 85 percent.,"SELECT c.course_id, c.course_code, c.course_title
+FROM courses c
+JOIN enrollments e ON c.course_id = e.course_id
+GROUP BY c.course_id, c.course_code, c.course_title
+HAVING AVG(e.attendance_percentage) > 85",
+225,having,moderate,PASS,CORRECT,List instructors whose students have an average numeric grade above 80.,"SELECT i.instructor_id, i.first_name, i.last_name
+FROM instructors i
+JOIN enrollments e ON i.instructor_id = e.instructor_id
+GROUP BY i.instructor_id, i.first_name, i.last_name
+HAVING AVG(e.numeric_grade) > 80",
+226,having,moderate,PASS,CORRECT,List advisors who conducted more than 2 advising appointments.,"SELECT i.instructor_id, i.first_name, i.last_name
+FROM academic_advising aa
+JOIN instructors i ON aa.instructor_id = i.instructor_id
+GROUP BY aa.instructor_id, i.first_name, i.last_name
+HAVING COUNT(aa.advising_id) > 2",
+227,having,moderate,PASS,INCORRECT,List students who attended more than 3 recorded class sessions.,"SELECT s.student_id, s.first_name, s.last_name
+FROM students s
+JOIN attendance_records ar ON s.student_id = ar.student_id
+GROUP BY s.student_id
+HAVING COUNT(ar.attendance_id) > 3","Counts all attendance records, including absences, instead of sessions the student attended."
+228,having,moderate,PASS,CORRECT,List courses with more than 2 absent attendance records.,"SELECT ""courses"".""course_id"", ""courses"".""course_title"", COUNT(*) AS ""absent_count"" FROM ""courses"" INNER JOIN ""attendance_records"" ON ""courses"".""course_id"" = ""attendance_records"".""course_id"" WHERE ""attendance_records"".""attendance_status"" = ? GROUP BY ""courses"".""course_id"", ""courses"".""course_title"" HAVING ""absent_count"" > ?",
+229,having,moderate,PASS,CORRECT,List programs with an average student GPA above 3.2.,"SELECT p.program_id, p.program_name
+FROM programs p
+JOIN students s ON p.program_id = s.program_id
+GROUP BY p.program_id, p.program_name
+HAVING AVG(s.cumulative_gpa) > 3.2",
+230,having,moderate,PASS,CORRECT,List departments with more than 3 active courses.,"SELECT d.department_id, d.department_name
+FROM departments d
+JOIN courses c ON d.department_id = c.department_id
+WHERE c.active_flag = '1'
+GROUP BY d.department_id
+HAVING COUNT(c.course_id) > 3",
+231,having,moderate,PASS,CORRECT,List degree levels whose total current enrollment exceeds 200.,"SELECT degree_level
+FROM programs
+GROUP BY degree_level
+HAVING SUM(current_enrollment) > 200",
+232,having,moderate,PASS,CORRECT,List research areas with an average instructor performance rating above 3.5.,"SELECT research_area
+FROM instructors
+GROUP BY research_area
+HAVING AVG(performance_rating) > 3.5",
+233,having,moderate,PASS,CORRECT,List housing statuses with more than 5 students receiving financial aid.,"SELECT students.housing_status
+FROM students
+WHERE students.financial_aid_flag = '1'
+GROUP BY students.housing_status
+HAVING COUNT(students.student_id) > 5",
+234,having,moderate,PASS,CORRECT,List courses whose total tuition amount exceeds 10000 dollars.,"SELECT c.course_id, c.course_code, c.course_title
+FROM courses c
+JOIN enrollments e ON c.course_id = e.course_id
+GROUP BY c.course_id, c.course_code, c.course_title
+HAVING SUM(e.tuition_amount) > 10000",
+235,having,moderate,PASS,CORRECT,List instructors with more than 3 completed student enrollments.,"SELECT i.instructor_id, i.first_name, i.last_name
+FROM instructors i
+JOIN enrollments e ON i.instructor_id = e.instructor_id
+WHERE e.enrollment_status = 'completed'
+GROUP BY i.instructor_id
+HAVING COUNT(e.enrollment_id) > 3",
+236,having,hard,PASS,CORRECT,List departments whose average student GPA is above the university-wide average GPA.,"SELECT ""departments"".""department_id"", ""departments"".""department_name"", AVG(""students"".""cumulative_gpa"") AS ""dept_avg_gpa"" FROM ""departments"" INNER JOIN ""programs"" ON ""departments"".""department_id"" = ""programs"".""department_id"" INNER JOIN ""students"" ON ""programs"".""program_id"" = ""students"".""program_id"" GROUP BY ""departments"".""department_id"", ""departments"".""department_name"" HAVING ""dept_avg_gpa"" > ?",
+237,having,hard,FAIL,INCORRECT,List programs whose completed enrollment rate is above 60 percent.,<NO SQL GENERATED>,No SQL was returned.
+238,having,hard,PASS,CORRECT,List instructors whose average student grade is above the overall instructor average grade.,"SELECT i.instructor_id, i.first_name, i.last_name
+FROM instructors i
+JOIN enrollments e ON i.instructor_id = e.instructor_id
+GROUP BY i.instructor_id, i.first_name, i.last_name
+HAVING AVG(e.numeric_grade) > (SELECT AVG(numeric_grade) FROM enrollments)",
+239,having,hard,PASS,INCORRECT,List courses whose average attendance percentage is above the average for their department.,"SELECT c.course_id, c.course_title
+FROM courses c
+JOIN enrollments e ON c.course_id = e.course_id
+WHERE e.attendance_percentage > (
+    SELECT AVG(e2.attendance_percentage)
+    FROM enrollments e2
+    JOIN courses c2 ON e2.course_id = c2.course_id
+    WHERE c2.department_id = c.department_id
+)",Compares individual enrollment attendance values with the department average and never computes each course's average.
+240,having,hard,PASS,CORRECT,List students whose total scholarship amount exceeds half of their total tuition amount.,"SELECT s.student_id, s.first_name, s.last_name
+FROM students s
+JOIN enrollments e ON s.student_id = e.student_id
+GROUP BY s.student_id, s.first_name, s.last_name
+HAVING SUM(e.scholarship_amount) > 0.5 * SUM(e.tuition_amount)",
+241,having,hard,PASS,INCORRECT,List departments where active student count is greater than reported department student count divided by ten.,"WITH student_counts AS (
+    SELECT p.department_id, COUNT(s.student_id) AS active_student_count
+    FROM students s
+    JOIN programs p ON s.program_id = p.program_id
+    GROUP BY p.department_id
+)
+SELECT d.department_id, d.department_name
+FROM departments d
+JOIN student_counts sc ON d.department_id = sc.department_id
+WHERE sc.active_student_count > d.student_count / 10.0",Counts all students in the department instead of active students only.
+242,having,hard,PASS,CORRECT,List programs with students from at least three citizenship statuses.,"SELECT p.program_id, p.program_name
+FROM programs p
+JOIN students s ON p.program_id = s.program_id
+GROUP BY p.program_id, p.program_name
+HAVING COUNT(DISTINCT s.citizenship_status) >= 3",
+243,having,hard,PASS,CORRECT,List courses taken by students from at least three different programs.,"SELECT c.course_id, c.course_code, c.course_title
+FROM courses c
+JOIN enrollments e ON c.course_id = e.course_id
+JOIN students s ON e.student_id = s.student_id
+GROUP BY c.course_id, c.course_code, c.course_title
+HAVING COUNT(DISTINCT s.program_id) >= 3",
+244,having,hard,PASS,CORRECT,List instructors who teach courses in more than one department.,"SELECT i.instructor_id, i.first_name, i.last_name
+FROM instructors i
+JOIN courses c ON i.instructor_id = c.instructor_id
+GROUP BY i.instructor_id, i.first_name, i.last_name
+HAVING COUNT(DISTINCT c.department_id) > 1",
+245,having,hard,PASS,CORRECT,List students with completed enrollments in at least three different courses.,"SELECT s.student_id, s.first_name, s.last_name
+FROM students s
+JOIN enrollments e ON s.student_id = e.student_id
+WHERE e.enrollment_status = 'completed'
+GROUP BY s.student_id, s.first_name, s.last_name
+HAVING COUNT(DISTINCT e.course_id) >= 3",
+246,having,hard,PASS,INCORRECT,List departments whose total course enrollment exceeds their reported student count.,"WITH dept_enrollment AS (
+    SELECT c.department_id, SUM(c.enrolled_count) AS total_enrolled
+    FROM courses c
+    GROUP BY c.department_id
+),
+avg_enrollment AS (
+    SELECT AVG(total_enrolled) AS avg_total
+    FROM dept_enrollment
+)
+SELECT d.department_id, d.department_name
+FROM departments d
+JOIN dept_enrollment de ON d.department_id = de.department_id
+WHERE de.total_enrolled > d.student_count
+  AND de.total_enrolled > (SELECT avg_total FROM avg_enrollment)",Adds an unrequested requirement that department enrollment also exceed the average department enrollment.
+247,having,hard,PASS,CORRECT,List programs whose average course seat utilization exceeds 75 percent.,"SELECT p.program_id, p.program_name
+FROM programs p
+JOIN courses c ON p.program_id = c.program_id
+GROUP BY p.program_id, p.program_name
+HAVING AVG(CAST(c.enrolled_count AS REAL) / c.capacity) > 0.75",
+248,having,hard,PASS,CORRECT,List advisors whose high-risk students have an average GPA below 2.5.,"SELECT ""academic_advising"".""instructor_id"", AVG(""students"".""cumulative_gpa"") AS ""avg_gpa"" FROM ""academic_advising"" INNER JOIN ""students"" ON ""academic_advising"".""student_id"" = ""students"".""student_id"" WHERE ""academic_advising"".""academic_risk_level"" = ? GROUP BY ""academic_advising"".""instructor_id"" HAVING ""avg_gpa"" < ?",
+249,having,hard,PASS,CORRECT,List courses where more than 20 percent of attendance records are absent.,"SELECT c.course_id, c.course_title
+FROM courses c
+JOIN attendance_records ar ON c.course_id = ar.course_id
+GROUP BY c.course_id, c.course_title
+HAVING SUM(CASE WHEN ar.attendance_status = 'absent' THEN 1 ELSE 0 END) * 1.0 / COUNT(*) > 0.2",
+250,having,hard,PASS,INCORRECT,List degree levels whose average completed-course grade exceeds the overall completed-course average.,"SELECT p.degree_level
+FROM enrollments e
+JOIN programs p ON e.course_id = (SELECT course_id FROM courses WHERE program_id = p.program_id LIMIT 1)
+WHERE e.enrollment_status = 'completed'
+GROUP BY p.degree_level
+HAVING AVG(e.numeric_grade) > (
+    SELECT AVG(numeric_grade)
+    FROM enrollments
+    WHERE enrollment_status = 'completed'
+)","Maps each degree level through an arbitrary first course per program, so completed grades are assigned incorrectly."
+251,join,easy,PASS,CORRECT,Show each program with its department name.,"SELECT p.program_name, d.department_name
+FROM programs p
+JOIN departments d ON p.department_id = d.department_id",
+252,join,easy,PASS,CORRECT,Show each instructor with their department name.,"SELECT i.first_name, i.last_name, d.department_name
+FROM instructors i
+JOIN departments d ON i.department_id = d.department_id",
+253,join,easy,PASS,CORRECT,Show each student with their program name.,"SELECT s.student_id, s.first_name, s.last_name, p.program_name
+FROM students s
+JOIN programs p ON s.program_id = p.program_id",
+254,join,easy,PASS,CORRECT,Show each student with their advisor's name.,"SELECT s.student_id, s.first_name, s.last_name, i.first_name, i.last_name
+FROM students s
+JOIN instructors i ON s.advisor_instructor_id = i.instructor_id",
+255,join,easy,PASS,CORRECT,Show each course with its department name.,"SELECT c.course_id, d.department_name
+FROM courses c
+JOIN departments d ON c.department_id = d.department_id",
+256,join,easy,PASS,CORRECT,Show each course with its program name.,"SELECT c.course_id, c.course_title, p.program_name
+FROM courses c
+JOIN programs p ON c.program_id = p.program_id",
+257,join,easy,PASS,CORRECT,Show each course with its instructor's name.,"SELECT c.course_id, c.course_title, i.first_name, i.last_name
+FROM courses c
+JOIN instructors i ON c.instructor_id = i.instructor_id",
+258,join,easy,PASS,INCORRECT,Show each course with the title of its prerequisite course.,"SELECT ""c"".""course_title"" AS ""course_title"", ""p"".""course_title"" AS ""prerequisite_title"" FROM ""courses"" AS ""c"" INNER JOIN ""courses"" AS ""p"" ON ""c"".""prerequisite_course_id"" = ""p"".""course_id""","Uses an inner self-join, omitting courses with no prerequisite even though the request asks for each course."
+259,join,easy,PASS,CORRECT,Show each advising appointment with the student's name.,"SELECT aa.advising_id, s.first_name, s.last_name
+FROM academic_advising aa
+JOIN students s ON aa.student_id = s.student_id",
+260,join,easy,PASS,CORRECT,Show each advising appointment with the advisor's name.,"SELECT aa.advising_id, i.first_name, i.last_name
+FROM academic_advising aa
+JOIN instructors i ON aa.instructor_id = i.instructor_id",
+261,join,easy,PASS,CORRECT,Show each enrollment with the student's name.,"SELECT e.enrollment_id, s.first_name, s.last_name
+FROM enrollments e
+JOIN students s ON e.student_id = s.student_id",
+262,join,easy,PASS,CORRECT,Show each enrollment with the course title.,"SELECT e.enrollment_id, c.course_title
+FROM enrollments e
+JOIN courses c ON e.course_id = c.course_id",
+263,join,easy,PASS,CORRECT,Show each enrollment with the instructor's name.,"SELECT e.enrollment_id, i.first_name, i.last_name
+FROM enrollments e
+JOIN instructors i ON e.instructor_id = i.instructor_id",
+264,join,easy,PASS,CORRECT,Show each attendance record with the student's name.,"SELECT ar.attendance_id, s.first_name, s.last_name
+FROM attendance_records ar
+JOIN students s ON ar.student_id = s.student_id",
+265,join,easy,PASS,CORRECT,Show each attendance record with the course title.,"SELECT ar.attendance_id, ar.enrollment_id, ar.student_id, ar.course_id, ar.instructor_id, ar.class_date, ar.session_type, ar.attendance_status, ar.minutes_late, ar.minutes_present, ar.excused_flag, ar.reason_code, ar.recorded_by, ar.recorded_at, ar.participation_points, ar.quiz_score, ar.notes, ar.followup_required, c.course_title
+FROM attendance_records ar
+JOIN courses c ON ar.course_id = c.course_id",
+266,join,moderate,PASS,CORRECT,List active students with their program names and degree levels.,"SELECT s.student_id, s.first_name, s.last_name, p.program_name, p.degree_level
+FROM students s
+JOIN programs p ON s.program_id = p.program_id
+WHERE s.student_status = 'active'",
+267,join,moderate,PASS,CORRECT,List international students with their advisors' names.,"SELECT s.student_id, s.first_name, s.last_name, i.first_name, i.last_name
+FROM students s
+JOIN instructors i ON s.advisor_instructor_id = i.instructor_id
+WHERE s.citizenship_status = 'international'",
+268,join,moderate,PASS,CORRECT,List active instructors with their department names and salaries.,"SELECT i.instructor_id, i.first_name, i.last_name, d.department_name, i.salary
+FROM instructors i
+JOIN departments d ON i.department_id = d.department_id
+WHERE i.active_flag = '1'",
+269,join,moderate,PASS,CORRECT,List online programs with their department names and tuition per credit.,"SELECT p.program_name, d.department_name, p.tuition_per_credit
+FROM programs p
+JOIN departments d ON p.department_id = d.department_id
+WHERE p.delivery_mode = 'online'",
+270,join,moderate,PASS,CORRECT,List active courses with their instructor names and enrolled counts.,"SELECT c.course_id, c.course_title, i.first_name, i.last_name, c.enrolled_count
+FROM courses c
+JOIN instructors i ON c.instructor_id = i.instructor_id
+WHERE c.active_flag = '1'",
+271,join,moderate,PASS,INCORRECT,List courses that have prerequisites with both course titles.,"SELECT c.course_id, c.course_title, c.course_title AS course_title
+FROM courses c
+JOIN courses p ON c.prerequisite_course_id = p.course_id
+WHERE c.prerequisite_course_id IS NOT NULL
+  AND p.course_title IS NOT NULL",Returns the current course title twice and never returns the prerequisite course title.
+272,join,moderate,PASS,CORRECT,List completed enrollments with student names and final grades.,"SELECT s.first_name, s.last_name, e.final_grade
+FROM enrollments e
+JOIN students s ON e.student_id = s.student_id
+WHERE e.enrollment_status = 'completed'",
+273,join,moderate,PASS,CORRECT,List withdrawn enrollments with student names and withdrawal dates.,"SELECT s.first_name, s.last_name, e.withdrawal_date
+FROM enrollments e
+JOIN students s ON e.student_id = s.student_id
+WHERE e.enrollment_status = 'withdrawn'",
+274,join,moderate,PASS,CORRECT,List advising appointments for high-risk students with student names.,"SELECT aa.advising_id, s.first_name, s.last_name
+FROM academic_advising aa
+JOIN students s ON aa.student_id = s.student_id
+WHERE aa.academic_risk_level = 'high'",
+275,join,moderate,PASS,CORRECT,List career advising appointments with advisor names and satisfaction scores.,"SELECT aa.appointment_type, i.first_name, i.last_name, aa.student_satisfaction
+FROM academic_advising aa
+JOIN instructors i ON aa.instructor_id = i.instructor_id
+WHERE aa.appointment_type = 'career'",
+276,join,moderate,PASS,CORRECT,List absent attendance records with student names and class dates.,"SELECT s.first_name, s.last_name, ar.class_date
+FROM attendance_records ar
+JOIN students s ON ar.student_id = s.student_id
+WHERE ar.attendance_status = 'absent'",
+277,join,moderate,PASS,CORRECT,List late attendance records with course titles and minutes late.,"SELECT ar.attendance_id, c.course_title, ar.minutes_late
+FROM attendance_records ar
+JOIN courses c ON ar.course_id = c.course_id
+WHERE ar.attendance_status = 'late'",
+278,join,moderate,PASS,CORRECT,List students receiving financial aid with their program names.,"SELECT s.student_id, s.first_name, s.last_name, p.program_name
+FROM students s
+JOIN programs p ON s.program_id = p.program_id
+WHERE s.financial_aid_flag = '1'",
+279,join,moderate,PASS,CORRECT,List instructors researching databases with their department names.,"SELECT i.first_name, i.last_name, d.department_name
+FROM instructors i
+JOIN departments d ON i.department_id = d.department_id
+WHERE i.research_area = 'Databases'",
+280,join,moderate,PASS,INCORRECT,List graduate-level courses with program names and instructor names.,"SELECT c.course_id, c.course_title, p.program_name, i.first_name, i.last_name
+FROM courses c
+JOIN programs p ON c.program_id = p.program_id
+JOIN instructors i ON c.instructor_id = i.instructor_id
+WHERE c.course_level = 'graduate'",Filters course_level to the nonexistent literal 'graduate' even though the database stores numeric course levels.
+281,join,moderate,PASS,CORRECT,List enrollments with tuition amounts and program names.,"SELECT e.enrollment_id, e.tuition_amount, p.program_name
+FROM enrollments e
+JOIN courses c ON e.course_id = c.course_id
+JOIN programs p ON c.program_id = p.program_id",
+282,join,moderate,PASS,INCORRECT,List students whose advisor is tenured with both names.,"SELECT s.first_name, s.last_name
+FROM students s
+JOIN instructors i ON s.advisor_instructor_id = i.instructor_id
+WHERE i.tenure_status = 'tenured'",Returns only the student's name and omits the tenured advisor's name.
+283,join,moderate,PASS,CORRECT,List courses offered by accredited departments.,"SELECT c.course_id, c.course_code, c.course_title
+FROM courses c
+JOIN departments d ON c.department_id = d.department_id
+WHERE d.accreditation_status = 'accredited'",
+284,join,moderate,PASS,CORRECT,List attendance records for exam sessions with the responsible instructor.,"SELECT ar.attendance_id, ar.enrollment_id, ar.student_id, ar.course_id, ar.instructor_id, ar.class_date, ar.session_type, ar.attendance_status, ar.minutes_late, ar.minutes_present, ar.excused_flag, ar.reason_code, ar.recorded_by, ar.recorded_at, ar.participation_points, ar.quiz_score, ar.notes, ar.followup_required, i.first_name, i.last_name, i.email
+FROM attendance_records ar
+JOIN instructors i ON ar.instructor_id = i.instructor_id
+WHERE ar.session_type = 'exam'",
+285,join,moderate,PASS,CORRECT,List students on leave with their program directors.,"SELECT ""students"".""first_name"", ""students"".""last_name"", ""programs"".""program_director"" FROM ""students"" INNER JOIN ""programs"" ON ""students"".""program_id"" = ""programs"".""program_id"" WHERE ""students"".""student_status"" = ?",
+286,join,hard,PASS,CORRECT,List students whose assigned advisor belongs to a different department than the student's program.,"SELECT s.student_id, s.first_name, s.last_name
+FROM students s
+JOIN programs p ON s.program_id = p.program_id
+JOIN instructors i ON s.advisor_instructor_id = i.instructor_id
+JOIN departments pd ON p.department_id = pd.department_id
+JOIN departments di ON i.department_id = di.department_id
+WHERE pd.department_id != di.department_id",
+287,join,hard,PASS,CORRECT,List courses whose instructor belongs to a different department than the course.,"SELECT c.course_id, c.course_code, c.course_title
+FROM courses c
+JOIN instructors i ON c.instructor_id = i.instructor_id
+WHERE c.department_id != i.department_id",
+288,join,hard,PASS,CORRECT,List enrollments where the recorded instructor differs from the course's assigned instructor.,"SELECT e.enrollment_id, e.student_id, e.course_id, e.instructor_id, c.instructor_id
+FROM enrollments e
+JOIN courses c ON e.course_id = c.course_id
+WHERE e.instructor_id != c.instructor_id",
+289,join,hard,PASS,CORRECT,List attendance records where the recorded instructor differs from the enrollment instructor.,"SELECT 
+  attendance_records.attendance_id,
+  attendance_records.enrollment_id,
+  attendance_records.student_id,
+  attendance_records.course_id,
+  attendance_records.instructor_id,
+  attendance_records.class_date,
+  attendance_records.attendance_status,
+  enrollments.instructor_id
+FROM attendance_records
+JOIN enrollments ON attendance_records.enrollment_id = enrollments.enrollment_id
+WHERE attendance_records.instructor_id != enrollments.instructor_id",
+290,join,hard,PASS,CORRECT,List students enrolled in a course taught by their assigned advisor.,"SELECT DISTINCT s.student_id, s.first_name, s.last_name
+FROM students s
+JOIN enrollments e ON s.student_id = e.student_id
+JOIN courses c ON e.course_id = c.course_id
+WHERE c.instructor_id = s.advisor_instructor_id",
+291,join,hard,PASS,CORRECT,List courses whose prerequisite belongs to a different department.,"SELECT c.course_id, c.course_code, c.course_title
+FROM courses c
+JOIN courses pc ON c.prerequisite_course_id = pc.course_id
+JOIN departments cd ON c.department_id = cd.department_id
+JOIN departments pd ON pc.department_id = pd.department_id
+WHERE c.prerequisite_course_id IS NOT NULL
+  AND c.department_id != pc.department_id",
+292,join,hard,PASS,CORRECT,List active students in programs whose departments are inactive.,"SELECT s.student_id, s.first_name, s.last_name
+FROM students s
+JOIN programs p ON s.program_id = p.program_id
+JOIN departments d ON p.department_id = d.department_id
+WHERE s.student_status = 'active'
+  AND d.active_flag = '0'",
+293,join,hard,PASS,CORRECT,List instructors teaching courses outside their own department.,"SELECT i.instructor_id, i.first_name, i.last_name, i.department_id, c.course_id, c.department_id
+FROM instructors i
+JOIN courses c ON i.instructor_id = c.instructor_id
+WHERE i.department_id != c.department_id",
+294,join,hard,PASS,CORRECT,List advising appointments where the advisor is not the student's assigned advisor.,"SELECT aa.advising_id, aa.student_id, aa.instructor_id, s.advisor_instructor_id
+FROM academic_advising aa
+JOIN students s ON aa.student_id = s.student_id
+WHERE aa.instructor_id != s.advisor_instructor_id",
+295,join,hard,PASS,CORRECT,List students whose enrollment course belongs to a different program than their own.,"SELECT DISTINCT s.student_id, s.first_name, s.last_name
+FROM students s
+JOIN enrollments e ON s.student_id = e.student_id
+JOIN courses c ON e.course_id = c.course_id
+WHERE s.program_id != c.program_id",
+296,join,hard,PASS,CORRECT,List attendance records where the student does not match the enrollment's student.,"SELECT attendance_records.attendance_id, attendance_records.enrollment_id, attendance_records.student_id, attendance_records.course_id, attendance_records.class_date, attendance_records.attendance_status, enrollments.student_id
+FROM attendance_records
+JOIN enrollments ON attendance_records.enrollment_id = enrollments.enrollment_id
+WHERE attendance_records.student_id != enrollments.student_id",
+297,join,hard,PASS,CORRECT,List attendance records where the course does not match the enrollment's course.,"SELECT
+  attendance_records.attendance_id,
+  attendance_records.enrollment_id,
+  attendance_records.student_id,
+  attendance_records.course_id,
+  attendance_records.instructor_id,
+  attendance_records.class_date,
+  attendance_records.session_type,
+  attendance_records.attendance_status,
+  attendance_records.minutes_late,
+  attendance_records.minutes_present,
+  attendance_records.excused_flag,
+  attendance_records.reason_code,
+  attendance_records.recorded_by,
+  attendance_records.recorded_at,
+  attendance_records.participation_points,
+  attendance_records.quiz_score,
+  attendance_records.notes,
+  attendance_records.followup_required,
+  enrollments.course_id
+FROM attendance_records
+JOIN enrollments ON attendance_records.enrollment_id = enrollments.enrollment_id
+WHERE attendance_records.course_id != enrollments.course_id",
+298,join,hard,PASS,CORRECT,List completed enrollments for inactive courses.,"SELECT e.enrollment_id, e.student_id, e.course_id, e.final_grade
+FROM enrollments e
+JOIN courses c ON e.course_id = c.course_id
+WHERE e.enrollment_status = 'completed'
+  AND c.active_flag = '0'",
+299,join,hard,PASS,INCORRECT,List students whose program director is also their course instructor.,"SELECT DISTINCT ""students"".""student_id"", ""students"".""first_name"", ""students"".""last_name"" FROM ""courses"" INNER JOIN ""enrollments"" ON ""courses"".""course_id"" = ""enrollments"".""course_id"" INNER JOIN ""instructors"" ON ""courses"".""instructor_id"" = ""instructors"".""instructor_id"" INNER JOIN ""programs"" ON ""courses"".""program_id"" = ""programs"".""program_id"" INNER JOIN ""students"" ON ""programs"".""program_id"" = ""students"".""program_id"" WHERE ""programs"".""program_director"" = ? AND ""instructors"".""instructor_id"" = ? AND ""courses"".""course_id"" = ? AND ""enrollments"".""student_id"" = ? AND ""students"".""program_id"" = ?",Uses specific parameter equality checks and incorrect joins instead of generically comparing the program director with the enrolled course instructor.
+300,join,hard,PASS,CORRECT,List courses where enrolled count exceeds capacity with department and program names.,"SELECT c.course_id, c.course_code, c.course_title, d.department_name, p.program_name
+FROM courses c
+JOIN departments d ON c.department_id = d.department_id
+JOIN programs p ON c.program_id = p.program_id
+WHERE c.enrolled_count > c.capacity",
+301,multi_table_join,easy,PASS,CORRECT,Show each student with their program and department names.,"SELECT s.student_id, s.first_name, s.last_name, p.program_name, d.department_name
+FROM students s
+JOIN programs p ON s.program_id = p.program_id
+JOIN departments d ON p.department_id = d.department_id",
+302,multi_table_join,easy,PASS,CORRECT,Show each student with their advisor and advisor department.,"SELECT s.student_id, s.first_name, s.last_name, i.first_name, i.last_name, d.department_name
+FROM students s
+JOIN instructors i ON s.advisor_instructor_id = i.instructor_id
+JOIN departments d ON i.department_id = d.department_id",
+303,multi_table_join,easy,PASS,CORRECT,Show each course with its program and department names.,"SELECT c.course_id, c.course_title, p.program_name, d.department_name
+FROM courses c
+JOIN programs p ON c.program_id = p.program_id
+JOIN departments d ON c.department_id = d.department_id",
+304,multi_table_join,easy,PASS,CORRECT,"Show each enrollment with student name, course title, and instructor name.","SELECT s.first_name, s.last_name, c.course_title, i.first_name, i.last_name
+FROM enrollments e
+JOIN students s ON e.student_id = s.student_id
+JOIN courses c ON e.course_id = c.course_id
+JOIN instructors i ON e.instructor_id = i.instructor_id",
+305,multi_table_join,easy,PASS,CORRECT,"Show each advising appointment with student name, advisor name, and program name.","SELECT 
+    aa.advising_id,
+    s.first_name AS student_first_name,
+    s.last_name AS student_last_name,
+    i.first_name AS advisor_first_name,
+    i.last_name AS advisor_last_name,
+    p.program_name
+FROM academic_advising aa
+JOIN students s ON aa.student_id = s.student_id
+JOIN instructors i ON aa.instructor_id = i.instructor_id
+JOIN programs p ON aa.program_id = p.program_id",
+306,multi_table_join,easy,PASS,CORRECT,"Show each attendance record with student name, course title, and instructor name.","SELECT ar.attendance_id, s.first_name, s.last_name, c.course_title, i.first_name, i.last_name
+FROM attendance_records ar
+JOIN students s ON ar.student_id = s.student_id
+JOIN courses c ON ar.course_id = c.course_id
+JOIN instructors i ON ar.instructor_id = i.instructor_id",
+307,multi_table_join,easy,PASS,CORRECT,"Show each completed enrollment with student name, program name, and final grade.","SELECT s.first_name, s.last_name, p.program_name, e.final_grade
+FROM enrollments e
+JOIN students s ON e.student_id = s.student_id
+JOIN programs p ON s.program_id = p.program_id
+WHERE e.enrollment_status = 'completed'",
+308,multi_table_join,easy,PASS,INCORRECT,Show each course with instructor name and instructor department.,"SELECT c.course_id, i.first_name, i.last_name, d.department_name
+FROM courses c
+JOIN instructors i ON c.instructor_id = i.instructor_id
+JOIN departments d ON c.department_id = d.department_id",Returns the course's department rather than the instructor's own department.
+309,multi_table_join,easy,PASS,CORRECT,Show each student with program name and program director.,"SELECT s.student_id, p.program_name, p.program_director
+FROM students s
+JOIN programs p ON s.program_id = p.program_id",
+310,multi_table_join,easy,PASS,INCORRECT,Show each course with prerequisite title and department name.,"SELECT c.course_title, c.course_title AS course_title, d.department_name
+FROM courses c
+JOIN departments d ON c.department_id = d.department_id
+JOIN courses p ON c.prerequisite_course_id = p.course_id",Returns the current course title twice and omits the prerequisite title.
+311,multi_table_join,easy,PASS,CORRECT,Show each enrollment with student year level and course level.,"SELECT e.enrollment_id, s.current_year, c.course_level
+FROM enrollments e
+JOIN students s ON e.student_id = s.student_id
+JOIN courses c ON e.course_id = c.course_id",
+312,multi_table_join,easy,PASS,CORRECT,Show each advising appointment with student GPA and advisor performance rating.,"SELECT aa.advising_id, s.cumulative_gpa, i.performance_rating
+FROM academic_advising aa
+JOIN students s ON aa.student_id = s.student_id
+JOIN instructors i ON aa.instructor_id = i.instructor_id",
+313,multi_table_join,easy,PASS,CORRECT,Show each attendance record with enrollment status and student name.,"SELECT ar.attendance_id, e.enrollment_status, s.first_name, s.last_name
+FROM attendance_records ar
+JOIN enrollments e ON ar.enrollment_id = e.enrollment_id
+JOIN students s ON ar.student_id = s.student_id",
+314,multi_table_join,easy,PASS,INCORRECT,Show each program with department name and number of active students.,"SELECT p.program_name, d.department_name, COUNT(DISTINCT s.student_id) AS student_count
+FROM programs p
+JOIN departments d ON p.department_id = d.department_id
+JOIN students s ON p.program_id = s.program_id
+GROUP BY p.program_id, p.program_name, d.department_name
+HAVING COUNT(DISTINCT s.student_id) > 0",Counts all students in each program and never filters to active students.
+315,multi_table_join,easy,PASS,CORRECT,Show each instructor with department name and number of courses taught.,"SELECT i.instructor_id, i.first_name, i.last_name, d.department_name, COUNT(c.course_id) AS number_of_courses
+FROM instructors i
+JOIN departments d ON i.department_id = d.department_id
+JOIN courses c ON i.instructor_id = c.instructor_id
+GROUP BY i.instructor_id, d.department_name",
+316,multi_table_join,moderate,PASS,CORRECT,"List active students with program, department, and advisor names.","SELECT s.student_id, s.first_name, s.last_name, p.program_name, d.department_name, i.first_name AS advisor_first_name, i.last_name AS advisor_last_name
+FROM students s
+JOIN programs p ON s.program_id = p.program_id
+JOIN departments d ON p.department_id = d.department_id
+JOIN instructors i ON s.advisor_instructor_id = i.instructor_id
+WHERE s.student_status = 'active'",
+317,multi_table_join,moderate,PASS,CORRECT,"List completed enrollments with student name, program, course, and instructor.","SELECT s.first_name, s.last_name, p.program_name, c.course_title, i.first_name, i.last_name
+FROM enrollments e
+JOIN students s ON e.student_id = s.student_id
+JOIN programs p ON s.program_id = p.program_id
+JOIN courses c ON e.course_id = c.course_id
+JOIN instructors i ON e.instructor_id = i.instructor_id
+WHERE e.enrollment_status = 'completed'",
+318,multi_table_join,moderate,PASS,CORRECT,List international students enrolled in online courses with instructor names.,"SELECT s.student_id, s.first_name, s.last_name, i.first_name, i.last_name
+FROM students s
+JOIN enrollments e ON s.student_id = e.student_id
+JOIN courses c ON e.course_id = c.course_id
+JOIN instructors i ON c.instructor_id = i.instructor_id
+WHERE s.citizenship_status = 'international'
+  AND c.delivery_mode = 'online'",
+319,multi_table_join,moderate,PASS,CORRECT,"List students receiving financial aid with tuition, scholarship, and program details.","SELECT s.student_id, s.first_name, s.last_name, e.tuition_amount, e.scholarship_amount, p.program_name, p.program_code
+FROM students s
+JOIN enrollments e ON s.student_id = e.student_id
+JOIN programs p ON s.program_id = p.program_id
+WHERE s.financial_aid_flag = '1'",
+320,multi_table_join,moderate,PASS,CORRECT,"List high-risk advising appointments with student, program, and advisor details.","SELECT aa.advising_id, s.first_name, s.last_name, p.program_name, i.first_name, i.last_name
+FROM academic_advising aa
+JOIN students s ON aa.student_id = s.student_id
+JOIN programs p ON aa.program_id = p.program_id
+JOIN instructors i ON aa.instructor_id = i.instructor_id
+WHERE aa.academic_risk_level = 'high'",
+321,multi_table_join,moderate,PASS,INCORRECT,List absent attendance records with student program and course instructor.,"SELECT a.attendance_id, s.program_id, i.instructor_id
+FROM attendance_records a
+JOIN students s ON a.student_id = s.student_id
+JOIN instructors i ON a.instructor_id = i.instructor_id
+WHERE a.attendance_status = 'absent'",Uses the attendance-record instructor instead of the course instructor and returns identifiers rather than the requested related details.
+322,multi_table_join,moderate,PASS,INCORRECT,"List courses with prerequisites, showing both course titles and the program name.","SELECT c.course_title, p.program_name
+FROM courses c
+JOIN programs p ON c.program_id = p.program_id
+WHERE c.prerequisite_course_id IS NOT NULL",Returns only the current course title and program name; the prerequisite title is missing.
+323,multi_table_join,moderate,PASS,INCORRECT,List tenured instructors teaching active courses with department and program names.,"SELECT ""instructors"".""first_name"", ""instructors"".""last_name"", ""departments"".""department_name"", ""programs"".""program_name"" FROM ""courses"" INNER JOIN ""departments"" ON ""courses"".""department_id"" = ""departments"".""department_id"" INNER JOIN ""instructors"" ON ""courses"".""instructor_id"" = ""instructors"".""instructor_id"" INNER JOIN ""programs"" ON ""courses"".""program_id"" = ""programs"".""program_id"" WHERE ""instructors"".""tenure_status"" = ? AND ""courses"".""active_flag"" = ? LIMIT 10","Adds an unrequested LIMIT 10, so qualifying instructors beyond ten are omitted."
+324,multi_table_join,moderate,PASS,CORRECT,"List students who completed courses with grades above 90, including program and department.","SELECT DISTINCT s.student_id, s.first_name, s.last_name, p.program_name, d.department_name
+FROM students s
+JOIN enrollments e ON s.student_id = e.student_id
+JOIN courses c ON e.course_id = c.course_id
+JOIN programs p ON c.program_id = p.program_id
+JOIN departments d ON c.department_id = d.department_id
+WHERE e.enrollment_status = 'completed'
+  AND e.numeric_grade > 90",
+325,multi_table_join,moderate,PASS,INCORRECT,List career advising appointments for graduate students with advisor department.,"SELECT aa.advising_id, aa.appointment_type, aa.appointment_date, s.full_name, p.program_name, d.department_name
+FROM academic_advising aa
+JOIN students s ON aa.student_id = s.student_id
+JOIN programs p ON s.program_id = p.program_id
+JOIN departments d ON p.department_id = d.department_id
+WHERE aa.appointment_type = 'career'
+  AND p.degree_level IN ('master', 'doctorate')",Returns the student's program department instead of the advisor's department.
+326,multi_table_join,moderate,PASS,CORRECT,List online courses with enrolled students and their citizenship statuses.,"SELECT c.course_code, s.student_number, s.citizenship_status
+FROM courses c
+JOIN enrollments e ON c.course_id = e.course_id
+JOIN students s ON e.student_id = s.student_id
+WHERE c.delivery_mode = 'online'",
+327,multi_table_join,moderate,PASS,INCORRECT,List active bachelor-program students with their advisor and department chair.,"SELECT s.student_id, s.first_name, s.last_name, i.first_name AS advisor_first_name, i.last_name AS advisor_last_name, d.chair_name
+FROM students s
+JOIN programs p ON s.program_id = p.program_id
+JOIN instructors i ON s.advisor_instructor_id = i.instructor_id
+JOIN departments d ON p.department_id = d.department_id
+WHERE p.degree_level = 'bachelor'
+AND s.student_status = 'active'
+AND p.active_flag = '1'
+AND i.active_flag = '1'
+AND d.active_flag = '1'","Adds unrequested active-program, active-advisor, and active-department restrictions."
+328,multi_table_join,moderate,PASS,CORRECT,List late attendance records for completed enrollments with student and course details.,"SELECT ar.attendance_id, ar.attendance_status, s.student_id, s.first_name, s.last_name, c.course_id, c.course_title, c.course_code
+FROM attendance_records ar
+JOIN enrollments e ON ar.enrollment_id = e.enrollment_id
+JOIN students s ON ar.student_id = s.student_id
+JOIN courses c ON ar.course_id = c.course_id
+WHERE ar.attendance_status = 'late' AND e.enrollment_status = 'completed'",
+329,multi_table_join,moderate,PASS,INCORRECT,"List students enrolled in courses outside their program, with both program names.","SELECT DISTINCT s.student_id, s.first_name, s.last_name
+FROM students s
+JOIN enrollments e ON s.student_id = e.student_id
+JOIN courses c ON e.course_id = c.course_id
+WHERE s.program_id != c.program_id",Returns only student identity and omits both the student's program name and the course program name.
+330,multi_table_join,moderate,PASS,CORRECT,"List instructors who both teach courses and advise students, with department names.","SELECT i.instructor_id, i.first_name, i.last_name, d.department_name
+FROM instructors i
+JOIN courses c ON i.instructor_id = c.instructor_id
+JOIN departments d ON i.department_id = d.department_id
+JOIN students s ON i.instructor_id = s.advisor_instructor_id
+GROUP BY i.instructor_id, i.first_name, i.last_name, d.department_name",
+331,multi_table_join,moderate,PASS,INCORRECT,"List departments with their active programs, active courses, and instructors.","SELECT d.department_id, d.department_name
+FROM departments d
+JOIN programs p ON d.department_id = p.department_id
+JOIN courses c ON d.department_id = c.department_id
+JOIN instructors i ON d.department_id = i.department_id
+WHERE p.active_flag = '1'
+  AND c.active_flag = '1'
+  AND i.active_flag = '1'
+GROUP BY d.department_id, d.department_name
+HAVING COUNT(DISTINCT p.program_id) > 0
+   AND COUNT(DISTINCT c.course_id) > 0
+   AND COUNT(DISTINCT i.instructor_id) > 0","Returns only departments and omits the active program, active course, and instructor details requested."
+332,multi_table_join,moderate,PASS,CORRECT,"List completed enrollments in courses requiring prerequisites, with both course titles.","SELECT e.enrollment_id, e.student_id, e.course_id, c.course_title, p.course_title AS prerequisite_course_title
+FROM enrollments e
+JOIN courses c ON e.course_id = c.course_id
+JOIN courses p ON c.prerequisite_course_id = p.course_id
+WHERE e.enrollment_status = 'completed'
+  AND c.prerequisite_course_id IS NOT NULL",
+333,multi_table_join,moderate,PASS,CORRECT,List students with advising appointments and attendance records on the same course date year.,"SELECT DISTINCT s.student_id, s.first_name, s.last_name
+FROM students s
+JOIN academic_advising aa ON s.student_id = aa.student_id
+JOIN attendance_records ar ON s.student_id = ar.student_id
+JOIN courses c ON ar.course_id = c.course_id
+WHERE strftime('%Y', aa.appointment_date) = strftime('%Y', ar.class_date)",
+334,multi_table_join,moderate,PASS,CORRECT,List course enrollments with student housing status and instructor tenure status.,"SELECT e.enrollment_id, s.housing_status, i.tenure_status
+FROM enrollments e
+JOIN students s ON e.student_id = s.student_id
+JOIN instructors i ON e.instructor_id = i.instructor_id",
+335,multi_table_join,moderate,PASS,CORRECT,List attendance records for financially aided students with course and program details.,"SELECT
+  ar.attendance_id,
+  ar.student_id,
+  ar.course_id,
+  ar.class_date,
+  ar.attendance_status,
+  s.student_number,
+  s.first_name,
+  s.last_name,
+  c.course_code,
+  c.course_title,
+  p.program_name
+FROM attendance_records ar
+JOIN students s ON ar.student_id = s.student_id
+JOIN courses c ON ar.course_id = c.course_id
+JOIN programs p ON c.program_id = p.program_id
+WHERE s.financial_aid_flag = 1",
+336,multi_table_join,hard,PASS,INCORRECT,"List students who completed an online course taught by their assigned advisor, with program and department.","SELECT DISTINCT ""students"".""first_name"", ""students"".""last_name"", ""programs"".""program_name"", ""departments"".""department_name"" FROM ""courses"" INNER JOIN ""departments"" ON ""courses"".""department_id"" = ""departments"".""department_id"" INNER JOIN ""enrollments"" ON ""courses"".""course_id"" = ""enrollments"".""course_id"" INNER JOIN ""instructors"" ON ""courses"".""instructor_id"" = ""instructors"".""instructor_id"" INNER JOIN ""programs"" ON ""courses"".""program_id"" = ""programs"".""program_id"" INNER JOIN ""students"" ON ""enrollments"".""student_id"" = ""students"".""student_id"" WHERE ""courses"".""delivery_mode"" = ? AND ""enrollments"".""enrollment_status"" = ?",Never enforces that the course instructor equals the student's assigned advisor.
+337,multi_table_join,hard,PASS,CORRECT,"List students with high-risk advising who also have a failed enrollment, with advisor and course.","SELECT s.student_id, s.first_name, s.last_name, i.first_name, i.last_name, c.course_code, c.course_title
+FROM students s
+JOIN academic_advising aa ON s.student_id = aa.student_id
+JOIN instructors i ON aa.instructor_id = i.instructor_id
+JOIN enrollments e ON s.student_id = e.student_id
+JOIN courses c ON e.course_id = c.course_id
+WHERE aa.academic_risk_level = 'high'
+  AND e.enrollment_status = 'failed'",
+338,multi_table_join,hard,PASS,INCORRECT,List instructors who teach students from a program in a different department than their own.,"SELECT i.instructor_id, i.first_name, i.last_name
+FROM instructors i
+JOIN courses c ON i.instructor_id = c.instructor_id
+JOIN programs p ON c.program_id = p.program_id
+JOIN departments d_instr ON i.department_id = d_instr.department_id
+JOIN departments d_prog ON p.department_id = d_prog.department_id
+WHERE d_instr.department_id != d_prog.department_id
+GROUP BY i.instructor_id",Compares the instructor department with the course program department rather than with the enrolled student's own program department.
+339,multi_table_join,hard,PASS,CORRECT,"List courses whose students come from at least two degree levels, with instructor and department.","SELECT c.course_id, c.course_title, i.first_name, i.last_name, d.department_name
+FROM courses c
+JOIN enrollments e ON c.course_id = e.course_id
+JOIN students s ON e.student_id = s.student_id
+JOIN programs p ON s.program_id = p.program_id
+JOIN instructors i ON c.instructor_id = i.instructor_id
+JOIN departments d ON c.department_id = d.department_id
+GROUP BY c.course_id, c.course_title, i.first_name, i.last_name, d.department_name
+HAVING COUNT(DISTINCT p.degree_level) >= 2",
+340,multi_table_join,hard,PASS,INCORRECT,List students who attended courses in both their own department and another department.,"WITH student_dept_enrollments AS (
+    SELECT 
+        e.student_id,
+        c.department_id AS course_dept_id,
+        s.program_id,
+        p.department_id AS student_program_dept_id
+    FROM enrollments e
+    JOIN courses c ON e.course_id = c.course_id
+    JOIN students s ON e.student_id = s.student_id
+    JOIN programs p ON s.program_id = p.program_id
+),
+student_dept_counts AS (
+    SELECT 
+        student_id,
+        program_id,
+        COUNT(DISTINCT CASE WHEN course_dept_id = student_program_dept_id THEN course_dept_id END) AS own_dept_count,
+        COUNT(DISTINCT CASE WHEN course_dept_id != student_program_dept_id THEN course_dept_id END) AS other_dept_count
+    FROM student_dept_enrollments
+    GROUP BY student_id, program_id
+)
+SELECT 
+    s.student_id,
+    s.first_name,
+    s.last_name
+FROM student_dept_counts sd
+JOIN students s ON sd.student_id = s.student_id
+WHERE sd.own_dept_count > 0 AND sd.other_dept_count > 0",Uses enrollment records instead of attendance records to decide which courses students attended.
+341,multi_table_join,hard,PASS,CORRECT,List departments whose instructors advise students from programs in other departments.,"SELECT d.department_id, d.department_name
+FROM departments d
+JOIN instructors i ON d.department_id = i.department_id
+JOIN academic_advising aa ON i.instructor_id = aa.instructor_id
+JOIN students s ON aa.student_id = s.student_id
+JOIN programs p ON s.program_id = p.program_id
+WHERE p.department_id != d.department_id
+GROUP BY d.department_id, d.department_name",
+342,multi_table_join,hard,PASS,CORRECT,List students with completed enrollments and absent attendance records for the same course.,"SELECT DISTINCT s.student_id, s.first_name, s.last_name
+FROM students s
+JOIN enrollments e ON s.student_id = e.student_id
+JOIN attendance_records ar ON e.enrollment_id = ar.enrollment_id
+WHERE e.enrollment_status = 'completed'
+  AND ar.attendance_status = 'absent'",
+343,multi_table_join,hard,PASS,CORRECT,"List courses where the course instructor, enrollment instructor, and attendance instructor do not all match.","SELECT c.course_id, c.course_code, c.course_title
+FROM courses c
+WHERE EXISTS (
+    SELECT 1
+    FROM enrollments e
+    JOIN attendance_records a ON e.enrollment_id = a.enrollment_id
+    WHERE e.course_id = c.course_id
+      AND (c.instructor_id != e.instructor_id OR c.instructor_id != a.instructor_id OR e.instructor_id != a.instructor_id)
+)",
+344,multi_table_join,hard,PASS,CORRECT,List students who received scholarships for courses taught by tenured instructors outside their program.,"SELECT DISTINCT s.student_id, s.first_name, s.last_name
+FROM students s
+JOIN enrollments e ON s.student_id = e.student_id
+JOIN courses c ON e.course_id = c.course_id
+JOIN instructors i ON c.instructor_id = i.instructor_id
+WHERE e.scholarship_amount > 0
+  AND i.tenure_status = 'tenured'
+  AND c.program_id != s.program_id",
+345,multi_table_join,hard,PASS,INCORRECT,List advisors whose assigned students completed courses taught by another instructor in the advisor's department.,"SELECT DISTINCT ""instructors"".""instructor_id"", ""instructors"".""first_name"", ""instructors"".""last_name"" FROM ""instructors"" INNER JOIN ""enrollments"" ON ""instructors"".""instructor_id"" = ""enrollments"".""instructor_id"" INNER JOIN ""courses"" ON ""enrollments"".""course_id"" = ""courses"".""course_id"" INNER JOIN ""students"" ON ""instructors"".""instructor_id"" = ""students"".""advisor_instructor_id"" WHERE ""instructors"".""active_flag"" = ? AND NOT EXISTS (SELECT 1 FROM ""enrollments"" WHERE ""instructors"".""instructor_id"" = ""enrollments"".""instructor_id"" AND ""enrollments"".""student_id"" = ""students"".""student_id"" AND ""enrollments"".""course_id"" = ""courses"".""course_id"" AND ""courses"".""instructor_id"" != ""instructors"".""instructor_id"" AND ""courses"".""department_id"" = ""instructors"".""department_id"")",Does not correctly connect assigned advisors to their students' completed courses taught by another instructor in the advisor's department.
+346,multi_table_join,hard,PASS,INCORRECT,List programs whose students enrolled in every delivery mode offered by that program's department.,"SELECT p.program_id, p.program_name
+FROM programs p
+JOIN departments d ON p.department_id = d.department_id
+JOIN courses c ON c.program_id = p.program_id
+JOIN enrollments e ON e.course_id = c.course_id
+GROUP BY p.program_id, p.program_name
+HAVING COUNT(DISTINCT c.delivery_mode) = (
+    SELECT COUNT(DISTINCT c2.delivery_mode)
+    FROM courses c2
+    WHERE c2.department_id = d.department_id
+)","Counts delivery modes of program courses having any enrollment, not the modes taken by that program's students compared with all modes in the department."
+347,multi_table_join,hard,PASS,INCORRECT,List students who completed a prerequisite course before enrolling in a course that requires it.,"SELECT DISTINCT s.student_id
+FROM students s
+JOIN enrollments e1 ON s.student_id = e1.student_id
+JOIN enrollments e2 ON s.student_id = e2.student_id
+JOIN courses c ON e1.course_id = c.prerequisite_course_id AND e2.course_id = c.course_id
+WHERE e1.enrollment_date < e2.enrollment_date
+  AND e1.enrollment_status = 'completed'
+  AND e2.enrollment_status = 'completed'",Unnecessarily requires the later course enrollment to be completed; the request only requires enrollment after completing the prerequisite.
+348,multi_table_join,hard,PASS,CORRECT,List instructors teaching active courses whose enrolled students have high-risk advising records.,"SELECT DISTINCT i.instructor_id, i.first_name, i.last_name
+FROM instructors i
+JOIN courses c ON i.instructor_id = c.instructor_id
+JOIN enrollments e ON c.course_id = e.course_id
+JOIN academic_advising aa ON e.student_id = aa.student_id
+WHERE c.active_flag = '1'
+  AND aa.academic_risk_level = 'high'",
+349,multi_table_join,hard,PASS,CORRECT,"List departments with active students, completed enrollments, and absent attendance records.","SELECT ""departments"".""department_id"", ""departments"".""department_name"" FROM ""students"" INNER JOIN ""enrollments"" ON ""students"".""student_id"" = ""enrollments"".""student_id"" INNER JOIN ""attendance_records"" ON ""enrollments"".""enrollment_id"" = ""attendance_records"".""enrollment_id"" INNER JOIN ""programs"" ON ""students"".""program_id"" = ""programs"".""program_id"" INNER JOIN ""departments"" ON ""programs"".""department_id"" = ""departments"".""department_id"" WHERE ""students"".""student_status"" = ? AND ""enrollments"".""enrollment_status"" = ? AND ""attendance_records"".""attendance_status"" = ? GROUP BY ""departments"".""department_id"", ""departments"".""department_name""",
+350,multi_table_join,hard,PASS,CORRECT,"List students whose advisor, course instructor, and advising instructor are three different people.","SELECT DISTINCT s.student_id, s.first_name, s.last_name
+FROM students s
+JOIN enrollments e ON s.student_id = e.student_id
+JOIN courses c ON e.course_id = c.course_id
+JOIN instructors i_course ON c.instructor_id = i_course.instructor_id
+JOIN academic_advising aa ON s.student_id = aa.student_id
+JOIN instructors i_advisor ON s.advisor_instructor_id = i_advisor.instructor_id
+JOIN instructors i_adv_instructor ON aa.instructor_id = i_adv_instructor.instructor_id
+WHERE s.advisor_instructor_id IS NOT NULL
+  AND c.instructor_id IS NOT NULL
+  AND aa.instructor_id IS NOT NULL
+  AND s.advisor_instructor_id != c.instructor_id
+  AND s.advisor_instructor_id != aa.instructor_id
+  AND c.instructor_id != aa.instructor_id",
+351,order_limit_topk,easy,PASS,CORRECT,Show the 10 students with the highest cumulative GPA.,"SELECT students.student_id, students.first_name, students.last_name, students.cumulative_gpa
+FROM students
+ORDER BY students.cumulative_gpa DESC
+LIMIT 10",
+352,order_limit_topk,easy,PASS,CORRECT,Show the 10 students with the most credits earned.,"SELECT student_id, first_name, last_name, credits_earned
+FROM students
+ORDER BY credits_earned DESC
+LIMIT 10",
+353,order_limit_topk,easy,PASS,CORRECT,Show the 5 departments with the largest annual budgets.,"SELECT department_name, annual_budget
+FROM departments
+ORDER BY annual_budget DESC
+LIMIT 5",
+354,order_limit_topk,easy,PASS,CORRECT,Show the 5 departments with the highest reported student counts.,"SELECT departments.department_name, departments.student_count
+FROM departments
+ORDER BY departments.student_count DESC
+LIMIT 5",
+355,order_limit_topk,easy,PASS,CORRECT,Show the 10 instructors with the highest salaries.,"SELECT instructor_id, first_name, last_name, salary
+FROM instructors
+ORDER BY salary DESC
+LIMIT 10",
+356,order_limit_topk,easy,PASS,CORRECT,Show the 10 instructors with the highest performance ratings.,"SELECT instructor_id, first_name, last_name, performance_rating
+FROM instructors
+ORDER BY performance_rating DESC
+LIMIT 10",
+357,order_limit_topk,easy,PASS,CORRECT,Show the 5 programs with the highest tuition per credit.,"SELECT program_id, program_name, tuition_per_credit
+FROM programs
+ORDER BY tuition_per_credit DESC
+LIMIT 5",
+358,order_limit_topk,easy,PASS,CORRECT,Show the 5 programs with the most current enrollment.,"SELECT program_id, program_name, current_enrollment
+FROM programs
+ORDER BY current_enrollment DESC
+LIMIT 5",
+359,order_limit_topk,easy,PASS,CORRECT,Show the 10 courses with the largest capacity.,"SELECT courses.course_id, courses.course_title, courses.capacity
+FROM courses
+ORDER BY courses.capacity DESC
+LIMIT 10",
+360,order_limit_topk,easy,PASS,CORRECT,Show the 10 courses with the highest enrolled count.,"SELECT courses.course_id, courses.course_title, courses.enrolled_count
+FROM courses
+ORDER BY courses.enrolled_count DESC
+LIMIT 10",
+361,order_limit_topk,easy,PASS,CORRECT,Show the 10 enrollments with the highest numeric grades.,"SELECT enrollment_id, student_id, course_id, numeric_grade
+FROM enrollments
+ORDER BY numeric_grade DESC
+LIMIT 10",
+362,order_limit_topk,easy,PASS,CORRECT,Show the 10 enrollments with the largest scholarship amounts.,"SELECT enrollment_id, student_id, course_id, scholarship_amount
+FROM enrollments
+ORDER BY scholarship_amount DESC
+LIMIT 10",
+363,order_limit_topk,easy,PASS,CORRECT,Show the 10 advising appointments with the highest satisfaction scores.,"SELECT advising_id, student_id, instructor_id, program_id, appointment_date, appointment_type, meeting_mode, duration_minutes, topics_discussed, action_items, next_followup_date, student_satisfaction, advisor_notes, academic_risk_level, career_goal, graduation_plan_status, referral_made, completed_flag
+FROM academic_advising
+ORDER BY student_satisfaction DESC
+LIMIT 10",
+364,order_limit_topk,easy,PASS,CORRECT,Show the 10 attendance records with the highest quiz scores.,"SELECT attendance_id, student_id, course_id, quiz_score
+FROM attendance_records
+ORDER BY quiz_score DESC
+LIMIT 10",
+365,order_limit_topk,easy,PASS,CORRECT,Show the 10 attendance records with the most minutes late.,"SELECT attendance_id, student_id, course_id, minutes_late
+FROM attendance_records
+ORDER BY minutes_late DESC
+LIMIT 10",
+366,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 programs by number of active students.,"SELECT p.program_name, p.program_id
+FROM programs p
+JOIN students s ON p.program_id = s.program_id
+WHERE s.student_status = 'active'
+GROUP BY p.program_id, p.program_name
+ORDER BY COUNT(s.student_id) DESC
+LIMIT 10",
+367,order_limit_topk,moderate,PASS,CORRECT,Show the top 5 departments by number of active instructors.,"SELECT d.department_name
+FROM departments d
+JOIN instructors i ON d.department_id = i.department_id
+WHERE i.active_flag = '1'
+GROUP BY d.department_id
+ORDER BY COUNT(i.instructor_id) DESC
+LIMIT 5",
+368,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 instructors by number of courses taught.,"SELECT i.instructor_id, i.first_name, i.last_name
+FROM instructors i
+JOIN courses c ON i.instructor_id = c.instructor_id
+GROUP BY i.instructor_id, i.first_name, i.last_name
+ORDER BY COUNT(c.course_id) DESC
+LIMIT 10",
+369,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 courses by number of completed enrollments.,"SELECT c.course_id, c.course_title
+FROM courses c
+JOIN enrollments e ON c.course_id = e.course_id
+WHERE e.enrollment_status = 'completed'
+GROUP BY c.course_id, c.course_title
+ORDER BY COUNT(e.enrollment_id) DESC
+LIMIT 10",
+370,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 students by total tuition charged.,"SELECT s.student_id, s.first_name, s.last_name
+FROM students s
+JOIN enrollments e ON s.student_id = e.student_id
+GROUP BY s.student_id
+ORDER BY SUM(e.tuition_amount) DESC
+LIMIT 10",
+371,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 students by total scholarship received.,"SELECT s.student_id, s.first_name, s.last_name
+FROM students s
+JOIN enrollments e ON s.student_id = e.student_id
+GROUP BY s.student_id, s.first_name, s.last_name
+ORDER BY SUM(e.scholarship_amount) DESC
+LIMIT 10",
+372,order_limit_topk,moderate,PASS,INCORRECT,Show the top 5 programs by total scholarship amount.,"SELECT p.program_name
+FROM enrollments e
+JOIN programs p ON e.course_id = (SELECT course_id FROM courses WHERE program_id = p.program_id LIMIT 1)
+GROUP BY p.program_id, p.program_name
+ORDER BY SUM(e.scholarship_amount) DESC
+LIMIT 5","Maps each program through one arbitrary course, so the scholarship ranking omits most program enrollments."
+373,order_limit_topk,moderate,PASS,CORRECT,Show the top 5 departments by total instructor payroll.,"SELECT d.department_name
+FROM departments d
+JOIN instructors i ON d.department_id = i.department_id
+GROUP BY d.department_id
+ORDER BY SUM(i.salary) DESC
+LIMIT 5",
+374,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 courses by average numeric grade.,"SELECT c.course_id, c.course_title
+FROM courses c
+JOIN enrollments e ON c.course_id = e.course_id
+GROUP BY c.course_id, c.course_title
+ORDER BY AVG(e.numeric_grade) DESC
+LIMIT 10",
+375,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 instructors by average student grade.,"SELECT i.instructor_id, i.first_name, i.last_name
+FROM instructors i
+JOIN enrollments e ON i.instructor_id = e.instructor_id
+GROUP BY i.instructor_id, i.first_name, i.last_name
+ORDER BY AVG(e.numeric_grade) DESC
+LIMIT 10",
+376,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 students by number of advising appointments.,"SELECT s.student_id, s.first_name, s.last_name
+FROM students s
+JOIN academic_advising aa ON s.student_id = aa.student_id
+GROUP BY s.student_id, s.first_name, s.last_name
+ORDER BY COUNT(aa.advising_id) DESC
+LIMIT 10",
+377,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 advisors by number of completed appointments.,"SELECT i.instructor_id, i.first_name, i.last_name
+FROM academic_advising aa
+JOIN instructors i ON aa.instructor_id = i.instructor_id
+WHERE aa.completed_flag = '1'
+GROUP BY i.instructor_id, i.first_name, i.last_name
+ORDER BY COUNT(aa.advising_id) DESC
+LIMIT 10",
+378,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 courses by number of absent attendance records.,"SELECT c.course_id, c.course_title
+FROM courses c
+JOIN attendance_records ar ON c.course_id = ar.course_id
+WHERE ar.attendance_status = 'absent'
+GROUP BY c.course_id, c.course_title
+ORDER BY COUNT(ar.attendance_id) DESC
+LIMIT 10",
+379,order_limit_topk,moderate,PASS,CORRECT,Show the top 5 programs by average student GPA.,"SELECT p.program_name
+FROM programs p
+JOIN students s ON p.program_id = s.program_id
+GROUP BY p.program_id
+ORDER BY AVG(s.cumulative_gpa) DESC
+LIMIT 5",
+380,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 courses by average attendance percentage.,"SELECT c.course_id, c.course_title
+FROM courses c
+JOIN enrollments e ON c.course_id = e.course_id
+GROUP BY c.course_id, c.course_title
+ORDER BY AVG(e.attendance_percentage) DESC
+LIMIT 10",
+381,order_limit_topk,moderate,PASS,CORRECT,Show the top 5 degree levels by total current enrollment.,"SELECT degree_level, SUM(current_enrollment) AS total_enrollment
+FROM programs
+GROUP BY degree_level
+ORDER BY total_enrollment DESC
+LIMIT 5",
+382,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 research areas by average instructor performance rating.,"SELECT research_area, AVG(performance_rating) AS avg_performance_rating
+FROM instructors
+GROUP BY research_area
+ORDER BY avg_performance_rating DESC
+LIMIT 10",
+383,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 students by number of completed enrollments.,"SELECT s.student_id, s.first_name, s.last_name
+FROM students s
+JOIN enrollments e ON s.student_id = e.student_id
+WHERE e.enrollment_status = 'completed'
+GROUP BY s.student_id, s.first_name, s.last_name
+ORDER BY COUNT(e.enrollment_id) DESC
+LIMIT 10",
+384,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 courses by total tuition amount.,"SELECT c.course_id, c.course_title
+FROM courses c
+JOIN enrollments e ON c.course_id = e.course_id
+GROUP BY c.course_id, c.course_title
+ORDER BY SUM(e.tuition_amount) DESC
+LIMIT 10",
+385,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 instructors by number of student attendance records.,"SELECT i.instructor_id, i.first_name, i.last_name
+FROM attendance_records ar
+JOIN instructors i ON ar.instructor_id = i.instructor_id
+GROUP BY i.instructor_id, i.first_name, i.last_name
+ORDER BY COUNT(ar.attendance_id) DESC
+LIMIT 10",
+386,order_limit_topk,hard,PASS,CORRECT,Show the top 3 students by GPA within each program.,"WITH ranked_students AS (
+    SELECT 
+        student_id,
+        program_id,
+        cumulative_gpa,
+        ROW_NUMBER() OVER (PARTITION BY program_id ORDER BY cumulative_gpa DESC) AS rank_num
+    FROM students
+)
+SELECT 
+    student_id,
+    program_id,
+    cumulative_gpa
+FROM ranked_students
+WHERE rank_num <= 3",
+387,order_limit_topk,hard,PASS,CORRECT,Show the highest-paid instructor in each department.,"WITH RankedInstructors AS (
+    SELECT 
+        d.department_name,
+        i.first_name,
+        i.last_name,
+        i.salary,
+        d.department_id,
+        ROW_NUMBER() OVER (PARTITION BY d.department_id ORDER BY i.salary DESC) AS rn
+    FROM instructors i
+    JOIN departments d ON i.department_id = d.department_id
+)
+SELECT 
+    department_name,
+    first_name,
+    last_name,
+    salary
+FROM RankedInstructors
+WHERE rn = 1",
+388,order_limit_topk,hard,PASS,CORRECT,Show the top 3 courses by enrolled count within each department.,"WITH ranked_courses AS (
+    SELECT
+        c.course_id,
+        c.course_title,
+        d.department_name,
+        c.enrolled_count,
+        c.department_id,
+        ROW_NUMBER() OVER (PARTITION BY c.department_id ORDER BY c.enrolled_count DESC) AS rn
+    FROM courses c
+    JOIN departments d ON c.department_id = d.department_id
+)
+SELECT
+    course_id,
+    course_title,
+    department_name,
+    enrolled_count
+FROM ranked_courses
+WHERE rn <= 3",
+389,order_limit_topk,hard,PASS,CORRECT,Show the top 3 programs by active student count within each degree level.,"WITH program_active_counts AS (
+    SELECT 
+        p.program_id,
+        p.program_name,
+        p.degree_level,
+        COUNT(s.student_id) AS active_student_count
+    FROM programs p
+    JOIN students s ON p.program_id = s.program_id
+    WHERE s.student_status = 'active'
+    GROUP BY p.program_id, p.program_name, p.degree_level
+),
+ranked_programs AS (
+    SELECT 
+        program_name,
+        degree_level,
+        active_student_count,
+        ROW_NUMBER() OVER (PARTITION BY degree_level ORDER BY active_student_count DESC) AS rank_num
+    FROM program_active_counts
+)
+SELECT 
+    program_name,
+    degree_level
+FROM ranked_programs
+WHERE rank_num <= 3",
+390,order_limit_topk,hard,PASS,CORRECT,Show the top 5 advisors by average GPA of their assigned students.,"SELECT i.instructor_id, i.first_name, i.last_name
+FROM instructors i
+JOIN students s ON i.instructor_id = s.advisor_instructor_id
+GROUP BY i.instructor_id, i.first_name, i.last_name
+ORDER BY AVG(s.cumulative_gpa) DESC
+LIMIT 5",
+391,order_limit_topk,hard,PASS,CORRECT,Show the top 3 instructors by average completed-course grade within each department.,"WITH instructor_dept_avg AS (
+    SELECT 
+        i.instructor_id,
+        i.full_name,
+        i.department_id,
+        d.department_name,
+        AVG(e.numeric_grade) AS avg_grade
+    FROM instructors i
+    JOIN departments d ON i.department_id = d.department_id
+    JOIN enrollments e ON i.instructor_id = e.instructor_id
+    WHERE e.enrollment_status = 'completed'
+    GROUP BY i.instructor_id, i.full_name, i.department_id, d.department_name
+),
+ranked_instructors AS (
+    SELECT 
+        department_name,
+        instructor_id,
+        full_name,
+        avg_grade,
+        ROW_NUMBER() OVER (PARTITION BY department_id ORDER BY avg_grade DESC) AS rank_in_dept
+    FROM instructor_dept_avg
+)
+SELECT 
+    department_name,
+    instructor_id,
+    full_name
+FROM ranked_instructors
+WHERE rank_in_dept <= 3
+ORDER BY department_name, rank_in_dept",
+392,order_limit_topk,hard,PASS,CORRECT,Show the top 3 courses by attendance rate within each program.,"WITH course_avg_attendance AS (
+    SELECT 
+        c.course_id,
+        c.course_title,
+        c.program_id,
+        AVG(e.attendance_percentage) AS avg_attendance_percentage
+    FROM courses c
+    JOIN enrollments e ON c.course_id = e.course_id
+    GROUP BY c.course_id, c.course_title, c.program_id
+),
+ranked_courses AS (
+    SELECT 
+        ca.course_id,
+        ca.course_title,
+        ca.program_id,
+        p.program_name,
+        ca.avg_attendance_percentage,
+        ROW_NUMBER() OVER (PARTITION BY ca.program_id ORDER BY ca.avg_attendance_percentage DESC) AS rn
+    FROM course_avg_attendance ca
+    JOIN programs p ON ca.program_id = p.program_id
+)
+SELECT 
+    course_id,
+    course_title,
+    program_id,
+    program_name,
+    avg_attendance_percentage
+FROM ranked_courses
+WHERE rn <= 3
+ORDER BY program_id, rn",
+393,order_limit_topk,hard,PASS,INCORRECT,Show the top 5 students by scholarship percentage among students charged at least 5000 dollars in tuition.,"SELECT s.student_id, s.first_name, s.last_name, e.scholarship_amount, e.tuition_amount
+FROM students s
+JOIN enrollments e ON s.student_id = e.student_id
+WHERE e.tuition_amount >= 5000
+ORDER BY (e.scholarship_amount * 1.0 / e.tuition_amount) DESC
+LIMIT 5",Ranks individual enrollment rows instead of aggregating tuition and scholarship percentage per student.
+394,order_limit_topk,hard,PASS,CORRECT,Show the top 3 departments by course seat utilization.,"SELECT d.department_name
+FROM departments d
+JOIN courses c ON d.department_id = c.department_id
+GROUP BY d.department_id, d.department_name
+ORDER BY SUM(c.enrolled_count) * 1.0 / SUM(c.capacity) DESC
+LIMIT 3",
+395,order_limit_topk,hard,PASS,INCORRECT,Show the top 5 programs by completed enrollment rate.,"SELECT ""programs"".""program_id"", ""programs"".""program_name"", COUNT(*) AS ""total_enrollments"", COUNT(*) AS ""completed_enrollments"" FROM ""programs"" INNER JOIN ""courses"" ON ""programs"".""program_id"" = ""courses"".""program_id"" INNER JOIN ""enrollments"" ON ""courses"".""course_id"" = ""enrollments"".""course_id"" GROUP BY ""programs"".""program_id"", ""programs"".""program_name"" ORDER BY ""completed_enrollments"" DESC LIMIT 5","Uses identical total and completed counts, never filters completed enrollments, and never calculates a rate."
+396,order_limit_topk,hard,PASS,CORRECT,Show the top 3 courses with the most distinct student programs represented.,"SELECT ""courses"".""course_code"", ""courses"".""course_title"", COUNT(DISTINCT ""students"".""program_id"") AS ""distinct_program_count"" FROM ""enrollments"" INNER JOIN ""courses"" ON ""enrollments"".""course_id"" = ""courses"".""course_id"" INNER JOIN ""students"" ON ""enrollments"".""student_id"" = ""students"".""student_id"" GROUP BY ""courses"".""course_code"", ""courses"".""course_title"" ORDER BY ""distinct_program_count"" DESC LIMIT 3",
+397,order_limit_topk,hard,PASS,INCORRECT,Show the top 5 instructors by completed enrollments per course taught.,"SELECT i.instructor_id, i.first_name, i.last_name
+FROM instructors i
+JOIN enrollments e ON i.instructor_id = e.instructor_id
+WHERE e.enrollment_status = 'completed'
+GROUP BY i.instructor_id, i.first_name, i.last_name
+ORDER BY COUNT(e.enrollment_id) DESC
+LIMIT 5",Ranks by total completed enrollments only and never divides by the number of courses taught.
+398,order_limit_topk,hard,PASS,CORRECT,Show the top 3 departments by average active-student GPA.,"SELECT ""departments"".""department_name"", AVG(""students"".""cumulative_gpa"") AS ""avg_gpa"" FROM ""programs"" INNER JOIN ""departments"" ON ""programs"".""department_id"" = ""departments"".""department_id"" INNER JOIN ""students"" ON ""programs"".""program_id"" = ""students"".""program_id"" WHERE ""students"".""student_status"" = ? GROUP BY ""departments"".""department_name"" ORDER BY ""avg_gpa"" DESC LIMIT 3",
+399,order_limit_topk,hard,PASS,INCORRECT,Show the top 5 students by attended class sessions within each current year level.,"WITH student_attendance AS (
+    SELECT 
+        s.student_id,
+        s.current_year,
+        s.first_name,
+        s.last_name,
+        COUNT(ar.attendance_id) AS attended_sessions
+    FROM students s
+    JOIN attendance_records ar ON s.student_id = ar.student_id
+    WHERE ar.attendance_status = 'present'
+    GROUP BY s.student_id, s.current_year, s.first_name, s.last_name
+),
+ranked_students AS (
+    SELECT 
+        student_id,
+        current_year,
+        first_name,
+        last_name,
+        attended_sessions,
+        ROW_NUMBER() OVER (PARTITION BY current_year ORDER BY attended_sessions DESC) AS rn
+    FROM student_attendance
+)
+SELECT 
+    student_id,
+    current_year,
+    first_name,
+    last_name
+FROM ranked_students
+WHERE rn <= 5
+ORDER BY current_year, attended_sessions DESC",Counts only present sessions and omits late and excused sessions that also represent attendance.
+400,order_limit_topk,hard,PASS,CORRECT,Show the top 3 programs by average advising satisfaction among programs with at least three appointments.,"SELECT p.program_name
+FROM academic_advising aa
+JOIN programs p ON aa.program_id = p.program_id
+GROUP BY p.program_id
+HAVING COUNT(aa.appointment_date) >= 3
+ORDER BY AVG(aa.student_satisfaction) DESC
+LIMIT 3",
+401,set_operations,easy,PASS,CORRECT,List people who appear either as students or instructors.,"SELECT student_id AS person_id, first_name, last_name, NULL AS instructor_id, NULL AS instructor_first_name, NULL AS instructor_last_name
+FROM students
+UNION ALL
+SELECT NULL AS person_id, NULL AS first_name, NULL AS last_name, instructor_id, first_name, last_name
+FROM instructors",
+402,set_operations,easy,PASS,CORRECT,List department identifiers that appear either in programs or courses.,"SELECT DISTINCT department_id FROM programs
+UNION
+SELECT DISTINCT department_id FROM courses",
+403,set_operations,easy,PASS,CORRECT,List instructor identifiers that appear either as student advisors or course instructors.,"SELECT DISTINCT instructor_id
+FROM (
+    SELECT students.advisor_instructor_id AS instructor_id
+    FROM students
+    WHERE students.advisor_instructor_id IS NOT NULL
+    UNION
+    SELECT courses.instructor_id
+    FROM courses
+    WHERE courses.instructor_id IS NOT NULL
+)
+WHERE instructor_id IN (SELECT instructor_id FROM instructors)",
+404,set_operations,easy,PASS,INCORRECT,List student identifiers that appear either in enrollments or advising appointments.,"SELECT DISTINCT s.student_id
+FROM students s
+JOIN academic_advising aa ON s.student_id = aa.student_id
+JOIN enrollments e ON s.student_id = e.student_id","Uses inner joins, returning only students present in both sources instead of the union of enrollment and advising identifiers."
+405,set_operations,easy,PASS,INCORRECT,List course identifiers that appear either in enrollments or attendance records.,"SELECT DISTINCT ""courses"".""course_id"", ""courses"".""course_title"" FROM ""attendance_records"" INNER JOIN ""courses"" ON ""attendance_records"".""course_id"" = ""courses"".""course_id"" INNER JOIN ""enrollments"" ON ""attendance_records"".""enrollment_id"" = ""enrollments"".""enrollment_id""",Returns only courses present in linked enrollment-and-attendance rows instead of the union of both sources.
+406,set_operations,easy,PASS,INCORRECT,List instructor identifiers that appear either in enrollments or attendance records.,"SELECT DISTINCT i.instructor_id
+FROM instructors i
+JOIN enrollments e ON i.instructor_id = e.instructor_id
+JOIN attendance_records a ON i.instructor_id = a.instructor_id","Uses inner joins, returning the intersection of enrollment and attendance instructors instead of their union."
+407,set_operations,easy,PASS,INCORRECT,List program identifiers that appear either in student records or course records.,"SELECT DISTINCT p.program_id
+FROM programs p
+JOIN students s ON p.program_id = s.program_id
+JOIN courses c ON p.program_id = c.program_id","Uses inner joins, returning programs present in both students and courses instead of either source."
+408,set_operations,easy,PASS,INCORRECT,List students who are either active or on leave.,"SELECT student_id, first_name, last_name, student_status
+FROM students
+WHERE student_status IN ('active', 'on leave')","Uses the literal 'on leave', but the stored student status is 'leave'."
+409,set_operations,easy,PASS,CORRECT,List instructors who are either full time or part time.,"SELECT ""instructors"".""instructor_id"", ""instructors"".""first_name"", ""instructors"".""last_name"" FROM ""instructors"" WHERE ""instructors"".""employment_type"" = 'full_time' OR ""instructors"".""employment_type"" = 'part_time'",
+410,set_operations,easy,PASS,CORRECT,List programs that use either online or hybrid delivery.,"SELECT ""programs"".""program_id"", ""programs"".""program_name"" FROM ""programs"" WHERE ""programs"".""delivery_mode"" = ? OR ""programs"".""delivery_mode"" = ?",
+411,set_operations,easy,PASS,CORRECT,List courses offered either in fall or spring.,"SELECT ""courses"".""course_id"", ""courses"".""course_code"", ""courses"".""course_title"" FROM ""courses"" WHERE ""courses"".""semester"" = ? OR ""courses"".""semester"" = ?",
+412,set_operations,easy,PASS,CORRECT,List enrollments that are either completed or failed.,"SELECT enrollment_id, student_id, course_id, enrollment_status
+FROM enrollments
+WHERE enrollment_status IN ('completed', 'failed')",
+413,set_operations,easy,PASS,CORRECT,List advising appointments that are either career or graduation related.,"SELECT advising_id, student_id, instructor_id, appointment_date, appointment_type
+FROM academic_advising
+WHERE appointment_type IN ('career', 'graduation')",
+414,set_operations,easy,PASS,CORRECT,List attendance records marked either absent or late.,"SELECT attendance_records.attendance_id, attendance_records.student_id, attendance_records.course_id, attendance_records.class_date, attendance_records.attendance_status
+FROM attendance_records
+WHERE attendance_records.attendance_status IN ('absent', 'late')",
+415,set_operations,easy,PASS,CORRECT,List departments located either on the main campus or north campus.,"SELECT department_id, department_name, campus_code
+FROM departments
+WHERE campus_code IN ('MAIN', 'NORTH')",
+416,set_operations,moderate,PASS,CORRECT,List students who have both an enrollment and an advising appointment.,"SELECT DISTINCT s.student_id, s.first_name, s.last_name
+FROM students s
+JOIN academic_advising aa ON s.student_id = aa.student_id
+JOIN enrollments e ON s.student_id = e.student_id",
+417,set_operations,moderate,PASS,CORRECT,List instructors who both teach a course and advise at least one student.,"SELECT ""instructors"".""instructor_id"", ""instructors"".""first_name"", ""instructors"".""last_name"", COUNT(*) AS ""course_count"", COUNT(*) AS ""advising_count"" FROM ""instructors"" INNER JOIN ""academic_advising"" ON ""instructors"".""instructor_id"" = ""academic_advising"".""instructor_id"" INNER JOIN ""courses"" ON ""instructors"".""instructor_id"" = ""courses"".""instructor_id"" GROUP BY ""instructors"".""instructor_id"", ""instructors"".""first_name"", ""instructors"".""last_name"" HAVING ""course_count"" >= ? AND ""advising_count"" >= ?",
+418,set_operations,moderate,PASS,CORRECT,List courses that have both enrollment records and attendance records.,"SELECT DISTINCT c.course_id, c.course_code, c.course_title
+FROM courses c
+JOIN enrollments e ON c.course_id = e.course_id
+JOIN attendance_records ar ON e.enrollment_id = ar.enrollment_id",
+419,set_operations,moderate,PASS,CORRECT,List departments that have both programs and instructors.,"SELECT d.department_id, d.department_name
+FROM departments d
+JOIN programs p ON d.department_id = p.department_id
+JOIN instructors i ON d.department_id = i.department_id
+GROUP BY d.department_id, d.department_name
+HAVING COUNT(DISTINCT p.program_id) > 0 AND COUNT(DISTINCT i.instructor_id) > 0",
+420,set_operations,moderate,PASS,CORRECT,List programs that have both students and courses.,"SELECT p.program_id, p.program_name
+FROM programs p
+JOIN students s ON p.program_id = s.program_id
+JOIN courses c ON p.program_id = c.program_id
+GROUP BY p.program_id
+HAVING COUNT(DISTINCT s.student_id) > 0 AND COUNT(DISTINCT c.course_id) > 0",
+421,set_operations,moderate,PASS,CORRECT,List students who have a completed enrollment but no failed enrollment.,"SELECT s.student_id, s.first_name, s.last_name
+FROM students s
+JOIN enrollments e ON s.student_id = e.student_id
+WHERE EXISTS (
+    SELECT 1
+    FROM enrollments e1
+    WHERE e1.student_id = s.student_id
+      AND e1.enrollment_status = 'completed'
+)
+AND NOT EXISTS (
+    SELECT 1
+    FROM enrollments e2
+    WHERE e2.student_id = s.student_id
+      AND e2.enrollment_status = 'failed'
+)
+GROUP BY s.student_id, s.first_name, s.last_name",
+422,set_operations,moderate,PASS,CORRECT,List courses that have completed enrollments but no withdrawn enrollments.,"SELECT c.course_id, c.course_code, c.course_title
+FROM courses c
+JOIN enrollments e ON c.course_id = e.course_id
+GROUP BY c.course_id, c.course_code, c.course_title
+HAVING SUM(CASE WHEN e.enrollment_status = 'completed' THEN 1 ELSE 0 END) > 0
+   AND SUM(CASE WHEN e.enrollment_status = 'withdrawn' THEN 1 ELSE 0 END) = 0",
+423,set_operations,moderate,PASS,CORRECT,List instructors who teach active courses but have no advising appointments.,"SELECT i.instructor_id, i.first_name, i.last_name
+FROM instructors i
+JOIN courses c ON i.instructor_id = c.instructor_id
+WHERE c.active_flag = '1'
+  AND NOT EXISTS (
+    SELECT 1
+    FROM academic_advising aa
+    WHERE aa.instructor_id = i.instructor_id
+  )
+GROUP BY i.instructor_id, i.first_name, i.last_name",
+424,set_operations,moderate,PASS,INCORRECT,List students who received advising but have no enrollment records.,"SELECT s.student_id, s.first_name, s.last_name
+FROM students s
+JOIN academic_advising aa ON s.student_id = aa.student_id
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM enrollments e
+    WHERE e.student_id = s.student_id
+)",Returns duplicate student rows when a student has multiple advising appointments.
+425,set_operations,moderate,PASS,INCORRECT,List programs with active students but no active courses.,"SELECT p.program_id, p.program_name
+FROM programs p
+JOIN students s ON p.program_id = s.program_id
+JOIN courses c ON p.program_id = c.program_id
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM courses c2
+    WHERE c2.program_id = p.program_id
+      AND c2.active_flag = '1'
+)
+GROUP BY p.program_id, p.program_name
+HAVING COUNT(DISTINCT s.student_id) >= 1","The inner course join excludes programs with active students and no courses, even though they have no active courses."
+426,set_operations,moderate,PASS,INCORRECT,List departments with active instructors but no active programs.,"SELECT ""departments"".""department_id"", ""departments"".""department_name"" FROM ""departments"" INNER JOIN ""instructors"" ON ""departments"".""department_id"" = ""instructors"".""department_id"" INNER JOIN ""programs"" ON ""departments"".""department_id"" = ""programs"".""department_id"" WHERE ""instructors"".""active_flag"" = ? AND NOT EXISTS (SELECT 1 FROM ""programs"" WHERE ""departments"".""department_id"" = ""programs"".""department_id"" AND ""programs"".""active_flag"" = ?) GROUP BY ""departments"".""department_id"", ""departments"".""department_name""","The inner program join excludes departments with active instructors and no programs, even though they have no active programs."
+427,set_operations,moderate,PASS,INCORRECT,List students who attended an online course but never attended an in-person course.,"SELECT s.student_id, s.first_name, s.last_name
+FROM students s
+JOIN enrollments e ON s.student_id = e.student_id
+JOIN courses c ON e.course_id = c.course_id
+WHERE c.delivery_mode = 'online'
+AND NOT EXISTS (
+    SELECT 1
+    FROM enrollments e2
+    JOIN courses c2 ON e2.course_id = c2.course_id
+    WHERE e2.student_id = s.student_id
+    AND c2.delivery_mode = 'in_person'
+)
+GROUP BY s.student_id, s.first_name, s.last_name",Treats course enrollment as attendance and never uses attendance_records.
+428,set_operations,moderate,PASS,INCORRECT,List courses attended by international students but not domestic students.,"SELECT DISTINCT ""courses"".""course_id"", ""courses"".""course_code"", ""courses"".""course_title"" FROM ""enrollments"" INNER JOIN ""courses"" ON ""enrollments"".""course_id"" = ""courses"".""course_id"" INNER JOIN ""students"" ON ""enrollments"".""student_id"" = ""students"".""student_id"" WHERE ""students"".""citizenship_status"" = ? AND NOT EXISTS (SELECT 1 FROM ""students"" WHERE ""enrollments"".""student_id"" = ""students"".""student_id"" AND ""enrollments"".""course_id"" = ""courses"".""course_id"" AND ""students"".""citizenship_status"" = ?)",The NOT EXISTS clause checks only the current international student's row and does not exclude courses that also have domestic students.
+429,set_operations,moderate,PASS,CORRECT,List instructors who taught completed enrollments but no failed enrollments.,"SELECT i.instructor_id, i.first_name, i.last_name
+FROM instructors i
+JOIN enrollments e ON i.instructor_id = e.instructor_id
+GROUP BY i.instructor_id, i.first_name, i.last_name
+HAVING COUNT(CASE WHEN e.enrollment_status = 'completed' THEN 1 END) >= 1
+   AND COUNT(CASE WHEN e.enrollment_status = 'failed' THEN 1 END) = 0",
+430,set_operations,moderate,PASS,CORRECT,List students with present attendance records but no absent attendance records.,"SELECT s.student_id, s.first_name, s.last_name
+FROM students s
+JOIN attendance_records a ON s.student_id = a.student_id
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM attendance_records a2
+    WHERE a2.student_id = s.student_id
+      AND a2.attendance_status = 'absent'
+)
+GROUP BY s.student_id, s.first_name, s.last_name
+HAVING COUNT(CASE WHEN a.attendance_status = 'present' THEN 1 END) > 0",
+431,set_operations,moderate,PASS,INCORRECT,List programs represented in both completed and withdrawn enrollments.,"SELECT ""programs"".""program_id"", ""programs"".""program_name"", COUNT(*) AS ""completed_count"", COUNT(*) AS ""withdrawn_count"" FROM ""enrollments"" INNER JOIN ""courses"" ON ""enrollments"".""course_id"" = ""courses"".""course_id"" INNER JOIN ""programs"" ON ""courses"".""program_id"" = ""programs"".""program_id"" GROUP BY ""programs"".""program_id"", ""programs"".""program_name"" HAVING ""completed_count"" > ? AND ""withdrawn_count"" > ?",Uses identical counts for completed and withdrawn enrollments without status-specific conditions.
+432,set_operations,moderate,PASS,CORRECT,List departments represented by both bachelor and master programs.,"SELECT d.department_id, d.department_name
+FROM departments d
+JOIN programs p ON d.department_id = p.department_id
+WHERE p.degree_level IN ('bachelor', 'master')
+GROUP BY d.department_id, d.department_name
+HAVING COUNT(DISTINCT p.degree_level) = 2",
+433,set_operations,moderate,PASS,INCORRECT,List students who have both high-risk advising and completed advising appointments.,"SELECT DISTINCT s.student_id, s.first_name, s.last_name
+FROM students s
+JOIN academic_advising aa ON s.student_id = aa.student_id
+WHERE aa.academic_risk_level = 'high'
+  AND aa.completed_flag = '1'",Requires one advising row to be both high-risk and completed instead of testing independent existence of both kinds of appointments.
+434,set_operations,moderate,PASS,CORRECT,List courses taught by tenured instructors but not by non-tenured instructors.,"SELECT c.course_id, c.course_code, c.course_title
+FROM courses c
+JOIN instructors i ON c.instructor_id = i.instructor_id
+WHERE i.tenure_status = 'tenured'
+AND NOT EXISTS (
+    SELECT 1
+    FROM courses c2
+    JOIN instructors i2 ON c2.instructor_id = i2.instructor_id
+    WHERE c2.course_id = c.course_id
+    AND i2.tenure_status = 'non_tenure'
+)",
+435,set_operations,moderate,PASS,CORRECT,List instructors whose students include both residents and nonresidents.,"SELECT i.instructor_id, i.first_name, i.last_name
+FROM instructors i
+JOIN students s ON i.instructor_id = s.advisor_instructor_id
+WHERE s.residency_status IN ('resident', 'nonresident')
+GROUP BY i.instructor_id, i.first_name, i.last_name
+HAVING COUNT(DISTINCT s.residency_status) = 2",
+436,set_operations,hard,PASS,CORRECT,List students who completed both online and in-person courses but never completed a hybrid course.,"SELECT s.student_id, s.first_name, s.last_name
+FROM students s
+JOIN enrollments e ON s.student_id = e.student_id
+JOIN courses c ON e.course_id = c.course_id
+WHERE e.enrollment_status = 'completed'
+GROUP BY s.student_id, s.first_name, s.last_name
+HAVING COUNT(DISTINCT CASE WHEN c.delivery_mode = 'online' THEN c.course_id END) > 0
+   AND COUNT(DISTINCT CASE WHEN c.delivery_mode = 'in_person' THEN c.course_id END) > 0
+   AND COUNT(DISTINCT CASE WHEN c.delivery_mode = 'hybrid' THEN c.course_id END) = 0",
+437,set_operations,hard,PASS,CORRECT,List instructors who both teach courses and conduct advising but are not assigned as student advisors.,"SELECT i.instructor_id, i.first_name, i.last_name
+FROM instructors i
+JOIN courses c ON i.instructor_id = c.instructor_id
+JOIN academic_advising aa ON i.instructor_id = aa.instructor_id
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM students s
+    WHERE s.advisor_instructor_id = i.instructor_id
+)
+GROUP BY i.instructor_id, i.first_name, i.last_name",
+438,set_operations,hard,PASS,CORRECT,List programs with students in both domestic and international groups but no permanent-resident students.,"SELECT p.program_id, p.program_name
+FROM programs p
+JOIN students s ON p.program_id = s.program_id
+GROUP BY p.program_id, p.program_name
+HAVING COUNT(CASE WHEN s.citizenship_status = 'domestic' THEN 1 END) > 0
+   AND COUNT(CASE WHEN s.citizenship_status = 'international' THEN 1 END) > 0
+   AND COUNT(CASE WHEN s.citizenship_status = 'permanent_resident' THEN 1 END) = 0",
+439,set_operations,hard,PASS,CORRECT,List departments that offer both bachelor and master programs but no doctorate program.,"SELECT d.department_id, d.department_name
+FROM departments d
+JOIN programs p ON d.department_id = p.department_id
+GROUP BY d.department_id, d.department_name
+HAVING SUM(CASE WHEN p.degree_level = 'bachelor' THEN 1 ELSE 0 END) > 0
+   AND SUM(CASE WHEN p.degree_level = 'master' THEN 1 ELSE 0 END) > 0
+   AND SUM(CASE WHEN p.degree_level = 'doctorate' THEN 1 ELSE 0 END) = 0",
+440,set_operations,hard,PASS,CORRECT,List students who have both completed and withdrawn enrollments but no failed enrollment.,"SELECT s.student_id, s.first_name, s.last_name
+FROM students s
+JOIN enrollments e ON s.student_id = e.student_id
+GROUP BY s.student_id, s.first_name, s.last_name
+HAVING SUM(CASE WHEN e.enrollment_status = 'completed' THEN 1 ELSE 0 END) > 0
+   AND SUM(CASE WHEN e.enrollment_status = 'withdrawn' THEN 1 ELSE 0 END) > 0
+   AND SUM(CASE WHEN e.enrollment_status = 'failed' THEN 1 ELSE 0 END) = 0",
+441,set_operations,hard,PASS,CORRECT,List courses with both present and late attendance records but no absent records.,"SELECT c.course_id, c.course_code, c.course_title
+FROM courses c
+JOIN attendance_records ar ON c.course_id = ar.course_id
+GROUP BY c.course_id, c.course_code, c.course_title
+HAVING SUM(CASE WHEN ar.attendance_status = 'present' THEN 1 ELSE 0 END) > 0
+   AND SUM(CASE WHEN ar.attendance_status = 'late' THEN 1 ELSE 0 END) > 0
+   AND SUM(CASE WHEN ar.attendance_status = 'absent' THEN 1 ELSE 0 END) = 0",
+442,set_operations,hard,PASS,CORRECT,List instructors who taught both active and inactive courses but never taught an online course.,"SELECT i.instructor_id, i.first_name, i.last_name
+FROM instructors i
+JOIN courses c ON i.instructor_id = c.instructor_id
+GROUP BY i.instructor_id, i.first_name, i.last_name
+HAVING COUNT(DISTINCT CASE WHEN c.active_flag = '1' THEN c.course_id END) > 0
+   AND COUNT(DISTINCT CASE WHEN c.active_flag = '0' THEN c.course_id END) > 0
+   AND COUNT(DISTINCT CASE WHEN c.delivery_mode = 'online' THEN c.course_id END) = 0",
+443,set_operations,hard,PASS,CORRECT,List students who received both academic-plan and career advising but no probation advising.,"SELECT s.student_id, s.first_name, s.last_name
+FROM students s
+WHERE EXISTS (
+    SELECT 1
+    FROM academic_advising aa
+    WHERE aa.student_id = s.student_id
+      AND aa.appointment_type = 'academic_plan'
+)
+AND EXISTS (
+    SELECT 1
+    FROM academic_advising aa
+    WHERE aa.student_id = s.student_id
+      AND aa.appointment_type = 'career'
+)
+AND NOT EXISTS (
+    SELECT 1
+    FROM academic_advising aa
+    WHERE aa.student_id = s.student_id
+      AND aa.appointment_type = 'probation'
+)",
+444,set_operations,hard,PASS,INCORRECT,List departments with both tenured and tenure-track instructors but no lecturer.,"SELECT ""departments"".""department_id"", ""departments"".""department_name"", COUNT(*) AS ""tenured_count"", COUNT(*) AS ""tenure_track_count"", COUNT(*) AS ""lecturer_count"" FROM ""instructors"" INNER JOIN ""departments"" ON ""instructors"".""department_id"" = ""departments"".""department_id"" GROUP BY ""departments"".""department_id"", ""departments"".""department_name"" HAVING ""tenured_count"" >= ? AND ""tenure_track_count"" >= ? AND ""lecturer_count"" = ?","Counts every instructor row for the tenured, tenure-track, and lecturer aliases without applying tenure or job-title conditions."
+445,set_operations,hard,PASS,CORRECT,List programs whose students attended both lecture and lab sessions but no exam session.,"SELECT p.program_id, p.program_name
+FROM programs p
+JOIN students s ON p.program_id = s.program_id
+JOIN enrollments e ON s.student_id = e.student_id
+JOIN attendance_records ar ON e.enrollment_id = ar.enrollment_id
+GROUP BY p.program_id, p.program_name
+HAVING COUNT(DISTINCT CASE WHEN ar.session_type = 'lecture' THEN 1 END) >= 1
+   AND COUNT(DISTINCT CASE WHEN ar.session_type = 'lab' THEN 1 END) >= 1
+   AND COUNT(DISTINCT CASE WHEN ar.session_type = 'exam' THEN 1 END) = 0",
+446,set_operations,hard,PASS,CORRECT,List courses taken by both financially aided and non-aided students but no international students.,"SELECT c.course_id, c.course_code, c.course_title
+FROM courses c
+JOIN enrollments e ON c.course_id = e.course_id
+JOIN students s ON e.student_id = s.student_id
+WHERE EXISTS (
+    SELECT 1
+    FROM enrollments e1
+    JOIN students s1 ON e1.student_id = s1.student_id
+    WHERE e1.course_id = c.course_id
+      AND s1.financial_aid_flag = 1
+)
+AND EXISTS (
+    SELECT 1
+    FROM enrollments e2
+    JOIN students s2 ON e2.student_id = s2.student_id
+    WHERE e2.course_id = c.course_id
+      AND s2.financial_aid_flag = 0
+)
+AND NOT EXISTS (
+    SELECT 1
+    FROM enrollments e3
+    JOIN students s3 ON e3.student_id = s3.student_id
+    WHERE e3.course_id = c.course_id
+      AND s3.citizenship_status = 'international'
+)
+GROUP BY c.course_id, c.course_code, c.course_title",
+447,set_operations,hard,PASS,INCORRECT,List students with enrollments in both their own program and another program but no failed enrollment.,"SELECT s.student_id, s.first_name, s.last_name
+FROM students s
+JOIN enrollments e ON s.student_id = e.student_id
+JOIN programs p ON s.program_id = p.program_id
+WHERE e.final_grade != 'F'
+  AND EXISTS (
+    SELECT 1
+    FROM enrollments e1
+    WHERE e1.student_id = s.student_id
+      AND e1.final_grade != 'F'
+      AND e1.course_id IN (
+        SELECT course_id
+        FROM courses
+        WHERE program_id = s.program_id
+      )
+  )
+  AND EXISTS (
+    SELECT 1
+    FROM enrollments e2
+    WHERE e2.student_id = s.student_id
+      AND e2.final_grade != 'F'
+      AND e2.course_id IN (
+        SELECT course_id
+        FROM courses
+        WHERE program_id != s.program_id
+      )
+  )
+GROUP BY s.student_id, s.first_name, s.last_name",Uses final_grade != 'F' instead of requiring that the student have no enrollment with failed status.
+448,set_operations,hard,PASS,INCORRECT,List instructors who taught both undergraduate and graduate course levels but no 600-level course.,"SELECT i.instructor_id, i.first_name, i.last_name
+FROM instructors i
+JOIN courses c ON i.instructor_id = c.instructor_id
+GROUP BY i.instructor_id
+HAVING COUNT(DISTINCT CASE WHEN c.course_level = 'undergraduate' THEN 1 END) > 0
+   AND COUNT(DISTINCT CASE WHEN c.course_level = 'graduate' THEN 1 END) > 0
+   AND COUNT(DISTINCT CASE WHEN c.course_level = '600' THEN 1 END) = 0",Filters nonexistent 'undergraduate' and 'graduate' course-level literals; the database stores numeric levels such as 100 through 600.
+449,set_operations,hard,PASS,CORRECT,List departments with both completed and failed enrollments but no withdrawn enrollments.,"SELECT d.department_id, d.department_name
+FROM departments d
+JOIN enrollments e ON d.department_id = (
+    SELECT c.department_id
+    FROM courses c
+    WHERE c.course_id = e.course_id
+)
+GROUP BY d.department_id, d.department_name
+HAVING SUM(CASE WHEN e.enrollment_status = 'completed' THEN 1 ELSE 0 END) > 0
+   AND SUM(CASE WHEN e.enrollment_status = 'failed' THEN 1 ELSE 0 END) > 0
+   AND SUM(CASE WHEN e.enrollment_status = 'withdrawn' THEN 1 ELSE 0 END) = 0",
+450,set_operations,hard,PASS,INCORRECT,List programs with both active and graduated students but no withdrawn students.,"SELECT p.program_id, p.program_name
+FROM programs p
+JOIN students s ON p.program_id = s.program_id
+JOIN enrollments e ON s.student_id = e.student_id
+GROUP BY p.program_id, p.program_name
+HAVING COUNT(DISTINCT CASE WHEN s.student_status = 'active' THEN s.student_id END) > 0
+   AND COUNT(DISTINCT CASE WHEN s.student_status = 'graduated' THEN s.student_id END) > 0
+   AND COUNT(DISTINCT CASE WHEN e.enrollment_status = 'withdrawn' THEN e.enrollment_id END) = 0",Checks for withdrawn enrollment records instead of students whose student_status is withdrawn.
+451,subquery_cte,easy,PASS,CORRECT,List students whose GPA is above the overall student average.,"SELECT s.student_id, s.first_name, s.last_name, s.cumulative_gpa
+FROM students s
+WHERE s.cumulative_gpa > (SELECT AVG(cumulative_gpa) FROM students)",
+452,subquery_cte,easy,PASS,CORRECT,List students with more credits earned than the overall student average.,"WITH student_totals AS (
+  SELECT student_id, SUM(credits_earned) AS total_credits
+  FROM students
+  GROUP BY student_id
+),
+avg_credits AS (
+  SELECT AVG(total_credits) AS avg_total
+  FROM student_totals
+)
+SELECT s.student_id, s.first_name, s.last_name, s.credits_earned
+FROM students s
+JOIN student_totals st ON s.student_id = st.student_id
+CROSS JOIN avg_credits ac
+WHERE st.total_credits > ac.avg_total",
+453,subquery_cte,easy,PASS,CORRECT,List departments with budgets above the average department budget.,"SELECT d.department_id, d.department_name, d.annual_budget
+FROM departments d
+WHERE d.annual_budget > (SELECT AVG(annual_budget) FROM departments)",
+454,subquery_cte,easy,PASS,CORRECT,List instructors earning more than the average instructor salary.,"SELECT instructor_id, first_name, last_name, salary
+FROM instructors
+WHERE salary > (SELECT AVG(salary) FROM instructors)",
+455,subquery_cte,easy,PASS,CORRECT,List instructors with performance ratings above the instructor average.,"SELECT i.instructor_id, i.first_name, i.last_name, i.performance_rating
+FROM instructors i
+WHERE i.performance_rating > (SELECT AVG(performance_rating) FROM instructors)",
+456,subquery_cte,easy,PASS,CORRECT,List programs with tuition per credit above the program average.,"SELECT program_id, program_name, tuition_per_credit
+FROM programs
+WHERE tuition_per_credit > (SELECT AVG(tuition_per_credit) FROM programs)",
+457,subquery_cte,easy,PASS,CORRECT,List programs with current enrollment above the average program enrollment.,"SELECT program_id, program_name, current_enrollment
+FROM programs
+WHERE current_enrollment > (SELECT AVG(current_enrollment) FROM programs)",
+458,subquery_cte,easy,PASS,CORRECT,List courses with capacity above the average course capacity.,"SELECT courses.course_id, courses.course_code, courses.course_title, courses.capacity
+FROM courses
+WHERE courses.capacity > (SELECT AVG(courses.capacity) FROM courses)",
+459,subquery_cte,easy,PASS,CORRECT,List courses with enrolled count above the average course enrollment.,"SELECT courses.course_id, courses.course_code, courses.course_title, courses.enrolled_count
+FROM courses
+WHERE courses.enrolled_count > (SELECT AVG(enrolled_count) FROM courses)",
+460,subquery_cte,easy,PASS,CORRECT,List enrollments with numeric grades above the completed-enrollment average.,"SELECT e.enrollment_id, e.student_id, e.course_id, e.numeric_grade
+FROM enrollments e
+WHERE e.numeric_grade > (
+    SELECT AVG(e2.numeric_grade)
+    FROM enrollments e2
+    WHERE e2.enrollment_status = 'completed'
+)",
+461,subquery_cte,easy,PASS,CORRECT,List enrollments with scholarship amounts above the average scholarship.,"SELECT e.enrollment_id, e.student_id, e.course_id, e.scholarship_amount
+FROM enrollments e
+WHERE e.scholarship_amount > (SELECT AVG(scholarship_amount) FROM enrollments)",
+462,subquery_cte,easy,PASS,CORRECT,List advising appointments longer than the average advising appointment.,"SELECT advising_id, appointment_date, duration_minutes
+FROM academic_advising
+WHERE duration_minutes > (SELECT AVG(duration_minutes) FROM academic_advising)",
+463,subquery_cte,easy,PASS,CORRECT,List attendance records with quiz scores above the average quiz score.,"SELECT ar.attendance_id, ar.enrollment_id, ar.student_id, ar.course_id, ar.instructor_id, ar.class_date, ar.session_type, ar.attendance_status, ar.minutes_late, ar.minutes_present, ar.excused_flag, ar.reason_code, ar.recorded_by, ar.recorded_at, ar.participation_points, ar.quiz_score, ar.notes, ar.followup_required
+FROM attendance_records ar
+WHERE ar.quiz_score > (SELECT AVG(quiz_score) FROM attendance_records)",
+464,subquery_cte,easy,PASS,CORRECT,List students who have never received an advising appointment.,"SELECT s.student_id, s.first_name, s.last_name
+FROM students s
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM academic_advising aa
+    WHERE aa.student_id = s.student_id
+)",
+465,subquery_cte,easy,PASS,CORRECT,List courses that have never had an enrollment record.,"SELECT c.course_id, c.course_code, c.course_title
+FROM courses c
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM enrollments e
+    WHERE e.course_id = c.course_id
+)",
+466,subquery_cte,moderate,PASS,CORRECT,List students whose GPA is above the average GPA for their program.,"SELECT s.student_id, s.first_name, s.last_name, s.cumulative_gpa
+FROM students s
+JOIN programs p ON s.program_id = p.program_id
+WHERE s.cumulative_gpa > (
+    SELECT AVG(s2.cumulative_gpa)
+    FROM students s2
+    WHERE s2.program_id = s.program_id
+)",
+467,subquery_cte,moderate,PASS,CORRECT,List instructors earning more than the average salary in their department.,"SELECT i.instructor_id, i.first_name, i.last_name, i.salary, i.department_id
+FROM instructors i
+WHERE i.salary > (
+    SELECT AVG(i2.salary)
+    FROM instructors i2
+    WHERE i2.department_id = i.department_id
+)",
+468,subquery_cte,moderate,PASS,CORRECT,List programs with current enrollment above the average for their degree level.,"SELECT p.program_id, p.program_name, p.current_enrollment
+FROM programs p
+WHERE p.current_enrollment > (
+    SELECT AVG(p2.current_enrollment)
+    FROM programs p2
+    WHERE p2.degree_level = p.degree_level
+)",
+469,subquery_cte,moderate,PASS,CORRECT,List courses with enrolled count above the average for their department.,"SELECT c.course_id, c.course_code, c.course_title, c.enrolled_count
+FROM courses c
+WHERE c.enrolled_count > (
+    SELECT AVG(c2.enrolled_count)
+    FROM courses c2
+    WHERE c2.department_id = c.department_id
+)",
+470,subquery_cte,moderate,PASS,CORRECT,List enrollments with numeric grades above the average for the same course.,"SELECT e.enrollment_id, e.student_id, e.course_id, e.numeric_grade
+FROM enrollments e
+WHERE e.numeric_grade > (
+    SELECT AVG(e2.numeric_grade)
+    FROM enrollments e2
+    WHERE e2.course_id = e.course_id
+)",
+471,subquery_cte,moderate,PASS,CORRECT,List students whose total tuition is above the average student total tuition.,"SELECT s.student_id, s.first_name, s.last_name
+FROM students s
+JOIN enrollments e ON s.student_id = e.student_id
+GROUP BY s.student_id, s.first_name, s.last_name
+HAVING SUM(e.tuition_amount) > (
+    SELECT AVG(student_total_tuition)
+    FROM (
+        SELECT SUM(e2.tuition_amount) AS student_total_tuition
+        FROM enrollments e2
+        GROUP BY e2.student_id
+    )
+)",
+472,subquery_cte,moderate,PASS,CORRECT,List students whose total scholarship is above the average among scholarship recipients.,"SELECT s.student_id, s.first_name, s.last_name
+FROM students s
+JOIN enrollments e ON s.student_id = e.student_id
+GROUP BY s.student_id, s.first_name, s.last_name
+HAVING SUM(e.scholarship_amount) > (
+    SELECT AVG(total_scholarship)
+    FROM (
+        SELECT SUM(e2.scholarship_amount) AS total_scholarship
+        FROM enrollments e2
+        GROUP BY e2.student_id
+        HAVING SUM(e2.scholarship_amount) > 0
+    )
+)",
+473,subquery_cte,moderate,PASS,CORRECT,List instructors who teach more courses than the average instructor who teaches a course.,"WITH instructor_course_counts AS (
+    SELECT instructor_id, COUNT(DISTINCT course_id) AS course_count
+    FROM courses
+    GROUP BY instructor_id
+),
+avg_course_count AS (
+    SELECT AVG(course_count) AS avg_count
+    FROM instructor_course_counts
+)
+SELECT i.instructor_id, i.first_name, i.last_name
+FROM instructors i
+JOIN instructor_course_counts icc ON i.instructor_id = icc.instructor_id
+CROSS JOIN avg_course_count acc
+WHERE icc.course_count > acc.avg_count",
+474,subquery_cte,moderate,PASS,INCORRECT,List courses with more completed enrollments than the average course.,"SELECT c.course_id, c.course_code, c.course_title
+FROM courses c
+JOIN enrollments e ON c.course_id = e.course_id
+GROUP BY c.course_id, c.course_code, c.course_title
+HAVING SUM(CASE WHEN e.enrollment_status = 'completed' THEN 1 ELSE 0 END) > (
+    SELECT AVG(completed_count)
+    FROM (
+        SELECT COUNT(*) AS completed_count
+        FROM enrollments
+        WHERE enrollment_status = 'completed'
+        GROUP BY course_id
+    )
+)","Computes the comparison average only across courses with at least one completed enrollment, excluding zero-completion courses."
+475,subquery_cte,moderate,PASS,CORRECT,List advisors who conducted more appointments than the average advisor.,"SELECT i.instructor_id, i.first_name, i.last_name
+FROM academic_advising aa
+JOIN instructors i ON aa.instructor_id = i.instructor_id
+GROUP BY i.instructor_id, i.first_name, i.last_name
+HAVING COUNT(aa.advising_id) > (
+    SELECT AVG(appointment_count)
+    FROM (
+        SELECT COUNT(advising_id) AS appointment_count
+        FROM academic_advising
+        GROUP BY instructor_id
+    )
+)",
+476,subquery_cte,moderate,PASS,CORRECT,List students with more attendance records than the average student with attendance.,"SELECT s.student_id, s.first_name, s.last_name
+FROM students s
+JOIN attendance_records a ON s.student_id = a.student_id
+GROUP BY s.student_id
+HAVING COUNT(a.attendance_id) > (
+    SELECT AVG(student_count)
+    FROM (
+        SELECT COUNT(*) AS student_count
+        FROM attendance_records
+        GROUP BY student_id
+    )
+)",
+477,subquery_cte,moderate,PASS,INCORRECT,List courses whose average quiz score is above the average course quiz score.,"SELECT c.course_id, c.course_title
+FROM courses c
+JOIN attendance_records ar ON c.course_id = ar.course_id
+GROUP BY c.course_id, c.course_title
+HAVING AVG(ar.quiz_score) > (SELECT AVG(quiz_score) FROM attendance_records)","Compares each course average with the overall record-level quiz average, not the average of course-level averages."
+478,subquery_cte,moderate,PASS,INCORRECT,List departments whose active student count is above the average department active student count.,"WITH dept_active_counts AS (
+    SELECT 
+        d.department_id,
+        d.department_name,
+        COUNT(s.student_id) AS active_student_count
+    FROM departments d
+    JOIN programs p ON d.department_id = p.department_id
+    JOIN students s ON p.program_id = s.program_id
+    WHERE s.student_status = 'active'
+    GROUP BY d.department_id, d.department_name
+),
+avg_count AS (
+    SELECT AVG(active_student_count) AS avg_active
+    FROM dept_active_counts
+)
+SELECT 
+    dac.department_id,
+    dac.department_name
+FROM dept_active_counts dac
+CROSS JOIN avg_count ac
+WHERE dac.active_student_count > ac.avg_active","Computes the department average only among departments having active students, excluding zero-active-student departments."
+479,subquery_cte,moderate,PASS,INCORRECT,List programs whose average student GPA is above the average program GPA.,"SELECT p.program_id, p.program_name
+FROM programs p
+JOIN students s ON p.program_id = s.program_id
+GROUP BY p.program_id, p.program_name
+HAVING AVG(s.cumulative_gpa) > (SELECT AVG(cumulative_gpa) FROM students)","Compares each program's GPA with the overall student GPA, not with the average of program-level GPAs."
+480,subquery_cte,moderate,PASS,CORRECT,List instructors whose students have an average grade above the overall completed-enrollment average.,"SELECT i.instructor_id, i.first_name, i.last_name
+FROM instructors i
+JOIN enrollments e ON i.instructor_id = e.instructor_id
+GROUP BY i.instructor_id, i.first_name, i.last_name
+HAVING AVG(e.numeric_grade) > (
+    SELECT AVG(numeric_grade)
+    FROM enrollments
+    WHERE enrollment_status = 'completed'
+)",
+481,subquery_cte,moderate,PASS,CORRECT,List students whose most recent enrollment is completed.,"WITH ranked_enrollments AS (
+  SELECT 
+    e.student_id,
+    e.enrollment_status,
+    e.enrollment_date,
+    ROW_NUMBER() OVER (PARTITION BY e.student_id ORDER BY e.enrollment_date DESC) AS rn
+  FROM enrollments e
+)
+SELECT 
+  s.student_id,
+  s.first_name,
+  s.last_name
+FROM students s
+JOIN ranked_enrollments re ON s.student_id = re.student_id
+WHERE re.rn = 1 AND re.enrollment_status = 'completed'",
+482,subquery_cte,moderate,PASS,CORRECT,List courses whose latest attendance record was marked absent.,"SELECT c.course_id, c.course_code, c.course_title
+FROM courses c
+JOIN attendance_records ar ON c.course_id = ar.course_id
+WHERE ar.attendance_status = 'absent'
+  AND ar.class_date = (
+    SELECT MAX(ar2.class_date)
+    FROM attendance_records ar2
+    WHERE ar2.course_id = c.course_id
+  )",
+483,subquery_cte,moderate,PASS,CORRECT,List programs where every active student has a GPA above 2.5.,"SELECT p.program_id, p.program_name
+FROM programs p
+JOIN students s ON p.program_id = s.program_id
+WHERE s.student_status = 'active'
+GROUP BY p.program_id, p.program_name
+HAVING MIN(s.cumulative_gpa) > 2.5",
+484,subquery_cte,moderate,PASS,CORRECT,List instructors for whom every active course has at least one enrollment.,"SELECT i.instructor_id, i.first_name, i.last_name
+FROM instructors i
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM courses c
+    WHERE c.instructor_id = i.instructor_id
+      AND c.active_flag = '1'
+      AND NOT EXISTS (
+          SELECT 1
+          FROM enrollments e
+          WHERE e.course_id = c.course_id
+            AND e.enrollment_id IS NOT NULL
+      )
+)",
+485,subquery_cte,moderate,PASS,CORRECT,List departments where every active program has current enrollment above zero.,"SELECT d.department_id, d.department_name
+FROM departments d
+JOIN programs p ON d.department_id = p.department_id
+WHERE p.active_flag = '1'
+GROUP BY d.department_id, d.department_name
+HAVING MIN(p.current_enrollment) > 0",
+486,subquery_cte,hard,PASS,CORRECT,List the student with the highest GPA in each program.,"WITH RankedStudents AS (
+    SELECT
+        student_id,
+        first_name,
+        last_name,
+        program_id,
+        cumulative_gpa,
+        ROW_NUMBER() OVER (PARTITION BY program_id ORDER BY cumulative_gpa DESC) AS rn
+    FROM students
+)
+SELECT
+    student_id,
+    first_name,
+    last_name,
+    program_id,
+    cumulative_gpa
+FROM RankedStudents
+WHERE rn = 1",
+487,subquery_cte,hard,PASS,CORRECT,List the highest-paid instructor in each department.,"WITH RankedInstructors AS (
+    SELECT 
+        instructor_id,
+        first_name,
+        last_name,
+        department_id,
+        salary,
+        ROW_NUMBER() OVER (PARTITION BY department_id ORDER BY salary DESC) AS rn
+    FROM instructors
+)
+SELECT 
+    instructor_id,
+    first_name,
+    last_name,
+    department_id,
+    salary
+FROM RankedInstructors
+WHERE rn = 1",
+488,subquery_cte,hard,PASS,CORRECT,List the course with the highest enrolled count in each program.,"WITH RankedCourses AS (
+    SELECT 
+        c.course_id,
+        c.program_id,
+        c.enrolled_count,
+        ROW_NUMBER() OVER (PARTITION BY c.program_id ORDER BY c.enrolled_count DESC) AS rn
+    FROM courses c
+)
+SELECT 
+    course_id,
+    program_id,
+    enrolled_count
+FROM RankedCourses
+WHERE rn = 1",
+489,subquery_cte,hard,PASS,CORRECT,List students whose GPA is above the average for their degree level and whose credits exceed their program average.,"SELECT s.student_id, s.first_name, s.last_name, s.cumulative_gpa, s.credits_earned
+FROM students s
+JOIN programs p ON s.program_id = p.program_id
+WHERE s.cumulative_gpa > (
+    SELECT AVG(s2.cumulative_gpa)
+    FROM students s2
+    JOIN programs p2 ON s2.program_id = p2.program_id
+    WHERE p2.degree_level = p.degree_level
+)
+AND s.credits_earned > (
+    SELECT AVG(s3.credits_earned)
+    FROM students s3
+    JOIN programs p3 ON s3.program_id = p3.program_id
+    WHERE p3.program_id = p.program_id
+)",
+490,subquery_cte,hard,PASS,CORRECT,List instructors whose average student grade is above the average instructor grade within their department.,"SELECT i.instructor_id, i.first_name, i.last_name
+FROM instructors i
+JOIN courses c ON i.instructor_id = c.instructor_id
+JOIN enrollments e ON c.course_id = e.course_id
+GROUP BY i.instructor_id, i.first_name, i.last_name
+HAVING AVG(e.numeric_grade) > (
+    SELECT AVG(instructor_avg)
+    FROM (
+        SELECT AVG(e2.numeric_grade) AS instructor_avg
+        FROM instructors i2
+        JOIN courses c2 ON i2.instructor_id = c2.instructor_id
+        JOIN enrollments e2 ON c2.course_id = e2.course_id
+        WHERE i2.department_id = i.department_id
+        GROUP BY i2.instructor_id
+    )
+)",
+491,subquery_cte,hard,FAIL,INCORRECT,List programs whose completed-enrollment rate is above the average rate for their degree level.,<NO SQL GENERATED>,No SQL was returned.
+492,subquery_cte,hard,PASS,INCORRECT,List courses whose attendance rate is above the average attendance rate in their department.,"SELECT c.course_id, c.course_title
+FROM courses c
+JOIN enrollments e ON c.course_id = e.course_id
+WHERE e.attendance_percentage > (
+    SELECT AVG(e2.attendance_percentage)
+    FROM enrollments e2
+    JOIN courses c2 ON e2.course_id = c2.course_id
+    WHERE c2.department_id = c.department_id
+)",Compares individual enrollment attendance values with a department average and never computes the course attendance rate first.
+493,subquery_cte,hard,PASS,CORRECT,List departments whose instructor payroll is above the average payroll for departments in the same school.,"SELECT d.department_id, d.department_name, d.school_name
+FROM departments d
+JOIN instructors i ON d.department_id = i.department_id
+GROUP BY d.department_id, d.department_name, d.school_name
+HAVING SUM(i.salary) > (
+    SELECT AVG(dept_total_payroll)
+    FROM (
+        SELECT SUM(i2.salary) AS dept_total_payroll
+        FROM departments d2
+        JOIN instructors i2 ON d2.department_id = i2.department_id
+        WHERE d2.school_name = d.school_name
+        GROUP BY d2.department_id
+    )
+)",
+494,subquery_cte,hard,PASS,CORRECT,List students who completed every course in which they have an enrollment record.,"SELECT s.student_id, s.first_name, s.last_name
+FROM students s
+JOIN enrollments e ON s.student_id = e.student_id
+GROUP BY s.student_id, s.first_name, s.last_name
+HAVING COUNT(CASE WHEN e.enrollment_status = 'completed' THEN 1 END) = COUNT(e.enrollment_id)",
+495,subquery_cte,hard,PASS,CORRECT,List instructors for whom every recorded enrollment is completed.,"SELECT i.instructor_id, i.first_name, i.last_name
+FROM instructors i
+JOIN enrollments e ON i.instructor_id = e.instructor_id
+GROUP BY i.instructor_id, i.first_name, i.last_name
+HAVING COUNT(*) = (
+    SELECT COUNT(*)
+    FROM enrollments e2
+    WHERE e2.instructor_id = i.instructor_id
+)
+AND COUNT(CASE WHEN e.enrollment_status = 'completed' THEN 1 END) = COUNT(*)",
+496,subquery_cte,hard,PASS,INCORRECT,List programs whose students have taken every delivery mode used by courses in that program.,"SELECT p.program_id, p.program_name
+FROM programs p
+JOIN courses c ON p.program_id = c.program_id
+GROUP BY p.program_id, p.program_name
+HAVING COUNT(DISTINCT c.delivery_mode) = (
+    SELECT COUNT(DISTINCT c2.delivery_mode)
+    FROM courses c2
+    WHERE c2.program_id = p.program_id
+)","Never joins students or enrollments; it compares a program's course delivery modes with the same set, making the condition tautological."
+497,subquery_cte,hard,PASS,CORRECT,List departments where every active instructor teaches at least one active course.,"SELECT d.department_id, d.department_name
+FROM departments d
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM instructors i
+    WHERE i.department_id = d.department_id
+      AND i.active_flag = '1'
+      AND NOT EXISTS (
+          SELECT 1
+          FROM courses c
+          WHERE c.instructor_id = i.instructor_id
+            AND c.active_flag = '1'
+      )
+)",
+498,subquery_cte,hard,PASS,INCORRECT,List students whose three most recent completed grades improved each time.,"WITH student_recent_grades AS (
+    SELECT
+        e.student_id,
+        e.final_grade,
+        e.enrollment_date,
+        ROW_NUMBER() OVER (
+            PARTITION BY e.student_id
+            ORDER BY e.enrollment_date DESC
+        ) AS rn
+    FROM enrollments e
+    WHERE e.enrollment_status = 'completed'
+),
+top_three AS (
+    SELECT
+        student_id,
+        final_grade,
+        enrollment_date,
+        rn
+    FROM student_recent_grades
+    WHERE rn <= 3
+),
+grade_order AS (
+    SELECT
+        student_id,
+        final_grade,
+        rn,
+        CASE final_grade
+            WHEN 'A' THEN 5
+            WHEN 'B' THEN 4
+            WHEN 'C' THEN 3
+            WHEN 'D' THEN 2
+            WHEN 'F' THEN 1
+            ELSE 0
+        END AS grade_value
+    FROM top_three
+),
+improvement_check AS (
+    SELECT
+        g1.student_id,
+        COUNT(*) AS improved_count
+    FROM grade_order g1
+    JOIN grade_order g2 ON g1.student_id = g2.student_id AND g1.rn = g2.rn - 1
+    WHERE g2.grade_value > g1.grade_value
+    GROUP BY g1.student_id
+)
+SELECT
+    s.student_id,
+    s.first_name,
+    s.last_name
+FROM students s
+JOIN improvement_check ic ON s.student_id = ic.student_id
+WHERE ic.improved_count = 2","The row-number comparison is reversed, selecting students whose newer grades declined rather than improved."
+499,subquery_cte,hard,PASS,CORRECT,List courses whose 2025 completed enrollment count exceeded their 2024 count.,"SELECT c.course_id, c.course_title
+FROM courses c
+JOIN enrollments e ON c.course_id = e.course_id
+WHERE e.enrollment_status = 'completed'
+  AND (
+    (SELECT COUNT(*) FROM enrollments e2 
+     WHERE e2.course_id = c.course_id 
+       AND e2.enrollment_status = 'completed' 
+       AND e2.enrollment_date LIKE '2025%')
+    >
+    (SELECT COUNT(*) FROM enrollments e3 
+     WHERE e3.course_id = c.course_id 
+       AND e3.enrollment_status = 'completed' 
+       AND e3.enrollment_date LIKE '2024%')
+  )
+GROUP BY c.course_id, c.course_title",
+500,subquery_cte,hard,FAIL,INCORRECT,List instructors whose advising satisfaction is above the overall advisor average and whose student grades are above the overall instructor average.,<NO SQL GENERATED>,No SQL was returned.

@@ -1,3 +1,15 @@
+const SOURCE_LABELS = {
+  pk_fk: "Database-declared PK/FK",
+  user: "User-added",
+  inferred: "Inferred",
+  legacy_unknown: "Legacy — needs review",
+  benchmark_trusted: "Benchmark",
+};
+
+function sourceLabel(src) {
+  return SOURCE_LABELS[src] || (src ? String(src) : "—");
+}
+
 function RelationshipsView({ relationships = [] }) {
   if (!relationships.length) {
     return <p className="text-sm text-gray-500">No relationships detected.</p>;
@@ -23,8 +35,12 @@ function RelationshipsView({ relationships = [] }) {
             </span>
 
             <span className="flex items-center gap-2">
-              <span className="text-xs text-gray-500">{rel.relationship_type}</span>
-              <span className="text-xs text-gray-500">{pct}%</span>
+              <span className="text-[10px] uppercase tracking-wide bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
+                {sourceLabel(rel.source)}
+              </span>
+              {rel.confidence != null && (
+                <span className="text-xs text-gray-500">{pct}%</span>
+              )}
               {rel.confirmed ? (
                 <span className="text-[10px] uppercase tracking-wide bg-green-100 text-green-700 px-1.5 py-0.5 rounded">
                   confirmed

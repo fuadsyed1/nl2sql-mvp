@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { API_BASE } from "../api";
 
 const SELECT_CLASS =
@@ -7,13 +7,45 @@ const SELECT_CLASS =
 // Read-only relationship review. Fetches detected relationships for the active
 // database and lists them. Edit/add/delete/finalize are later steps; for now
 // this is review-only with a way back to the summary. Query input stays hidden.
+const SOURCE_LABELS = {
+  pk_fk: "Database-declared PK/FK",
+  user: "User-added",
+  inferred: "Inferred",
+  legacy_unknown: "Legacy — needs review",
+  benchmark_trusted: "Benchmark",
+};
+const sourceLabel = (src) => SOURCE_LABELS[src] || (src ? String(src) : "—");
+
 function RelationshipReviewCard({
   summary,
+  conversationId = null,
   onBack = () => {},
   onFinalize = () => {},
   finalized = false,
 }) {
   const { database_id, name } = summary || {};
+  // Ownership context threaded into every relationship request (the backend
+  // rejects reads/edits that do not own this database + conversation).
+  const _ctxQuery = useCallback(() => {
+    const params = new URLSearchParams();
+    const uid = typeof window !== "undefined" ? localStorage.getItem("user_id") : null;
+    const uname = typeof window !== "undefined" ? localStorage.getItem("username") : null;
+    if (uid != null) params.set("user_id", uid);
+    if (uname != null) params.set("username", uname);
+    if (conversationId != null) params.set("conversation_id", conversationId);
+    const q = params.toString();
+    return q ? `?${q}` : "";
+  }, [conversationId]);
+
+  // Lock page scrolling while the review card is open; restore on close.
+  // The card itself is a fixed overlay, so only its own list area scrolls.
+  useEffect(() => {
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, []);
 
   const [relationships, setRelationships] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -24,12 +56,17 @@ function RelationshipReviewCard({
 
   useEffect(() => {
     if (database_id == null) return;
-    setLoading(true);
-    setError("");
-    setLoadedAny(false);
-    fetch(`${API_BASE}/database/${database_id}/relationships`)
-      .then((r) => r.json())
-      .then((d) => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      setError("");
+      setLoadedAny(false);
+      try {
+        const r = await fetch(
+          `${API_BASE}/database/${database_id}/relationships${_ctxQuery()}`
+        );
+        const d = await r.json();
+        if (cancelled) return;
         if (d.success === false) {
           setError(d.message || "Could not load relationships.");
           setRelationships([]);
@@ -38,10 +75,16 @@ function RelationshipReviewCard({
           setRelationships(list);
           if (list.length) setLoadedAny(true);
         }
-      })
-      .catch((e) => setError(`Could not load relationships: ${e.message}`))
-      .finally(() => setLoading(false));
-  }, [database_id]);
+      } catch (e) {
+        if (!cancelled) setError(`Could not load relationships: ${e.message}`);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [database_id, _ctxQuery]);
 
   // Frontend-only removal: drops the row from local state. No backend call;
   // the database is unchanged until relationships are finalized (a later step).
@@ -230,18 +273,21 @@ function RelationshipReviewCard({
   };
 
   return (
-    <div className="h-full flex items-center justify-center">
-      <div className="w-[80%] max-w-3xl bg-white border border-gray-200 rounded-2xl shadow-lg flex flex-col">
-        <div className="px-6 py-5 border-b border-gray-100">
+    // Fixed, viewport-centered overlay: the card can never grow past the
+    // screen, and the dimmed backdrop (overflow-auto + overscroll-contain)
+    // swallows wheel/touch scrolling so the page behind never moves.
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 overflow-y-auto overscroll-contain">
+      <div className="w-full sm:w-[80%] max-w-3xl max-h-[calc(100vh-2rem)] sm:max-h-[85vh] bg-white border border-gray-200 rounded-2xl shadow-lg flex flex-col overflow-hidden">
+        <div className="px-6 py-5 border-b border-gray-100 shrink-0">
           <h2 className="text-2xl font-bold text-gray-800">Relationship Review</h2>
           <p className="text-gray-500 text-sm mt-1">
             Review detected table relationships before querying.
           </p>
         </div>
 
-        <div className="px-6 py-5">
+        <div className="px-6 pt-5 pb-3 shrink-0">
           {/* Add relationship (frontend-only) */}
-          <div className="mb-4">
+          <div className="mb-1">
             {!adding ? (
               <button
                 onClick={startAdd}
@@ -360,11 +406,17 @@ function RelationshipReviewCard({
           )}
 
           {!loading && !error && relationships.length > 0 && (
-            <>
-              <p className="text-xs text-gray-400 mb-2">
-                Changes are local until finalized.
-              </p>
-              <ul className="flex flex-col gap-2">
+            <p className="text-xs text-gray-400 mt-3">
+              Changes are local until finalized.
+            </p>
+          )}
+        </div>
+
+        {/* Only the relationship list scrolls; header, add/actions, and
+            footer stay fixed within the viewport-bounded card. */}
+        <div className="px-6 pb-4 flex-1 min-h-0 overflow-y-auto overscroll-contain">
+          {!loading && !error && relationships.length > 0 && (
+            <ul className="flex flex-col gap-2">
                 {relationships.map((rel, i) => (
                   <li
                     key={rel.relationship_id ?? i}
@@ -497,6 +549,7 @@ function RelationshipReviewCard({
                             {rel.relationship_type && (
                               <span>Type: {rel.relationship_type}</span>
                             )}
+                            <span>Source: {sourceLabel(rel.source)}</span>
                           </div>
                         </div>
 
@@ -518,25 +571,20 @@ function RelationshipReviewCard({
                     )}
                   </li>
                 ))}
-              </ul>
-            </>
+            </ul>
           )}
+        </div>
 
-          <div className="mt-5 flex flex-col gap-2">
+        <div className="px-6 py-4 border-t border-gray-100 shrink-0">
+          <div className="flex flex-col gap-2">
             <div className="flex gap-2">
-              {finalized ? (
-                <span className="self-center text-sm font-medium text-green-700">
-                  Relationships finalized.
-                </span>
-              ) : (
-                <button
-                  onClick={() => onFinalize(relationships)}
-                  disabled={adding || editingIndex != null}
-                  className="bg-green-600 text-white text-sm px-5 py-2.5 rounded-xl hover:bg-green-700 disabled:opacity-50"
-                >
-                  Finalize Relationships
-                </button>
-              )}
+              <button
+                onClick={() => onFinalize(relationships)}
+                disabled={adding || editingIndex != null}
+                className="bg-green-600 text-white text-sm px-5 py-2.5 rounded-xl hover:bg-green-700 disabled:opacity-50"
+              >
+                {finalized ? "Save changes & re-finalize" : "Finalize Relationships"}
+              </button>
               <button
                 onClick={onBack}
                 className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm px-5 py-2.5 rounded-xl"
@@ -550,7 +598,7 @@ function RelationshipReviewCard({
           </div>
         </div>
 
-        <div className="px-6 py-3 border-t border-gray-100">
+        <div className="px-6 py-3 border-t border-gray-100 shrink-0">
           <p className="text-sm text-gray-500">
             Active Database:{" "}
             <span className="font-medium text-gray-700">

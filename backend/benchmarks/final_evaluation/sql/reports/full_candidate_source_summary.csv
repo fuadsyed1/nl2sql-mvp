@@ -1,0 +1,9 @@
+source,correct,total
+-,0,180
+llm_primary,24,121
+llm_sql_direct,23,52
+llm_sql_direct_grain,38,113
+llm_sql_direct_variant,574,1111
+llm_sql_repair,69,343
+llm_variant,9,79
+query_family,0,1

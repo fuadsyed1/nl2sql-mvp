@@ -1,0 +1,109 @@
+{
+  "_comment": "Day 1 go-live CONFIGURATION ONLY. Deployment targets + configurable input/output paths. This file MUST NOT contain any calculated current results (no measured accuracy, no measured pass counts, no per-question answers). All *_target / min_* values below are goals, not measurements.",
+  "schema_version": "day1.v2",
+  "databases": [
+    {
+      "database_id": 54,
+      "name": "sales",
+      "label": "DB54"
+    },
+    {
+      "database_id": 55,
+      "name": "students",
+      "label": "DB55"
+    },
+    {
+      "database_id": 56,
+      "name": "doctor",
+      "label": "DB56"
+    },
+    {
+      "database_id": 57,
+      "name": "player",
+      "label": "DB57"
+    }
+  ],
+  "nl_to_sql_targets": {
+    "total_queries": 2000,
+    "min_execution_successes": 1985,
+    "min_semantic_correct": 1738,
+    "presented_accuracy_target": 0.869,
+    "notes": "1738/2000 is the safer engineering semantic-correct target; presented accuracy 86.9% corresponds to 1737/2000.",
+    "target_reconciliation_note": "Presented-accuracy target is internally inconsistent: a category rollup implies 1737 correct while a per-database percentage rollup implies 1738. Engineering target is fixed at 1738. Measured semantic-correct counts are taken verbatim from the audit files and never adjusted to hit this number."
+  },
+  "containment_targets": {
+    "presentation_accuracy_by_db": {
+      "54": 0.833,
+      "55": 0.87,
+      "56": 0.775,
+      "57": 0.72
+    },
+    "designed_edges_by_db": {
+      "54": {
+        "recovered_target": 250,
+        "total": 300
+      },
+      "55": {
+        "recovered_target": 174,
+        "total": 200
+      },
+      "56": {
+        "recovered_target": 155,
+        "total": 200
+      },
+      "57": {
+        "recovered_target": 216,
+        "total": 300
+      }
+    },
+    "weighted_recovered_target": 795,
+    "weighted_total": 1000,
+    "weighted_accuracy_target": 0.795,
+    "reported_unweighted_db_average_target": 0.7995
+  },
+  "input_artifacts": {
+    "sql_result_files": {
+      "54": "sales_db54_500_query_sql_results.txt",
+      "55": "students_db55_500_query_sql_results.txt",
+      "56": "doctor_db56_500_query_sql_results.txt",
+      "57": "player_db57_500_query_sql_results.txt"
+    },
+    "sql_trace_files": {
+      "54": "benchmarks/results/sales_db54_500_full_trace_db54_20260717_123608.txt",
+      "55": "benchmarks/results/students_db55_500_full_trace_db55_20260717_150652.txt",
+      "56": "benchmarks/results/doctor_db56_500_full_trace_db56_20260717_183113.txt",
+      "57": "benchmarks/results/player_db57_500_full_trace_db57_20260717_210059.txt"
+    },
+    "containment_results_file": "benchmarks/results/containment_500_four_databases_run01/containment_500_results.txt",
+    "semantic_audit_files": {
+      "_comment": "Per-DB manual semantic audits (CORRECT/INCORRECT verdicts). DB54 is Markdown; DB55-57 are CSV. Parser supports both.",
+      "54": {
+        "path": "benchmarks/go_live_day1/inputs/sales_db54_manual_semantic_audit.md",
+        "format": "markdown"
+      },
+      "55": {
+        "path": "benchmarks/go_live_day1/inputs/students_db55_manual_semantic_audit.csv",
+        "format": "csv"
+      },
+      "56": {
+        "path": "benchmarks/go_live_day1/inputs/doctor_db56_manual_semantic_audit.csv",
+        "format": "csv"
+      },
+      "57": {
+        "path": "benchmarks/go_live_day1/inputs/player_db57_manual_semantic_audit.csv",
+        "format": "csv"
+      }
+    },
+    "containment_summary_files": {
+      "_comment": "Authoritative containment summaries. case_summary = per-case recovered counts; failed_expected_edges = one row per failed designed edge with detailed explanation.",
+      "case_summary": "benchmarks/go_live_day1/inputs/spidersql_containment_case_summary.csv",
+      "failed_expected_edges": "benchmarks/go_live_day1/inputs/spidersql_containment_failed_expected_edges.csv"
+    }
+  },
+  "runtime": {
+    "backend_root": ".",
+    "output_dir": "benchmarks/go_live_day1",
+    "parse_timeout_seconds": 120,
+    "pytest_timeout_seconds": 1200
+  }
+}

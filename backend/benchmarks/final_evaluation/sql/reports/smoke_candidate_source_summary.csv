@@ -1,0 +1,5 @@
+source,correct,total
+llm_primary,0,1
+llm_sql_direct,1,1
+llm_sql_direct_grain,1,1
+llm_sql_direct_variant,15,17

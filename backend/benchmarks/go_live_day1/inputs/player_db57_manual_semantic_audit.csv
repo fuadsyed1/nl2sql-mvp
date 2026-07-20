@@ -1,0 +1,2933 @@
+test_id,category,difficulty,execution_status,semantic_audit,query,sql,audit_note
+1,aggregation,easy,PASS,CORRECT,How many leagues are currently active?,SELECT COUNT(*) FROM leagues WHERE active_flag = '1',
+2,aggregation,easy,PASS,CORRECT,What is the average salary cap across all leagues?,SELECT AVG(salary_cap) FROM leagues,
+3,aggregation,easy,PASS,CORRECT,What is the highest stadium capacity among all teams?,SELECT stadium_capacity FROM teams ORDER BY stadium_capacity DESC LIMIT 1,
+4,aggregation,easy,PASS,CORRECT,How many teams are currently active?,SELECT COUNT(team_id) FROM teams WHERE active_flag = '1',
+5,aggregation,easy,PASS,CORRECT,What is the average annual revenue across all teams?,SELECT AVG(annual_revenue) FROM teams,
+6,aggregation,easy,PASS,CORRECT,How many coaches are currently active?,SELECT COUNT(coach_id) FROM coaches WHERE active_flag = '1',
+7,aggregation,easy,PASS,CORRECT,What is the average annual salary of all coaches?,SELECT AVG(annual_salary) FROM coaches,
+8,aggregation,easy,PASS,CORRECT,How many players are currently active?,SELECT COUNT(player_id) FROM players WHERE active_flag = '1',
+9,aggregation,easy,PASS,CORRECT,What is the average market value of all players?,SELECT AVG(market_value) FROM players,
+10,aggregation,easy,PASS,CORRECT,What is the highest career match count among players?,SELECT MAX(career_matches) FROM players,
+11,aggregation,easy,PASS,CORRECT,How many matches have been completed?,SELECT COUNT(matches.match_id) FROM matches WHERE match_status = 'completed',
+12,aggregation,easy,PASS,CORRECT,What is the average attendance across all matches?,SELECT AVG(matches.attendance) FROM matches,
+13,aggregation,easy,PASS,CORRECT,How many contracts currently have active status?,SELECT COUNT(contract_id) FROM contracts WHERE contract_status = 'active',
+14,aggregation,easy,PASS,CORRECT,How many injury records are still active?,SELECT COUNT(injury_id) FROM injuries WHERE injury_status = 'active',
+15,aggregation,easy,PASS,CORRECT,What is the average coach rating across all training records?,SELECT AVG(coach_rating) FROM player_training_stats,
+16,aggregation,moderate,PASS,CORRECT,How many professional leagues are currently active?,SELECT COUNT(*) FROM leagues WHERE competition_level = 'professional' AND active_flag = '1',
+17,aggregation,moderate,PASS,CORRECT,What is the average league salary cap for soccer leagues?,"SELECT AVG(leagues.salary_cap)
+FROM leagues
+WHERE leagues.sport_type = 'Soccer'",
+18,aggregation,moderate,PASS,CORRECT,What is the total annual revenue of active teams?,SELECT SUM(annual_revenue) FROM teams WHERE active_flag = '1',
+19,aggregation,moderate,PASS,CORRECT,What is the average team value of teams with more than 5 championships?,"SELECT AVG(team_value) AS average_team_value
+FROM teams
+WHERE championships_won > 5",
+20,aggregation,moderate,PASS,CORRECT,How many active coaches have a Pro or Elite license?,"SELECT COUNT(coach_id) FROM coaches WHERE active_flag = '1' AND license_level IN ('Pro', 'Elite')",
+21,aggregation,moderate,PASS,CORRECT,What is the average salary of head coaches?,"SELECT AVG(coaches.annual_salary)
+FROM coaches
+WHERE coaches.coach_role = 'head_coach'",
+22,aggregation,moderate,PASS,INCORRECT,How many active players are currently injured?,"SELECT COUNT(*) 
+FROM injuries 
+JOIN players ON injuries.player_id = players.player_id 
+WHERE injuries.injury_status = 'active' 
+  AND players.active_flag = '1'",Counts active injury rows rather than distinct active players who are currently injured.
+23,aggregation,moderate,PASS,INCORRECT,What is the average market value of players who play as forwards?,"SELECT AVG(players.market_value)
+FROM players
+WHERE players.position = 'forward'","Filters position = 'forward', but the database stores the value as 'Forward', so the equality is not value-grounded."
+24,aggregation,moderate,PASS,CORRECT,How many completed matches went to overtime?,SELECT COUNT(match_id) FROM matches WHERE match_status = 'completed' AND overtime_flag = 1,
+25,aggregation,moderate,PASS,CORRECT,What is the average ticket revenue for completed matches?,"SELECT AVG(matches.ticket_revenue)
+FROM matches
+WHERE matches.match_status = 'completed'",
+26,aggregation,moderate,PASS,CORRECT,How many player-match records have a rating above 8?,SELECT COUNT(*) FROM player_match_stats WHERE player_rating > 8,
+27,aggregation,moderate,PASS,CORRECT,What is the average distance covered by players who started a match?,"SELECT AVG(distance_covered_km)
+FROM player_match_stats
+WHERE started_flag = 1",
+28,aggregation,moderate,PASS,CORRECT,What is the total guaranteed amount across active contracts?,SELECT SUM(guaranteed_amount) FROM contracts WHERE contract_status = 'active',
+29,aggregation,moderate,PASS,CORRECT,What is the average signing bonus for standard contracts?,"SELECT AVG(signing_bonus)
+FROM contracts
+WHERE contract_type = 'standard'",
+30,aggregation,moderate,PASS,CORRECT,How many injury records required surgery?,SELECT COUNT(*) FROM injuries WHERE injuries.surgery_required_flag = '1',
+31,aggregation,moderate,PASS,CORRECT,What is the average number of games missed for severe injuries?,SELECT AVG(games_missed) FROM injuries WHERE severity = 'severe',
+32,aggregation,moderate,PASS,CORRECT,How many training sessions were cancelled?,SELECT COUNT(*) FROM training_sessions WHERE cancelled_flag = '1',
+33,aggregation,moderate,PASS,CORRECT,What is the average actual training duration for high-intensity sessions?,"SELECT AVG(actual_duration_minutes)
+FROM training_sessions
+WHERE intensity_level = 'high'",
+34,aggregation,moderate,PASS,CORRECT,How many transfer records have completed status?,SELECT COUNT(*) FROM transfers WHERE transfer_status = 'completed',
+35,aggregation,moderate,PASS,CORRECT,What is the total transfer fee for permanent transfers?,"SELECT SUM(t.transfer_fee) AS total_transfer_fee
+FROM transfers t
+WHERE t.transfer_type = 'permanent'",
+36,aggregation,hard,PASS,CORRECT,How many active players belong to active teams in active leagues?,"SELECT COUNT(p.player_id)
+FROM players p
+JOIN teams t ON p.team_id = t.team_id
+JOIN leagues l ON t.league_id = l.league_id
+WHERE p.active_flag = '1'
+  AND t.active_flag = '1'
+  AND l.active_flag = '1'",
+37,aggregation,hard,PASS,CORRECT,What is the average market value of active players whose teams have annual revenue above 100 million dollars?,"SELECT AVG(p.market_value)
+FROM players p
+JOIN teams t ON p.team_id = t.team_id
+WHERE t.annual_revenue > 100000000
+  AND p.active_flag = '1'",
+38,aggregation,hard,PASS,CORRECT,What is the total salary payroll of teams in professional leagues?,"SELECT SUM(t.salary_payroll) AS total_salary_payroll
+FROM teams t
+JOIN leagues l ON t.league_id = l.league_id
+WHERE l.competition_level = 'professional'",
+39,aggregation,hard,PASS,CORRECT,How many completed matches involved two active teams?,"SELECT COUNT(m.match_id)
+FROM matches m
+JOIN teams t1 ON m.home_team_id = t1.team_id
+JOIN teams t2 ON m.away_team_id = t2.team_id
+WHERE t1.active_flag = '1'
+  AND t2.active_flag = '1'
+  AND m.match_status = 'completed'",
+40,aggregation,hard,PASS,CORRECT,What is the average player rating in completed matches during 2025?,"SELECT AVG(pms.player_rating)
+FROM player_match_stats pms
+JOIN matches m ON pms.match_id = m.match_id
+WHERE m.match_status = 'completed'
+  AND strftime('%Y', m.match_date) = '2025'",
+41,aggregation,hard,PASS,CORRECT,What is the total ticket revenue from completed playoff matches?,"SELECT SUM(matches.ticket_revenue)
+FROM matches
+WHERE matches.match_status = 'completed'
+  AND matches.competition_stage IN ('final', 'quarterfinal', 'semifinal')",
+42,aggregation,hard,PASS,CORRECT,How many players with active contracts have at least one injury record?,"SELECT COUNT(DISTINCT p.player_id)
+FROM players p
+JOIN contracts c ON p.player_id = c.player_id
+JOIN injuries i ON p.player_id = i.player_id
+WHERE c.contract_status = 'active'
+AND i.injury_id IS NOT NULL",
+43,aggregation,hard,PASS,CORRECT,What is the average base salary of players who transferred permanently during 2025?,"WITH filtered_players AS (
+    SELECT DISTINCT p.player_id
+    FROM players p
+    JOIN transfers t ON p.player_id = t.player_id
+    WHERE t.transfer_type = 'permanent'
+      AND t.transfer_date LIKE '2025%'
+)
+SELECT AVG(c.base_salary)
+FROM contracts c
+JOIN filtered_players fp ON c.player_id = fp.player_id",
+44,aggregation,hard,PASS,INCORRECT,How many coaches led high-intensity training sessions for active teams?,"SELECT COUNT(*) 
+FROM training_sessions 
+JOIN teams ON training_sessions.team_id = teams.team_id 
+WHERE training_sessions.intensity_level = 'high' 
+  AND teams.active_flag = '1'",Counts high-intensity training sessions rather than distinct coaches who led them.
+45,aggregation,hard,PASS,CORRECT,What is the total transfer fee for players moving between teams in the same league?,"SELECT SUM(t.transfer_fee) AS total_transfer_fee
+FROM transfers t
+JOIN teams from_teams ON t.from_team_id = from_teams.team_id
+JOIN teams to_teams ON t.to_team_id = to_teams.team_id
+JOIN leagues l ON from_teams.league_id = l.league_id
+WHERE from_teams.league_id = to_teams.league_id",
+46,aggregation,hard,PASS,CORRECT,What is the average recovery score of active players during high-intensity training sessions?,"SELECT AVG(pts.recovery_score)
+FROM player_training_stats pts
+JOIN players p ON pts.player_id = p.player_id
+JOIN training_sessions ts ON pts.training_session_id = ts.training_session_id
+WHERE p.active_flag = '1'
+  AND ts.intensity_level = 'high'",
+47,aggregation,hard,PASS,CORRECT,How many players recorded a match rating above 8 and a training readiness score above 80?,"SELECT COUNT(DISTINCT p.player_id)
+FROM players p
+JOIN player_match_stats pms ON p.player_id = pms.player_id
+JOIN player_training_stats pts ON p.player_id = pts.player_id
+WHERE pms.player_rating > 8
+  AND pts.readiness_score > 80",
+48,aggregation,hard,PASS,INCORRECT,What is the total base salary of players who missed more than 10 games through injury?,"SELECT SUM(c.base_salary)
+FROM contracts c
+JOIN injuries i ON c.player_id = i.player_id
+JOIN players p ON c.player_id = p.player_id
+WHERE i.games_missed > 10","The injury join can repeat each player's contract salary once per qualifying injury, inflating the total."
+49,aggregation,hard,PASS,INCORRECT,What is the average number of completed matches per active season?,"SELECT AVG(match_count) AS average_matches
+FROM (
+    SELECT s.season_id, COUNT(m.match_id) AS match_count
+    FROM seasons s
+    JOIN matches m ON s.season_id = m.season_id
+    WHERE s.season_status = 'active'
+    GROUP BY s.season_id
+)",Counts every match in active seasons and never filters matches to completed status.
+50,aggregation,hard,PASS,INCORRECT,How many active players have both a current contract and at least one completed transfer?,"SELECT ""players"".""player_id"", ""players"".""active_flag"", ""contracts"".""contract_status"", ""players"".*, COUNT(""transfers"".""transfer_id"") AS ""transfer_count"" FROM ""players"" INNER JOIN ""contracts"" ON ""players"".""player_id"" = ""contracts"".""player_id"" INNER JOIN ""transfers"" ON ""players"".""player_id"" = ""transfers"".""player_id"" WHERE ""players"".""active_flag"" = ? AND ""contracts"".""contract_status"" = ? GROUP BY ""players"".""player_id"", ""players"".""active_flag"", ""contracts"".""contract_status"" HAVING ""transfer_count"" >= ?",Returns grouped player rows instead of one count and never requires transfer_status = 'completed'.
+51,derived_metric,easy,PASS,CORRECT,Show each league with the difference between its salary cap and minimum salary.,"SELECT league_name, salary_cap, minimum_salary, (salary_cap - minimum_salary) AS salary_difference
+FROM leagues",
+52,derived_metric,easy,PASS,CORRECT,Show each league with the number of teams per playoff place.,"SELECT l.league_name, l.playoff_teams, COUNT(DISTINCT t.team_id) * 1.0 / l.playoff_teams AS teams_per_playoff_place
+FROM leagues l
+JOIN seasons s ON l.league_id = s.league_id
+JOIN teams t ON l.league_id = t.league_id
+GROUP BY l.league_id, l.league_name, l.playoff_teams
+HAVING COUNT(DISTINCT t.team_id) > 0",
+53,derived_metric,easy,PASS,CORRECT,Show each season with the number of days between its start and end dates.,"SELECT season_id, season_name, CAST(julianday(end_date) - julianday(start_date) AS INTEGER) AS days_between FROM seasons",
+54,derived_metric,easy,PASS,CORRECT,Show each season with revenue per recorded attendee.,"SELECT 
+    s.season_id,
+    s.season_name,
+    s.revenue_total,
+    s.attendance_total,
+    CASE 
+        WHEN s.attendance_total > 0 THEN s.revenue_total * 1.0 / s.attendance_total
+        ELSE NULL
+    END AS revenue_per_attendee
+FROM seasons s
+ORDER BY s.season_id",
+55,derived_metric,easy,PASS,CORRECT,Show each team with annual revenue as a percentage of team value.,"SELECT team_name, annual_revenue, team_value, (annual_revenue * 100.0 / team_value) AS revenue_percentage
+FROM teams
+WHERE team_value > 0",
+56,derived_metric,easy,PASS,INCORRECT,Show each team with salary payroll as a percentage of annual revenue.,"SELECT team_name, salary_payroll, annual_revenue
+FROM teams
+WHERE annual_revenue > 0",Returns payroll and revenue but never calculates payroll as a percentage of revenue.
+57,derived_metric,easy,PASS,CORRECT,Show each team with the number of inactive roster spots based on roster size minus active players.,"SELECT team_id, team_name, roster_size, active_players, (roster_size - active_players) AS inactive_roster_spots
+FROM teams",
+58,derived_metric,easy,PASS,INCORRECT,"Show each coach with total matches coached based on wins, losses, and draws.","SELECT ""coaches"".""coach_id"", ""coaches"".""first_name"", ""coaches"".""last_name"", SUM(""coaches"".""wins"") AS ""total_wins"", SUM(""coaches"".""losses"") AS ""total_losses"", SUM(""coaches"".""draws"") AS ""total_draws"", SUM(""coaches"".""wins"") AS ""total_matches_coached"", SUM(""coaches"".""losses"") AS ""total_matches_coached_add"", SUM(""coaches"".""draws"") AS ""total_matches_coached_add2"" FROM ""coaches"" GROUP BY ""coaches"".""coach_id"", ""coaches"".""first_name"", ""coaches"".""last_name""","Returns separate sums of wins, losses, and draws instead of adding them into total matches coached."
+59,derived_metric,easy,PASS,CORRECT,Show each coach with win percentage based on wins divided by total coached matches.,"SELECT 
+    c.coach_id,
+    c.first_name,
+    c.last_name,
+    c.wins,
+    c.losses,
+    c.draws,
+    CASE 
+        WHEN (c.wins + c.losses + c.draws) = 0 THEN 0.0
+        ELSE CAST(c.wins AS REAL) / (c.wins + c.losses + c.draws)
+    END AS win_percentage
+FROM coaches c",
+60,derived_metric,easy,PASS,CORRECT,Show each player with career scores per career match.,"SELECT 
+  p.player_id,
+  p.full_name,
+  p.career_matches,
+  p.career_scores,
+  CASE 
+    WHEN p.career_matches > 0 THEN CAST(p.career_scores AS REAL) / p.career_matches 
+    ELSE 0.0 
+  END AS scores_per_match
+FROM players p",
+61,derived_metric,easy,PASS,CORRECT,Show each player with annual salary as a percentage of market value.,"SELECT ""players"".""player_id"", ""players"".""first_name"", ""players"".""last_name"", ""players"".""annual_salary"", ""players"".""market_value"", (""players"".""annual_salary"" * 100.0 / ""players"".""market_value"") AS ""salary_percentage_of_market_value"" FROM ""players"" WHERE ""players"".""market_value"" IS NOT NULL AND ""players"".""market_value"" != 0",
+62,derived_metric,easy,PASS,INCORRECT,Show each match with total points scored by both teams.,"SELECT ""matches"".""match_id"", ""matches"".""home_score"", ""matches"".""away_score"", SUM(""matches"".""home_score"") AS ""home_total"", SUM(""matches"".""away_score"") AS ""away_total"" FROM ""matches"" GROUP BY ""matches"".""match_id""",Returns separate home and away totals and never calculates home_score + away_score.
+63,derived_metric,easy,PASS,INCORRECT,Show each match with home possession minus away possession.,"SELECT match_id, home_possession_pct, away_possession_pct
+FROM matches",Returns both possession columns but never subtracts away possession from home possession.
+64,derived_metric,easy,PASS,INCORRECT,Show each contract with total listed compensation based on base salary and bonuses.,"SELECT
+  contracts.contract_id,
+  contracts.contract_number,
+  contracts.base_salary,
+  contracts.signing_bonus,
+  contracts.performance_bonus,
+  contracts.appearance_bonus,
+  contracts.championship_bonus,
+  contracts.guaranteed_amount
+FROM contracts",Returns compensation components without calculating their requested total.
+65,derived_metric,easy,PASS,CORRECT,Show each injury with the difference between actual and estimated days out.,"SELECT injury_id, actual_days_out, estimated_days_out, (actual_days_out - estimated_days_out) AS days_difference
+FROM injuries",
+66,derived_metric,moderate,PASS,CORRECT,Calculate the percentage of active leagues for each sport.,"SELECT 
+    sport_type,
+    CAST(SUM(CASE WHEN active_flag = '1' THEN 1 ELSE 0 END) AS REAL) * 100.0 / COUNT(*) AS active_percentage
+FROM leagues
+GROUP BY sport_type",
+67,derived_metric,moderate,PASS,INCORRECT,Calculate the average salary cap per team for each league.,"WITH ""teams_totals"" AS (SELECT ""teams"".""team_id"" AS ""entity_id"", ""leagues"".""league_code"" AS ""group_col"", AVG(""leagues"".""salary_cap"") AS ""agg_value"" FROM ""teams"" INNER JOIN ""leagues"" ON ""teams"".""league_id"" = ""leagues"".""league_id"" GROUP BY ""teams"".""team_id"", ""leagues"".""league_code"") SELECT * FROM ""teams_totals""",Averages the same league salary cap once per team and returns one row per team instead of salary cap per team at league grain.
+68,derived_metric,moderate,PASS,INCORRECT,Calculate season revenue per match scheduled for each season.,"SELECT s.season_id, s.season_name, SUM(m.ticket_revenue + m.sponsorship_revenue) / COUNT(m.match_id) AS season_revenue_per_match
+FROM seasons s
+JOIN matches m ON s.season_id = m.season_id
+GROUP BY s.season_id, s.season_name",Uses average match ticket-plus-sponsorship revenue rather than recorded season revenue divided by the number of scheduled matches.
+69,derived_metric,moderate,PASS,INCORRECT,Calculate the percentage of active teams for each league.,"SELECT l.league_name
+FROM leagues l
+JOIN teams t ON l.league_id = t.league_id
+GROUP BY l.league_id, l.league_name
+HAVING SUM(CASE WHEN t.active_flag = '1' THEN 1 ELSE 0 END) * 100.0 / COUNT(*) = (
+    SELECT SUM(CASE WHEN t2.active_flag = '1' THEN 1 ELSE 0 END) * 100.0 / COUNT(*)
+    FROM teams t2
+    WHERE t2.league_id = l.league_id
+)",Returns only league names and uses a tautological HAVING clause; the active-team percentage is missing.
+70,derived_metric,moderate,PASS,INCORRECT,Calculate average team payroll as a percentage of team revenue for each league.,"WITH ""teams_totals"" AS (SELECT ""teams"".""team_id"" AS ""entity_id"", ""leagues"".""league_code"" AS ""group_col"", AVG(""coaches"".""years_coaching"") AS ""agg_value"" FROM ""teams"" INNER JOIN ""coaches"" ON ""teams"".""team_id"" = ""coaches"".""team_id"" INNER JOIN ""leagues"" ON ""teams"".""league_id"" = ""leagues"".""league_id"" GROUP BY ""teams"".""team_id"", ""leagues"".""league_code"") SELECT * FROM ""teams_totals""",Calculates coach years of experience instead of team payroll as a percentage of team revenue.
+71,derived_metric,moderate,PASS,INCORRECT,Calculate the average coach win percentage for each coach role.,"SELECT coach_role, AVG(CAST(wins AS REAL) / (wins + losses + draws)) AS avg_win_percentage
+FROM coaches
+GROUP BY coach_role
+HAVING wins + losses + draws > 0","Applies the nonzero denominator test in HAVING with non-grouped coach columns, so roles are filtered using an arbitrary row rather than valid per-coach percentages."
+72,derived_metric,moderate,PASS,CORRECT,Calculate the percentage of active players for each team.,"SELECT 
+    t.team_name,
+    CAST(SUM(CASE WHEN p.active_flag = '1' THEN 1 ELSE 0 END) AS REAL) * 100.0 / COUNT(*) AS active_player_percentage
+FROM players p
+JOIN teams t ON p.team_id = t.team_id
+GROUP BY t.team_id, t.team_name",
+73,derived_metric,moderate,PASS,INCORRECT,Calculate average career scores per match for each player position.,"SELECT p.position, AVG(pms.scores * 1.0 / pms.minutes_played) AS avg_career_scores_per_match
+FROM players p
+JOIN player_match_stats pms ON p.player_id = pms.player_id
+GROUP BY p.position",Uses match scores per minute instead of players.career_scores divided by players.career_matches.
+74,derived_metric,moderate,PASS,CORRECT,Calculate the percentage of completed matches for each competition stage.,"SELECT 
+    m.competition_stage,
+    CAST(SUM(CASE WHEN m.match_status = 'completed' THEN 1 ELSE 0 END) AS REAL) * 100.0 / COUNT(*) AS percentage_completed
+FROM matches m
+GROUP BY m.competition_stage",
+75,derived_metric,moderate,PASS,INCORRECT,Calculate average ticket revenue per attendee for each league.,"SELECT l.league_id, l.league_name
+FROM leagues l
+JOIN matches m ON l.league_id = m.league_id
+GROUP BY l.league_id, l.league_name
+HAVING SUM(m.ticket_revenue) / SUM(m.attendance) = (
+    SELECT SUM(m2.ticket_revenue) / SUM(m2.attendance)
+    FROM matches m2
+    JOIN leagues l2 ON m2.league_id = l2.league_id
+    WHERE l2.league_id = l.league_id
+)",Returns only league identifiers and uses a tautological HAVING clause; ticket revenue per attendee is missing.
+76,derived_metric,moderate,PASS,CORRECT,Calculate average player rating per minute played for each position.,"SELECT p.position, AVG(pms.player_rating * 1.0 / pms.minutes_played) AS avg_rating_per_minute
+FROM player_match_stats pms
+JOIN players p ON pms.player_id = p.player_id
+GROUP BY p.position
+HAVING SUM(pms.minutes_played) > 0",
+77,derived_metric,moderate,PASS,CORRECT,Calculate the percentage of match appearances started for each player.,"SELECT 
+    p.player_id,
+    p.full_name,
+    CAST(SUM(pms.started_flag) AS REAL) * 100.0 / COUNT(*) AS started_percentage
+FROM players p
+JOIN player_match_stats pms ON p.player_id = pms.player_id
+GROUP BY p.player_id, p.full_name",
+78,derived_metric,moderate,PASS,INCORRECT,Calculate average guaranteed compensation as a percentage of base salary for each contract type.,"SELECT 
+    contracts.contract_type,
+    (AVG(contracts.guaranteed_amount) * 100.0 / AVG(contracts.base_salary)) AS avg_guaranteed_percentage
+FROM contracts
+GROUP BY contracts.contract_type
+HAVING AVG(contracts.base_salary) > 0",Calculates a ratio of group averages rather than the average of each contract's guaranteed-amount percentage.
+79,derived_metric,moderate,PASS,CORRECT,Calculate the percentage of active contracts for each team.,"SELECT t.team_name, (CAST(SUM(CASE WHEN c.contract_status = 'active' THEN 1 ELSE 0 END) AS REAL) * 100.0 / COUNT(c.contract_id)) AS active_contract_percentage
+FROM contracts c
+JOIN teams t ON c.team_id = t.team_id
+GROUP BY t.team_id",
+80,derived_metric,moderate,PASS,CORRECT,Calculate the average actual days out divided by estimated days out for each injury severity.,"SELECT injuries.severity, AVG(CAST(injuries.actual_days_out AS REAL) / injuries.estimated_days_out) AS avg_ratio
+FROM injuries
+GROUP BY injuries.severity
+HAVING AVG(CAST(injuries.actual_days_out AS REAL) / injuries.estimated_days_out) IS NOT NULL",
+81,derived_metric,moderate,PASS,CORRECT,Calculate the surgery rate for each injury type.,"SELECT injury_type, CAST(SUM(surgery_required_flag) AS REAL) * 100.0 / COUNT(*) AS surgery_rate
+FROM injuries
+GROUP BY injury_type
+HAVING COUNT(*) > 0",
+82,derived_metric,moderate,PASS,INCORRECT,Calculate the average attendance rate for each training session type.,"SELECT session_type, AVG(attendance_actual) AS average_attendance_rate
+FROM training_sessions
+GROUP BY session_type",Averages attendance_actual instead of calculating attendance_actual divided by attendance_expected.
+83,derived_metric,moderate,PASS,CORRECT,Calculate average training load per completed minute for each intensity level.,"SELECT ts.intensity_level, AVG(pts.training_load * 1.0 / pts.minutes_completed) AS avg_training_load_per_minute
+FROM player_training_stats pts
+JOIN training_sessions ts ON pts.training_session_id = ts.training_session_id
+WHERE pts.minutes_completed > 0
+GROUP BY ts.intensity_level",
+84,derived_metric,moderate,PASS,CORRECT,Calculate the average transfer fee per contract year for each transfer type.,"SELECT transfer_type, AVG(transfer_fee * 1.0 / contract_years) AS avg_fee_per_year
+FROM transfers
+GROUP BY transfer_type
+HAVING COUNT(*) > 0",
+85,derived_metric,moderate,PASS,CORRECT,Calculate the percentage of completed transfers for each transfer window.,"SELECT 
+  t.transfer_window,
+  CAST(SUM(CASE WHEN t.transfer_status = 'completed' THEN 1 ELSE 0 END) AS REAL) * 100.0 / COUNT(*) AS percentage_completed
+FROM transfers t
+GROUP BY t.transfer_window",
+86,derived_metric,hard,PASS,CORRECT,"For each team, calculate total player salary as a percentage of team annual revenue.","SELECT 
+  t.team_id,
+  t.team_name,
+  t.annual_revenue,
+  (SUM(p.annual_salary) * 100.0 / t.annual_revenue) AS salary_percentage
+FROM teams t
+JOIN players p ON t.team_id = p.team_id
+GROUP BY t.team_id, t.team_name, t.annual_revenue",
+87,derived_metric,hard,PASS,INCORRECT,"For each league, calculate completed-match ticket revenue per active team.","SELECT l.league_name
+FROM leagues l
+JOIN matches m ON l.league_id = m.league_id
+JOIN teams t ON l.league_id = t.league_id
+WHERE t.active_flag = '1'
+GROUP BY l.league_id, l.league_name
+HAVING SUM(m.ticket_revenue) / COUNT(DISTINCT t.team_id) > 0","Returns only league names, does not calculate revenue per active team, and does not restrict matches to completed status."
+88,derived_metric,hard,PASS,CORRECT,"For each player, calculate total match scores per thousand dollars of annual salary.","SELECT 
+    p.player_id,
+    p.full_name,
+    p.annual_salary,
+    SUM(pms.scores) * 1000.0 / p.annual_salary AS total_match_scores_per_thousand_salary
+FROM players p
+JOIN player_match_stats pms ON p.player_id = pms.player_id
+GROUP BY p.player_id, p.full_name, p.annual_salary
+HAVING p.annual_salary > 0",
+89,derived_metric,hard,PASS,CORRECT,"For each player, calculate total match minutes divided by career matches.","SELECT p.player_id, SUM(pms.minutes_played) * 1.0 / p.career_matches AS total_minutes_per_career_match
+FROM players p
+JOIN player_match_stats pms ON p.player_id = pms.player_id
+GROUP BY p.player_id",
+90,derived_metric,hard,PASS,INCORRECT,"For each coach, calculate completed team matches per year of coaching experience.","SELECT c.coach_id, c.first_name, c.last_name, c.years_coaching, COUNT(m.match_id) * 1.0 / c.years_coaching AS completed_matches_per_year
+FROM coaches c
+JOIN teams t ON c.team_id = t.team_id
+JOIN matches m ON (m.home_team_id = t.team_id OR m.away_team_id = t.team_id)
+WHERE c.years_coaching > 0
+GROUP BY c.coach_id, c.first_name, c.last_name, c.years_coaching
+HAVING COUNT(m.match_id) > 0",Counts every team match and never filters match_status = 'completed'.
+91,derived_metric,hard,PASS,INCORRECT,"For each team, calculate injury games missed per active player.","SELECT t.team_id, t.team_name, SUM(i.games_missed) * 1.0 / COUNT(DISTINCT p.player_id) AS injury_games_missed_per_active_player
+FROM teams t
+JOIN players p ON t.team_id = p.team_id
+JOIN injuries i ON p.player_id = i.player_id
+WHERE p.active_flag = '1'
+GROUP BY t.team_id, t.team_name
+HAVING COUNT(DISTINCT p.player_id) > 0","The inner injury join makes the denominator include only active players who have injuries, not all active players on the team."
+92,derived_metric,hard,PASS,INCORRECT,"For each player, calculate total guaranteed contract amount as a percentage of market value.","SELECT ""players"".""player_id"", ""players"".""first_name"", ""players"".""last_name"", ""players"".""market_value"", ""contracts"".""guaranteed_amount"" FROM ""players"" INNER JOIN ""contracts"" ON ""players"".""player_id"" = ""contracts"".""player_id"" GROUP BY ""players"".""player_id"", ""players"".""first_name"", ""players"".""last_name"", ""players"".""market_value"", ""contracts"".""guaranteed_amount""",Returns one guaranteed amount per contract and never sums contract amounts or divides by market value.
+93,derived_metric,hard,PASS,INCORRECT,"For each season, calculate completed-match attendance as a percentage of recorded season attendance.","SELECT s.season_id, s.season_name, s.attendance_total, (SUM(m.attendance) * 100.0 / s.attendance_total) AS attendance_percentage
+FROM seasons s
+JOIN matches m ON s.season_id = m.season_id
+GROUP BY s.season_id, s.season_name, s.attendance_total
+HAVING s.attendance_total > 0",Includes attendance from all matches rather than completed matches only.
+94,derived_metric,hard,PASS,INCORRECT,"For each league, calculate average team value per championship won.","SELECT l.league_name
+FROM leagues l
+JOIN teams t ON l.league_id = t.league_id
+GROUP BY l.league_id
+HAVING SUM(t.championships_won) > 0
+   AND (SUM(t.team_value) * 1.0 / SUM(t.championships_won)) = (
+       SELECT MAX(avg_value_per_champ)
+       FROM (
+           SELECT SUM(t2.team_value) * 1.0 / SUM(t2.championships_won) AS avg_value_per_champ
+           FROM teams t2
+           JOIN leagues l2 ON t2.league_id = l2.league_id
+           GROUP BY l2.league_id
+           HAVING SUM(t2.championships_won) > 0
+       )
+   )",Returns only the single maximum league instead of calculating and returning the requested value for every league.
+95,derived_metric,hard,PASS,CORRECT,"For each player position, calculate average match efficiency per minute played.","SELECT p.position, AVG(pms.efficiency_score * 1.0 / pms.minutes_played) AS avg_efficiency_per_minute
+FROM player_match_stats pms
+JOIN players p ON pms.player_id = p.player_id
+GROUP BY p.position
+HAVING SUM(pms.minutes_played) > 0",
+96,derived_metric,hard,PASS,INCORRECT,"For each team, calculate average training readiness per active player.","SELECT t.team_id, t.team_name, AVG(pts.readiness_score) AS avg_training_readiness
+FROM teams t
+JOIN players p ON t.team_id = p.team_id
+JOIN player_training_stats pts ON p.player_id = pts.player_id
+WHERE p.active_flag = '1'
+GROUP BY t.team_id, t.team_name","Averages training rows, weighting players with more records more heavily, instead of calculating readiness per active player."
+97,derived_metric,hard,PASS,CORRECT,"For each injury type, calculate games missed per surgery-required case.","SELECT injuries.injury_type, SUM(injuries.games_missed) * 1.0 / SUM(injuries.surgery_required_flag) AS games_missed_per_surgery_case
+FROM injuries
+WHERE injuries.surgery_required_flag = 1
+GROUP BY injuries.injury_type
+HAVING SUM(injuries.surgery_required_flag) > 0",
+98,derived_metric,hard,PASS,CORRECT,"For each transfer type, calculate total fees as a percentage of total performance add-ons.","SELECT transfer_type, (SUM(transfer_fee) * 100.0 / SUM(performance_addons)) AS percentage
+FROM transfers
+GROUP BY transfer_type
+HAVING SUM(performance_addons) > 0",
+99,derived_metric,hard,PASS,CORRECT,"For each team, calculate completed transfer fees per roster spot.","SELECT 
+    t.team_id,
+    t.team_name,
+    t.roster_size,
+    SUM(CASE WHEN tr.transfer_status = 'completed' THEN tr.transfer_fee ELSE 0 END) * 1.0 / t.roster_size AS completed_transfer_fees_per_roster_spot
+FROM teams t
+JOIN transfers tr ON t.team_id = tr.to_team_id
+GROUP BY t.team_id, t.team_name, t.roster_size",
+100,derived_metric,hard,PASS,CORRECT,"For each player, calculate average training load divided by average recovery score.","SELECT p.player_id, p.full_name, AVG(pts.training_load) / AVG(pts.recovery_score) AS avg_training_load_div_recovery
+FROM players p
+JOIN player_training_stats pts ON p.player_id = pts.player_id
+GROUP BY p.player_id, p.full_name
+HAVING AVG(pts.recovery_score) > 0",
+101,distinct_count,easy,PASS,CORRECT,How many different sport types are represented by the leagues?,SELECT COUNT(DISTINCT sport_type) FROM leagues,
+102,distinct_count,easy,PASS,CORRECT,How many distinct league regions are represented?,SELECT COUNT(DISTINCT region) FROM leagues,
+103,distinct_count,easy,PASS,CORRECT,How many different competition levels appear?,SELECT COUNT(DISTINCT competition_level) FROM leagues,
+104,distinct_count,easy,PASS,CORRECT,How many distinct season statuses are recorded?,SELECT COUNT(DISTINCT season_status) FROM seasons,
+105,distinct_count,easy,PASS,CORRECT,How many different team countries are represented?,SELECT COUNT(DISTINCT country_code) FROM teams,
+106,distinct_count,easy,PASS,CORRECT,How many distinct coach roles appear?,SELECT COUNT(DISTINCT coach_role) FROM coaches,
+107,distinct_count,easy,PASS,CORRECT,How many different player positions are represented?,SELECT COUNT(DISTINCT position) FROM players,
+108,distinct_count,easy,PASS,CORRECT,How many distinct player statuses appear?,SELECT COUNT(DISTINCT current_status) FROM players,
+109,distinct_count,easy,PASS,CORRECT,How many different competition stages occur in matches?,SELECT COUNT(DISTINCT competition_stage) FROM matches,
+110,distinct_count,easy,PASS,CORRECT,How many distinct match statuses appear?,SELECT COUNT(DISTINCT match_status) FROM matches,
+111,distinct_count,easy,PASS,CORRECT,How many different contract types are represented?,SELECT COUNT(DISTINCT contract_type) FROM contracts,
+112,distinct_count,easy,PASS,CORRECT,How many distinct injury types appear?,SELECT COUNT(DISTINCT injury_type) FROM injuries,
+113,distinct_count,easy,PASS,CORRECT,How many different training session types are recorded?,SELECT COUNT(DISTINCT session_type) FROM training_sessions,
+114,distinct_count,easy,PASS,CORRECT,How many distinct transfer types occur?,SELECT COUNT(DISTINCT transfer_type) FROM transfers,
+115,distinct_count,easy,PASS,CORRECT,How many different transfer windows are represented?,SELECT COUNT(DISTINCT transfer_window) FROM transfers,
+116,distinct_count,moderate,PASS,CORRECT,How many distinct teams have at least one active player?,"SELECT COUNT(DISTINCT t.team_id)
+FROM teams t
+JOIN players p ON t.team_id = p.team_id
+WHERE p.active_flag = '1'",
+117,distinct_count,moderate,PASS,CORRECT,How many distinct teams employ at least one active coach?,"SELECT COUNT(DISTINCT t.team_id)
+FROM teams t
+JOIN coaches c ON t.team_id = c.team_id
+WHERE c.active_flag = '1'",
+118,distinct_count,moderate,PASS,CORRECT,How many distinct leagues have completed matches?,"SELECT COUNT(DISTINCT leagues.league_id)
+FROM leagues
+JOIN matches ON leagues.league_id = matches.league_id
+WHERE matches.match_status = 'completed'",
+119,distinct_count,moderate,PASS,CORRECT,How many distinct seasons contain completed matches?,"SELECT COUNT(DISTINCT m.season_id)
+FROM matches m
+JOIN seasons s ON m.season_id = s.season_id
+WHERE m.match_status = 'completed'",
+120,distinct_count,moderate,PASS,CORRECT,How many distinct players have appeared in a match?,"SELECT COUNT(DISTINCT pms.player_id)
+FROM player_match_stats pms
+JOIN matches m ON pms.match_id = m.match_id
+JOIN teams t ON pms.team_id = t.team_id
+JOIN leagues l ON m.league_id = l.league_id",
+121,distinct_count,moderate,PASS,CORRECT,How many distinct players started at least one match?,"SELECT COUNT(DISTINCT pms.player_id)
+FROM player_match_stats pms
+JOIN matches m ON pms.match_id = m.match_id
+JOIN teams t ON pms.team_id = t.team_id
+JOIN leagues l ON m.league_id = l.league_id
+WHERE pms.started_flag = 1",
+122,distinct_count,moderate,PASS,CORRECT,How many distinct teams have at least one active contract?,"SELECT COUNT(DISTINCT teams.team_id)
+FROM teams
+JOIN contracts ON contracts.team_id = teams.team_id
+WHERE contracts.contract_status = 'active'",
+123,distinct_count,moderate,PASS,CORRECT,How many distinct players have an active contract?,SELECT COUNT(DISTINCT player_id) FROM contracts WHERE contract_status = 'active',
+124,distinct_count,moderate,PASS,CORRECT,How many distinct players have at least one injury record?,"SELECT COUNT(DISTINCT p.player_id)
+FROM players p
+JOIN injuries i ON p.player_id = i.player_id",
+125,distinct_count,moderate,PASS,CORRECT,How many distinct matches have an injury linked to them?,SELECT COUNT(DISTINCT match_id) FROM injuries,
+126,distinct_count,moderate,PASS,CORRECT,How many distinct teams conducted high-intensity training sessions?,"SELECT COUNT(DISTINCT team_id)
+FROM training_sessions
+WHERE intensity_level = 'high'",
+127,distinct_count,moderate,PASS,CORRECT,How many distinct coaches led training sessions?,SELECT COUNT(DISTINCT coach_id) FROM training_sessions,
+128,distinct_count,moderate,PASS,INCORRECT,How many distinct players have training performance records?,"SELECT COUNT(DISTINCT pts.player_id)
+FROM player_training_stats pts
+JOIN teams t ON pts.team_id = t.team_id
+JOIN coaches c ON t.team_id = c.team_id","Adds an unnecessary coach join, excluding training-record players whose teams have no coach record."
+129,distinct_count,moderate,PASS,INCORRECT,How many distinct players completed a transfer?,SELECT COUNT(DISTINCT player_id) FROM transfers,Counts every transferred player and never filters transfer_status = 'completed'.
+130,distinct_count,moderate,PASS,CORRECT,How many distinct teams received at least one transferred player?,"SELECT COUNT(DISTINCT t.team_id) AS distinct_teams
+FROM teams t
+JOIN transfers tr ON t.team_id = tr.to_team_id",
+131,distinct_count,moderate,PASS,CORRECT,How many distinct teams sent at least one transferred player?,"SELECT COUNT(*) AS team_count
+FROM (
+    SELECT t.team_id, t.team_name
+    FROM teams t
+    JOIN transfers tr ON t.team_id = tr.from_team_id
+    GROUP BY t.team_id, t.team_name
+    HAVING COUNT(DISTINCT tr.player_id) >= 1
+)",
+132,distinct_count,moderate,PASS,CORRECT,How many distinct leagues contain active teams?,"SELECT COUNT(DISTINCT leagues.league_id)
+FROM leagues
+JOIN teams ON leagues.league_id = teams.league_id
+WHERE teams.active_flag = '1'",
+133,distinct_count,moderate,PASS,CORRECT,How many distinct players recorded at least one score in a match?,"SELECT COUNT(DISTINCT player_id)
+FROM player_match_stats
+WHERE scores > 0",
+134,distinct_count,moderate,PASS,CORRECT,How many distinct teams won a completed match?,"SELECT COUNT(DISTINCT winner_team_id)
+FROM matches
+WHERE match_status = 'completed'",
+135,distinct_count,moderate,PASS,INCORRECT,How many distinct players have both a contract and a training record?,"SELECT COUNT(DISTINCT p.player_id)
+FROM players p
+JOIN contracts c ON p.player_id = c.player_id
+JOIN player_training_stats pts ON p.player_id = pts.player_id
+JOIN teams t ON p.team_id = t.team_id
+JOIN transfers tr ON p.player_id = tr.player_id","Adds an unrequested transfer join, requiring a transfer in addition to the requested contract and training record."
+136,distinct_count,hard,PASS,CORRECT,How many distinct players appeared in completed matches during both 2024 and 2025?,"SELECT COUNT(DISTINCT pms.player_id) AS distinct_players
+FROM player_match_stats pms
+JOIN matches m ON pms.match_id = m.match_id
+JOIN seasons s ON m.season_id = s.season_id
+WHERE m.match_status = 'completed'
+  AND s.season_year IN ('2024', '2025')
+  AND pms.player_id IN (
+    SELECT pms1.player_id
+    FROM player_match_stats pms1
+    JOIN matches m1 ON pms1.match_id = m1.match_id
+    JOIN seasons s1 ON m1.season_id = s1.season_id
+    WHERE m1.match_status = 'completed' AND s1.season_year = '2024'
+  )
+  AND pms.player_id IN (
+    SELECT pms2.player_id
+    FROM player_match_stats pms2
+    JOIN matches m2 ON pms2.match_id = m2.match_id
+    JOIN seasons s2 ON m2.season_id = s2.season_id
+    WHERE m2.match_status = 'completed' AND s2.season_year = '2025'
+  )",
+137,distinct_count,hard,PASS,CORRECT,How many distinct players have both match statistics and training statistics?,"SELECT COUNT(DISTINCT p.player_id)
+FROM players p
+JOIN player_match_stats pms ON p.player_id = pms.player_id
+JOIN player_training_stats pts ON p.player_id = pts.player_id
+JOIN teams t ON p.team_id = t.team_id
+JOIN matches m ON pms.match_id = m.match_id
+JOIN leagues l ON m.league_id = l.league_id",
+138,distinct_count,hard,PASS,INCORRECT,How many distinct teams have both completed matches and completed transfers?,"SELECT COUNT(DISTINCT t.team_id)
+FROM teams t
+JOIN leagues l ON t.league_id = l.league_id
+JOIN seasons s ON s.league_id = l.league_id
+JOIN matches m ON m.season_id = s.season_id AND (m.home_team_id = t.team_id OR m.away_team_id = t.team_id)
+JOIN players p ON p.team_id = t.team_id
+JOIN transfers tr ON tr.player_id = p.player_id AND tr.season_id = s.season_id",Never filters completed matches or completed transfers and links transfers through current-roster players rather than the team's transfer roles.
+139,distinct_count,hard,PASS,CORRECT,How many distinct players have both an active contract and an injury record?,"SELECT COUNT(DISTINCT p.player_id)
+FROM players p
+JOIN contracts c ON p.player_id = c.player_id
+JOIN injuries i ON p.player_id = i.player_id
+WHERE c.contract_status = 'active'",
+140,distinct_count,hard,PASS,CORRECT,How many distinct coaches led training sessions in more than one season?,"SELECT COUNT(*) 
+FROM (
+    SELECT training_sessions.coach_id
+    FROM training_sessions
+    GROUP BY training_sessions.coach_id
+    HAVING COUNT(DISTINCT training_sessions.season_id) > 1
+) AS coaches_multiple_seasons",
+141,distinct_count,hard,PASS,CORRECT,How many distinct teams competed as both home and away teams in completed matches?,"SELECT COUNT(DISTINCT team_id)
+FROM (
+    SELECT home_team_id AS team_id
+    FROM matches
+    WHERE match_status = 'completed'
+    INTERSECT
+    SELECT away_team_id AS team_id
+    FROM matches
+    WHERE match_status = 'completed'
+)",
+142,distinct_count,hard,PASS,CORRECT,How many distinct players recorded scores for more than one team?,"SELECT COUNT(*) 
+FROM (
+    SELECT p.player_id
+    FROM player_match_stats pms
+    JOIN players p ON pms.player_id = p.player_id
+    WHERE pms.scores > 0
+    GROUP BY p.player_id
+    HAVING COUNT(DISTINCT pms.team_id) > 1
+)",
+143,distinct_count,hard,PASS,CORRECT,How many distinct seasons contain matches from more than one competition stage?,"SELECT COUNT(*) 
+FROM (
+    SELECT matches.season_id
+    FROM matches
+    GROUP BY matches.season_id
+    HAVING COUNT(DISTINCT matches.competition_stage) > 1
+)",
+144,distinct_count,hard,PASS,CORRECT,How many distinct players had injuries linked to more than one match?,"SELECT COUNT(*) 
+FROM (
+    SELECT player_id
+    FROM injuries
+    GROUP BY player_id
+    HAVING COUNT(DISTINCT match_id) > 1
+)",
+145,distinct_count,hard,PASS,CORRECT,How many distinct teams have players under more than one contract type?,"SELECT COUNT(*) 
+FROM (
+    SELECT teams.team_id
+    FROM teams
+    JOIN contracts ON contracts.team_id = teams.team_id
+    GROUP BY teams.team_id
+    HAVING COUNT(DISTINCT contracts.contract_type) > 1
+) AS teams_with_multiple_contract_types",
+146,distinct_count,hard,PASS,CORRECT,How many distinct players transferred between teams in the same league?,"SELECT COUNT(DISTINCT t.player_id)
+FROM transfers t
+JOIN teams ft ON t.from_team_id = ft.team_id
+JOIN teams tt ON t.to_team_id = tt.team_id
+WHERE ft.league_id = tt.league_id",
+147,distinct_count,hard,PASS,CORRECT,How many distinct teams had both high-intensity and recovery training sessions?,"SELECT COUNT(*)
+FROM (
+    SELECT t.team_id
+    FROM teams t
+    JOIN training_sessions ts ON t.team_id = ts.team_id
+    GROUP BY t.team_id
+    HAVING COUNT(DISTINCT CASE WHEN ts.intensity_level = 'high' THEN ts.intensity_level END) >= 1
+       AND COUNT(DISTINCT CASE WHEN ts.session_type = 'recovery' THEN ts.session_type END) >= 1
+)",
+148,distinct_count,hard,PASS,CORRECT,How many distinct players recorded both a match rating above 8 and a readiness score above 80?,"SELECT COUNT(DISTINCT p.player_id)
+FROM players p
+JOIN player_match_stats pms ON p.player_id = pms.player_id
+JOIN player_training_stats pts ON p.player_id = pts.player_id
+WHERE pms.player_rating > 8
+  AND pts.readiness_score > 80",
+149,distinct_count,hard,PASS,INCORRECT,How many distinct leagues have teams with both active and inactive players?,"SELECT COUNT(DISTINCT l.league_id)
+FROM leagues l
+JOIN teams t ON l.league_id = t.league_id
+JOIN players p ON t.team_id = p.team_id
+GROUP BY l.league_id
+HAVING COUNT(DISTINCT CASE WHEN p.active_flag = '1' THEN 1 END) > 0
+   AND COUNT(DISTINCT CASE WHEN p.active_flag = '0' THEN 1 END) > 0",Groups by league and returns one count row per qualifying league instead of one total count of qualifying leagues.
+150,distinct_count,hard,PASS,INCORRECT,"How many distinct players have played matches, attended training, and completed a transfer?","SELECT COUNT(DISTINCT p.player_id)
+FROM players p
+JOIN player_match_stats pms ON p.player_id = pms.player_id
+JOIN player_training_stats pts ON p.player_id = pts.player_id
+JOIN transfers t ON p.player_id = t.player_id
+JOIN seasons s ON t.season_id = s.season_id
+JOIN teams tm ON p.team_id = tm.team_id",Never requires a completed transfer or an attended training status; any transfer and any training record qualify.
+151,group_by,easy,PASS,CORRECT,Count leagues by sport type.,"SELECT sport_type, COUNT(*) AS league_count
+FROM leagues
+GROUP BY sport_type",
+152,group_by,easy,PASS,CORRECT,Show average league salary cap by competition level.,"SELECT competition_level, AVG(salary_cap)
+FROM leagues
+GROUP BY competition_level",
+153,group_by,easy,PASS,CORRECT,Count seasons by season status.,"SELECT season_status, COUNT(*) AS season_count
+FROM seasons
+GROUP BY season_status",
+154,group_by,easy,PASS,CORRECT,Show total season revenue by season year.,"SELECT seasons.season_year, SUM(seasons.revenue_total) AS total_revenue
+FROM seasons
+GROUP BY seasons.season_year",
+155,group_by,easy,PASS,CORRECT,Count teams by league.,"SELECT l.league_name, COUNT(t.team_id) AS team_count
+FROM teams t
+JOIN leagues l ON t.league_id = l.league_id
+GROUP BY l.league_name
+HAVING COUNT(t.team_id) > 0",
+156,group_by,easy,PASS,CORRECT,Show average team value by country.,"SELECT country_code, AVG(team_value) AS average_team_value
+FROM teams
+GROUP BY country_code",
+157,group_by,easy,PASS,CORRECT,Count coaches by coach role.,"SELECT coach_role, COUNT(*) AS coach_count
+FROM coaches
+GROUP BY coach_role",
+158,group_by,easy,PASS,CORRECT,Show average coach salary by license level.,"SELECT license_level, AVG(annual_salary) AS average_salary
+FROM coaches
+GROUP BY license_level",
+159,group_by,easy,PASS,CORRECT,Count players by position.,"SELECT ""players"".""position"", COUNT(*) AS ""player_count"" FROM ""players"" GROUP BY ""players"".""position"" HAVING COUNT(*) > 0",
+160,group_by,easy,PASS,CORRECT,Show average player market value by current status.,"SELECT players.current_status, AVG(players.market_value) AS average_market_value
+FROM players
+GROUP BY players.current_status",
+161,group_by,easy,PASS,CORRECT,Count matches by match status.,"SELECT match_status, COUNT(*) AS match_count
+FROM matches
+GROUP BY match_status",
+162,group_by,easy,PASS,CORRECT,Show average match attendance by competition stage.,"SELECT matches.competition_stage, AVG(matches.attendance) AS average_attendance
+FROM matches
+GROUP BY matches.competition_stage",
+163,group_by,easy,PASS,CORRECT,Count contracts by contract type.,"SELECT contract_type, COUNT(*) AS contract_count
+FROM contracts
+GROUP BY contract_type",
+164,group_by,easy,PASS,CORRECT,Count injuries by severity.,"SELECT severity, COUNT(*) AS injury_count
+FROM injuries
+GROUP BY severity",
+165,group_by,easy,PASS,CORRECT,Count transfers by transfer status.,"SELECT transfer_status, COUNT(*) AS transfer_count
+FROM transfers
+GROUP BY transfer_status",
+166,group_by,moderate,PASS,CORRECT,Count active teams by league.,"SELECT ""leagues"".""league_name"", COUNT(*) AS ""active_team_count"" FROM ""teams"" INNER JOIN ""leagues"" ON ""teams"".""league_id"" = ""leagues"".""league_id"" WHERE ""teams"".""active_flag"" = ? GROUP BY ""leagues"".""league_name""",
+167,group_by,moderate,PASS,CORRECT,Show total team revenue by league.,"SELECT l.league_name, SUM(t.annual_revenue) AS total_revenue
+FROM teams t
+JOIN leagues l ON t.league_id = l.league_id
+GROUP BY l.league_name",
+168,group_by,moderate,PASS,CORRECT,Count active coaches by team.,"SELECT ""teams"".""team_id"", ""teams"".""team_name"", COUNT(*) AS ""active_coach_count"" FROM ""coaches"" INNER JOIN ""teams"" ON ""coaches"".""team_id"" = ""teams"".""team_id"" WHERE ""coaches"".""active_flag"" = ? GROUP BY ""teams"".""team_id"", ""teams"".""team_name""",
+169,group_by,moderate,PASS,CORRECT,Show average coach performance rating by team.,"SELECT t.team_id, t.team_name, AVG(c.performance_rating) AS avg_performance_rating
+FROM teams t
+JOIN coaches c ON t.team_id = c.team_id
+GROUP BY t.team_id, t.team_name",
+170,group_by,moderate,PASS,CORRECT,Count active players by team.,"SELECT ""teams"".""team_name"", COUNT(*) AS ""active_player_count"" FROM ""players"" INNER JOIN ""teams"" ON ""players"".""team_id"" = ""teams"".""team_id"" WHERE ""players"".""active_flag"" = ? GROUP BY ""teams"".""team_name""",
+171,group_by,moderate,PASS,INCORRECT,Show average player market value by team.,"SELECT t.team_name
+FROM players p
+JOIN teams t ON p.team_id = t.team_id
+GROUP BY t.team_id
+HAVING AVG(p.market_value) = (
+    SELECT MAX(avg_val)
+    FROM (
+        SELECT AVG(p2.market_value) AS avg_val
+        FROM players p2
+        JOIN teams t2 ON p2.team_id = t2.team_id
+        GROUP BY t2.team_id
+    )
+)",Returns only the team with the maximum average market value instead of average player market value for each team.
+172,group_by,moderate,PASS,CORRECT,Count completed matches by season.,"SELECT ""seasons"".""season_name"", COUNT(*) AS ""match_count"" FROM ""matches"" INNER JOIN ""seasons"" ON ""matches"".""season_id"" = ""seasons"".""season_id"" WHERE ""matches"".""match_status"" = ? GROUP BY ""seasons"".""season_name""",
+173,group_by,moderate,PASS,CORRECT,Show total ticket revenue by league.,"SELECT l.league_name, SUM(m.ticket_revenue) AS total_ticket_revenue
+FROM leagues l
+JOIN matches m ON l.league_id = m.league_id
+GROUP BY l.league_id, l.league_name",
+174,group_by,moderate,PASS,CORRECT,Show average home score by competition stage.,"SELECT matches.competition_stage, AVG(matches.home_score) AS average_home_score
+FROM matches
+GROUP BY matches.competition_stage",
+175,group_by,moderate,PASS,CORRECT,Show average player rating by position.,"SELECT p.position, AVG(pms.player_rating) AS avg_rating
+FROM player_match_stats pms
+JOIN players p ON pms.player_id = p.player_id
+GROUP BY p.position",
+176,group_by,moderate,PASS,CORRECT,Show total match minutes by player.,"SELECT p.player_id, p.full_name, SUM(pms.minutes_played) AS total_minutes
+FROM players p
+JOIN player_match_stats pms ON p.player_id = pms.player_id
+GROUP BY p.player_id, p.full_name",
+177,group_by,moderate,PASS,CORRECT,Count active contracts by team.,"SELECT ""teams"".""team_name"", COUNT(*) AS ""active_contract_count"" FROM ""contracts"" INNER JOIN ""teams"" ON ""contracts"".""team_id"" = ""teams"".""team_id"" WHERE ""contracts"".""contract_status"" = ? GROUP BY ""teams"".""team_name""",
+178,group_by,moderate,PASS,CORRECT,Show total base salary by contract type.,"SELECT contracts.contract_type, SUM(contracts.base_salary) AS total_base_salary
+FROM contracts
+GROUP BY contracts.contract_type",
+179,group_by,moderate,PASS,CORRECT,Count injury records by team and severity.,"SELECT team_id, severity, COUNT(*) AS injury_count
+FROM injuries
+GROUP BY team_id, severity",
+180,group_by,moderate,PASS,CORRECT,Show average games missed by injury type.,"SELECT injury_type, AVG(games_missed) AS avg_games_missed
+FROM injuries
+GROUP BY injury_type",
+181,group_by,moderate,PASS,CORRECT,Count training sessions by team and session type.,"SELECT t.team_name, ts.session_type, COUNT(ts.training_session_id) AS session_count
+FROM teams t
+JOIN training_sessions ts ON t.team_id = ts.team_id
+GROUP BY t.team_name, ts.session_type",
+182,group_by,moderate,PASS,CORRECT,Show average actual training duration by intensity level.,"SELECT intensity_level, AVG(actual_duration_minutes) AS avg_duration
+FROM training_sessions
+GROUP BY intensity_level",
+183,group_by,moderate,PASS,CORRECT,Show average readiness score by team.,"SELECT t.team_id, t.team_name, AVG(pts.readiness_score) AS avg_readiness_score
+FROM teams t
+JOIN player_training_stats pts ON t.team_id = pts.team_id
+GROUP BY t.team_id, t.team_name",
+184,group_by,moderate,PASS,CORRECT,Count completed transfers by transfer type.,"SELECT transfer_type, COUNT(*) AS count
+FROM transfers
+WHERE transfer_status = 'completed'
+GROUP BY transfer_type",
+185,group_by,moderate,PASS,CORRECT,Show total transfer fee by destination team.,"SELECT t.team_name, SUM(tr.transfer_fee) AS total_transfer_fee
+FROM teams t
+JOIN transfers tr ON tr.to_team_id = t.team_id
+GROUP BY tr.to_team_id, t.team_name",
+186,group_by,hard,PASS,INCORRECT,Show completed match count by league and season year.,"SELECT l.league_name, s.season_year, COUNT(m.match_id) AS completed_match_count
+FROM leagues l
+JOIN seasons s ON l.league_id = s.league_id
+JOIN matches m ON s.season_id = m.season_id
+GROUP BY l.league_name, s.season_year",Counts all matches by league and year and never filters match_status = 'completed'.
+187,group_by,hard,PASS,CORRECT,Show total ticket revenue by league and competition stage.,"SELECT l.league_name, m.competition_stage, SUM(m.ticket_revenue) AS total_ticket_revenue
+FROM matches m
+JOIN leagues l ON m.league_id = l.league_id
+GROUP BY l.league_name, m.competition_stage",
+188,group_by,hard,PASS,CORRECT,Show player count and average market value by league and position.,"SELECT l.league_name, p.position, COUNT(*) AS player_count, AVG(p.market_value) AS avg_market_value
+FROM players p
+JOIN teams t ON p.team_id = t.team_id
+JOIN leagues l ON t.league_id = l.league_id
+GROUP BY l.league_name, p.position",
+189,group_by,hard,PASS,CORRECT,Show coach count and average salary by league and coach role.,"SELECT l.league_name, c.coach_role, COUNT(*) AS coach_count, AVG(c.annual_salary) AS average_salary
+FROM coaches c
+JOIN teams t ON c.team_id = t.team_id
+JOIN leagues l ON t.league_id = l.league_id
+GROUP BY l.league_name, c.coach_role",
+190,group_by,hard,PASS,CORRECT,Show total player salary by team and contract type.,"SELECT t.team_name, c.contract_type, SUM(c.base_salary) AS total_salary
+FROM contracts c
+JOIN teams t ON c.team_id = t.team_id
+GROUP BY t.team_name, c.contract_type",
+191,group_by,hard,PASS,INCORRECT,Show match scores and assists by team and season.,"SELECT t.team_name, s.season_name, m.home_score, m.away_score, pms.assists
+FROM matches m
+JOIN teams t ON m.home_team_id = t.team_id
+JOIN seasons s ON m.season_id = s.season_id
+JOIN player_match_stats pms ON m.match_id = pms.match_id
+GROUP BY t.team_id, s.season_id, m.match_id, m.home_score, m.away_score, pms.assists","Uses only the home team, returns match-level scores and individual assists, and does not aggregate team-season scores and assists."
+192,group_by,hard,PASS,CORRECT,Show average player rating by team and competition stage.,"SELECT t.team_name, m.competition_stage, AVG(pms.player_rating) AS avg_player_rating
+FROM player_match_stats pms
+JOIN matches m ON pms.match_id = m.match_id
+JOIN teams t ON pms.team_id = t.team_id
+GROUP BY t.team_name, m.competition_stage",
+193,group_by,hard,PASS,CORRECT,Show injury count and games missed by team and body part.,"SELECT t.team_name, i.body_part, COUNT(*) AS injury_count, SUM(i.games_missed) AS total_games_missed
+FROM injuries i
+JOIN teams t ON i.team_id = t.team_id
+GROUP BY t.team_name, i.body_part",
+194,group_by,hard,PASS,CORRECT,Show training load and recovery score by team and intensity level.,"SELECT 
+    t.team_name,
+    ts.intensity_level,
+    AVG(pts.training_load) AS avg_training_load,
+    AVG(pts.recovery_score) AS avg_recovery_score
+FROM player_training_stats pts
+JOIN training_sessions ts ON pts.training_session_id = ts.training_session_id
+JOIN teams t ON pts.team_id = t.team_id
+GROUP BY t.team_id, ts.intensity_level",
+195,group_by,hard,PASS,CORRECT,Show completed transfer count and fees by league and transfer type.,"SELECT 
+    l.league_name,
+    t.transfer_type,
+    COUNT(*) AS completed_transfer_count,
+    SUM(t.transfer_fee) AS total_transfer_fees
+FROM 
+    transfers t
+JOIN 
+    seasons s ON t.season_id = s.season_id
+JOIN 
+    leagues l ON s.league_id = l.league_id
+WHERE 
+    t.transfer_status = 'completed'
+GROUP BY 
+    l.league_name, 
+    t.transfer_type",
+196,group_by,hard,PASS,CORRECT,Show active contract count and guaranteed amount by league and team.,"SELECT l.league_name, t.team_name, COUNT(*) AS active_contract_count, SUM(c.guaranteed_amount) AS total_guaranteed_amount
+FROM contracts c
+JOIN teams t ON c.team_id = t.team_id
+JOIN leagues l ON t.league_id = l.league_id
+WHERE c.contract_status = 'active'
+GROUP BY l.league_name, t.team_name",
+197,group_by,hard,PASS,INCORRECT,Show completed match attendance by home team and season year.,"SELECT t.team_name, s.season_year, m.attendance
+FROM matches m
+JOIN teams t ON m.home_team_id = t.team_id
+JOIN seasons s ON m.season_id = s.season_id
+WHERE m.match_status = 'completed'",Returns raw match attendance rows and never groups attendance by home team and season year.
+198,group_by,hard,PASS,CORRECT,Show average efficiency score by player position and team.,"SELECT p.position, t.team_name, AVG(pms.efficiency_score) AS avg_efficiency_score
+FROM player_match_stats pms
+JOIN players p ON pms.player_id = p.player_id
+JOIN teams t ON pms.team_id = t.team_id
+GROUP BY p.position, t.team_name",
+199,group_by,hard,PASS,CORRECT,Show transfer count by former team and destination team.,"SELECT from_team_id, to_team_id, COUNT(*) AS transfer_count
+FROM transfers
+GROUP BY from_team_id, to_team_id",
+200,group_by,hard,PASS,INCORRECT,"Show active player count, injury count, and training attendance by team.","SELECT ""teams"".""team_id"", ""teams"".""team_name"", COUNT(*) AS ""active_player_count"", COUNT(*) AS ""injury_count"", COUNT(*) AS ""training_attendance_count"" FROM ""players"" INNER JOIN ""injuries"" ON ""players"".""player_id"" = ""injuries"".""player_id"" INNER JOIN ""player_training_stats"" ON ""players"".""player_id"" = ""player_training_stats"".""player_id"" INNER JOIN ""teams"" ON ""players"".""team_id"" = ""teams"".""team_id"" WHERE ""players"".""active_flag"" = ? GROUP BY ""teams"".""team_id"", ""teams"".""team_name""","Uses the same fanout-inflated COUNT(*) for players, injuries, and training attendance and never tests attendance status."
+201,having,easy,PASS,CORRECT,List sport types represented by more than five leagues.,"SELECT sport_type
+FROM leagues
+GROUP BY sport_type
+HAVING COUNT(league_id) > 5",
+202,having,easy,PASS,CORRECT,List competition levels with an average salary cap above 50 million dollars.,"SELECT leagues.competition_level
+FROM leagues
+GROUP BY leagues.competition_level
+HAVING AVG(leagues.salary_cap) > 50000000",
+203,having,easy,PASS,CORRECT,List season years with more than five seasons.,"SELECT season_year
+FROM seasons
+GROUP BY season_year
+HAVING COUNT(*) > 5",
+204,having,easy,PASS,CORRECT,List leagues with more than one team.,"SELECT leagues.league_id, leagues.league_name, leagues.number_of_teams
+FROM leagues
+WHERE leagues.number_of_teams > 1",
+205,having,easy,PASS,CORRECT,List countries with more than five teams.,"SELECT country_code
+FROM teams
+GROUP BY country_code
+HAVING COUNT(team_id) > 5",
+206,having,easy,PASS,CORRECT,List coach roles represented by more than five coaches.,"SELECT coach_role
+FROM coaches
+GROUP BY coach_role
+HAVING COUNT(coach_id) > 5",
+207,having,easy,PASS,CORRECT,List license levels with an average coach salary above 500000 dollars.,"SELECT license_level
+FROM coaches
+GROUP BY license_level
+HAVING AVG(annual_salary) > 500000",
+208,having,easy,PASS,CORRECT,List player positions represented by more than ten players.,"SELECT players.position
+FROM players
+GROUP BY players.position
+HAVING COUNT(players.player_id) > 10",
+209,having,easy,PASS,CORRECT,List player statuses represented by more than five players.,"SELECT players.current_status
+FROM players
+GROUP BY players.current_status
+HAVING COUNT(*) > 5",
+210,having,easy,PASS,CORRECT,List match stages with an average attendance above 20000.,"SELECT matches.competition_stage
+FROM matches
+GROUP BY matches.competition_stage
+HAVING AVG(matches.attendance) > 20000",
+211,having,easy,PASS,CORRECT,List contract types represented by more than five contracts.,"SELECT contracts.contract_type
+FROM contracts
+GROUP BY contracts.contract_type
+HAVING COUNT(contracts.contract_id) > 5",
+212,having,easy,PASS,CORRECT,List injury severities with an average of more than 10 games missed.,"SELECT injuries.severity
+FROM injuries
+GROUP BY injuries.severity
+HAVING AVG(injuries.games_missed) > 10",
+213,having,easy,PASS,CORRECT,List training session types represented by more than five sessions.,"SELECT session_type
+FROM training_sessions
+GROUP BY session_type
+HAVING COUNT(*) > 5",
+214,having,easy,PASS,CORRECT,List intensity levels with an average training duration above 90 minutes.,"SELECT intensity_level
+FROM training_sessions
+GROUP BY intensity_level
+HAVING AVG(actual_duration_minutes) > 90",
+215,having,easy,PASS,CORRECT,List transfer types with total fees above 10 million dollars.,"SELECT transfer_type
+FROM transfers
+GROUP BY transfer_type
+HAVING SUM(transfer_fee) > 10000000",
+216,having,moderate,PASS,CORRECT,List leagues with more than two active teams.,"SELECT ""leagues"".""league_name"", COUNT(*) AS ""active_team_count"" FROM ""teams"" INNER JOIN ""leagues"" ON ""teams"".""league_id"" = ""leagues"".""league_id"" WHERE ""teams"".""active_flag"" = ? GROUP BY ""leagues"".""league_name"" HAVING ""active_team_count"" > ?",
+217,having,moderate,PASS,CORRECT,List teams with more than three active players.,"SELECT ""teams"".""team_id"", ""teams"".""team_name""
+FROM ""teams""
+INNER JOIN ""players"" ON ""teams"".""team_id"" = ""players"".""team_id""
+WHERE ""players"".""active_flag"" = '1'
+GROUP BY ""teams"".""team_id"", ""teams"".""team_name""
+HAVING COUNT(""players"".""player_id"") > 3",
+218,having,moderate,PASS,CORRECT,List teams with more than two active coaches.,"SELECT t.team_id, t.team_name
+FROM teams t
+JOIN coaches c ON t.team_id = c.team_id
+WHERE c.active_flag = '1'
+GROUP BY t.team_id, t.team_name
+HAVING COUNT(c.coach_id) > 2",
+219,having,moderate,PASS,CORRECT,List coaches who have led more than two training sessions.,"SELECT c.coach_id, c.first_name, c.last_name
+FROM coaches c
+JOIN training_sessions ts ON c.coach_id = ts.coach_id
+GROUP BY c.coach_id
+HAVING COUNT(ts.training_session_id) > 2",
+220,having,moderate,PASS,CORRECT,List players with more than two match appearances.,"SELECT p.player_id, p.first_name, p.last_name
+FROM players p
+JOIN player_match_stats pms ON p.player_id = pms.player_id
+GROUP BY p.player_id, p.first_name, p.last_name
+HAVING COUNT(*) > 2",
+221,having,moderate,PASS,CORRECT,List players whose total match scores exceed five.,"SELECT p.player_id, p.first_name, p.last_name
+FROM players p
+JOIN player_match_stats pms ON p.player_id = pms.player_id
+GROUP BY p.player_id, p.first_name, p.last_name
+HAVING SUM(pms.scores) > 5",
+222,having,moderate,PASS,CORRECT,List teams with more than three completed matches.,"SELECT t.team_id, t.team_name
+FROM teams t
+JOIN matches m ON t.team_id = m.home_team_id OR t.team_id = m.away_team_id
+WHERE m.match_status = 'completed'
+GROUP BY t.team_id, t.team_name
+HAVING COUNT(m.match_id) > 3",
+223,having,moderate,PASS,INCORRECT,List seasons with total match attendance above 100000.,"SELECT seasons.season_id, seasons.season_name, seasons.season_year
+FROM seasons
+WHERE seasons.attendance_total > 100000",Uses seasons.attendance_total instead of summing match attendance for each season.
+224,having,moderate,PASS,CORRECT,List players with an average match rating above 7.,"SELECT p.player_id, p.first_name, p.last_name
+FROM players p
+JOIN player_match_stats pms ON p.player_id = pms.player_id
+GROUP BY p.player_id
+HAVING AVG(pms.player_rating) > 7",
+225,having,moderate,PASS,CORRECT,List teams whose total active-contract salary exceeds 5 million dollars.,"SELECT t.team_id, t.team_name
+FROM teams t
+JOIN contracts c ON t.team_id = c.team_id
+WHERE c.contract_status = 'active'
+GROUP BY t.team_id, t.team_name
+HAVING SUM(c.base_salary) > 5000000",
+226,having,moderate,PASS,CORRECT,List players with more than one active contract record.,"SELECT p.player_id, p.first_name, p.last_name
+FROM players p
+JOIN contracts c ON p.player_id = c.player_id
+WHERE c.contract_status = 'active'
+GROUP BY p.player_id
+HAVING COUNT(c.contract_id) > 1",
+227,having,moderate,PASS,CORRECT,List teams with more than two injury records.,"SELECT t.team_id, t.team_name
+FROM teams t
+JOIN injuries i ON t.team_id = i.team_id
+GROUP BY t.team_id, t.team_name
+HAVING COUNT(i.injury_id) > 2",
+228,having,moderate,PASS,CORRECT,List injury types with an average recovery time above 30 days.,"SELECT injury_type
+FROM injuries
+GROUP BY injury_type
+HAVING AVG(actual_days_out) > 30",
+229,having,moderate,PASS,CORRECT,List teams with more than three training sessions.,"SELECT t.team_id, t.team_name
+FROM teams t
+JOIN training_sessions ts ON t.team_id = ts.team_id
+GROUP BY t.team_id, t.team_name
+HAVING COUNT(ts.training_session_id) > 3",
+230,having,moderate,PASS,CORRECT,List players with an average readiness score above 75.,"SELECT p.player_id, p.first_name, p.last_name
+FROM players p
+JOIN player_training_stats pts ON p.player_id = pts.player_id
+GROUP BY p.player_id
+HAVING AVG(pts.readiness_score) > 75",
+231,having,moderate,PASS,CORRECT,List teams with total transfer fees above 10 million dollars.,"SELECT t.team_id, t.team_name
+FROM teams t
+JOIN transfers tr ON t.team_id = tr.to_team_id
+GROUP BY t.team_id, t.team_name
+HAVING SUM(tr.transfer_fee) > 10000000",
+232,having,moderate,PASS,CORRECT,List destination teams that received more than two players.,"SELECT t.team_name
+FROM teams t
+JOIN (
+    SELECT to_team_id
+    FROM transfers
+    GROUP BY to_team_id
+    HAVING COUNT(DISTINCT player_id) > 2
+) sub ON t.team_id = sub.to_team_id",
+233,having,moderate,PASS,CORRECT,List leagues whose teams have an average value above 100 million dollars.,"SELECT l.league_id, l.league_name
+FROM leagues l
+JOIN teams t ON l.league_id = t.league_id
+GROUP BY l.league_id
+HAVING AVG(t.team_value) > 100000000",
+234,having,moderate,PASS,CORRECT,List teams whose players have an average market value above 10 million dollars.,"SELECT t.team_id, t.team_name
+FROM teams t
+JOIN players p ON t.team_id = p.team_id
+GROUP BY t.team_id, t.team_name
+HAVING AVG(p.market_value) > 10000000",
+235,having,moderate,PASS,CORRECT,List players whose average training load exceeds 500.,"SELECT p.player_id, p.first_name, p.last_name
+FROM players p
+JOIN player_training_stats pts ON p.player_id = pts.player_id
+GROUP BY p.player_id
+HAVING AVG(pts.training_load) > 500",
+236,having,hard,PASS,INCORRECT,List leagues whose completed-match attendance is above the average league attendance.,"SELECT l.league_id, l.league_name
+FROM leagues l
+JOIN matches m ON l.league_id = m.league_id
+WHERE m.match_status = 'completed'
+GROUP BY l.league_id
+HAVING AVG(m.attendance) > (
+    SELECT AVG(m2.attendance)
+    FROM matches m2
+    WHERE m2.match_status = 'completed'
+)",Compares each league average with the overall completed-match row average rather than the average of league-level attendance values.
+237,having,hard,PASS,INCORRECT,List teams whose active-player payroll exceeds their annual revenue.,"SELECT team_id, team_name, annual_revenue, salary_payroll
+FROM teams
+WHERE salary_payroll > annual_revenue","Uses teams.salary_payroll, which is total payroll, instead of summing salaries of active players."
+238,having,hard,PASS,CORRECT,List players whose average match rating is above the average for their position.,"SELECT p.player_id, p.first_name, p.last_name, p.position
+FROM players p
+JOIN player_match_stats pms ON p.player_id = pms.player_id
+GROUP BY p.player_id, p.first_name, p.last_name, p.position
+HAVING AVG(pms.player_rating) > (
+    SELECT AVG(pms2.player_rating)
+    FROM player_match_stats pms2
+    JOIN players p2 ON pms2.player_id = p2.player_id
+    WHERE p2.position = p.position
+)",
+239,having,hard,PASS,CORRECT,List coaches whose win percentage is above the average coach win percentage.,"SELECT c.coach_id, c.first_name, c.last_name, c.wins, c.losses, c.draws
+FROM coaches c
+WHERE (c.wins * 1.0 / (c.wins + c.losses + c.draws)) > (
+    SELECT AVG(wins * 1.0 / (wins + losses + draws))
+    FROM coaches
+    WHERE wins + losses + draws > 0
+)
+AND (c.wins + c.losses + c.draws) > 0",
+240,having,hard,PASS,INCORRECT,List teams whose injury rate exceeds 20 percent of active players.,"SELECT t.team_id, t.team_name
+FROM teams t
+JOIN players p ON t.team_id = p.team_id
+JOIN injuries i ON p.player_id = i.player_id
+WHERE p.active_flag = '1'
+GROUP BY t.team_id, t.team_name
+HAVING COUNT(DISTINCT i.player_id) > 0.2 * COUNT(DISTINCT p.player_id)","The inner injury join removes active players without injuries, making the injury-rate denominator incorrect."
+241,having,hard,PASS,INCORRECT,List seasons whose completed-match revenue is above the average season revenue.,"SELECT s.season_id, s.season_name, s.revenue_total
+FROM seasons s
+JOIN matches m ON s.season_id = m.season_id
+GROUP BY s.season_id, s.season_name, s.revenue_total
+HAVING SUM(m.ticket_revenue + m.sponsorship_revenue) > (
+    SELECT AVG(total_rev)
+    FROM (
+        SELECT SUM(ticket_revenue + sponsorship_revenue) AS total_rev
+        FROM matches
+        GROUP BY season_id
+    )
+)",Includes non-completed matches in both season revenue totals and the comparison average.
+242,having,hard,PASS,CORRECT,List players whose total guaranteed contract amount exceeds their market value.,"SELECT p.player_id, p.first_name, p.last_name, SUM(c.guaranteed_amount) AS total_guaranteed_amount, p.market_value
+FROM players p
+JOIN contracts c ON p.player_id = c.player_id
+GROUP BY p.player_id, p.first_name, p.last_name, p.market_value
+HAVING SUM(c.guaranteed_amount) > p.market_value",
+243,having,hard,PASS,INCORRECT,List teams whose average training readiness is above the league average.,"WITH league_avg AS (
+  SELECT AVG(pts.readiness_score) AS avg_readiness
+  FROM player_training_stats pts
+  JOIN seasons s ON pts.season_id = s.season_id
+  JOIN leagues l ON s.league_id = l.league_id
+)
+SELECT t.team_id, t.team_name
+FROM teams t
+JOIN player_training_stats pts ON t.team_id = pts.team_id
+JOIN seasons s ON pts.season_id = s.season_id
+JOIN leagues l ON s.league_id = l.league_id
+GROUP BY t.team_id, t.team_name
+HAVING AVG(pts.readiness_score) > (SELECT avg_readiness FROM league_avg)",Compares teams with one global readiness average instead of the average for their own league.
+244,having,hard,PASS,CORRECT,List players who scored in matches for at least two different teams.,"SELECT p.player_id, p.first_name, p.last_name
+FROM players p
+JOIN player_match_stats pms ON p.player_id = pms.player_id
+WHERE pms.scores > 0
+GROUP BY p.player_id, p.first_name, p.last_name
+HAVING COUNT(DISTINCT pms.team_id) >= 2",
+245,having,hard,PASS,INCORRECT,List leagues with completed matches in at least three competition stages.,"SELECT l.league_id, l.league_name
+FROM leagues l
+JOIN matches m ON l.league_id = m.league_id
+GROUP BY l.league_id, l.league_name
+HAVING COUNT(DISTINCT m.competition_stage) >= 3",Counts competition stages from all matches and never restricts them to completed matches.
+246,having,hard,PASS,INCORRECT,List teams that completed more transfers than the average team.,"SELECT t.team_id, t.team_name
+FROM teams t
+JOIN transfers tr ON t.team_id = tr.to_team_id OR t.team_id = tr.from_team_id
+GROUP BY t.team_id, t.team_name
+HAVING COUNT(tr.transfer_id) > (
+    SELECT AVG(transfer_count)
+    FROM (
+        SELECT COUNT(*) AS transfer_count
+        FROM transfers
+        GROUP BY player_id
+    )
+)",Never filters completed transfers and compares team transfer counts with averages grouped by player rather than by team.
+247,having,hard,PASS,CORRECT,List injury types whose average actual days out exceed the estimated days out.,"SELECT injury_type
+FROM injuries
+GROUP BY injury_type
+HAVING AVG(actual_days_out) > AVG(estimated_days_out)",
+248,having,hard,PASS,CORRECT,List players whose match efficiency score is above the overall player average.,"SELECT p.player_id, p.first_name, p.last_name
+FROM players p
+JOIN player_match_stats pms ON p.player_id = pms.player_id
+GROUP BY p.player_id, p.first_name, p.last_name
+HAVING AVG(pms.efficiency_score) > (SELECT AVG(efficiency_score) FROM player_match_stats)",
+249,having,hard,PASS,CORRECT,List teams whose completed transfer fees exceed their salary payroll.,"SELECT t.team_id, t.team_name, t.salary_payroll
+FROM teams t
+JOIN transfers tr ON t.team_id = tr.to_team_id
+WHERE tr.transfer_status = 'completed'
+GROUP BY t.team_id, t.team_name, t.salary_payroll
+HAVING SUM(tr.transfer_fee) > t.salary_payroll",
+250,having,hard,PASS,INCORRECT,List leagues where active teams average more than five active players.,"SELECT l.league_id, l.league_name
+FROM leagues l
+JOIN teams t ON l.league_id = t.league_id
+JOIN players p ON t.team_id = p.team_id
+WHERE t.active_flag = '1' AND p.active_flag = '1'
+GROUP BY l.league_id, l.league_name
+HAVING COUNT(DISTINCT p.player_id) * 1.0 / COUNT(DISTINCT t.team_id) > 5",The inner player join excludes active teams with zero active players from the league average denominator.
+251,join,easy,PASS,CORRECT,Show each season with its league name.,"SELECT s.season_id, l.league_name
+FROM seasons s
+JOIN leagues l ON s.league_id = l.league_id",
+252,join,easy,PASS,CORRECT,Show each team with its league name.,"SELECT t.team_name, l.league_name
+FROM teams t
+JOIN leagues l ON t.league_id = l.league_id",
+253,join,easy,PASS,CORRECT,Show each coach with their team name.,"SELECT c.first_name, c.last_name, t.team_name
+FROM coaches c
+JOIN teams t ON c.team_id = t.team_id",
+254,join,easy,PASS,CORRECT,Show each player with their team name.,"SELECT p.player_id, p.first_name, p.last_name, t.team_name
+FROM players p
+JOIN teams t ON p.team_id = t.team_id",
+255,join,easy,PASS,CORRECT,Show each match with its season name.,"SELECT m.match_id, s.season_name
+FROM matches m
+JOIN seasons s ON m.season_id = s.season_id",
+256,join,easy,PASS,CORRECT,Show each match with its league name.,"SELECT m.match_id, l.league_name
+FROM matches m
+JOIN leagues l ON m.league_id = l.league_id",
+257,join,easy,PASS,CORRECT,Show each match with the home team name.,"SELECT m.match_id, t.team_name
+FROM matches m
+JOIN teams t ON m.home_team_id = t.team_id",
+258,join,easy,PASS,CORRECT,Show each match with the away team name.,"SELECT m.match_id, t.team_name
+FROM matches AS m
+JOIN teams AS t ON m.away_team_id = t.team_id",
+259,join,easy,PASS,CORRECT,Show each completed match with the winning team name.,"SELECT m.match_id, t.team_name
+FROM matches m
+JOIN teams t ON m.winner_team_id = t.team_id
+WHERE m.match_status = 'completed'",
+260,join,easy,PASS,CORRECT,Show each player match record with the player's name.,"SELECT
+  player_match_stats.player_id,
+  players.first_name,
+  players.last_name,
+  player_match_stats.match_id,
+  player_match_stats.minutes_played,
+  player_match_stats.scores,
+  player_match_stats.assists
+FROM player_match_stats
+JOIN players ON player_match_stats.player_id = players.player_id",
+261,join,easy,PASS,CORRECT,Show each player match record with the team name.,"SELECT pms.player_match_stat_id, pms.match_id, pms.player_id, pms.team_id, pms.season_id, pms.started_flag, pms.minutes_played, pms.position_played, pms.scores, pms.assists, pms.shots_attempted, pms.shots_on_target, pms.passes_attempted, pms.passes_completed, pms.tackles, pms.interceptions, pms.fouls_committed, pms.fouls_drawn, pms.yellow_cards, pms.red_cards, pms.saves, pms.turnovers, pms.distance_covered_km, pms.top_speed_kph, pms.player_rating, pms.man_of_match_flag, pms.injury_during_match_flag, pms.plus_minus, pms.efficiency_score, pms.notes, t.team_name
+FROM player_match_stats pms
+JOIN teams t ON pms.team_id = t.team_id",
+262,join,easy,PASS,CORRECT,Show each contract with the player's name.,"SELECT contracts.contract_id, players.first_name, players.last_name
+FROM contracts
+JOIN players ON contracts.player_id = players.player_id",
+263,join,easy,PASS,CORRECT,Show each injury with the player's name.,"SELECT i.injury_id, p.first_name, p.last_name
+FROM injuries i
+JOIN players p ON i.player_id = p.player_id",
+264,join,easy,PASS,CORRECT,Show each training session with the coach's name.,"SELECT ts.training_session_id, c.first_name, c.last_name
+FROM training_sessions ts
+JOIN coaches c ON ts.coach_id = c.coach_id",
+265,join,easy,PASS,CORRECT,Show each transfer with the player's name.,"SELECT t.transfer_id, p.first_name, p.last_name
+FROM transfers t
+JOIN players p ON t.player_id = p.player_id",
+266,join,moderate,PASS,CORRECT,List active teams with their league names and annual revenue.,"SELECT t.team_name, l.league_name, t.annual_revenue
+FROM teams t
+JOIN leagues l ON t.league_id = l.league_id
+WHERE t.active_flag = '1'",
+267,join,moderate,PASS,CORRECT,List active coaches with their team names and salaries.,"SELECT c.first_name, c.last_name, t.team_name, c.annual_salary
+FROM coaches c
+JOIN teams t ON c.team_id = t.team_id
+WHERE c.active_flag = '1'",
+268,join,moderate,PASS,CORRECT,List active players with their team names and market values.,"SELECT p.player_id, p.first_name, p.last_name, t.team_name, p.market_value
+FROM players p
+JOIN teams t ON p.team_id = t.team_id
+WHERE p.active_flag = '1'",
+269,join,moderate,PASS,CORRECT,"List completed matches with home team, away team, and final scores.","SELECT m.match_id, t_home.team_name AS home_team_name, t_away.team_name AS away_team_name, m.home_score, m.away_score
+FROM matches m
+JOIN teams t_home ON m.home_team_id = t_home.team_id
+JOIN teams t_away ON m.away_team_id = t_away.team_id
+WHERE m.match_status = 'completed'",
+270,join,moderate,PASS,CORRECT,List completed matches with season names and ticket revenue.,"SELECT m.match_id, s.season_name, m.ticket_revenue
+FROM matches m
+JOIN seasons s ON m.season_id = s.season_id
+WHERE m.match_status = 'completed'",
+271,join,moderate,PASS,CORRECT,List player performances with player names and match dates.,"SELECT p.first_name, p.last_name, m.match_date
+FROM player_match_stats pms
+JOIN players p ON pms.player_id = p.player_id
+JOIN matches m ON pms.match_id = m.match_id",
+272,join,moderate,PASS,CORRECT,List players who scored in a match with their team names.,"SELECT p.first_name, p.last_name, t.team_name
+FROM players p
+JOIN player_match_stats pms ON p.player_id = pms.player_id
+JOIN matches m ON pms.match_id = m.match_id
+JOIN teams t ON pms.team_id = t.team_id
+WHERE pms.scores > 0",
+273,join,moderate,PASS,CORRECT,List active contracts with player names and team names.,"SELECT c.contract_id, p.first_name, p.last_name, t.team_name
+FROM contracts c
+JOIN players p ON c.player_id = p.player_id
+JOIN teams t ON c.team_id = t.team_id
+WHERE c.contract_status = 'active'",
+274,join,moderate,PASS,CORRECT,List severe injuries with player names and team names.,"SELECT p.first_name, p.last_name, t.team_name, i.injury_type, i.severity
+FROM injuries i
+JOIN players p ON i.player_id = p.player_id
+JOIN teams t ON i.team_id = t.team_id
+WHERE i.severity = 'severe'",
+275,join,moderate,PASS,CORRECT,List injuries linked to matches with player names and match dates.,"SELECT p.first_name, p.last_name, m.match_date
+FROM injuries i
+JOIN matches m ON i.match_id = m.match_id
+JOIN players p ON i.player_id = p.player_id",
+276,join,moderate,PASS,CORRECT,List high-intensity training sessions with coach and team names.,"SELECT ts.session_date, ts.intensity_level, c.first_name, c.last_name, t.team_name
+FROM training_sessions ts
+JOIN coaches c ON ts.coach_id = c.coach_id
+JOIN teams t ON ts.team_id = t.team_id
+WHERE ts.intensity_level = 'high'",
+277,join,moderate,PASS,CORRECT,List training performances with player names and readiness scores.,"SELECT p.first_name, p.last_name, pts.readiness_score
+FROM player_training_stats pts
+JOIN players p ON pts.player_id = p.player_id",
+278,join,moderate,PASS,CORRECT,List completed transfers with player names and former team names.,"SELECT p.first_name, p.last_name, t.team_name
+FROM transfers tr
+JOIN players p ON tr.player_id = p.player_id
+JOIN teams t ON tr.from_team_id = t.team_id
+WHERE tr.transfer_status = 'completed'",
+279,join,moderate,PASS,CORRECT,List completed transfers with player names and destination team names.,"SELECT p.first_name, p.last_name, t.team_name
+FROM transfers tr
+JOIN players p ON tr.player_id = p.player_id
+JOIN teams t ON tr.to_team_id = t.team_id
+WHERE tr.transfer_status = 'completed'",
+280,join,moderate,PASS,INCORRECT,List players whose current team matches the destination team of a completed transfer.,"SELECT DISTINCT ""players"".""player_id"", ""players"".""first_name"", ""players"".""last_name"" FROM ""players"" INNER JOIN ""transfers"" ON ""players"".""player_id"" = ""transfers"".""player_id"" WHERE ""transfers"".""transfer_status"" = ?","Never checks players.team_id = transfers.to_team_id, so any completed transfer by the player qualifies."
+281,join,moderate,PASS,CORRECT,List teams in professional leagues with their league salary caps.,"SELECT t.team_name, l.salary_cap
+FROM teams t
+JOIN leagues l ON t.league_id = l.league_id
+WHERE l.competition_level = 'professional'",
+282,join,moderate,PASS,CORRECT,List players with active contracts and their contract end dates.,"SELECT p.player_id, p.first_name, p.last_name, c.end_date
+FROM players p
+JOIN contracts c ON p.player_id = c.player_id
+WHERE c.contract_status = 'active'",
+283,join,moderate,PASS,CORRECT,List coaches who lead training sessions for their own team.,"SELECT c.coach_id, c.first_name, c.last_name, c.team_id
+FROM coaches c
+JOIN training_sessions ts ON c.coach_id = ts.coach_id AND c.team_id = ts.team_id
+GROUP BY c.coach_id",
+284,join,moderate,PASS,CORRECT,List match performances where the recorded team matches the player's current team.,"SELECT pms.player_match_stat_id, pms.match_id, pms.player_id, pms.team_id, pl.full_name, t.team_name
+FROM player_match_stats pms
+JOIN players pl ON pms.player_id = pl.player_id
+JOIN teams t ON pms.team_id = t.team_id
+WHERE pms.team_id = pl.team_id",
+285,join,moderate,PASS,CORRECT,List injuries where the recorded team matches the player's current team.,"SELECT i.injury_id, i.player_id, i.team_id, p.team_id
+FROM injuries i
+JOIN players p ON i.player_id = p.player_id
+WHERE i.team_id = p.team_id",
+286,join,hard,PASS,CORRECT,List matches where the match league differs from the season's league.,"SELECT m.match_id, m.home_team_id, m.away_team_id, m.match_date, m.league_id, s.league_id
+FROM matches m
+JOIN seasons s ON m.season_id = s.season_id
+WHERE m.league_id != s.league_id",
+287,join,hard,PASS,CORRECT,List player match records where the recorded team differs from the player's current team.,"SELECT ""player_match_stats"".""player_match_stat_id"", ""player_match_stats"".""match_id"", ""player_match_stats"".""player_id"", ""player_match_stats"".""team_id"", ""players"".""team_id"" FROM ""player_match_stats"" INNER JOIN ""players"" ON ""player_match_stats"".""player_id"" = ""players"".""player_id"" WHERE ""player_match_stats"".""team_id"" != ""players"".""team_id""",
+288,join,hard,PASS,CORRECT,List player match records where the recorded season differs from the match season.,"SELECT pms.player_match_stat_id, pms.match_id, pms.season_id, m.season_id
+FROM player_match_stats pms
+JOIN matches m ON pms.match_id = m.match_id
+WHERE pms.season_id != m.season_id",
+289,join,hard,PASS,CORRECT,List contracts where the contract team differs from the player's current team.,"SELECT c.contract_id, c.contract_number, c.team_id, c.player_id, p.team_id
+FROM contracts c
+JOIN players p ON c.player_id = p.player_id
+WHERE c.team_id != p.team_id",
+290,join,hard,PASS,CORRECT,List injury records where the injury team differs from the player's current team.,"SELECT i.injury_id, i.player_id, i.team_id, p.team_id
+FROM injuries i
+JOIN players p ON i.player_id = p.player_id
+WHERE i.team_id != p.team_id",
+291,join,hard,PASS,CORRECT,List training records where the recorded team differs from the player's current team.,"SELECT pts.player_id, pts.team_id, p.team_id, pts.training_session_id
+FROM player_training_stats pts
+JOIN players p ON pts.player_id = p.player_id
+WHERE pts.team_id != p.team_id",
+292,join,hard,PASS,CORRECT,List training records where the recorded season differs from the training session season.,"SELECT p.player_training_stat_id, p.season_id, t.season_id, p.player_id, t.session_date
+FROM player_training_stats p
+JOIN training_sessions t ON p.training_session_id = t.training_session_id
+WHERE p.season_id != t.season_id",
+293,join,hard,PASS,CORRECT,List transfers where the destination team is the player's current team.,"SELECT t.transfer_id, t.player_id, t.to_team_id, p.team_id
+FROM transfers t
+JOIN players p ON t.player_id = p.player_id
+WHERE t.to_team_id = p.team_id",
+294,join,hard,PASS,CORRECT,List transfers where the former and destination teams belong to different leagues.,"SELECT t.transfer_id, t.player_id, t.from_team_id, t.to_team_id, l.league_name
+FROM transfers t
+JOIN teams ft ON t.from_team_id = ft.team_id
+JOIN teams tt ON t.to_team_id = tt.team_id
+JOIN leagues l ON ft.league_id = l.league_id
+WHERE ft.league_id != tt.league_id",
+295,join,hard,PASS,CORRECT,List matches where the home and away teams belong to different leagues.,"SELECT m.match_id, m.home_team_id, m.away_team_id, l1.league_name
+FROM matches m
+JOIN teams t1 ON m.home_team_id = t1.team_id
+JOIN teams t2 ON m.away_team_id = t2.team_id
+JOIN leagues l1 ON t1.league_id = l1.league_id
+JOIN leagues l2 ON t2.league_id = l2.league_id
+WHERE t1.league_id != t2.league_id",
+296,join,hard,PASS,CORRECT,List training sessions where the coach's team differs from the session team.,"SELECT ts.training_session_id, ts.session_date, ts.team_id
+FROM training_sessions ts
+JOIN coaches c ON ts.coach_id = c.coach_id
+WHERE ts.team_id != c.team_id",
+297,join,hard,PASS,CORRECT,List injuries linked to matches where the injury team was not one of the two match teams.,"SELECT i.injury_id, i.player_id, i.team_id, i.match_id, m.home_team_id, m.away_team_id
+FROM injuries i
+JOIN matches m ON i.match_id = m.match_id
+WHERE i.team_id != m.home_team_id AND i.team_id != m.away_team_id",
+298,join,hard,PASS,CORRECT,List player match records where the player's team was neither the home nor away team.,"SELECT pms.player_match_stat_id, pms.match_id, pms.player_id, pms.team_id, m.home_team_id, m.away_team_id
+FROM player_match_stats pms
+JOIN matches m ON pms.match_id = m.match_id
+WHERE pms.team_id != m.home_team_id AND pms.team_id != m.away_team_id",
+299,join,hard,PASS,CORRECT,List completed matches where the winning team was neither the home nor away team.,"SELECT m.match_id, m.home_team_id, m.away_team_id, m.winner_team_id, m.match_date
+FROM matches m
+WHERE m.match_status = 'completed'
+  AND m.winner_team_id IS NOT NULL
+  AND m.winner_team_id != m.home_team_id
+  AND m.winner_team_id != m.away_team_id",
+300,join,hard,PASS,CORRECT,List contracts where the contract team belongs to a different league from the player's current team.,"SELECT c.contract_id, c.contract_number, c.team_id, c.player_id, c.contract_status
+FROM contracts c
+JOIN players p ON c.player_id = p.player_id
+JOIN teams t_contract ON c.team_id = t_contract.team_id
+JOIN teams t_player ON p.team_id = t_player.team_id
+WHERE t_contract.league_id != (
+    SELECT t2.league_id
+    FROM teams t2
+    WHERE t2.team_id = p.team_id
+)",
+301,multi_table_join,easy,PASS,CORRECT,Show each player with their team and league names.,"SELECT p.full_name, t.team_name, l.league_name
+FROM players p
+JOIN teams t ON p.team_id = t.team_id
+JOIN leagues l ON t.league_id = l.league_id",
+302,multi_table_join,easy,PASS,CORRECT,Show each coach with their team and league names.,"SELECT c.first_name, c.last_name, t.team_name, l.league_name
+FROM coaches c
+JOIN teams t ON c.team_id = t.team_id
+JOIN leagues l ON t.league_id = l.league_id",
+303,multi_table_join,easy,PASS,CORRECT,"Show each match with season, league, home team, and away team.","SELECT m.match_id, s.season_name, l.league_name, ht.team_name AS home_team_name, at.team_name AS away_team_name
+FROM matches m
+JOIN seasons s ON m.season_id = s.season_id
+JOIN leagues l ON m.league_id = l.league_id
+JOIN teams ht ON m.home_team_id = ht.team_id
+JOIN teams at ON m.away_team_id = at.team_id",
+304,multi_table_join,easy,PASS,CORRECT,"Show each player match record with player name, team name, and match date.","SELECT p.first_name, p.last_name, t.team_name, m.match_date
+FROM player_match_stats pms
+JOIN players p ON pms.player_id = p.player_id
+JOIN teams t ON pms.team_id = t.team_id
+JOIN matches m ON pms.match_id = m.match_id",
+305,multi_table_join,easy,PASS,CORRECT,"Show each contract with player name, team name, and league name.","SELECT c.contract_id, p.first_name, p.last_name, t.team_name, l.league_name
+FROM contracts c
+JOIN players p ON c.player_id = p.player_id
+JOIN teams t ON c.team_id = t.team_id
+JOIN leagues l ON t.league_id = l.league_id",
+306,multi_table_join,easy,PASS,CORRECT,"Show each injury with player name, team name, and match date when available.","SELECT i.injury_id, p.first_name, p.last_name, t.team_name, m.match_date
+FROM injuries i
+JOIN players p ON i.player_id = p.player_id
+JOIN teams t ON i.team_id = t.team_id
+LEFT JOIN matches m ON i.match_id = m.match_id",
+307,multi_table_join,easy,PASS,CORRECT,"Show each training session with team, coach, and season names.","SELECT ts.training_session_id, t.team_name, c.first_name, c.last_name, s.season_name
+FROM training_sessions ts
+JOIN teams t ON ts.team_id = t.team_id
+JOIN coaches c ON ts.coach_id = c.coach_id
+JOIN seasons s ON ts.season_id = s.season_id",
+308,multi_table_join,easy,PASS,CORRECT,"Show each training record with player, team, and session date.","SELECT p.player_id, p.team_id, t.session_date
+FROM player_training_stats p
+JOIN training_sessions t ON p.training_session_id = t.training_session_id",
+309,multi_table_join,easy,PASS,INCORRECT,"Show each transfer with player, former team, and destination team.","SELECT t.transfer_id, p.full_name, tm.team_name
+FROM transfers t
+JOIN players p ON t.player_id = p.player_id
+JOIN teams tm ON t.to_team_id = tm.team_id",Returns only the destination team and omits the former team.
+310,multi_table_join,easy,PASS,CORRECT,Show each completed match with winning team and league name.,"SELECT m.match_id, t.team_name, l.league_name
+FROM matches m
+JOIN teams t ON m.winner_team_id = t.team_id
+JOIN leagues l ON m.league_id = l.league_id
+WHERE m.match_status = 'completed'",
+311,multi_table_join,easy,PASS,CORRECT,"Show each active player with team, league, and coach names.","SELECT p.first_name, p.last_name, t.team_name, l.league_name, c.first_name, c.last_name
+FROM players p
+JOIN teams t ON p.team_id = t.team_id
+JOIN leagues l ON t.league_id = l.league_id
+JOIN training_sessions ts ON t.team_id = ts.team_id
+JOIN coaches c ON ts.coach_id = c.coach_id
+WHERE p.active_flag = '1'
+GROUP BY p.player_id, p.first_name, p.last_name, t.team_name, l.league_name, c.first_name, c.last_name",
+312,multi_table_join,easy,PASS,CORRECT,Show each match performance with player position and competition stage.,"SELECT pms.player_id, pms.match_id, pms.position_played, m.competition_stage
+FROM player_match_stats pms
+JOIN matches m ON pms.match_id = m.match_id",
+313,multi_table_join,easy,PASS,CORRECT,Show each injury with player position and team league.,"SELECT i.injury_id, p.position, l.league_name
+FROM injuries i
+JOIN players p ON i.player_id = p.player_id
+JOIN teams t ON i.team_id = t.team_id
+JOIN leagues l ON t.league_id = l.league_id",
+314,multi_table_join,easy,PASS,CORRECT,Show each active contract with player position and team league.,"SELECT c.contract_id, c.contract_status, p.position, l.league_name
+FROM contracts c
+JOIN players p ON c.player_id = p.player_id
+JOIN teams t ON c.team_id = t.team_id
+JOIN leagues l ON t.league_id = l.league_id
+WHERE c.contract_status = 'active'",
+315,multi_table_join,easy,PASS,CORRECT,Show each transfer with player position and season name.,"SELECT t.transfer_id, p.position, s.season_name
+FROM transfers t
+JOIN players p ON t.player_id = p.player_id
+JOIN seasons s ON t.season_id = s.season_id",
+316,multi_table_join,moderate,PASS,CORRECT,"List active players with team, league, and active-contract details.","SELECT p.player_id, p.first_name, p.last_name, t.team_name, l.league_name, c.contract_id, c.contract_status, c.base_salary
+FROM players p
+JOIN teams t ON p.team_id = t.team_id
+JOIN leagues l ON t.league_id = l.league_id
+JOIN contracts c ON p.player_id = c.player_id
+WHERE p.active_flag = '1'
+  AND c.contract_status = 'active'",
+317,multi_table_join,moderate,PASS,CORRECT,"List completed matches with season, league, both teams, and winning team.","SELECT m.match_id, s.season_name, l.league_name, h.team_name AS home_team_name, a.team_name AS away_team_name, w.team_name AS winning_team_name
+FROM matches m
+JOIN seasons s ON m.season_id = s.season_id
+JOIN leagues l ON m.league_id = l.league_id
+JOIN teams h ON m.home_team_id = h.team_id
+JOIN teams a ON m.away_team_id = a.team_id
+JOIN teams w ON m.winner_team_id = w.team_id
+WHERE m.match_status = 'completed'",
+318,multi_table_join,moderate,PASS,CORRECT,"List player performances with player, team, match, season, and league details.","SELECT 
+    p.first_name,
+    p.last_name,
+    t.team_name,
+    m.match_date,
+    s.season_name,
+    l.league_name,
+    pms.scores,
+    pms.assists,
+    pms.minutes_played
+FROM player_match_stats pms
+JOIN players p ON pms.player_id = p.player_id
+JOIN teams t ON pms.team_id = t.team_id
+JOIN matches m ON pms.match_id = m.match_id
+JOIN seasons s ON pms.season_id = s.season_id
+JOIN leagues l ON m.league_id = l.league_id",
+319,multi_table_join,moderate,PASS,CORRECT,"List severe injuries with player, team, match, and season details.","SELECT i.injury_id, p.first_name, p.last_name, t.team_name, m.match_id, s.season_name
+FROM injuries i
+JOIN players p ON i.player_id = p.player_id
+JOIN teams t ON i.team_id = t.team_id
+JOIN matches m ON i.match_id = m.match_id
+JOIN seasons s ON m.season_id = s.season_id
+WHERE i.severity = 'severe'",
+320,multi_table_join,moderate,PASS,CORRECT,"List high-intensity training performances with player, coach, team, and season.","SELECT p.first_name, p.last_name, c.first_name, c.last_name, t.team_name, s.season_name, pts.training_load, ts.intensity_level
+FROM player_training_stats pts
+JOIN players p ON pts.player_id = p.player_id
+JOIN teams t ON pts.team_id = t.team_id
+JOIN seasons s ON pts.season_id = s.season_id
+JOIN training_sessions ts ON pts.training_session_id = ts.training_session_id
+JOIN coaches c ON ts.coach_id = c.coach_id
+WHERE ts.intensity_level = 'high'",
+321,multi_table_join,moderate,PASS,INCORRECT,"List completed transfers with player, former team, destination team, and season.","SELECT ""players"".""full_name"", ""teams"".""team_name"" AS ""former_team"", ""teams"".""team_name"" AS ""destination_team"", ""seasons"".""season_name"" FROM ""transfers"" INNER JOIN ""players"" ON ""transfers"".""player_id"" = ""players"".""player_id"" INNER JOIN ""seasons"" ON ""transfers"".""season_id"" = ""seasons"".""season_id"" INNER JOIN ""teams"" ON ""players"".""team_id"" = ""teams"".""team_id"" WHERE ""transfers"".""transfer_status"" = ?",Uses the player's current team for both former_team and destination_team instead of joining from_team_id and to_team_id separately.
+322,multi_table_join,moderate,PASS,CORRECT,List players who scored in completed matches with team and league details.,"SELECT DISTINCT ""players"".""first_name"", ""players"".""last_name"", ""teams"".""team_name"", ""leagues"".""league_name"" FROM ""player_match_stats"" INNER JOIN ""matches"" ON ""player_match_stats"".""match_id"" = ""matches"".""match_id"" INNER JOIN ""leagues"" ON ""matches"".""league_id"" = ""leagues"".""league_id"" INNER JOIN ""players"" ON ""player_match_stats"".""player_id"" = ""players"".""player_id"" INNER JOIN ""teams"" ON ""player_match_stats"".""team_id"" = ""teams"".""team_id"" WHERE ""matches"".""match_status"" = ? AND ""player_match_stats"".""scores"" > ?",
+323,multi_table_join,moderate,PASS,CORRECT,List active players who have both an active contract and a training record.,"SELECT DISTINCT ""players"".""player_id"", ""players"".""first_name"", ""players"".""last_name"" FROM ""players"" INNER JOIN ""contracts"" ON ""players"".""player_id"" = ""contracts"".""player_id"" INNER JOIN ""player_training_stats"" ON ""players"".""player_id"" = ""player_training_stats"".""player_id"" WHERE ""players"".""active_flag"" = ? AND ""contracts"".""contract_status"" = ?",
+324,multi_table_join,moderate,PASS,CORRECT,List players with surgery-required injuries and their current contract details.,"SELECT p.player_id, p.first_name, p.last_name, i.injury_id, i.injury_type, i.body_part, c.contract_id, c.contract_type, c.start_date, c.end_date, c.base_salary
+FROM players p
+JOIN injuries i ON p.player_id = i.player_id
+JOIN contracts c ON p.player_id = c.player_id
+WHERE i.surgery_required_flag = '1'",
+325,multi_table_join,moderate,PASS,CORRECT,List coaches who led training sessions for active teams in active leagues.,"SELECT DISTINCT c.coach_id, c.first_name, c.last_name
+FROM coaches c
+JOIN training_sessions ts ON c.coach_id = ts.coach_id
+JOIN teams t ON ts.team_id = t.team_id
+JOIN leagues l ON t.league_id = l.league_id
+WHERE t.active_flag = '1'
+  AND l.active_flag = '1'",
+326,multi_table_join,moderate,PASS,CORRECT,List completed matches involving teams from active leagues with season revenue.,"SELECT m.match_id, m.home_team_id, m.away_team_id, m.match_date, m.home_score, m.away_score, s.revenue_total
+FROM matches m
+JOIN seasons s ON m.season_id = s.season_id
+JOIN leagues l ON m.league_id = l.league_id
+WHERE m.match_status = 'completed'
+  AND l.active_flag = '1'",
+327,multi_table_join,moderate,PASS,CORRECT,List players whose match team and training team are the same.,"SELECT DISTINCT p.player_id, p.first_name, p.last_name
+FROM players p
+JOIN player_match_stats pms ON p.player_id = pms.player_id
+JOIN player_training_stats pts ON p.player_id = pts.player_id
+WHERE pms.team_id = pts.team_id",
+328,multi_table_join,moderate,PASS,CORRECT,List players who transferred to their current team and later appeared in a match for that team.,"WITH latest_transfers AS (
+    SELECT player_id, to_team_id, transfer_date
+    FROM (
+        SELECT player_id, to_team_id, transfer_date,
+               ROW_NUMBER() OVER (PARTITION BY player_id ORDER BY transfer_date DESC) AS rn
+        FROM transfers
+    )
+    WHERE rn = 1
+)
+SELECT DISTINCT p.player_id, p.first_name, p.last_name, p.team_id
+FROM players p
+JOIN latest_transfers lt ON p.player_id = lt.player_id
+JOIN player_match_stats pms ON p.player_id = pms.player_id AND p.team_id = pms.team_id
+JOIN matches m ON pms.match_id = m.match_id
+WHERE p.team_id = lt.to_team_id
+  AND m.match_date > lt.transfer_date",
+329,multi_table_join,moderate,PASS,CORRECT,"List teams with active players, active coaches, and completed matches.","SELECT t.team_id, t.team_name
+FROM teams t
+JOIN players p ON t.team_id = p.team_id
+JOIN coaches c ON t.team_id = c.team_id
+JOIN matches m ON t.team_id = m.home_team_id OR t.team_id = m.away_team_id
+WHERE p.active_flag = '1'
+  AND c.active_flag = '1'
+  AND m.match_status = 'completed'
+GROUP BY t.team_id, t.team_name
+HAVING COUNT(DISTINCT p.player_id) > 0
+   AND COUNT(DISTINCT c.coach_id) > 0
+   AND COUNT(DISTINCT m.match_id) > 0",
+330,multi_table_join,moderate,PASS,CORRECT,"List player injuries linked to matches, including both match teams.","SELECT i.injury_id, i.player_id, i.match_id, i.injury_type, i.severity, m.home_team_id, m.away_team_id
+FROM injuries i
+JOIN matches m ON i.match_id = m.match_id",
+331,multi_table_join,moderate,PASS,CORRECT,List active contracts for players who appeared in completed matches.,"SELECT DISTINCT c.contract_id, c.player_id, c.contract_status, c.start_date, c.end_date
+FROM contracts c
+JOIN player_match_stats pms ON c.player_id = pms.player_id
+JOIN matches m ON pms.match_id = m.match_id
+WHERE c.contract_status = 'active'
+  AND m.match_status = 'completed'",
+332,multi_table_join,moderate,PASS,INCORRECT,List training sessions attended by players who also have match appearances.,"SELECT DISTINCT ts.training_session_id, ts.session_date, ts.session_type, pts.player_id
+FROM training_sessions ts
+JOIN player_training_stats pts ON ts.training_session_id = pts.training_session_id
+JOIN player_match_stats pms ON pts.player_id = pms.player_id",Treats any training performance row as attendance and never requires attendance_status = 'present'.
+333,multi_table_join,moderate,PASS,CORRECT,List permanent transfers involving players with active contracts at the destination team.,"SELECT t.transfer_id, t.player_id, t.to_team_id, t.transfer_date, t.transfer_type, t.transfer_fee
+FROM transfers t
+WHERE t.transfer_type = 'permanent'
+  AND EXISTS (
+    SELECT 1
+    FROM contracts c
+    WHERE c.player_id = t.player_id
+      AND c.team_id = t.to_team_id
+      AND c.contract_status = 'active'
+  )",
+334,multi_table_join,moderate,PASS,CORRECT,"List teams with player contracts, injury records, and training sessions.","SELECT t.team_id, t.team_name
+FROM teams t
+JOIN contracts c ON c.team_id = t.team_id
+JOIN injuries i ON i.team_id = t.team_id
+JOIN training_sessions ts ON ts.team_id = t.team_id
+GROUP BY t.team_id, t.team_name
+HAVING COUNT(DISTINCT c.contract_id) > 0
+   AND COUNT(DISTINCT i.injury_id) > 0
+   AND COUNT(DISTINCT ts.training_session_id) > 0",
+335,multi_table_join,moderate,PASS,INCORRECT,"List leagues with active teams, completed matches, and completed transfers.","SELECT DISTINCT ""leagues"".""league_name"" FROM ""leagues"" INNER JOIN ""matches"" ON ""leagues"".""league_id"" = ""matches"".""league_id"" INNER JOIN ""teams"" ON ""leagues"".""league_id"" = ""teams"".""league_id"" INNER JOIN ""transfers"" ON ""teams"".""team_id"" = ""transfers"".""from_team_id"" WHERE ""teams"".""active_flag"" = ? AND ""matches"".""match_status"" = ? AND ""transfers"".""transfer_status"" = ?","Recognizes completed transfers only through from_team_id, excluding leagues represented solely by destination teams."
+336,multi_table_join,hard,PASS,INCORRECT,"List players who scored in a completed match, attended high-intensity training, and have an active contract.","SELECT DISTINCT p.player_id, p.first_name, p.last_name
+FROM players p
+JOIN contracts c ON p.player_id = c.player_id
+JOIN player_match_stats pms ON p.player_id = pms.player_id
+JOIN matches m ON pms.match_id = m.match_id
+JOIN player_training_stats pts ON p.player_id = pts.player_id
+JOIN training_sessions ts ON pts.training_session_id = ts.training_session_id
+WHERE c.contract_status = 'active'
+  AND pms.scores > 0
+  AND m.match_status = 'completed'
+  AND ts.intensity_level = 'high'",Treats any training record as attendance and never requires attendance_status = 'present'.
+337,multi_table_join,hard,PASS,INCORRECT,List teams whose players have both severe injuries and completed transfer records.,"SELECT t.team_id, t.team_name
+FROM teams t
+JOIN injuries i ON t.team_id = i.team_id
+JOIN transfers tr ON t.team_id = tr.from_team_id OR t.team_id = tr.to_team_id
+WHERE i.severity = 'severe'
+  AND tr.transfer_status = 'completed'
+GROUP BY t.team_id, t.team_name
+HAVING COUNT(DISTINCT CASE WHEN i.severity = 'severe' THEN i.injury_id END) > 0
+   AND COUNT(DISTINCT CASE WHEN tr.transfer_status = 'completed' THEN tr.transfer_id END) > 0",Can combine one player's severe injury with another player's completed transfer because both tables are joined only at team grain.
+338,multi_table_join,hard,PASS,INCORRECT,List players who transferred between teams in the same league and later played for the destination team.,"SELECT DISTINCT ""players"".""player_id"", ""players"".""first_name"", ""players"".""last_name"" FROM ""transfers"" INNER JOIN ""players"" ON ""transfers"".""player_id"" = ""players"".""player_id"" INNER JOIN ""seasons"" ON ""transfers"".""season_id"" = ""seasons"".""season_id"" INNER JOIN ""leagues"" ON ""seasons"".""league_id"" = ""leagues"".""league_id"" INNER JOIN ""teams"" ON ""players"".""team_id"" = ""teams"".""team_id"" WHERE ""transfers"".""transfer_status"" = ? AND ""leagues"".""active_flag"" = ?","Does not compare former and destination league IDs, does not verify a later destination-team appearance, and adds an unrelated active-league condition."
+339,multi_table_join,hard,PASS,INCORRECT,List coaches whose training sessions included players who appeared in completed matches for the same team.,"SELECT DISTINCT ""coaches"".""coach_id"", ""coaches"".""first_name"", ""coaches"".""last_name"" FROM ""coaches"" INNER JOIN ""teams"" ON ""coaches"".""team_id"" = ""teams"".""team_id"" INNER JOIN ""player_match_stats"" ON ""teams"".""team_id"" = ""player_match_stats"".""team_id"" INNER JOIN ""matches"" ON ""player_match_stats"".""match_id"" = ""matches"".""match_id"" INNER JOIN ""training_sessions"" ON ""coaches"".""coach_id"" = ""training_sessions"".""coach_id"" INNER JOIN ""player_training_stats"" ON ""training_sessions"".""training_session_id"" = ""player_training_stats"".""training_session_id"" WHERE ""matches"".""match_status"" = ?",Does not require the player in the coach's training session to be the same player who appeared in the completed match.
+340,multi_table_join,hard,PASS,INCORRECT,List active players whose current team differs from both their contract team and latest match team.,"SELECT DISTINCT p.player_id, p.first_name, p.last_name, p.team_id
+FROM players p
+JOIN contracts c ON p.player_id = c.player_id
+JOIN player_match_stats pms ON p.player_id = pms.player_id
+JOIN matches m ON pms.match_id = m.match_id
+WHERE p.current_status = 'active'
+  AND p.team_id != c.team_id
+  AND p.team_id != (
+    SELECT pms2.team_id
+    FROM player_match_stats pms2
+    JOIN matches m2 ON pms2.match_id = m2.match_id
+    WHERE pms2.player_id = p.player_id
+    ORDER BY m2.match_date DESC, m2.match_id DESC
+    LIMIT 1
+  )
+  AND c.team_id != (
+    SELECT pms2.team_id
+    FROM player_match_stats pms2
+    JOIN matches m2 ON pms2.match_id = m2.match_id
+    WHERE pms2.player_id = p.player_id
+    ORDER BY m2.match_date DESC, m2.match_id DESC
+    LIMIT 1
+  )",Adds an unrequested requirement that the contract team also differ from the latest match team.
+341,multi_table_join,hard,PASS,CORRECT,"List completed matches with player performances, injury records, and contract details for the same player.","SELECT m.match_id, m.match_date, m.home_team_id, m.away_team_id, pms.player_id, pms.scores, pms.assists, i.injury_type, i.injury_status, c.contract_type, c.contract_status
+FROM matches m
+JOIN player_match_stats pms ON m.match_id = pms.match_id
+JOIN players p ON pms.player_id = p.player_id
+JOIN injuries i ON p.player_id = i.player_id
+JOIN contracts c ON p.player_id = c.player_id
+WHERE m.match_status = 'completed'",
+342,multi_table_join,hard,PASS,INCORRECT,"List teams that had completed matches, active contracts, injuries, and completed transfers in the same season.","SELECT t.team_id, t.team_name
+FROM teams t
+JOIN matches m ON t.team_id = m.home_team_id OR t.team_id = m.away_team_id
+JOIN seasons s ON m.season_id = s.season_id
+JOIN contracts c ON t.team_id = c.team_id AND c.contract_status = 'active'
+JOIN injuries i ON t.team_id = i.team_id
+JOIN transfers tr ON t.team_id = tr.to_team_id OR t.team_id = tr.from_team_id
+GROUP BY t.team_id, t.team_name
+HAVING COUNT(DISTINCT m.match_id) > 0
+   AND COUNT(DISTINCT c.contract_id) > 0
+   AND COUNT(DISTINCT i.injury_id) > 0
+   AND COUNT(DISTINCT tr.transfer_id) > 0
+   AND COUNT(DISTINCT s.season_id) > 0","Does not tie injuries, contracts, or transfers to the same season as the completed matches."
+343,multi_table_join,hard,PASS,INCORRECT,"List players who appeared for one team, trained with another team, and transferred to a third team.","SELECT DISTINCT ""players"".""player_id"", ""players"".""first_name"", ""players"".""last_name"" FROM ""players"" INNER JOIN ""player_match_stats"" ON ""players"".""player_id"" = ""player_match_stats"".""player_id"" INNER JOIN ""player_training_stats"" ON ""players"".""player_id"" = ""player_training_stats"".""player_id"" INNER JOIN ""transfers"" ON ""players"".""player_id"" = ""transfers"".""player_id""",Never enforces three different teams and never requires the transfer to be completed.
+344,multi_table_join,hard,PASS,INCORRECT,List leagues whose teams had both surgery-required injuries and permanent transfers.,"SELECT l.league_id, l.league_name
+FROM leagues l
+JOIN teams t ON l.league_id = t.league_id
+JOIN injuries i ON t.team_id = i.team_id
+JOIN transfers tr ON t.team_id = tr.from_team_id
+WHERE i.surgery_required_flag = '1'
+  AND tr.transfer_type = 'permanent'
+GROUP BY l.league_id, l.league_name
+HAVING COUNT(DISTINCT CASE WHEN i.surgery_required_flag = '1' THEN i.injury_id END) > 0
+   AND COUNT(DISTINCT CASE WHEN tr.transfer_type = 'permanent' THEN tr.transfer_id END) > 0","Checks permanent transfers only through from_team_id, excluding destination-team transfer activity."
+345,multi_table_join,hard,PASS,INCORRECT,List players whose injury match was played between their former and destination teams.,"SELECT DISTINCT p.player_id, p.first_name, p.last_name
+FROM players p
+JOIN injuries i ON p.player_id = i.player_id
+JOIN matches m ON i.match_id = m.match_id
+JOIN teams t ON m.home_team_id = t.team_id
+JOIN player_match_stats pms ON m.match_id = pms.match_id AND p.player_id = pms.player_id
+JOIN leagues l ON m.league_id = l.league_id
+WHERE t.team_id != p.team_id
+  AND (
+    EXISTS (
+      SELECT 1 FROM transfers tr
+      WHERE tr.player_id = p.player_id
+        AND tr.from_team_id = t.team_id
+        AND tr.to_team_id = p.team_id
+        AND tr.transfer_date < m.match_date
+    )
+    OR
+    EXISTS (
+      SELECT 1 FROM transfers tr
+      WHERE tr.player_id = p.player_id
+        AND tr.from_team_id = p.team_id
+        AND tr.to_team_id = t.team_id
+        AND tr.transfer_date > m.match_date
+    )
+  )",Does not directly require the injury match teams to equal the transfer's former and destination teams and relies on current-team assumptions.
+346,multi_table_join,hard,PASS,CORRECT,List coaches who led high-intensity sessions for players with match ratings above 8.,"SELECT c.coach_id, c.first_name, c.last_name
+FROM coaches c
+JOIN training_sessions ts ON c.coach_id = ts.coach_id
+JOIN player_training_stats pts ON ts.training_session_id = pts.training_session_id
+JOIN player_match_stats pms ON pts.player_id = pms.player_id
+WHERE ts.intensity_level = 'high'
+  AND pms.player_rating > 8
+GROUP BY c.coach_id, c.first_name, c.last_name",
+347,multi_table_join,hard,PASS,CORRECT,"List teams whose active players have contracts, match statistics, and training statistics.","SELECT ""teams"".""team_id"", ""teams"".""team_name"", COUNT(*) AS ""has_contract"", COUNT(*) AS ""has_match_stats"", COUNT(*) AS ""has_training_stats"" FROM ""players"" INNER JOIN ""contracts"" ON ""players"".""player_id"" = ""contracts"".""player_id"" INNER JOIN ""player_match_stats"" ON ""players"".""player_id"" = ""player_match_stats"".""player_id"" INNER JOIN ""player_training_stats"" ON ""players"".""player_id"" = ""player_training_stats"".""player_id"" INNER JOIN ""teams"" ON ""players"".""team_id"" = ""teams"".""team_id"" WHERE ""players"".""active_flag"" = ? GROUP BY ""teams"".""team_id"", ""teams"".""team_name"" HAVING ""has_contract"" > ? AND ""has_match_stats"" > ? AND ""has_training_stats"" > ?",
+348,multi_table_join,hard,PASS,INCORRECT,List players who completed a transfer and then recorded match statistics in the same season.,"SELECT DISTINCT ""players"".""player_id"", ""players"".""first_name"", ""players"".""last_name"" FROM ""players"" INNER JOIN ""player_match_stats"" ON ""players"".""player_id"" = ""player_match_stats"".""player_id"" INNER JOIN ""seasons"" ON ""player_match_stats"".""season_id"" = ""seasons"".""season_id"" INNER JOIN ""transfers"" ON ""players"".""player_id"" = ""transfers"".""player_id""","Never requires a completed transfer, same-season equality, or that the match appearance occurred after the transfer."
+349,multi_table_join,hard,PASS,INCORRECT,"List seasons containing completed matches, training sessions, injuries, and transfers for the same team.","SELECT ""seasons"".""season_id"", ""seasons"".""season_name"", ""teams"".""team_id"", ""teams"".""team_name"", COUNT(*) AS ""match_count"", COUNT(*) AS ""training_count"", COUNT(*) AS ""injury_count"", COUNT(*) AS ""transfer_count"" FROM ""seasons"" INNER JOIN ""matches"" ON ""seasons"".""season_id"" = ""matches"".""season_id"" INNER JOIN ""injuries"" ON ""matches"".""match_id"" = ""injuries"".""match_id"" INNER JOIN ""teams"" ON ""injuries"".""team_id"" = ""teams"".""team_id"" INNER JOIN ""training_sessions"" ON ""seasons"".""season_id"" = ""training_sessions"".""season_id"" INNER JOIN ""transfers"" ON ""seasons"".""season_id"" = ""transfers"".""season_id"" WHERE ""matches"".""match_status"" = ? GROUP BY ""seasons"".""season_id"", ""seasons"".""season_name"", ""teams"".""team_id"", ""teams"".""team_name"" HAVING ""match_count"" > ? AND ""training_count"" > ? AND ""injury_count"" > ? AND ""transfer_count"" > ?","Training sessions and transfers are joined only by season, so they may belong to different teams from the matched injury and match."
+350,multi_table_join,hard,PASS,CORRECT,"List leagues where at least one player has an active contract, a completed transfer, a match appearance, and a training record.","SELECT ""leagues"".""league_id"", ""leagues"".""league_name"", COUNT(*) AS ""contract_count"", COUNT(*) AS ""transfer_count"", COUNT(*) AS ""match_count"", COUNT(*) AS ""training_count"" FROM ""players"" INNER JOIN ""contracts"" ON ""players"".""player_id"" = ""contracts"".""player_id"" INNER JOIN ""player_match_stats"" ON ""players"".""player_id"" = ""player_match_stats"".""player_id"" INNER JOIN ""player_training_stats"" ON ""players"".""player_id"" = ""player_training_stats"".""player_id"" INNER JOIN ""teams"" ON ""players"".""team_id"" = ""teams"".""team_id"" INNER JOIN ""leagues"" ON ""teams"".""league_id"" = ""leagues"".""league_id"" INNER JOIN ""transfers"" ON ""players"".""player_id"" = ""transfers"".""player_id"" WHERE ""contracts"".""contract_status"" = ? AND ""transfers"".""transfer_status"" = ? GROUP BY ""leagues"".""league_id"", ""leagues"".""league_name"" HAVING ""contract_count"" >= ? AND ""transfer_count"" >= ? AND ""match_count"" >= ? AND ""training_count"" >= ?",
+351,order_limit_topk,easy,PASS,CORRECT,Show the 5 leagues with the highest salary caps.,"SELECT leagues.league_name, leagues.salary_cap
+FROM leagues
+ORDER BY leagues.salary_cap DESC
+LIMIT 5",
+352,order_limit_topk,easy,PASS,CORRECT,Show the 5 seasons with the largest total revenue.,"SELECT season_id, season_name, revenue_total
+FROM seasons
+ORDER BY revenue_total DESC
+LIMIT 5",
+353,order_limit_topk,easy,PASS,CORRECT,Show the 10 teams with the highest team values.,"SELECT teams.team_name, teams.team_value
+FROM teams
+ORDER BY teams.team_value DESC
+LIMIT 10",
+354,order_limit_topk,easy,PASS,CORRECT,Show the 10 teams with the largest annual revenue.,"SELECT team_name, annual_revenue
+FROM teams
+ORDER BY annual_revenue DESC
+LIMIT 10",
+355,order_limit_topk,easy,PASS,CORRECT,Show the 10 coaches with the highest annual salaries.,"SELECT coaches.coach_id, coaches.first_name, coaches.last_name, coaches.annual_salary
+FROM coaches
+ORDER BY coaches.annual_salary DESC
+LIMIT 10",
+356,order_limit_topk,easy,PASS,CORRECT,Show the 10 coaches with the most career wins.,"SELECT coach_id, first_name, last_name, wins
+FROM coaches
+ORDER BY wins DESC
+LIMIT 10",
+357,order_limit_topk,easy,PASS,CORRECT,Show the 10 players with the highest market values.,"SELECT players.player_id, players.full_name, players.market_value
+FROM players
+ORDER BY players.market_value DESC
+LIMIT 10",
+358,order_limit_topk,easy,PASS,CORRECT,Show the 10 players with the highest annual salaries.,"SELECT players.player_id, players.first_name, players.last_name, players.annual_salary
+FROM players
+ORDER BY players.annual_salary DESC
+LIMIT 10",
+359,order_limit_topk,easy,PASS,CORRECT,Show the 10 matches with the largest attendance.,"SELECT matches.match_id, matches.home_team_id, matches.away_team_id, matches.match_date, matches.attendance
+FROM matches
+ORDER BY matches.attendance DESC
+LIMIT 10",
+360,order_limit_topk,easy,PASS,CORRECT,Show the 10 matches with the highest ticket revenue.,"SELECT match_id, ticket_revenue
+FROM matches
+ORDER BY ticket_revenue DESC
+LIMIT 10",
+361,order_limit_topk,easy,PASS,CORRECT,Show the 10 player performances with the highest ratings.,"SELECT player_id, match_id, player_rating
+FROM player_match_stats
+ORDER BY player_rating DESC
+LIMIT 10",
+362,order_limit_topk,easy,PASS,CORRECT,Show the 10 contracts with the largest base salaries.,"SELECT contracts.contract_id, contracts.base_salary, contracts.player_id, contracts.team_id
+FROM contracts
+ORDER BY contracts.base_salary DESC
+LIMIT 10",
+363,order_limit_topk,easy,PASS,CORRECT,Show the 10 injuries with the most games missed.,"SELECT injury_id, player_id, games_missed
+FROM injuries
+ORDER BY games_missed DESC
+LIMIT 10",
+364,order_limit_topk,easy,PASS,CORRECT,Show the 10 training sessions with the longest duration.,"SELECT training_session_id, session_date, planned_duration_minutes, actual_duration_minutes
+FROM training_sessions
+ORDER BY actual_duration_minutes DESC
+LIMIT 10",
+365,order_limit_topk,easy,PASS,CORRECT,Show the 10 transfers with the highest transfer fees.,"SELECT transfers.transfer_id, transfers.player_id, transfers.from_team_id, transfers.to_team_id, transfers.transfer_fee
+FROM transfers
+ORDER BY transfers.transfer_fee DESC
+LIMIT 10",
+366,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 leagues by number of active teams.,"SELECT l.league_name
+FROM leagues l
+JOIN teams t ON l.league_id = t.league_id
+WHERE t.active_flag = '1'
+GROUP BY l.league_id
+ORDER BY COUNT(t.team_id) DESC
+LIMIT 10",
+367,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 teams by number of active players.,"SELECT t.team_id, t.team_name
+FROM teams t
+JOIN players p ON t.team_id = p.team_id
+WHERE p.active_flag = '1'
+GROUP BY t.team_id, t.team_name
+ORDER BY COUNT(p.player_id) DESC
+LIMIT 10",
+368,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 teams by number of active coaches.,"SELECT t.team_id, t.team_name
+FROM teams t
+JOIN coaches c ON t.team_id = c.team_id
+WHERE c.active_flag = '1'
+GROUP BY t.team_id, t.team_name
+ORDER BY COUNT(c.coach_id) DESC
+LIMIT 10",
+369,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 players by total match scores.,"SELECT p.player_id, p.full_name
+FROM players p
+JOIN player_match_stats pms ON p.player_id = pms.player_id
+GROUP BY p.player_id, p.full_name
+ORDER BY SUM(pms.scores) DESC
+LIMIT 10",
+370,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 players by average match rating.,"SELECT ""players"".""player_id"", ""players"".""first_name"", ""players"".""last_name"", AVG(""player_match_stats"".""player_rating"") AS ""avg_rating"" FROM ""players"" INNER JOIN ""player_match_stats"" ON ""players"".""player_id"" = ""player_match_stats"".""player_id"" GROUP BY ""players"".""player_id"", ""players"".""first_name"", ""players"".""last_name"" ORDER BY ""avg_rating"" DESC LIMIT 10",
+371,order_limit_topk,moderate,PASS,INCORRECT,Show the top 10 teams by completed match wins.,"SELECT t.team_id, t.team_name
+FROM teams t
+JOIN matches m ON t.team_id = m.winner_team_id
+GROUP BY t.team_id, t.team_name
+ORDER BY COUNT(m.match_id) DESC
+LIMIT 10",Ranks wins from all match statuses and never requires completed matches.
+372,order_limit_topk,moderate,PASS,INCORRECT,Show the top 10 seasons by completed match attendance.,"SELECT s.season_id, s.season_name, s.season_year
+FROM seasons s
+JOIN matches m ON s.season_id = m.season_id
+GROUP BY s.season_id
+ORDER BY SUM(m.attendance) DESC
+LIMIT 10",Ranks season attendance from all matches rather than completed matches only.
+373,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 players by total base salary across contracts.,"SELECT p.player_id, p.full_name
+FROM players p
+JOIN contracts c ON p.player_id = c.player_id
+GROUP BY p.player_id, p.full_name
+ORDER BY SUM(c.base_salary) DESC
+LIMIT 10",
+374,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 teams by active-contract payroll.,"SELECT t.team_id, t.team_name
+FROM teams t
+JOIN contracts c ON t.team_id = c.team_id
+WHERE c.contract_status = 'active'
+GROUP BY t.team_id, t.team_name
+ORDER BY SUM(c.base_salary) DESC
+LIMIT 10",
+375,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 players by number of injury records.,"SELECT p.player_id, p.full_name
+FROM players p
+JOIN injuries i ON p.player_id = i.player_id
+GROUP BY p.player_id, p.full_name
+ORDER BY COUNT(i.injury_id) DESC
+LIMIT 10",
+376,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 teams by total games missed through injury.,"SELECT t.team_id, t.team_name, SUM(i.games_missed) AS total_games_missed
+FROM teams t
+JOIN injuries i ON t.team_id = i.team_id
+GROUP BY t.team_id, t.team_name
+ORDER BY total_games_missed DESC
+LIMIT 10",
+377,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 coaches by number of training sessions led.,"SELECT c.coach_id, c.first_name, c.last_name
+FROM coaches c
+JOIN training_sessions ts ON c.coach_id = ts.coach_id
+GROUP BY c.coach_id, c.first_name, c.last_name
+ORDER BY COUNT(ts.training_session_id) DESC
+LIMIT 10",
+378,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 players by average readiness score.,"SELECT p.player_id, p.first_name, p.last_name
+FROM players p
+JOIN player_training_stats pts ON p.player_id = pts.player_id
+GROUP BY p.player_id, p.first_name, p.last_name
+ORDER BY AVG(pts.readiness_score) DESC
+LIMIT 10",
+379,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 teams by total training load.,"SELECT t.team_id, t.team_name
+FROM teams t
+JOIN player_training_stats pts ON t.team_id = pts.team_id
+GROUP BY t.team_id, t.team_name
+ORDER BY SUM(pts.training_load) DESC
+LIMIT 10",
+380,order_limit_topk,moderate,PASS,INCORRECT,Show the top 10 players by completed transfer fees.,"SELECT p.player_id, p.full_name
+FROM players p
+JOIN transfers t ON p.player_id = t.player_id
+GROUP BY p.player_id, p.full_name
+ORDER BY SUM(t.transfer_fee) DESC
+LIMIT 10",Sums fees from every transfer status instead of completed transfers only.
+381,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 destination teams by incoming transfer fees.,"SELECT t.team_name
+FROM teams t
+JOIN transfers tr ON t.team_id = tr.to_team_id
+GROUP BY t.team_id, t.team_name
+ORDER BY SUM(tr.transfer_fee) DESC
+LIMIT 10",
+382,order_limit_topk,moderate,PASS,INCORRECT,Show the top 10 leagues by completed match ticket revenue.,"SELECT l.league_name
+FROM leagues l
+JOIN matches m ON l.league_id = m.league_id
+GROUP BY l.league_id
+ORDER BY SUM(m.ticket_revenue) DESC
+LIMIT 10",Sums ticket revenue from all match statuses instead of completed matches only.
+383,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 positions by average player market value.,"SELECT players.position
+FROM players
+GROUP BY players.position
+ORDER BY AVG(players.market_value) DESC
+LIMIT 10",
+384,order_limit_topk,moderate,PASS,CORRECT,Show the top 10 teams by average player match rating.,"SELECT t.team_id, t.team_name
+FROM teams t
+JOIN player_match_stats pms ON t.team_id = pms.team_id
+GROUP BY t.team_id, t.team_name
+ORDER BY AVG(pms.player_rating) DESC
+LIMIT 10",
+385,order_limit_topk,moderate,PASS,INCORRECT,Show the top 10 players by combined match and training efficiency scores.,"SELECT 
+    p.player_id,
+    p.first_name,
+    p.last_name,
+    pms.player_rating,
+    pts.readiness_score
+FROM players p
+JOIN player_match_stats pms ON p.player_id = pms.player_id
+JOIN player_training_stats pts ON p.player_id = pts.player_id
+ORDER BY (pms.player_rating + pts.readiness_score) DESC
+LIMIT 10","Ranks individual match-training row combinations, uses player_rating rather than match efficiency_score, and does not aggregate per player."
+386,order_limit_topk,hard,PASS,CORRECT,Show the top 3 players by market value within each team.,"WITH ranked_players AS (
+    SELECT
+        p.team_id,
+        p.player_id,
+        p.full_name,
+        p.market_value,
+        ROW_NUMBER() OVER (PARTITION BY p.team_id ORDER BY p.market_value DESC) AS rn
+    FROM players p
+)
+SELECT
+    team_id,
+    player_id,
+    full_name,
+    market_value
+FROM ranked_players
+WHERE rn <= 3",
+387,order_limit_topk,hard,PASS,CORRECT,Show the highest-paid coach in each team.,"WITH RankedCoaches AS (
+    SELECT
+        t.team_name,
+        c.first_name,
+        c.last_name,
+        c.annual_salary,
+        t.team_id,
+        ROW_NUMBER() OVER (PARTITION BY t.team_id ORDER BY c.annual_salary DESC) AS rn
+    FROM coaches c
+    JOIN teams t ON c.team_id = t.team_id
+)
+SELECT
+    team_name,
+    first_name,
+    last_name,
+    annual_salary
+FROM RankedCoaches
+WHERE rn = 1",
+388,order_limit_topk,hard,PASS,CORRECT,Show the top 3 teams by completed-match revenue within each league.,"WITH team_revenue AS (
+  SELECT
+    l.league_id,
+    t.team_id,
+    l.league_name,
+    t.team_name,
+    SUM(m.ticket_revenue + m.sponsorship_revenue) AS total_revenue
+  FROM leagues l
+  JOIN matches m ON l.league_id = m.league_id
+  JOIN teams t ON m.home_team_id = t.team_id
+  WHERE m.match_status = 'completed'
+  GROUP BY l.league_id, t.team_id, l.league_name, t.team_name
+),
+ranked_teams AS (
+  SELECT
+    league_name,
+    team_name,
+    total_revenue,
+    ROW_NUMBER() OVER (PARTITION BY league_id ORDER BY total_revenue DESC) AS rn
+  FROM team_revenue
+)
+SELECT
+  league_name,
+  team_name
+FROM ranked_teams
+WHERE rn <= 3",
+389,order_limit_topk,hard,PASS,CORRECT,Show the top 3 players by average match rating within each position.,"WITH player_avg_ratings AS (
+    SELECT
+        p.position,
+        p.player_id,
+        p.full_name,
+        AVG(pms.player_rating) AS avg_rating
+    FROM players p
+    JOIN player_match_stats pms ON p.player_id = pms.player_id
+    GROUP BY p.position, p.player_id, p.full_name
+),
+ranked_players AS (
+    SELECT
+        position,
+        player_id,
+        full_name,
+        avg_rating,
+        ROW_NUMBER() OVER (PARTITION BY position ORDER BY avg_rating DESC) AS rank_in_position
+    FROM player_avg_ratings
+)
+SELECT
+    position,
+    player_id,
+    full_name
+FROM ranked_players
+WHERE rank_in_position <= 3
+ORDER BY position, rank_in_position",
+390,order_limit_topk,hard,PASS,CORRECT,Show the top 3 teams by active-contract payroll within each league.,"WITH league_payroll AS (
+    SELECT
+        l.league_id,
+        t.team_id,
+        t.team_name,
+        l.league_name,
+        SUM(c.base_salary) AS total_payroll
+    FROM contracts c
+    JOIN teams t ON c.team_id = t.team_id
+    JOIN leagues l ON t.league_id = l.league_id
+    WHERE c.contract_status = 'active'
+    GROUP BY l.league_id, t.team_id, t.team_name, l.league_name
+),
+ranked_teams AS (
+    SELECT
+        league_name,
+        team_name,
+        total_payroll,
+        ROW_NUMBER() OVER (PARTITION BY league_id ORDER BY total_payroll DESC) AS rn
+    FROM league_payroll
+)
+SELECT
+    league_name,
+    team_name
+FROM ranked_teams
+WHERE rn <= 3",
+391,order_limit_topk,hard,PASS,CORRECT,Show the top 5 players by scoring rate among players with at least three match appearances.,"SELECT p.player_id, p.first_name, p.last_name
+FROM players p
+JOIN player_match_stats pms ON p.player_id = pms.player_id
+GROUP BY p.player_id, p.first_name, p.last_name
+HAVING COUNT(pms.match_id) >= 3
+ORDER BY SUM(pms.scores) * 1.0 / COUNT(pms.match_id) DESC
+LIMIT 5",
+392,order_limit_topk,hard,PASS,INCORRECT,Show the top 3 teams by injury rate among teams with at least five active players.,"SELECT ""teams"".""team_name"", ""teams"".""team_id"", COUNT(*) AS ""injury_count"", COUNT(*) AS ""active_player_count"" FROM ""injuries"" INNER JOIN ""players"" ON ""injuries"".""player_id"" = ""players"".""player_id"" INNER JOIN ""teams"" ON ""injuries"".""team_id"" = ""teams"".""team_id"" WHERE ""players"".""active_flag"" = ? GROUP BY ""teams"".""team_id"", ""teams"".""team_name"" HAVING ""active_player_count"" >= ? ORDER BY ""injury_count"" DESC LIMIT 3","Uses identical fanout counts as injury count and active-player count, never calculates a rate, and ranks by injury rows."
+393,order_limit_topk,hard,PASS,INCORRECT,Show the top 3 players by training readiness within each team.,"WITH ranked_players AS (
+    SELECT
+        p.team_id,
+        p.player_id,
+        p.first_name,
+        p.last_name,
+        pts.readiness_score,
+        ROW_NUMBER() OVER (PARTITION BY p.team_id ORDER BY pts.readiness_score DESC) AS rn
+    FROM player_training_stats pts
+    JOIN players p ON pts.player_id = p.player_id
+)
+SELECT
+    team_id,
+    player_id,
+    first_name,
+    last_name,
+    readiness_score
+FROM ranked_players
+WHERE rn <= 3","Ranks individual training records, so a player can occupy multiple top-three slots instead of ranking distinct players."
+394,order_limit_topk,hard,PASS,CORRECT,Show the top 3 destination teams by transfer fees within each season.,"WITH team_season_fees AS (
+    SELECT
+        s.season_name,
+        t.team_name,
+        tr.to_team_id,
+        tr.season_id,
+        SUM(tr.transfer_fee) AS total_transfer_fees
+    FROM transfers tr
+    JOIN seasons s ON tr.season_id = s.season_id
+    JOIN teams t ON tr.to_team_id = t.team_id
+    GROUP BY tr.season_id, tr.to_team_id, s.season_name, t.team_name
+),
+ranked_teams AS (
+    SELECT
+        season_name,
+        team_name,
+        total_transfer_fees,
+        ROW_NUMBER() OVER (PARTITION BY season_id ORDER BY total_transfer_fees DESC) AS rn
+    FROM team_season_fees
+)
+SELECT
+    season_name,
+    team_name
+FROM ranked_teams
+WHERE rn <= 3",
+395,order_limit_topk,hard,PASS,INCORRECT,Show the top 5 players by contract value among players with at least one completed transfer.,"SELECT p.player_id, p.full_name, c.base_salary
+FROM players p
+JOIN contracts c ON p.player_id = c.player_id
+JOIN transfers t ON p.player_id = t.player_id
+WHERE t.transfer_status = 'completed'
+GROUP BY p.player_id, p.full_name, c.base_salary
+ORDER BY c.base_salary DESC
+LIMIT 5",Uses one contract's base salary as contract value and can return multiple rows per player instead of aggregating total contract value.
+396,order_limit_topk,hard,PASS,CORRECT,Show the top 3 leagues by average team value among leagues with at least two teams.,"SELECT ""leagues"".""league_name"", ""leagues"".""league_id"", AVG(""teams"".""team_value"") AS ""avg_team_value"", COUNT(*) AS ""team_count"" FROM ""leagues"" INNER JOIN ""teams"" ON ""leagues"".""league_id"" = ""teams"".""league_id"" GROUP BY ""leagues"".""league_id"", ""leagues"".""league_name"" HAVING ""team_count"" >= ? ORDER BY ""avg_team_value"" DESC LIMIT 3",
+397,order_limit_topk,hard,PASS,CORRECT,Show the top 3 seasons by ticket revenue among seasons with at least three completed matches.,"SELECT s.season_id, s.season_name
+FROM seasons s
+JOIN matches m ON s.season_id = m.season_id
+WHERE m.match_status = 'completed'
+GROUP BY s.season_id, s.season_name
+HAVING COUNT(m.match_id) >= 3
+ORDER BY SUM(m.ticket_revenue) DESC
+LIMIT 3",
+398,order_limit_topk,hard,PASS,CORRECT,Show the top 5 coaches by win percentage among coaches with at least 20 recorded matches.,"SELECT c.coach_id, c.first_name, c.last_name, c.wins, c.losses, c.draws
+FROM coaches c
+WHERE (c.wins + c.losses + c.draws) >= 20
+ORDER BY CAST(c.wins AS REAL) / (c.wins + c.losses + c.draws) DESC
+LIMIT 5",
+399,order_limit_topk,hard,PASS,CORRECT,Show the top 3 teams by average player efficiency within each league.,"WITH team_efficiency AS (
+    SELECT
+        l.league_id,
+        t.team_id,
+        l.league_name,
+        t.team_name,
+        AVG(pms.efficiency_score) AS avg_efficiency
+    FROM leagues l
+    JOIN teams t ON l.league_id = t.league_id
+    JOIN player_match_stats pms ON t.team_id = pms.team_id
+    JOIN players pl ON pms.player_id = pl.player_id
+    GROUP BY l.league_id, t.team_id, l.league_name, t.team_name
+),
+ranked_teams AS (
+    SELECT
+        league_name,
+        team_name,
+        avg_efficiency,
+        ROW_NUMBER() OVER (PARTITION BY league_id ORDER BY avg_efficiency DESC) AS rank
+    FROM team_efficiency
+)
+SELECT
+    league_name,
+    team_name
+FROM ranked_teams
+WHERE rank <= 3",
+400,order_limit_topk,hard,PASS,INCORRECT,Show the top 5 players by match rating and readiness combined among players with both records.,"SELECT p.player_id, p.first_name, p.last_name, pms.player_rating, pts.readiness_score
+FROM players p
+JOIN player_match_stats pms ON p.player_id = pms.player_id
+JOIN player_training_stats pts ON p.player_id = pts.player_id
+GROUP BY p.player_id, p.first_name, p.last_name, pms.player_rating, pts.readiness_score
+ORDER BY pms.player_rating + pts.readiness_score DESC
+LIMIT 5",Ranks cross-products of individual match and training records rather than one combined aggregated score per player.
+401,set_operations,easy,PASS,INCORRECT,List team identifiers that appear either in player records or coach records.,"SELECT DISTINCT t.team_id
+FROM teams t
+JOIN players p ON t.team_id = p.team_id
+JOIN coaches c ON t.team_id = c.team_id",Uses inner joins and returns only teams present in both player and coach records instead of the union of either source.
+402,set_operations,easy,PASS,INCORRECT,List player identifiers that appear either in match statistics or training statistics.,"SELECT DISTINCT p.player_id
+FROM players p
+JOIN player_match_stats pms ON p.player_id = pms.player_id
+JOIN player_training_stats pts ON p.player_id = pts.player_id",Uses inner joins and returns only players present in both match and training statistics instead of either source.
+403,set_operations,easy,PASS,INCORRECT,List team identifiers that appear either as home teams or away teams.,"SELECT home_team_id, away_team_id FROM matches",Returns home and away identifiers as two columns rather than one unioned set of team identifiers.
+404,set_operations,easy,PASS,INCORRECT,List season identifiers that appear either in matches or training sessions.,"SELECT DISTINCT s.season_id
+FROM seasons s
+JOIN matches m ON s.season_id = m.season_id
+JOIN training_sessions ts ON s.season_id = ts.season_id",Uses inner joins and returns only seasons present in both matches and training sessions instead of either source.
+405,set_operations,easy,PASS,INCORRECT,List player identifiers that appear either in contracts or injuries.,"SELECT DISTINCT p.player_id
+FROM players p
+JOIN contracts c ON p.player_id = c.player_id
+JOIN injuries i ON p.player_id = i.player_id",Uses inner joins and returns only players present in both contracts and injuries instead of either source.
+406,set_operations,easy,PASS,INCORRECT,List team identifiers that appear either in contracts or transfers.,"SELECT DISTINCT t.team_id
+FROM teams t
+JOIN contracts c ON t.team_id = c.team_id
+JOIN transfers tr ON t.team_id = tr.to_team_id OR t.team_id = tr.from_team_id",Uses inner joins and returns only teams present in contracts and transfers instead of either source.
+407,set_operations,easy,PASS,INCORRECT,List players who are either active or injured.,"SELECT DISTINCT p.player_id, p.first_name, p.last_name, p.current_status
+FROM players p
+JOIN injuries i ON p.player_id = i.player_id
+WHERE p.current_status = 'active' OR i.injury_status = 'active'",The injury inner join excludes active players without injuries and does not simply select players whose status is active or injured.
+408,set_operations,easy,PASS,CORRECT,List teams that are either active or have more than five championships.,"SELECT teams.team_id, teams.team_name
+FROM teams
+WHERE teams.active_flag = '1' OR teams.championships_won > 5",
+409,set_operations,easy,PASS,CORRECT,List matches that are either completed or scheduled.,"SELECT matches.match_id, matches.match_date, matches.home_team_id, matches.away_team_id, matches.match_status
+FROM matches
+WHERE matches.match_status IN ('completed', 'scheduled')",
+410,set_operations,easy,PASS,CORRECT,List contracts that are either active or pending.,"SELECT contracts.contract_id, contracts.player_id, contracts.team_id, contracts.contract_status
+FROM contracts
+WHERE contracts.contract_status IN ('active', 'pending')",
+411,set_operations,easy,PASS,CORRECT,List injuries that are either severe or moderate.,"SELECT injuries.injury_id, injuries.player_id, injuries.injury_type, injuries.severity, injuries.injury_date
+FROM injuries
+WHERE injuries.severity IN ('severe', 'moderate')",
+412,set_operations,easy,PASS,CORRECT,List training sessions that are either high intensity or maximum intensity.,"SELECT training_session_id, session_date, intensity_level
+FROM training_sessions
+WHERE intensity_level IN ('high', 'maximum')",
+413,set_operations,easy,PASS,CORRECT,List transfers that are either permanent or loan transfers.,"SELECT transfer_id, player_id, from_team_id, to_team_id, transfer_type, transfer_date
+FROM transfers
+WHERE transfer_type IN ('permanent', 'loan')",
+414,set_operations,easy,PASS,CORRECT,List leagues that are either professional or semi-professional.,"SELECT league_id, league_name, competition_level
+FROM leagues
+WHERE competition_level IN ('professional', 'semi_professional')",
+415,set_operations,easy,PASS,CORRECT,List coaches who are either head coaches or assistant coaches.,"SELECT coach_id, first_name, last_name, coach_role
+FROM coaches
+WHERE coach_role IN ('head_coach', 'assistant_coach')",
+416,set_operations,moderate,PASS,CORRECT,List players who have both match statistics and training statistics.,"SELECT DISTINCT p.player_id, p.first_name, p.last_name
+FROM players p
+JOIN player_match_stats pms ON p.player_id = pms.player_id
+JOIN player_training_stats pts ON p.player_id = pts.player_id",
+417,set_operations,moderate,PASS,CORRECT,List teams that have both players and coaches.,"SELECT t.team_id, t.team_name
+FROM teams t
+JOIN players p ON t.team_id = p.team_id
+JOIN coaches c ON t.team_id = c.team_id
+GROUP BY t.team_id, t.team_name
+HAVING COUNT(DISTINCT p.player_id) > 0 AND COUNT(DISTINCT c.coach_id) > 0",
+418,set_operations,moderate,PASS,CORRECT,List seasons that have both matches and training sessions.,"SELECT s.season_id, s.season_name
+FROM seasons s
+JOIN matches m ON s.season_id = m.season_id
+JOIN training_sessions t ON s.season_id = t.season_id
+GROUP BY s.season_id
+HAVING COUNT(DISTINCT m.match_id) > 0 AND COUNT(DISTINCT t.training_session_id) > 0",
+419,set_operations,moderate,PASS,CORRECT,List players who have both contracts and injury records.,"SELECT DISTINCT p.player_id, p.first_name, p.last_name
+FROM players p
+JOIN contracts c ON p.player_id = c.player_id
+JOIN injuries i ON p.player_id = i.player_id",
+420,set_operations,moderate,PASS,INCORRECT,List teams that have both completed matches and active contracts.,"SELECT t.team_id, t.team_name
+FROM teams t
+JOIN matches m ON t.team_id = m.home_team_id OR t.team_id = m.away_team_id
+JOIN contracts c ON t.team_id = c.team_id
+WHERE c.contract_status = 'active'
+GROUP BY t.team_id, t.team_name
+HAVING COUNT(DISTINCT m.match_id) > 0 AND COUNT(DISTINCT c.contract_id) > 0",Never filters matches to completed status.
+421,set_operations,moderate,PASS,CORRECT,List players with match appearances but no training records.,"SELECT DISTINCT ""players"".""player_id"", ""players"".""first_name"", ""players"".""last_name"" FROM ""players"" INNER JOIN ""player_match_stats"" ON ""players"".""player_id"" = ""player_match_stats"".""player_id"" WHERE NOT EXISTS (SELECT 1 FROM ""player_training_stats"" WHERE ""players"".""player_id"" = ""player_training_stats"".""player_id"")",
+422,set_operations,moderate,PASS,CORRECT,List players with training records but no match appearances.,"SELECT DISTINCT p.player_id, p.first_name, p.last_name
+FROM players p
+JOIN player_training_stats pts ON p.player_id = pts.player_id
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM player_match_stats pms
+    WHERE pms.player_id = p.player_id
+)",
+423,set_operations,moderate,PASS,INCORRECT,List teams with active contracts but no completed transfers.,"SELECT t.team_id, t.team_name
+FROM teams t
+JOIN contracts c ON t.team_id = c.team_id
+JOIN transfers tr ON t.team_id = tr.from_team_id OR t.team_id = tr.to_team_id
+WHERE c.contract_status = 'active'
+  AND NOT EXISTS (
+    SELECT 1
+    FROM transfers tr2
+    WHERE (tr2.from_team_id = t.team_id OR tr2.to_team_id = t.team_id)
+      AND tr2.transfer_status = 'completed'
+  )
+GROUP BY t.team_id, t.team_name","The transfer inner join excludes teams with active contracts and no transfer records, even though they have no completed transfers."
+424,set_operations,moderate,PASS,INCORRECT,List players with injury records but no active contract.,"SELECT p.player_id, p.first_name, p.last_name
+FROM players p
+JOIN injuries i ON p.player_id = i.player_id
+JOIN contracts c ON p.player_id = c.player_id
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM contracts c2
+    WHERE c2.player_id = p.player_id
+    AND c2.contract_status = 'active'
+)
+GROUP BY p.player_id, p.first_name, p.last_name","The contract inner join excludes injured players with no contracts, even though they have no active contract."
+425,set_operations,moderate,PASS,INCORRECT,List coaches who led training sessions but have no active team.,"SELECT c.coach_id, c.first_name, c.last_name
+FROM coaches c
+JOIN training_sessions ts ON c.coach_id = ts.coach_id
+JOIN teams t ON c.team_id = t.team_id
+WHERE c.active_flag = '1'
+AND NOT EXISTS (
+    SELECT 1
+    FROM teams t2
+    WHERE t2.team_id = c.team_id
+    AND t2.active_flag = '1'
+)",Adds an unrequested active-coach restriction while the question only requires that the coach's team not be active.
+426,set_operations,moderate,PASS,CORRECT,List teams that appeared as home teams but never as away teams.,"SELECT t.team_id, t.team_name
+FROM teams t
+JOIN matches m ON t.team_id = m.home_team_id
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM matches m2
+    WHERE m2.away_team_id = t.team_id
+)
+GROUP BY t.team_id, t.team_name",
+427,set_operations,moderate,PASS,CORRECT,List players who scored in matches but never recorded an assist.,"SELECT p.player_id, p.first_name, p.last_name
+FROM players p
+JOIN player_match_stats pms ON p.player_id = pms.player_id
+WHERE pms.scores > 0
+  AND NOT EXISTS (
+    SELECT 1
+    FROM player_match_stats pms2
+    WHERE pms2.player_id = p.player_id
+      AND pms2.assists > 0
+  )
+GROUP BY p.player_id, p.first_name, p.last_name",
+428,set_operations,moderate,PASS,CORRECT,List teams with high-intensity training sessions but no recovery sessions.,"SELECT t.team_id, t.team_name
+FROM teams t
+WHERE EXISTS (
+    SELECT 1
+    FROM training_sessions ts
+    WHERE ts.team_id = t.team_id
+      AND ts.intensity_level = 'high'
+)
+AND NOT EXISTS (
+    SELECT 1
+    FROM training_sessions ts
+    WHERE ts.team_id = t.team_id
+      AND ts.session_type = 'recovery'
+)",
+429,set_operations,moderate,PASS,INCORRECT,List players who completed transfers but have no current active contract.,"SELECT DISTINCT p.player_id, p.first_name, p.last_name
+FROM players p
+JOIN transfers t ON p.player_id = t.player_id
+JOIN contracts c ON p.player_id = c.player_id
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM contracts c2
+    WHERE c2.player_id = p.player_id
+    AND c2.contract_status = 'active'
+)",Never filters completed transfers and the contract inner join excludes transferred players with no contracts.
+430,set_operations,moderate,PASS,INCORRECT,List seasons with completed matches but no completed transfers.,"SELECT s.season_id, s.season_name
+FROM seasons s
+JOIN matches m ON s.season_id = m.season_id
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM transfers t
+    WHERE t.season_id = s.season_id
+)
+GROUP BY s.season_id, s.season_name",Does not require completed matches and excludes seasons having any transfer rather than only completed transfers.
+431,set_operations,moderate,PASS,CORRECT,List teams with injuries but no surgery-required injuries.,"SELECT t.team_id, t.team_name
+FROM teams t
+JOIN injuries i ON t.team_id = i.team_id
+GROUP BY t.team_id, t.team_name
+HAVING COUNT(*) > 0
+   AND SUM(CASE WHEN i.surgery_required_flag = '1' THEN 1 ELSE 0 END) = 0",
+432,set_operations,moderate,PASS,CORRECT,List players with active contracts but no match statistics.,"SELECT ""players"".""player_id"", ""players"".""first_name"", ""players"".""last_name""
+FROM ""players""
+INNER JOIN ""contracts"" ON ""players"".""player_id"" = ""contracts"".""player_id""
+WHERE ""contracts"".""contract_status"" = 'active'
+AND NOT EXISTS (
+    SELECT 1
+    FROM ""player_match_stats""
+    WHERE ""player_match_stats"".""player_id"" = ""players"".""player_id""
+)",
+433,set_operations,moderate,PASS,INCORRECT,List leagues with active teams but no completed matches.,"SELECT l.league_id, l.league_name
+FROM leagues l
+WHERE EXISTS (
+    SELECT 1
+    FROM teams t
+    WHERE t.league_id = l.league_id
+      AND t.active_flag = '1'
+)
+AND NOT EXISTS (
+    SELECT 1
+    FROM matches m
+    WHERE m.league_id = l.league_id
+      AND m.match_id IS NOT NULL
+)",Checks for no matches at all rather than no completed matches.
+434,set_operations,moderate,PASS,INCORRECT,List players who trained for one team but played matches for another.,"SELECT DISTINCT ""players"".""player_id"", ""players"".""first_name"", ""players"".""last_name"" FROM ""players"" INNER JOIN ""player_match_stats"" ON ""players"".""player_id"" = ""player_match_stats"".""player_id"" INNER JOIN ""player_training_stats"" ON ""players"".""player_id"" = ""player_training_stats"".""player_id""","Never compares the training team with the match team, so any player having both record types qualifies."
+435,set_operations,moderate,PASS,CORRECT,List teams that received players in transfers but never sent a player.,"SELECT t.team_id, t.team_name
+FROM teams t
+JOIN transfers tr ON t.team_id = tr.to_team_id
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM transfers tr2
+    WHERE tr2.from_team_id = t.team_id
+)
+GROUP BY t.team_id, t.team_name",
+436,set_operations,hard,PASS,CORRECT,List players who have match statistics and training statistics but no injury record.,"SELECT p.player_id, p.first_name, p.last_name
+FROM players p
+WHERE EXISTS (
+    SELECT 1
+    FROM player_match_stats pms
+    WHERE pms.player_id = p.player_id
+)
+AND EXISTS (
+    SELECT 1
+    FROM player_training_stats pts
+    WHERE pts.player_id = p.player_id
+)
+AND NOT EXISTS (
+    SELECT 1
+    FROM injuries i
+    WHERE i.player_id = p.player_id
+)",
+437,set_operations,hard,PASS,INCORRECT,List teams with both completed matches and completed transfers but no active contracts.,"SELECT t.team_id, t.team_name
+FROM teams t
+JOIN matches m ON t.team_id = m.home_team_id OR t.team_id = m.away_team_id
+JOIN transfers tr ON t.team_id = tr.from_team_id OR t.team_id = tr.to_team_id
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM contracts c
+    WHERE c.team_id = t.team_id
+      AND c.contract_status = 'active'
+)
+GROUP BY t.team_id, t.team_name",Does not require the matched matches or transfers to have completed status.
+438,set_operations,hard,PASS,INCORRECT,List players with both active contracts and injuries but no completed transfer.,"SELECT p.player_id, p.first_name, p.last_name
+FROM players p
+JOIN contracts c ON p.player_id = c.player_id
+JOIN injuries i ON p.player_id = i.player_id
+JOIN transfers t ON p.player_id = t.player_id
+WHERE c.contract_status = 'active'
+  AND i.injury_status = 'active'
+  AND t.transfer_status != 'completed'
+GROUP BY p.player_id, p.first_name, p.last_name
+HAVING NOT EXISTS (
+    SELECT 1
+    FROM transfers t2
+    WHERE t2.player_id = p.player_id
+      AND t2.transfer_status = 'completed'
+)",Requires an active injury rather than any injury and excludes players with no transfer rows even though they have no completed transfer.
+439,set_operations,hard,PASS,CORRECT,List leagues with both completed and scheduled matches but no cancelled matches.,"SELECT l.league_id, l.league_name
+FROM leagues l
+JOIN matches m ON l.league_id = m.league_id
+GROUP BY l.league_id
+HAVING COUNT(CASE WHEN m.match_status = 'completed' THEN 1 END) > 0
+   AND COUNT(CASE WHEN m.match_status = 'scheduled' THEN 1 END) > 0
+   AND COUNT(CASE WHEN m.match_status = 'cancelled' THEN 1 END) = 0",
+440,set_operations,hard,PASS,INCORRECT,List teams with players in both active and injured status but no suspended players.,"SELECT t.team_id, t.team_name
+FROM teams t
+JOIN players p ON t.team_id = p.team_id
+JOIN injuries i ON p.player_id = i.player_id
+GROUP BY t.team_id, t.team_name
+HAVING SUM(CASE WHEN p.current_status = 'active' THEN 1 ELSE 0 END) > 0
+   AND SUM(CASE WHEN i.injury_status = 'active' THEN 1 ELSE 0 END) > 0
+   AND SUM(CASE WHEN p.current_status = 'suspended' THEN 1 ELSE 0 END) = 0",Uses active injury records instead of requiring teams to contain both active-status and injured-status players.
+441,set_operations,hard,PASS,INCORRECT,List players who appeared for both their current team and another team but never transferred.,"WITH player_team_counts AS (
+    SELECT player_id, COUNT(DISTINCT team_id) AS team_count
+    FROM players
+    GROUP BY player_id
+),
+players_with_transfers AS (
+    SELECT DISTINCT player_id
+    FROM transfers
+)
+SELECT p.player_id, p.first_name, p.last_name
+FROM players p
+JOIN player_team_counts pt ON p.player_id = pt.player_id
+WHERE pt.team_count > 1
+  AND p.player_id NOT IN (SELECT player_id FROM players_with_transfers)","Counts team IDs in the one-row-per-player players table, making the more-than-one-team condition impossible; match statistics should supply team history."
+442,set_operations,hard,PASS,INCORRECT,List coaches who led both high-intensity and recovery sessions but no cancelled session.,"SELECT c.coach_id, c.first_name, c.last_name
+FROM coaches c
+JOIN training_sessions ts ON c.coach_id = ts.coach_id
+GROUP BY c.coach_id
+HAVING SUM(CASE WHEN ts.intensity_level = 'high' THEN 1 ELSE 0 END) >= 1
+   AND SUM(CASE WHEN ts.intensity_level = 'low' THEN 1 ELSE 0 END) >= 1
+   AND SUM(CASE WHEN ts.cancelled_flag = '1' THEN 1 ELSE 0 END) = 0",Checks low intensity instead of recovery session_type.
+443,set_operations,hard,PASS,INCORRECT,List teams that were both home and away winners but never drew a match.,"SELECT t.team_id, t.team_name
+FROM teams t
+JOIN matches m ON t.team_id = m.home_team_id OR t.team_id = m.away_team_id
+GROUP BY t.team_id, t.team_name
+HAVING SUM(CASE WHEN m.home_team_id = t.team_id AND m.winner_team_id = t.team_id THEN 1 ELSE 0 END) > 0
+   AND SUM(CASE WHEN m.away_team_id = t.team_id AND m.winner_team_id = t.team_id THEN 1 ELSE 0 END) > 0
+   AND SUM(CASE WHEN m.winner_team_id IS NULL THEN 1 ELSE 0 END) = 0","Treats every NULL winner, including scheduled or cancelled matches, as a draw and does not restrict the analysis to completed matches."
+444,set_operations,hard,PASS,CORRECT,List players with both surgery-required and non-surgery injuries but no reinjury record.,"SELECT p.player_id, p.first_name, p.last_name
+FROM players p
+JOIN injuries i ON p.player_id = i.player_id
+GROUP BY p.player_id
+HAVING SUM(CASE WHEN i.surgery_required_flag = '1' THEN 1 ELSE 0 END) > 0
+   AND SUM(CASE WHEN i.surgery_required_flag = '0' THEN 1 ELSE 0 END) > 0
+   AND SUM(CASE WHEN i.reinjury_flag = '1' THEN 1 ELSE 0 END) = 0",
+445,set_operations,hard,PASS,CORRECT,List seasons with matches in both regular season and playoff stages but no final.,"SELECT s.season_id, s.season_name
+FROM seasons s
+JOIN matches m ON s.season_id = m.season_id
+GROUP BY s.season_id, s.season_name
+HAVING COUNT(DISTINCT CASE WHEN m.competition_stage = 'regular_season' THEN m.match_id END) > 0
+   AND COUNT(DISTINCT CASE WHEN m.competition_stage IN ('playoff', 'quarterfinal', 'semifinal') THEN m.match_id END) > 0
+   AND COUNT(DISTINCT CASE WHEN m.competition_stage = 'final' THEN m.match_id END) = 0",
+446,set_operations,hard,PASS,INCORRECT,List teams that both sent and received transferred players but had no free transfer.,"SELECT t.team_id, t.team_name
+FROM teams t
+JOIN transfers tr_out ON t.team_id = tr_out.from_team_id
+JOIN transfers tr_in ON t.team_id = tr_in.to_team_id
+WHERE t.team_id NOT IN (
+    SELECT team_id
+    FROM (
+        SELECT from_team_id AS team_id FROM transfers WHERE transfer_type = 'free'
+        UNION
+        SELECT to_team_id AS team_id FROM transfers WHERE transfer_type = 'free'
+    )
+)
+GROUP BY t.team_id, t.team_name","Checks transfer_type = 'free', but the database stores the category as 'free_transfer'."
+447,set_operations,hard,PASS,CORRECT,List players with both standard and loan contracts but no pending contract.,"SELECT p.player_id, p.first_name, p.last_name
+FROM players p
+JOIN contracts c ON p.player_id = c.player_id
+GROUP BY p.player_id
+HAVING SUM(CASE WHEN c.contract_type = 'standard' THEN 1 ELSE 0 END) > 0
+   AND SUM(CASE WHEN c.contract_type = 'loan' THEN 1 ELSE 0 END) > 0
+   AND SUM(CASE WHEN c.contract_status = 'pending' THEN 1 ELSE 0 END) = 0",
+448,set_operations,hard,PASS,INCORRECT,List leagues whose teams had both high-value and low-value players but no retired players.,"SELECT l.league_id, l.league_name
+FROM leagues l
+JOIN teams t ON l.league_id = t.league_id
+JOIN players p ON t.team_id = p.team_id
+WHERE p.current_status != 'retired'
+GROUP BY l.league_id, l.league_name
+HAVING COUNT(DISTINCT CASE WHEN p.market_value >= (SELECT AVG(market_value) FROM players) THEN p.player_id END) > 0
+   AND COUNT(DISTINCT CASE WHEN p.market_value < (SELECT AVG(market_value) FROM players) THEN p.player_id END) > 0","Filters retired players out before grouping, so it never proves that the league has no retired players."
+449,set_operations,hard,PASS,INCORRECT,List players with match ratings above 8 and readiness above 80 but no active injury.,"SELECT DISTINCT p.player_id, p.first_name, p.last_name
+FROM players p
+JOIN player_match_stats pms ON p.player_id = pms.player_id
+JOIN player_training_stats pts ON p.player_id = pts.player_id
+JOIN injuries i ON p.player_id = i.player_id
+WHERE pms.player_rating > 8
+  AND pts.readiness_score > 80
+  AND i.injury_status != 'active'",Requires one non-active injury rather than proving the absence of all active injuries and excludes players with no injury rows.
+450,set_operations,hard,PASS,INCORRECT,"List teams with completed matches, training sessions, and transfers but no injury records.","SELECT t.team_id, t.team_name
+FROM teams t
+JOIN matches m ON t.team_id = m.home_team_id
+JOIN training_sessions ts ON t.team_id = ts.team_id
+JOIN transfers tr ON t.team_id = tr.to_team_id
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM injuries i
+    WHERE i.team_id = t.team_id
+)
+GROUP BY t.team_id, t.team_name",Checks only home matches and incoming transfers and never requires the matches to be completed.
+451,subquery_cte,easy,PASS,CORRECT,List leagues with salary caps above the average league salary cap.,"SELECT league_id, league_name, salary_cap
+FROM leagues
+WHERE salary_cap > (SELECT AVG(salary_cap) FROM leagues)",
+452,subquery_cte,easy,PASS,CORRECT,List seasons with revenue above the average season revenue.,"SELECT season_id, season_name, revenue_total
+FROM seasons
+WHERE revenue_total > (SELECT AVG(revenue_total) FROM seasons)",
+453,subquery_cte,easy,PASS,CORRECT,List teams valued above the average team value.,"SELECT teams.team_id, teams.team_name, teams.team_value
+FROM teams
+WHERE teams.team_value > (SELECT AVG(team_value) FROM teams)",
+454,subquery_cte,easy,PASS,CORRECT,List teams with annual revenue above the average team revenue.,"SELECT teams.team_id, teams.team_name, teams.annual_revenue
+FROM teams
+WHERE teams.annual_revenue > (SELECT AVG(annual_revenue) FROM teams)",
+455,subquery_cte,easy,PASS,CORRECT,List coaches earning more than the average coach salary.,"SELECT c.coach_id, c.first_name, c.last_name, c.annual_salary
+FROM coaches c
+WHERE c.annual_salary > (SELECT AVG(annual_salary) FROM coaches)",
+456,subquery_cte,easy,PASS,CORRECT,List coaches with more wins than the average coach.,"SELECT c.coach_id, c.first_name, c.last_name, c.wins
+FROM coaches c
+WHERE c.wins > (SELECT AVG(wins) FROM coaches)",
+457,subquery_cte,easy,PASS,CORRECT,List players valued above the average player market value.,"SELECT players.player_id, players.full_name, players.market_value
+FROM players
+WHERE players.market_value > (SELECT AVG(market_value) FROM players)",
+458,subquery_cte,easy,PASS,CORRECT,List players earning more than the average player salary.,"SELECT players.player_id, players.first_name, players.last_name, players.annual_salary
+FROM players
+WHERE players.annual_salary > (SELECT AVG(annual_salary) FROM players)",
+459,subquery_cte,easy,PASS,CORRECT,List matches with attendance above the average match attendance.,"SELECT match_id, match_date, home_team_id, away_team_id, attendance
+FROM matches
+WHERE attendance > (SELECT AVG(attendance) FROM matches)",
+460,subquery_cte,easy,PASS,CORRECT,List player performances with ratings above the average player rating.,"SELECT player_id, match_id, player_rating
+FROM player_match_stats
+WHERE player_rating > (SELECT AVG(player_rating) FROM player_match_stats)",
+461,subquery_cte,easy,PASS,CORRECT,List contracts with base salaries above the average contract salary.,"SELECT contracts.contract_id, contracts.player_id, contracts.team_id, contracts.base_salary
+FROM contracts
+WHERE contracts.base_salary > (SELECT AVG(base_salary) FROM contracts)",
+462,subquery_cte,easy,PASS,CORRECT,List injuries causing more games missed than the average injury.,"SELECT i.injury_id, i.player_id, i.games_missed
+FROM injuries i
+WHERE i.games_missed > (SELECT AVG(i2.games_missed) FROM injuries i2)",
+463,subquery_cte,easy,PASS,CORRECT,List training sessions longer than the average training session.,"SELECT training_session_id, session_date, actual_duration_minutes
+FROM training_sessions
+WHERE actual_duration_minutes > (
+    SELECT AVG(actual_duration_minutes)
+    FROM training_sessions
+)",
+464,subquery_cte,easy,PASS,CORRECT,List transfers with fees above the average transfer fee.,"SELECT transfer_id, player_id, from_team_id, to_team_id, transfer_fee
+FROM transfers
+WHERE transfer_fee > (SELECT AVG(transfer_fee) FROM transfers)",
+465,subquery_cte,easy,PASS,CORRECT,List players who have never appeared in a match.,"SELECT p.player_id, p.first_name, p.last_name
+FROM players p
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM player_match_stats pms
+    WHERE pms.player_id = p.player_id
+)",
+466,subquery_cte,moderate,PASS,CORRECT,List teams valued above the average team value in their league.,"SELECT t.team_id, t.team_name, t.team_value, t.league_id
+FROM teams t
+WHERE t.team_value > (
+    SELECT AVG(t2.team_value)
+    FROM teams t2
+    WHERE t2.league_id = t.league_id
+)",
+467,subquery_cte,moderate,PASS,CORRECT,List coaches earning more than the average coach salary on their team.,"SELECT c.coach_id, c.first_name, c.last_name, c.annual_salary, c.team_id
+FROM coaches c
+JOIN teams t ON c.team_id = t.team_id
+WHERE c.annual_salary > (
+    SELECT AVG(c2.annual_salary)
+    FROM coaches c2
+    WHERE c2.team_id = c.team_id
+)",
+468,subquery_cte,moderate,PASS,CORRECT,List players valued above the average player market value on their team.,"SELECT p.player_id, p.first_name, p.last_name, p.market_value, p.team_id
+FROM players p
+WHERE p.market_value > (
+    SELECT AVG(p2.market_value)
+    FROM players p2
+    WHERE p2.team_id = p.team_id
+)",
+469,subquery_cte,moderate,PASS,CORRECT,List players with more match appearances than the average player with an appearance.,"SELECT p.player_id, p.first_name, p.last_name
+FROM players p
+JOIN player_match_stats pms ON p.player_id = pms.player_id
+GROUP BY p.player_id
+HAVING COUNT(pms.player_match_stat_id) > (
+    SELECT AVG(appearance_count)
+    FROM (
+        SELECT COUNT(*) AS appearance_count
+        FROM player_match_stats
+        GROUP BY player_id
+    )
+)",
+470,subquery_cte,moderate,PASS,CORRECT,List players whose average match rating exceeds the average rating of players on their current team.,"SELECT p.player_id, p.first_name, p.last_name, p.team_id
+FROM players p
+JOIN player_match_stats pms ON p.player_id = pms.player_id
+GROUP BY p.player_id
+HAVING AVG(pms.player_rating) > (
+    SELECT AVG(pms2.player_rating)
+    FROM player_match_stats pms2
+    JOIN players p2 ON pms2.player_id = p2.player_id
+    WHERE p2.team_id = p.team_id
+)",
+471,subquery_cte,moderate,PASS,INCORRECT,List teams with more completed wins than the average team.,"SELECT t.team_id, t.team_name
+FROM teams t
+JOIN matches m ON t.team_id = m.winner_team_id
+GROUP BY t.team_id, t.team_name
+HAVING COUNT(*) > (
+    SELECT AVG(win_count)
+    FROM (
+        SELECT COUNT(*) AS win_count
+        FROM matches
+        WHERE winner_team_id IS NOT NULL
+        GROUP BY winner_team_id
+    )
+)",Counts wins from all matches and never restricts winner records to completed matches.
+472,subquery_cte,moderate,PASS,INCORRECT,List seasons with completed-match attendance above the average season attendance.,"SELECT s.season_id, s.season_name, s.season_year
+FROM seasons s
+JOIN matches m ON s.season_id = m.season_id
+GROUP BY s.season_id, s.season_name, s.season_year
+HAVING SUM(m.attendance) > (
+    SELECT AVG(total_attendance)
+    FROM (
+        SELECT SUM(m2.attendance) AS total_attendance
+        FROM matches m2
+        GROUP BY m2.season_id
+    )
+)",Sums attendance from all matches and computes the comparison average from all match statuses.
+473,subquery_cte,moderate,PASS,CORRECT,List players whose total contract salary is above the average player contract salary.,"SELECT p.player_id, p.first_name, p.last_name
+FROM players p
+JOIN contracts c ON p.player_id = c.player_id
+GROUP BY p.player_id, p.first_name, p.last_name
+HAVING SUM(c.base_salary) > (
+    SELECT AVG(total_salary)
+    FROM (
+        SELECT SUM(base_salary) AS total_salary
+        FROM contracts
+        GROUP BY player_id
+    )
+)",
+474,subquery_cte,moderate,PASS,CORRECT,List teams whose active-contract payroll is above the average team payroll.,"SELECT t.team_id, t.team_name
+FROM teams t
+JOIN contracts c ON t.team_id = c.team_id
+WHERE c.contract_status = 'active'
+GROUP BY t.team_id, t.team_name
+HAVING SUM(c.base_salary) > (
+    SELECT AVG(team_payroll)
+    FROM (
+        SELECT SUM(c2.base_salary) AS team_payroll
+        FROM contracts c2
+        WHERE c2.contract_status = 'active'
+        GROUP BY c2.team_id
+    )
+)",
+475,subquery_cte,moderate,PASS,CORRECT,List players with more injury records than the average injured player.,"SELECT p.player_id, p.first_name, p.last_name
+FROM players p
+JOIN injuries i ON p.player_id = i.player_id
+GROUP BY p.player_id, p.first_name, p.last_name
+HAVING COUNT(i.injury_id) > (
+    SELECT CAST(COUNT(*) AS REAL) / COUNT(DISTINCT player_id)
+    FROM injuries
+)",
+476,subquery_cte,moderate,PASS,CORRECT,List teams whose total games missed is above the average team injury total.,"SELECT t.team_id, t.team_name
+FROM teams t
+JOIN injuries i ON t.team_id = i.team_id
+GROUP BY t.team_id, t.team_name
+HAVING SUM(i.games_missed) > (
+    SELECT AVG(team_total_games_missed)
+    FROM (
+        SELECT SUM(i2.games_missed) AS team_total_games_missed
+        FROM injuries i2
+        GROUP BY i2.team_id
+    )
+)",
+477,subquery_cte,moderate,PASS,CORRECT,List coaches who led more training sessions than the average coach.,"SELECT c.coach_id, c.first_name, c.last_name
+FROM coaches c
+JOIN training_sessions ts ON c.coach_id = ts.coach_id
+GROUP BY c.coach_id
+HAVING COUNT(ts.training_session_id) > (
+    SELECT AVG(session_count)
+    FROM (
+        SELECT COUNT(*) AS session_count
+        FROM training_sessions
+        GROUP BY coach_id
+    )
+)",
+478,subquery_cte,moderate,PASS,INCORRECT,List players whose readiness score is above the average for their team.,"WITH team_avg_readiness AS (
+    SELECT
+        pts.team_id,
+        AVG(pts.readiness_score) AS avg_readiness
+    FROM player_training_stats pts
+    GROUP BY pts.team_id
+)
+SELECT
+    p.player_id,
+    p.first_name,
+    p.last_name,
+    pts.readiness_score
+FROM player_training_stats pts
+JOIN players p ON pts.player_id = p.player_id
+JOIN teams t ON pts.team_id = t.team_id
+JOIN team_avg_readiness tar ON pts.team_id = tar.team_id
+WHERE pts.readiness_score > tar.avg_readiness",Compares individual training rows with the team average and can return duplicate players rather than comparing each player's average readiness.
+479,subquery_cte,moderate,PASS,CORRECT,List teams whose total training load is above the average team load.,"SELECT t.team_id, t.team_name
+FROM teams t
+JOIN player_training_stats pts ON t.team_id = pts.team_id
+GROUP BY t.team_id, t.team_name
+HAVING SUM(pts.training_load) > (
+    SELECT AVG(team_total_load)
+    FROM (
+        SELECT SUM(training_load) AS team_total_load
+        FROM player_training_stats
+        GROUP BY team_id
+    )
+)",
+480,subquery_cte,moderate,PASS,INCORRECT,List players whose completed transfer fees exceed the average transferred player.,"SELECT p.player_id, p.first_name, p.last_name
+FROM players p
+JOIN transfers t ON p.player_id = t.player_id
+GROUP BY p.player_id, p.first_name, p.last_name
+HAVING SUM(t.transfer_fee) > (SELECT AVG(total_fee) FROM (SELECT SUM(transfer_fee) AS total_fee FROM transfers GROUP BY player_id))",Never filters transfer_status = 'completed'.
+481,subquery_cte,moderate,PASS,CORRECT,List destination teams whose incoming transfer fees exceed the average destination team.,"SELECT t.team_name
+FROM teams t
+JOIN (
+    SELECT to_team_id, SUM(transfer_fee) AS total_incoming_fees
+    FROM transfers
+    GROUP BY to_team_id
+) tf ON t.team_id = tf.to_team_id
+WHERE tf.total_incoming_fees > (
+    SELECT AVG(total_fees)
+    FROM (
+        SELECT SUM(transfer_fee) AS total_fees
+        FROM transfers
+        GROUP BY to_team_id
+    )
+)",
+482,subquery_cte,moderate,PASS,CORRECT,List matches with ticket revenue above the average for their competition stage.,"SELECT m.match_id, m.competition_stage, m.ticket_revenue
+FROM matches m
+WHERE m.ticket_revenue > (
+    SELECT AVG(m2.ticket_revenue)
+    FROM matches m2
+    WHERE m2.competition_stage = m.competition_stage
+)",
+483,subquery_cte,moderate,PASS,CORRECT,List contracts whose guaranteed amount is above the average for their contract type.,"SELECT c.contract_id, c.contract_type, c.guaranteed_amount
+FROM contracts c
+WHERE c.guaranteed_amount > (
+    SELECT AVG(c2.guaranteed_amount)
+    FROM contracts c2
+    WHERE c2.contract_type = c.contract_type
+)",
+484,subquery_cte,moderate,PASS,CORRECT,List injuries whose recovery time is above the average for their injury type.,"SELECT i.injury_id, i.player_id, i.injury_type, i.estimated_days_out
+FROM injuries i
+WHERE i.estimated_days_out > (
+    SELECT AVG(i2.estimated_days_out)
+    FROM injuries i2
+    WHERE i2.injury_type = i.injury_type
+)",
+485,subquery_cte,moderate,PASS,CORRECT,List transfers whose fee is above the average for their transfer type.,"SELECT t.transfer_id, t.transfer_type, t.transfer_fee
+FROM transfers t
+WHERE t.transfer_fee > (
+    SELECT AVG(t2.transfer_fee)
+    FROM transfers t2
+    WHERE t2.transfer_type = t.transfer_type
+)",
+486,subquery_cte,hard,PASS,CORRECT,List the most valuable player on each team.,"WITH RankedPlayers AS (
+    SELECT 
+        p.team_id,
+        p.player_id,
+        p.full_name,
+        p.market_value,
+        ROW_NUMBER() OVER (PARTITION BY p.team_id ORDER BY p.market_value DESC) AS rn
+    FROM players p
+)
+SELECT 
+    team_id,
+    player_id,
+    full_name,
+    market_value
+FROM RankedPlayers
+WHERE rn = 1",
+487,subquery_cte,hard,PASS,CORRECT,List the highest-paid coach on each team.,"WITH RankedCoaches AS (
+    SELECT
+        t.team_name,
+        c.first_name,
+        c.last_name,
+        c.annual_salary,
+        t.team_id,
+        ROW_NUMBER() OVER (PARTITION BY t.team_id ORDER BY c.annual_salary DESC) AS rn
+    FROM coaches c
+    JOIN teams t ON c.team_id = t.team_id
+)
+SELECT
+    team_name,
+    first_name,
+    last_name,
+    annual_salary
+FROM RankedCoaches
+WHERE rn = 1",
+488,subquery_cte,hard,PASS,CORRECT,List the highest-revenue completed match in each season.,"WITH ranked_matches AS (
+    SELECT
+        m.season_id,
+        m.match_id,
+        m.ticket_revenue,
+        m.sponsorship_revenue,
+        ROW_NUMBER() OVER (
+            PARTITION BY m.season_id
+            ORDER BY (m.ticket_revenue + m.sponsorship_revenue) DESC
+        ) AS rn
+    FROM matches m
+    WHERE m.match_status = 'completed'
+)
+SELECT
+    season_id,
+    match_id,
+    ticket_revenue,
+    sponsorship_revenue
+FROM ranked_matches
+WHERE rn = 1",
+489,subquery_cte,hard,PASS,INCORRECT,List players whose average match rating is above the average for their team and position.,"WITH team_pos_avg AS (
+    SELECT 
+        pms.team_id,
+        p.position,
+        AVG(pms.player_rating) AS avg_rating
+    FROM player_match_stats pms
+    JOIN players p ON pms.player_id = p.player_id
+    GROUP BY pms.team_id, p.position
+)
+SELECT 
+    p.player_id,
+    p.first_name,
+    p.last_name,
+    p.position,
+    p.team_id
+FROM players p
+JOIN player_match_stats pms ON p.player_id = pms.player_id
+JOIN team_pos_avg tpa ON p.team_id = tpa.team_id AND p.position = tpa.position
+GROUP BY p.player_id, p.first_name, p.last_name, p.position, p.team_id
+HAVING AVG(pms.player_rating) > tpa.avg_rating","Averages all of a player's match records while comparing with the current team's position average, without restricting the player's records to that team."
+490,subquery_cte,hard,PASS,CORRECT,List teams whose active-contract payroll is above the average for teams in the same league.,"SELECT t.team_id, t.team_name, t.league_id, t.salary_payroll
+FROM teams t
+JOIN contracts c ON t.team_id = c.team_id
+WHERE c.contract_status = 'active'
+GROUP BY t.team_id, t.team_name, t.league_id, t.salary_payroll
+HAVING SUM(c.base_salary) > (
+    SELECT AVG(team_payroll)
+    FROM (
+        SELECT t2.team_id, SUM(c2.base_salary) AS team_payroll
+        FROM teams t2
+        JOIN contracts c2 ON t2.team_id = c2.team_id
+        WHERE c2.contract_status = 'active'
+          AND t2.league_id = t.league_id
+        GROUP BY t2.team_id
+    )
+)",
+491,subquery_cte,hard,PASS,CORRECT,List leagues whose completed-match ticket revenue is above the average league revenue.,"SELECT l.league_id, l.league_name
+FROM leagues l
+JOIN matches m ON l.league_id = m.league_id
+WHERE m.match_status = 'completed'
+GROUP BY l.league_id, l.league_name
+HAVING SUM(m.ticket_revenue) > (
+    SELECT AVG(league_total_revenue)
+    FROM (
+        SELECT SUM(ticket_revenue) AS league_total_revenue
+        FROM matches
+        WHERE match_status = 'completed'
+        GROUP BY league_id
+    )
+)",
+492,subquery_cte,hard,PASS,INCORRECT,List players whose total contract value is above the average for players at the same position.,"WITH player_total_value AS (
+    SELECT
+        p.player_id,
+        p.first_name,
+        p.last_name,
+        p.position,
+        (c.base_salary + COALESCE(c.signing_bonus, 0) + COALESCE(c.performance_bonus, 0) + COALESCE(c.appearance_bonus, 0) + COALESCE(c.championship_bonus, 0)) AS total_contract_value
+    FROM players p
+    JOIN contracts c ON p.player_id = c.player_id
+),
+position_averages AS (
+    SELECT
+        position,
+        AVG(total_contract_value) AS avg_value
+    FROM player_total_value
+    GROUP BY position
+)
+SELECT
+    ptv.player_id,
+    ptv.first_name,
+    ptv.last_name,
+    ptv.position
+FROM player_total_value ptv
+JOIN position_averages pa ON ptv.position = pa.position
+WHERE ptv.total_contract_value > pa.avg_value",Computes contract value separately per contract and never sums each player's contracts before comparing with position averages.
+493,subquery_cte,hard,PASS,INCORRECT,List teams whose injury rate is above the average injury rate in their league.,"WITH team_injury_counts AS (
+    SELECT 
+        t.team_id,
+        t.team_name,
+        t.league_id,
+        COUNT(DISTINCT i.injury_id) AS injury_count
+    FROM teams t
+    JOIN injuries i ON t.team_id = i.team_id
+    GROUP BY t.team_id, t.team_name, t.league_id
+),
+league_avg_injury AS (
+    SELECT 
+        league_id,
+        AVG(injury_count) AS avg_injury_rate
+    FROM team_injury_counts
+    GROUP BY league_id
+)
+SELECT 
+    tic.team_id,
+    tic.team_name,
+    tic.league_id
+FROM team_injury_counts tic
+JOIN league_avg_injury la ON tic.league_id = la.league_id
+WHERE tic.injury_count > la.avg_injury_rate","Compares injury counts, not injury rates with an appropriate player or roster denominator."
+494,subquery_cte,hard,PASS,CORRECT,List players whose average readiness score is above the team average and whose match rating is above the position average.,"WITH player_readiness AS (
+    SELECT player_id, AVG(readiness_score) AS avg_readiness
+    FROM player_training_stats
+    GROUP BY player_id
+),
+team_avg_readiness AS (
+    SELECT team_id, AVG(avg_readiness) AS team_avg
+    FROM (
+        SELECT p.team_id, pr.avg_readiness
+        FROM players p
+        JOIN player_readiness pr ON p.player_id = pr.player_id
+    )
+    GROUP BY team_id
+),
+player_rating AS (
+    SELECT player_id, AVG(player_rating) AS avg_rating
+    FROM player_match_stats
+    GROUP BY player_id
+),
+pos_avg_rating AS (
+    SELECT position, AVG(avg_rating) AS pos_avg
+    FROM (
+        SELECT p.position, pr.avg_rating
+        FROM players p
+        JOIN player_rating pr ON p.player_id = pr.player_id
+    )
+    GROUP BY position
+)
+SELECT p.player_id, p.first_name, p.last_name
+FROM players p
+JOIN player_readiness pr ON p.player_id = pr.player_id
+JOIN team_avg_readiness tar ON p.team_id = tar.team_id
+JOIN player_rating pr2 ON p.player_id = pr2.player_id
+JOIN pos_avg_rating par ON p.position = par.position
+WHERE pr.avg_readiness > tar.team_avg
+  AND pr2.avg_rating > par.pos_avg",
+495,subquery_cte,hard,PASS,CORRECT,List coaches whose win percentage is above the average for coaches in the same role.,"SELECT c.coach_id, c.first_name, c.last_name, c.coach_role, c.wins, c.losses, c.draws
+FROM coaches c
+WHERE CAST(c.wins AS REAL) / (c.wins + c.losses + c.draws) > (
+    SELECT AVG(CAST(c2.wins AS REAL) / (c2.wins + c2.losses + c2.draws))
+    FROM coaches c2
+    WHERE c2.coach_role = c.coach_role
+)
+AND (c.wins + c.losses + c.draws) > 0",
+496,subquery_cte,hard,PASS,INCORRECT,List players who appeared in every completed match played by their team.,"WITH team_completed_matches AS (
+    SELECT 
+        p.team_id,
+        COUNT(DISTINCT m.match_id) AS total_completed_matches
+    FROM players p
+    JOIN matches m ON m.home_team_id = p.team_id OR m.away_team_id = p.team_id
+    WHERE m.match_status = 'completed'
+    GROUP BY p.team_id
+),
+player_appearances AS (
+    SELECT 
+        p.player_id,
+        p.first_name,
+        p.last_name,
+        p.team_id,
+        COUNT(DISTINCT pms.match_id) AS matches_played
+    FROM players p
+    JOIN player_match_stats pms ON p.player_id = pms.player_id
+    JOIN matches m ON pms.match_id = m.match_id
+    WHERE m.match_status = 'completed'
+    GROUP BY p.player_id, p.first_name, p.last_name, p.team_id
+)
+SELECT 
+    pa.player_id,
+    pa.first_name,
+    pa.last_name
+FROM player_appearances pa
+JOIN team_completed_matches tcm ON pa.team_id = tcm.team_id
+WHERE pa.matches_played = tcm.total_completed_matches",Counts all of a player's completed appearances without requiring those appearances to be for the player's current team.
+497,subquery_cte,hard,PASS,INCORRECT,List teams where every active player has at least one active contract.,"SELECT t.team_id, t.team_name
+FROM teams t
+JOIN players p ON t.team_id = p.team_id
+JOIN contracts c ON p.player_id = c.player_id
+WHERE p.active_flag = '1'
+GROUP BY t.team_id, t.team_name
+HAVING COUNT(DISTINCT CASE WHEN c.contract_status = 'active' THEN p.player_id END) = COUNT(DISTINCT p.player_id)","The inner contract join removes active players with no contract from the denominator, allowing teams with uncovered active players to pass."
+498,subquery_cte,hard,PASS,CORRECT,List seasons where every completed match has at least one player performance record.,"SELECT s.season_id, s.season_name
+FROM seasons s
+JOIN matches m ON s.season_id = m.season_id
+JOIN player_match_stats pms ON m.match_id = pms.match_id
+WHERE m.match_status = 'completed'
+GROUP BY s.season_id, s.season_name
+HAVING COUNT(DISTINCT m.match_id) = (
+    SELECT COUNT(*)
+    FROM matches m2
+    WHERE m2.season_id = s.season_id
+      AND m2.match_status = 'completed'
+)",
+499,subquery_cte,hard,PASS,INCORRECT,List players whose three most recent match ratings improved each time.,"WITH recent_ratings AS (
+    SELECT
+        pms.player_id,
+        pms.player_rating,
+        m.match_date,
+        ROW_NUMBER() OVER (PARTITION BY pms.player_id ORDER BY m.match_date DESC) AS rn
+    FROM player_match_stats pms
+    JOIN matches m ON pms.match_id = m.match_id
+),
+top_three AS (
+    SELECT
+        player_id,
+        player_rating,
+        rn
+    FROM recent_ratings
+    WHERE rn <= 3
+),
+ranked_top_three AS (
+    SELECT
+        player_id,
+        player_rating,
+        rn,
+        ROW_NUMBER() OVER (PARTITION BY player_id ORDER BY rn DESC) AS reverse_rn
+    FROM top_three
+),
+consecutive_checks AS (
+    SELECT
+        t1.player_id,
+        t1.player_rating AS rating1,
+        t2.player_rating AS rating2,
+        t3.player_rating AS rating3,
+        CASE
+            WHEN t1.player_rating < t2.player_rating AND t2.player_rating < t3.player_rating THEN 1
+            ELSE 0
+        END AS is_strictly_increasing
+    FROM ranked_top_three t1
+    JOIN ranked_top_three t2 ON t1.player_id = t2.player_id AND t1.reverse_rn = t2.reverse_rn + 1
+    JOIN ranked_top_three t3 ON t1.player_id = t3.player_id AND t1.reverse_rn = t3.reverse_rn + 2
+)
+SELECT
+    p.player_id,
+    p.first_name,
+    p.last_name
+FROM players p
+JOIN consecutive_checks cc ON p.player_id = cc.player_id
+WHERE cc.is_strictly_increasing = 1","The chronological comparison is reversed, selecting players whose ratings declined from oldest to newest."
+500,subquery_cte,hard,PASS,INCORRECT,List teams whose 2025 completed-match revenue exceeded their 2024 completed-match revenue.,"WITH team_revenue AS (
+    SELECT 
+        t.team_id,
+        t.team_name,
+        SUM(m.ticket_revenue + m.sponsorship_revenue) AS total_revenue,
+        s.season_year
+    FROM teams t
+    JOIN matches m ON (t.team_id = m.home_team_id OR t.team_id = m.away_team_id)
+    JOIN seasons s ON m.season_id = s.season_id
+    WHERE s.season_year IN (2024, 2025)
+    GROUP BY t.team_id, t.team_name, s.season_year
+)
+SELECT 
+    tr2025.team_id,
+    tr2025.team_name
+FROM team_revenue tr2025
+JOIN team_revenue tr2024 ON tr2025.team_id = tr2024.team_id
+WHERE tr2025.season_year = 2025
+  AND tr2024.season_year = 2024
+  AND tr2025.total_revenue > tr2024.total_revenue",Includes non-completed matches in both 2024 and 2025 revenue totals.

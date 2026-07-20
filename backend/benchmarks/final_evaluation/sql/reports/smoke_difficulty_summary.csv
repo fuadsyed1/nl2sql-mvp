@@ -1,0 +1,2 @@
+key,total,correct,wrong,controlled_failure,error,timeout,strict_accuracy,avg_latency_s
+easy,20,17,3,0,0,0,0.850,13.6

@@ -1,0 +1,1933 @@
+================================================================================
+QUERY 01
+
+NATURAL LANGUAGE:
+Show playerID, nameFirst, nameLast, birthYear from People limit 10.
+
+SUCCESS: True
+HTTP STATUS: 200
+ROW COUNT: 10
+ELAPSED SECONDS: 12.09
+
+SQL:
+SELECT playerID, nameFirst, nameLast, birthYear FROM People LIMIT 10
+
+RESPONSE PREVIEW:
+{
+  "success": true,
+  "database_id": 49,
+  "question": "Show playerID, nameFirst, nameLast, birthYear from People limit 10.",
+  "extraction": null,
+  "ir": null,
+  "validation": null,
+  "tables_considered": null,
+  "large_mode_table_fallback": false,
+  "fallback_table": null,
+  "removed_redundant_partition_date_filter": false,
+  "partition_date": null,
+  "extraction_source": "llm",
+  "query_family": "normal_join_filter_group",
+  "query_family_confidence": 0.3,
+  "query_family_reason": "no distinctive relational pattern; use base pipeline",
+  "family_guard_valid": null,
+  "family_guard_reasons": null,
+  "candidate_count": 4,
+  "selected_candidate_source": "llm_sql_direct_variant",
+  "selected_candidate_label": "llm_sql_direct_variant",
+  "selection_reason": "consensus_group",
+  "consensus_group_size": 4,
+  "consensus_sources": [
+    "llm_primary",
+    "llm_sql_direct",
+    "llm_sql_direct_grain",
+    "llm_sql_direct_variant"
+  ],
+  "candidate_scores": [
+    {
+      "source": "llm_primary",
+      "label": "llm_primary",
+      "score": 77.0,
+      "executed": true,
+      "row_count": 10,
+      "fatal": false,
+      "fatal_reasons": []
+    },
+    {
+      "source": "llm_sql_direct",
+      "label": "llm_sql_direct",
+      "score": 77.0,
+      "executed": true,
+      "row_count": 10,
+      "fatal": false,
+      "fatal_reasons": []
+    },
+    {
+      "source": "llm_sql_direct_grain",
+      "label": "llm_sql_direct_grain",
+      "score": 77.0,
+      "executed": true,
+      "row_count": 10,
+      "fatal": false,
+      "fatal_reasons": []
+    },
+    {
+      "source": "llm_sql_direct_variant",
+      "label": "llm_sql_direct_variant",
+      "score": 77.0,
+      "executed": true,
+      "row_count": 10,
+      "fatal": false,
+      "fatal_reasons": []
+    }
+  ],
+  "candidate_reasons": {
+    "llm_primary": [
+      "checklist requires shape 'order_by_limit' but the SQL lacks it",
+      "generic fallback SQL (no_aggregation) ignores the requested aggregation/join/filter the question needs"
+    ],
+    "llm_sql_direct": [
+      "checklist requires shape 'order_by_limit' but the SQL lacks it",
+      "generic fallback SQL (no_aggregation) ignores the requested aggregation/join/filter the question needs"
+    ],
+    "llm_sql_direct_grain": [
+      "checklist requires shape 'order_by_limit' but the SQL lacks it",
+      "generic fallback SQL (no_aggregation) ignores the requested aggregation/join/filter the question needs"
+    ],
+    "llm_sql_direct_variant": [
+      "checklist requires shape 'order_by_limit' but the SQL lacks it",
+      "generic fallback SQL (no_aggregation) ignores the requested aggregation/join/filter the question needs"
+    ]
+  },
+  "rejected_candidates": [
+    {
+      "source": "llm_primary",
+      "label": "llm_primary",
+      "sql": "SELECT \"people\".\"playerid\", \"people\".\"namefirst\", \"people\".\"namelast\", \"people\".\"birthyear\" FROM \"people\" LIMIT 10",
+      "score": 77.0,
+      "executed": true,
+      "row_count": 10,
+      "reasons": [
+        "checklist requires shape 'order_by_limit' but the SQL lacks it",
+        "generic fallback SQL (no_aggregation) ignores the requested aggregation/join/filter the question needs"
+      ]
+    },
+    {
+      "source": "llm_sql_direct",
+      "label": "llm_sql_direct",
+      "sql": "SELECT playerID, nameFirst, nameLast, birthYear FROM People LIMIT 10",
+      "score": 77.0,
+      "executed": true,
+      "row_count": 10,
+      "reasons": [
+        "checklist requires shape 'order_by_limit' but the SQL lacks it",
+        "generic fallback SQL (no_aggregation) ignores the requested aggregation/join/filter the question needs"
+      ]
+    },
+    {
+      "source": "llm_sql_direct_grain",
+      "label": "llm_sql_direct_grain",
+      "sql": "SELECT people.playerid, people.namefirst, people.namelast, people.birthyear\nFROM people\nLIMIT 10",
+      "score": 77.0,
+      "executed": true,
+      "row_count": 10,
+      "reasons": [
+        "checklist requires shape 'order_by_limit' but the SQL lacks it",
+        "generic fallback SQL (no_aggregation) ignores the requested aggregation/join/filter the question needs"
+      ]
+    }
+  ],
+  "warnings": [],
+  "low_confidence": false,
+  "selected_candidate_score": 77.0,
+  "selected_candidate_validation": {
+    "executed": true,
+    "illegal_joins": [],
+    "unknown_columns": [],
+    "missing_tables": [],
+    "missing_concepts": [],
+    "required_shapes": {},
+    "duplicate_aliases": [],
+    "undefined_aliases": [],
+    "guard_valid": null,
+    "bare_cte": null,
+    "checklist": {
+      "delta": 13.0,
+      "missing_columns": [],
+      "missing_tables": [],
+      "shape_ok": false
+    },
+    "grain": {
+      "delta": 0.0
+    },
+    "semantic_rel": {
+      "generic_fallback": "no_aggregation",
+      "delta": -15.0
+    },
+    "semantic_join": {
+      "purpose_match": true,
+      "delta": 4.0
+    },
+    "table_lock": {
+      "locked_tables": [
+        "people"
+      ],
+      "delta": 0.0
+    },
+    "outside_tables": [],
+    "unseen_
+...<truncated>...
+
+================================================================================
+QUERY 02
+
+NATURAL LANGUAGE:
+Count the number of rows in People.
+
+SUCCESS: True
+HTTP STATUS: 200
+ROW COUNT: 1
+ELAPSED SECONDS: 8.73
+
+SQL:
+SELECT COUNT(*) FROM People
+
+RESPONSE PREVIEW:
+{
+  "success": true,
+  "database_id": 49,
+  "question": "Count the number of rows in People.",
+  "extraction": null,
+  "ir": null,
+  "validation": null,
+  "tables_considered": null,
+  "large_mode_table_fallback": false,
+  "fallback_table": null,
+  "removed_redundant_partition_date_filter": false,
+  "partition_date": null,
+  "extraction_source": "llm",
+  "query_family": "normal_join_filter_group",
+  "query_family_confidence": 0.3,
+  "query_family_reason": "no distinctive relational pattern; use base pipeline",
+  "family_guard_valid": null,
+  "family_guard_reasons": null,
+  "candidate_count": 4,
+  "selected_candidate_source": "llm_sql_direct_variant",
+  "selected_candidate_label": "llm_sql_direct_variant",
+  "selection_reason": "consensus_group",
+  "consensus_group_size": 4,
+  "consensus_sources": [
+    "llm_primary",
+    "llm_sql_direct",
+    "llm_sql_direct_grain",
+    "llm_sql_direct_variant"
+  ],
+  "candidate_scores": [
+    {
+      "source": "llm_primary",
+      "label": "llm_primary",
+      "score": 82.0,
+      "executed": true,
+      "row_count": 1,
+      "fatal": false,
+      "fatal_reasons": []
+    },
+    {
+      "source": "llm_sql_direct",
+      "label": "llm_sql_direct",
+      "score": 82.0,
+      "executed": true,
+      "row_count": 1,
+      "fatal": false,
+      "fatal_reasons": []
+    },
+    {
+      "source": "llm_sql_direct_grain",
+      "label": "llm_sql_direct_grain",
+      "score": 82.0,
+      "executed": true,
+      "row_count": 1,
+      "fatal": false,
+      "fatal_reasons": []
+    },
+    {
+      "source": "llm_sql_direct_variant",
+      "label": "llm_sql_direct_variant",
+      "score": 82.0,
+      "executed": true,
+      "row_count": 1,
+      "fatal": false,
+      "fatal_reasons": []
+    }
+  ],
+  "candidate_reasons": {
+    "llm_primary": [],
+    "llm_sql_direct": [],
+    "llm_sql_direct_grain": [],
+    "llm_sql_direct_variant": []
+  },
+  "rejected_candidates": [
+    {
+      "source": "llm_primary",
+      "label": "llm_primary",
+      "sql": "SELECT COUNT(*) AS \"row_count\" FROM \"people\"",
+      "score": 82.0,
+      "executed": true,
+      "row_count": 1,
+      "reasons": []
+    },
+    {
+      "source": "llm_sql_direct",
+      "label": "llm_sql_direct",
+      "sql": "SELECT COUNT(*) FROM People",
+      "score": 82.0,
+      "executed": true,
+      "row_count": 1,
+      "reasons": []
+    },
+    {
+      "source": "llm_sql_direct_grain",
+      "label": "llm_sql_direct_grain",
+      "sql": "SELECT COUNT(*) FROM People",
+      "score": 82.0,
+      "executed": true,
+      "row_count": 1,
+      "reasons": []
+    }
+  ],
+  "warnings": [],
+  "low_confidence": false,
+  "selected_candidate_score": 82.0,
+  "selected_candidate_validation": {
+    "executed": true,
+    "illegal_joins": [],
+    "unknown_columns": [],
+    "missing_tables": [],
+    "missing_concepts": [],
+    "required_shapes": {},
+    "duplicate_aliases": [],
+    "undefined_aliases": [],
+    "guard_valid": null,
+    "bare_cte": null,
+    "checklist": {
+      "delta": 3.0,
+      "missing_columns": [],
+      "missing_tables": [],
+      "shape_ok": null
+    },
+    "grain": {
+      "delta": 0.0
+    },
+    "semantic_rel": {
+      "delta": 0.0
+    },
+    "semantic_join": {
+      "purpose_match": true,
+      "delta": 4.0
+    },
+    "table_lock": {
+      "locked_tables": [
+        "people"
+      ],
+      "delta": 0.0
+    },
+    "outside_tables": [],
+    "unseen_literals": [],
+    "shape": {
+      "fatal": [],
+      "penalties": [],
+      "report_only": []
+    },
+    "fatal": [],
+    "probes": {
+      "warnings": [],
+      "penalty": 0.0,
+      "checks": {}
+    }
+  },
+  "semantic_checklist": {
+    "target_entity": "people",
+    "output_columns": [],
+    "must_use_tables": [
+      "people"
+    ],
+    "must_use_columns": [],
+    "measure_column": null,
+    "group_by_entity": null,
+    "comparison_logic": null,
+    "required_sql_shape": "plain_select",
+    "literals": [],
+    "row_grain": "a single count of all people",
+    "universe": null,
+    "required_group_keys": [],
+    "forbidden_hardcoded_universe": false
+  },
+  "repair_attempted": false,
+  "repair_triggers": [],
+  "repair_executed": false,
+  "repair_score": null,
+  "repair_selected": false,
+  "selected_source_before_repair": "llm_sql_direct_variant",
+  "value_grounding": {
+    "profiled_columns": 58,
+    "grounded_from_eval_copy": false
+  },
+  "plan": null,
+  "generated_sql": {
+    "generated": true,
+    "sql": "SELECT COUNT(*) FROM People",
+    "params": []
+  },
+  "relational_algebra": null,
+  "execution": {
+    "executed": true,
+    "columns": [
+      "COUNT(*)"
+    ],
+    "rows": [
+      [
+        20676
+      ]
+    ],
+    "row_count": 1,
+    "truncated": false,
+    "diagnostics": {
+      "param_count": 0
+    }
+  },
+  "_http_status": 200
+}
+
+================================================================================
+QUERY 03
+
+NATURAL LANGUAGE:
+Find the top 10 rows from Batting by home runs. Show playerID, yearID, teamID, HR.
+
+SUCCESS: True
+HTTP STATUS: 200
+ROW COUNT: 10
+ELAPSED SECONDS: 14.04
+
+SQL:
+SELECT playerID, yearID, teamID, HR FROM Batting ORDER BY HR DESC LIMIT 10
+
+RESPONSE PREVIEW:
+{
+  "success": true,
+  "database_id": 49,
+  "question": "Find the top 10 rows from Batting by home runs. Show playerID, yearID, teamID, HR.",
+  "extraction": null,
+  "ir": null,
+  "validation": null,
+  "tables_considered": null,
+  "large_mode_table_fallback": false,
+  "fallback_table": null,
+  "removed_redundant_partition_date_filter": false,
+  "partition_date": null,
+  "extraction_source": "llm",
+  "query_family": "normal_join_filter_group",
+  "query_family_confidence": 0.3,
+  "query_family_reason": "no distinctive relational pattern; use base pipeline",
+  "family_guard_valid": null,
+  "family_guard_reasons": null,
+  "candidate_count": 4,
+  "selected_candidate_source": "llm_sql_direct_variant",
+  "selected_candidate_label": "llm_sql_direct_variant",
+  "selection_reason": "consensus_group",
+  "consensus_group_size": 4,
+  "consensus_sources": [
+    "llm_primary",
+    "llm_sql_direct",
+    "llm_sql_direct_grain",
+    "llm_sql_direct_variant"
+  ],
+  "candidate_scores": [
+    {
+      "source": "llm_primary",
+      "label": "llm_primary",
+      "score": 100.0,
+      "executed": true,
+      "row_count": 10,
+      "fatal": false,
+      "fatal_reasons": []
+    },
+    {
+      "source": "llm_sql_direct",
+      "label": "llm_sql_direct",
+      "score": 100.0,
+      "executed": true,
+      "row_count": 10,
+      "fatal": false,
+      "fatal_reasons": []
+    },
+    {
+      "source": "llm_sql_direct_grain",
+      "label": "llm_sql_direct_grain",
+      "score": 100.0,
+      "executed": true,
+      "row_count": 10,
+      "fatal": false,
+      "fatal_reasons": []
+    },
+    {
+      "source": "llm_sql_direct_variant",
+      "label": "llm_sql_direct_variant",
+      "score": 100.0,
+      "executed": true,
+      "row_count": 10,
+      "fatal": false,
+      "fatal_reasons": []
+    }
+  ],
+  "candidate_reasons": {
+    "llm_primary": [],
+    "llm_sql_direct": [],
+    "llm_sql_direct_grain": [],
+    "llm_sql_direct_variant": []
+  },
+  "rejected_candidates": [
+    {
+      "source": "llm_primary",
+      "label": "llm_primary",
+      "sql": "SELECT \"batting\".\"playerid\", \"batting\".\"yearid\", \"batting\".\"teamid\", \"batting\".\"hr\" FROM \"batting\" ORDER BY \"batting\".\"hr\" DESC LIMIT 10",
+      "score": 100.0,
+      "executed": true,
+      "row_count": 10,
+      "reasons": []
+    },
+    {
+      "source": "llm_sql_direct",
+      "label": "llm_sql_direct",
+      "sql": "SELECT playerID, yearID, teamID, HR FROM Batting ORDER BY HR DESC LIMIT 10",
+      "score": 100.0,
+      "executed": true,
+      "row_count": 10,
+      "reasons": []
+    },
+    {
+      "source": "llm_sql_direct_grain",
+      "label": "llm_sql_direct_grain",
+      "sql": "SELECT playerID, yearID, teamID, HR\nFROM Batting\nORDER BY HR DESC\nLIMIT 10",
+      "score": 100.0,
+      "executed": true,
+      "row_count": 10,
+      "reasons": []
+    }
+  ],
+  "warnings": [],
+  "low_confidence": false,
+  "selected_candidate_score": 100.0,
+  "selected_candidate_validation": {
+    "executed": true,
+    "illegal_joins": [],
+    "unknown_columns": [],
+    "missing_tables": [],
+    "missing_concepts": [],
+    "required_shapes": {},
+    "duplicate_aliases": [],
+    "undefined_aliases": [],
+    "guard_valid": null,
+    "bare_cte": null,
+    "checklist": {
+      "delta": 30.0,
+      "missing_columns": [],
+      "missing_tables": [],
+      "shape_ok": true
+    },
+    "grain": {
+      "delta": 0.0
+    },
+    "semantic_rel": {
+      "delta": 0.0
+    },
+    "semantic_join": {
+      "delta": 0.0
+    },
+    "table_lock": {
+      "locked_tables": [
+        "batting"
+      ],
+      "delta": 0.0
+    },
+    "outside_tables": [],
+    "unseen_literals": [],
+    "shape": {
+      "fatal": [],
+      "penalties": [],
+      "report_only": []
+    },
+    "fatal": [],
+    "probes": {
+      "warnings": [],
+      "penalty": 0.0,
+      "checks": {}
+    }
+  },
+  "semantic_checklist": {
+    "target_entity": "batting",
+    "output_columns": [
+      "batting.playerid",
+      "batting.yearid",
+      "batting.teamid",
+      "batting.hr"
+    ],
+    "must_use_tables": [
+      "batting"
+    ],
+    "must_use_columns": [
+      "batting.playerid",
+      "batting.yearid",
+      "batting.teamid",
+      "batting.hr"
+    ],
+    "measure_column": "batting.hr",
+    "group_by_entity": null,
+    "comparison_logic": "Sort by home runs in descending order",
+    "required_sql_shape": "order_by_limit",
+    "literals": [
+      "10"
+    ],
+    "row_grain": "one row per player-season-team combination",
+    "universe": null,
+    "required_group_keys": [],
+    "forbidden_hardcoded_universe": false
+  },
+  "repair_attempted": false,
+  "repair_triggers": [],
+  "repair_executed": false,
+  "repair_score": null,
+  "repair_selected": false,
+  "selected_source_before_repair": "llm_sql_direct_variant",
+  "value_grounding": {
+    "profiled_columns": 58,
+    "grounded_from_eval_copy": false
+  },
+  "plan": null,
+  "generated_sql": {
+    "generated": true,
+    "sql": "SELECT playerID, yearID, teamID, HR FROM Batting ORDER BY HR DESC LIMIT 10",
+...<truncated>...
+
+================================================================================
+QUERY 04
+
+NATURAL LANGUAGE:
+Find batting rows where HR is greater than 50. Show playerID, yearID, teamID, HR and RBI.
+
+SUCCESS: True
+HTTP STATUS: 200
+ROW COUNT: 40
+ELAPSED SECONDS: 14.52
+
+SQL:
+SELECT playerID, yearID, teamID, HR, RBI FROM batting WHERE HR > 50
+
+RESPONSE PREVIEW:
+{
+  "success": true,
+  "database_id": 49,
+  "question": "Find batting rows where HR is greater than 50. Show playerID, yearID, teamID, HR and RBI.",
+  "extraction": null,
+  "ir": null,
+  "validation": null,
+  "tables_considered": null,
+  "large_mode_table_fallback": false,
+  "fallback_table": null,
+  "removed_redundant_partition_date_filter": false,
+  "partition_date": null,
+  "extraction_source": "llm",
+  "query_family": "normal_join_filter_group",
+  "query_family_confidence": 0.3,
+  "query_family_reason": "no distinctive relational pattern; use base pipeline",
+  "family_guard_valid": null,
+  "family_guard_reasons": null,
+  "candidate_count": 4,
+  "selected_candidate_source": "llm_sql_direct_variant",
+  "selected_candidate_label": "llm_sql_direct_variant",
+  "selection_reason": "consensus_group",
+  "consensus_group_size": 4,
+  "consensus_sources": [
+    "llm_primary",
+    "llm_sql_direct",
+    "llm_sql_direct_grain",
+    "llm_sql_direct_variant"
+  ],
+  "candidate_scores": [
+    {
+      "source": "llm_primary",
+      "label": "llm_primary",
+      "score": 90.0,
+      "executed": true,
+      "row_count": 40,
+      "fatal": false,
+      "fatal_reasons": []
+    },
+    {
+      "source": "llm_sql_direct",
+      "label": "llm_sql_direct",
+      "score": 90.0,
+      "executed": true,
+      "row_count": 40,
+      "fatal": false,
+      "fatal_reasons": []
+    },
+    {
+      "source": "llm_sql_direct_grain",
+      "label": "llm_sql_direct_grain",
+      "score": 90.0,
+      "executed": true,
+      "row_count": 40,
+      "fatal": false,
+      "fatal_reasons": []
+    },
+    {
+      "source": "llm_sql_direct_variant",
+      "label": "llm_sql_direct_variant",
+      "score": 90.0,
+      "executed": true,
+      "row_count": 40,
+      "fatal": false,
+      "fatal_reasons": []
+    }
+  ],
+  "candidate_reasons": {
+    "llm_primary": [
+      "generic fallback SQL (no_aggregation) ignores the requested aggregation/join/filter the question needs"
+    ],
+    "llm_sql_direct": [
+      "generic fallback SQL (no_aggregation) ignores the requested aggregation/join/filter the question needs"
+    ],
+    "llm_sql_direct_grain": [
+      "generic fallback SQL (no_aggregation) ignores the requested aggregation/join/filter the question needs"
+    ],
+    "llm_sql_direct_variant": [
+      "generic fallback SQL (no_aggregation) ignores the requested aggregation/join/filter the question needs"
+    ]
+  },
+  "rejected_candidates": [
+    {
+      "source": "llm_primary",
+      "label": "llm_primary",
+      "sql": "SELECT \"batting\".\"playerid\", \"batting\".\"yearid\", \"batting\".\"teamid\", \"batting\".\"hr\", \"batting\".\"rbi\" FROM \"batting\" WHERE \"batting\".\"hr\" > ?",
+      "score": 90.0,
+      "executed": true,
+      "row_count": 40,
+      "reasons": [
+        "generic fallback SQL (no_aggregation) ignores the requested aggregation/join/filter the question needs"
+      ]
+    },
+    {
+      "source": "llm_sql_direct",
+      "label": "llm_sql_direct",
+      "sql": "SELECT playerID, yearID, teamID, HR, RBI FROM batting WHERE HR > 50",
+      "score": 90.0,
+      "executed": true,
+      "row_count": 40,
+      "reasons": [
+        "generic fallback SQL (no_aggregation) ignores the requested aggregation/join/filter the question needs"
+      ]
+    },
+    {
+      "source": "llm_sql_direct_grain",
+      "label": "llm_sql_direct_grain",
+      "sql": "SELECT playerID, yearID, teamID, HR, RBI\nFROM Batting\nWHERE HR > 50",
+      "score": 90.0,
+      "executed": true,
+      "row_count": 40,
+      "reasons": [
+        "generic fallback SQL (no_aggregation) ignores the requested aggregation/join/filter the question needs"
+      ]
+    }
+  ],
+  "warnings": [],
+  "low_confidence": false,
+  "selected_candidate_score": 90.0,
+  "selected_candidate_validation": {
+    "executed": true,
+    "illegal_joins": [],
+    "unknown_columns": [],
+    "missing_tables": [],
+    "missing_concepts": [],
+    "required_shapes": {},
+    "duplicate_aliases": [],
+    "undefined_aliases": [],
+    "guard_valid": null,
+    "bare_cte": null,
+    "checklist": {
+      "delta": 30.0,
+      "missing_columns": [],
+      "missing_tables": [],
+      "shape_ok": null
+    },
+    "grain": {
+      "delta": 0.0
+    },
+    "semantic_rel": {
+      "generic_fallback": "no_aggregation",
+      "delta": -15.0
+    },
+    "semantic_join": {
+      "delta": 0.0
+    },
+    "table_lock": {
+      "locked_tables": [
+        "batting"
+      ],
+      "delta": 0.0
+    },
+    "outside_tables": [],
+    "unseen_literals": [],
+    "shape": {
+      "fatal": [],
+      "penalties": [],
+      "report_only": []
+    },
+    "fatal": [],
+    "probes": {
+      "warnings": [],
+      "penalty": 0.0,
+      "checks": {}
+    }
+  },
+  "semantic_checklist": {
+    "target_entity": "batting",
+    "output_columns": [
+      "batting.playerid",
+      "batting.yearid",
+      "batting.teamid",
+      "batting.hr",
+      "batting.rbi"
+    ],
+    "must_use_tables": [
+      "batting"
+    ],
+    "must_use_columns": [
+      "batting.playerid",
+
+...<truncated>...
+
+================================================================================
+QUERY 05
+
+NATURAL LANGUAGE:
+For each year in Batting, show the total number of home runs and total RBIs. Order by yearID.
+
+SUCCESS: True
+HTTP STATUS: 200
+ROW COUNT: 152
+ELAPSED SECONDS: 14.00
+
+SQL:
+SELECT yearID, SUM(HR) AS total_hr, SUM(RBI) AS total_rbi
+FROM batting
+GROUP BY yearID
+ORDER BY yearID
+
+RESPONSE PREVIEW:
+{
+  "success": true,
+  "database_id": 49,
+  "question": "For each year in Batting, show the total number of home runs and total RBIs. Order by yearID.",
+  "extraction": null,
+  "ir": null,
+  "validation": null,
+  "tables_considered": null,
+  "large_mode_table_fallback": false,
+  "fallback_table": null,
+  "removed_redundant_partition_date_filter": false,
+  "partition_date": null,
+  "extraction_source": "llm",
+  "query_family": "derived_aggregate_cte",
+  "query_family_confidence": 0.85,
+  "query_family_reason": "per-entity aggregate total then ranked/compared (derived relation)",
+  "family_guard_valid": null,
+  "family_guard_reasons": null,
+  "candidate_count": 5,
+  "selected_candidate_source": "llm_sql_direct_variant",
+  "selected_candidate_label": "llm_sql_direct_variant",
+  "selection_reason": "consensus_group",
+  "consensus_group_size": 5,
+  "consensus_sources": [
+    "llm_primary",
+    "llm_sql_direct",
+    "llm_sql_direct_grain",
+    "llm_sql_direct_variant",
+    "llm_variant"
+  ],
+  "candidate_scores": [
+    {
+      "source": "llm_primary",
+      "label": "llm_primary",
+      "score": 87.0,
+      "executed": true,
+      "row_count": 152,
+      "fatal": false,
+      "fatal_reasons": []
+    },
+    {
+      "source": "llm_variant",
+      "label": "llm_variant_1",
+      "score": 87.0,
+      "executed": true,
+      "row_count": 152,
+      "fatal": false,
+      "fatal_reasons": []
+    },
+    {
+      "source": "llm_sql_direct",
+      "label": "llm_sql_direct",
+      "score": 87.0,
+      "executed": true,
+      "row_count": 152,
+      "fatal": false,
+      "fatal_reasons": []
+    },
+    {
+      "source": "llm_sql_direct_grain",
+      "label": "llm_sql_direct_grain",
+      "score": 87.0,
+      "executed": true,
+      "row_count": 152,
+      "fatal": false,
+      "fatal_reasons": []
+    },
+    {
+      "source": "llm_sql_direct_variant",
+      "label": "llm_sql_direct_variant",
+      "score": 87.0,
+      "executed": true,
+      "row_count": 152,
+      "fatal": false,
+      "fatal_reasons": []
+    }
+  ],
+  "candidate_reasons": {
+    "llm_primary": [
+      "checklist requires shape 'group_by_having' but the SQL lacks it"
+    ],
+    "llm_variant_1": [
+      "checklist requires shape 'group_by_having' but the SQL lacks it"
+    ],
+    "llm_sql_direct": [
+      "checklist requires shape 'group_by_having' but the SQL lacks it"
+    ],
+    "llm_sql_direct_grain": [
+      "checklist requires shape 'group_by_having' but the SQL lacks it"
+    ],
+    "llm_sql_direct_variant": [
+      "checklist requires shape 'group_by_having' but the SQL lacks it"
+    ]
+  },
+  "rejected_candidates": [
+    {
+      "source": "llm_primary",
+      "label": "llm_primary",
+      "sql": "SELECT \"batting\".\"yearid\", SUM(\"batting\".\"hr\") AS \"total_home_runs\", SUM(\"batting\".\"rbi\") AS \"total_rbis\" FROM \"batting\" GROUP BY \"batting\".\"yearid\" ORDER BY \"batting\".\"yearid\" ASC",
+      "score": 87.0,
+      "executed": true,
+      "row_count": 152,
+      "reasons": [
+        "checklist requires shape 'group_by_having' but the SQL lacks it"
+      ]
+    },
+    {
+      "source": "llm_variant",
+      "label": "llm_variant_1",
+      "sql": "SELECT \"batting\".\"yearid\", SUM(\"batting\".\"hr\") AS \"total_home_runs\", SUM(\"batting\".\"rbi\") AS \"total_rbis\" FROM \"batting\" GROUP BY \"batting\".\"yearid\" ORDER BY \"batting\".\"yearid\" ASC",
+      "score": 87.0,
+      "executed": true,
+      "row_count": 152,
+      "reasons": [
+        "checklist requires shape 'group_by_having' but the SQL lacks it"
+      ]
+    },
+    {
+      "source": "llm_sql_direct",
+      "label": "llm_sql_direct",
+      "sql": "SELECT yearID, SUM(HR) AS total_home_runs, SUM(RBI) AS total_rbis\nFROM Batting\nGROUP BY yearID\nORDER BY yearID",
+      "score": 87.0,
+      "executed": true,
+      "row_count": 152,
+      "reasons": [
+        "checklist requires shape 'group_by_having' but the SQL lacks it"
+      ]
+    },
+    {
+      "source": "llm_sql_direct_grain",
+      "label": "llm_sql_direct_grain",
+      "sql": "SELECT yearID, SUM(HR) AS total_home_runs, SUM(RBI) AS total_rbis\nFROM Batting\nGROUP BY yearID\nORDER BY yearID",
+      "score": 87.0,
+      "executed": true,
+      "row_count": 152,
+      "reasons": [
+        "checklist requires shape 'group_by_having' but the SQL lacks it"
+      ]
+    }
+  ],
+  "warnings": [],
+  "low_confidence": false,
+  "selected_candidate_score": 87.0,
+  "selected_candidate_validation": {
+    "executed": true,
+    "illegal_joins": [],
+    "unknown_columns": [],
+    "missing_tables": [],
+    "missing_concepts": [],
+    "required_shapes": {},
+    "duplicate_aliases": [],
+    "undefined_aliases": [],
+    "guard_valid": null,
+    "bare_cte": null,
+    "checklist": {
+      "delta": 12.0,
+      "missing_columns": [],
+      "missing_tables": [],
+      "shape_ok": false
+    },
+    "grain": {
+      "delta": 0.0
+    },
+    "semantic_rel": {
+      "delta": 0.0
+    },
+    "semantic_join": {
+      "delta": 0.0
+    },
+    "table_lock": {
+      "lock
+...<truncated>...
+
+================================================================================
+QUERY 06
+
+NATURAL LANGUAGE:
+Find the top 10 players by total career home runs from Batting. Show playerID and total home runs.
+
+SUCCESS: True
+HTTP STATUS: 200
+ROW COUNT: 10
+ELAPSED SECONDS: 13.88
+
+SQL:
+SELECT playerID, SUM(HR) AS total_home_runs
+FROM Batting
+GROUP BY playerID
+ORDER BY total_home_runs DESC
+LIMIT 10
+
+RESPONSE PREVIEW:
+{
+  "success": true,
+  "database_id": 49,
+  "question": "Find the top 10 players by total career home runs from Batting. Show playerID and total home runs.",
+  "extraction": null,
+  "ir": null,
+  "validation": null,
+  "tables_considered": null,
+  "large_mode_table_fallback": false,
+  "fallback_table": null,
+  "removed_redundant_partition_date_filter": false,
+  "partition_date": null,
+  "extraction_source": "llm",
+  "query_family": "derived_aggregate_cte",
+  "query_family_confidence": 0.85,
+  "query_family_reason": "per-entity aggregate total then ranked/compared (derived relation)",
+  "family_guard_valid": null,
+  "family_guard_reasons": null,
+  "candidate_count": 5,
+  "selected_candidate_source": "llm_sql_direct_variant",
+  "selected_candidate_label": "llm_sql_direct_variant",
+  "selection_reason": "consensus_group",
+  "consensus_group_size": 4,
+  "consensus_sources": [
+    "llm_primary",
+    "llm_sql_direct",
+    "llm_sql_direct_grain",
+    "llm_sql_direct_variant"
+  ],
+  "candidate_scores": [
+    {
+      "source": "llm_primary",
+      "label": "llm_primary",
+      "score": 100.0,
+      "executed": true,
+      "row_count": 10,
+      "fatal": false,
+      "fatal_reasons": []
+    },
+    {
+      "source": "llm_variant",
+      "label": "llm_variant_1",
+      "score": 100.0,
+      "executed": true,
+      "row_count": 10,
+      "fatal": false,
+      "fatal_reasons": []
+    },
+    {
+      "source": "llm_sql_direct",
+      "label": "llm_sql_direct",
+      "score": 100.0,
+      "executed": true,
+      "row_count": 10,
+      "fatal": false,
+      "fatal_reasons": []
+    },
+    {
+      "source": "llm_sql_direct_grain",
+      "label": "llm_sql_direct_grain",
+      "score": 100.0,
+      "executed": true,
+      "row_count": 10,
+      "fatal": false,
+      "fatal_reasons": []
+    },
+    {
+      "source": "llm_sql_direct_variant",
+      "label": "llm_sql_direct_variant",
+      "score": 100.0,
+      "executed": true,
+      "row_count": 10,
+      "fatal": false,
+      "fatal_reasons": []
+    }
+  ],
+  "candidate_reasons": {
+    "llm_primary": [],
+    "llm_variant_1": [],
+    "llm_sql_direct": [],
+    "llm_sql_direct_grain": [],
+    "llm_sql_direct_variant": []
+  },
+  "rejected_candidates": [
+    {
+      "source": "llm_primary",
+      "label": "llm_primary",
+      "sql": "SELECT \"batting\".\"playerid\", SUM(\"batting\".\"hr\") AS \"total_home_runs\" FROM \"batting\" GROUP BY \"batting\".\"playerid\" ORDER BY \"total_home_runs\" DESC LIMIT 10",
+      "score": 100.0,
+      "executed": true,
+      "row_count": 10,
+      "reasons": []
+    },
+    {
+      "source": "llm_variant",
+      "label": "llm_variant_1",
+      "sql": "SELECT \"batting\".\"playerid\", \"batting\".\"hr\" AS \"total_home_runs\", SUM(\"batting\".\"hr\") AS \"total_home_runs\" FROM \"batting\" GROUP BY \"batting\".\"playerid\" ORDER BY \"total_home_runs\" DESC LIMIT 10",
+      "score": 100.0,
+      "executed": true,
+      "row_count": 10,
+      "reasons": []
+    },
+    {
+      "source": "llm_sql_direct",
+      "label": "llm_sql_direct",
+      "sql": "SELECT playerID, SUM(HR) AS total_home_runs\nFROM Batting\nGROUP BY playerID\nORDER BY total_home_runs DESC\nLIMIT 10",
+      "score": 100.0,
+      "executed": true,
+      "row_count": 10,
+      "reasons": []
+    },
+    {
+      "source": "llm_sql_direct_grain",
+      "label": "llm_sql_direct_grain",
+      "sql": "SELECT playerID, SUM(HR) AS total_home_runs\nFROM Batting\nGROUP BY playerID\nORDER BY total_home_runs DESC\nLIMIT 10",
+      "score": 100.0,
+      "executed": true,
+      "row_count": 10,
+      "reasons": []
+    }
+  ],
+  "warnings": [],
+  "low_confidence": false,
+  "selected_candidate_score": 100.0,
+  "selected_candidate_validation": {
+    "executed": true,
+    "illegal_joins": [],
+    "unknown_columns": [],
+    "missing_tables": [],
+    "missing_concepts": [],
+    "required_shapes": {},
+    "duplicate_aliases": [],
+    "undefined_aliases": [],
+    "guard_valid": null,
+    "bare_cte": null,
+    "checklist": {
+      "delta": 30.0,
+      "missing_columns": [],
+      "missing_tables": [],
+      "shape_ok": true
+    },
+    "grain": {
+      "delta": 0.0
+    },
+    "semantic_rel": {
+      "delta": 0.0
+    },
+    "semantic_join": {
+      "delta": 0.0
+    },
+    "table_lock": {
+      "locked_tables": [
+        "batting"
+      ],
+      "delta": 0.0
+    },
+    "outside_tables": [],
+    "unseen_literals": [],
+    "shape": {
+      "fatal": [],
+      "penalties": [],
+      "report_only": []
+    },
+    "fatal": [],
+    "probes": {
+      "warnings": [],
+      "penalty": 0.0,
+      "checks": {}
+    }
+  },
+  "semantic_checklist": {
+    "target_entity": "batting",
+    "output_columns": [
+      "batting.playerid"
+    ],
+    "must_use_tables": [
+      "batting"
+    ],
+    "must_use_columns": [
+      "batting.playerid",
+      "batting.hr"
+    ],
+    "measure_column": "batting.hr",
+    "group_by_entity": "batting.playerid",
+    "comparison_logic": "Sort by total home runs in descending order and take the top 10",
+    "required
+...<truncated>...
+
+================================================================================
+QUERY 07
+
+NATURAL LANGUAGE:
+Join People and Batting using playerID. Show player names, yearID, teamID, and home runs for rows where HR is greater than 50.
+
+SUCCESS: True
+HTTP STATUS: 200
+ROW COUNT: 40
+ELAPSED SECONDS: 15.78
+
+SQL:
+SELECT p.nameFirst, p.nameLast, b.yearID, b.teamID, b.HR
+FROM People p, Batting b
+WHERE p.playerID = b.playerID AND b.HR > 50
+
+RESPONSE PREVIEW:
+{
+  "success": true,
+  "database_id": 49,
+  "question": "Join People and Batting using playerID. Show player names, yearID, teamID, and home runs for rows where HR is greater than 50.",
+  "extraction": null,
+  "ir": null,
+  "validation": null,
+  "tables_considered": null,
+  "large_mode_table_fallback": false,
+  "fallback_table": null,
+  "removed_redundant_partition_date_filter": false,
+  "partition_date": null,
+  "extraction_source": "llm",
+  "query_family": "normal_join_filter_group",
+  "query_family_confidence": 0.3,
+  "query_family_reason": "no distinctive relational pattern; use base pipeline",
+  "family_guard_valid": null,
+  "family_guard_reasons": null,
+  "candidate_count": 5,
+  "selected_candidate_source": "llm_sql_repair",
+  "selected_candidate_label": "llm_sql_repair",
+  "selection_reason": "best_scored_executed",
+  "consensus_group_size": 1,
+  "consensus_sources": [
+    "llm_sql_repair"
+  ],
+  "candidate_scores": [
+    {
+      "source": "llm_primary",
+      "label": "llm_primary",
+      "score": 5.0,
+      "executed": false,
+      "row_count": null,
+      "fatal": false,
+      "fatal_reasons": []
+    },
+    {
+      "source": "llm_sql_direct",
+      "label": "llm_sql_direct",
+      "score": 69.0,
+      "executed": true,
+      "row_count": 40,
+      "fatal": true,
+      "fatal_reasons": [
+        "illegal join: people.playerid = batting.playerid"
+      ]
+    },
+    {
+      "source": "llm_sql_direct_grain",
+      "label": "llm_sql_direct_grain",
+      "score": 69.0,
+      "executed": true,
+      "row_count": 40,
+      "fatal": true,
+      "fatal_reasons": [
+        "illegal join: people.playerid = batting.playerid"
+      ]
+    },
+    {
+      "source": "llm_sql_direct_variant",
+      "label": "llm_sql_direct_variant",
+      "score": 69.0,
+      "executed": true,
+      "row_count": 40,
+      "fatal": true,
+      "fatal_reasons": [
+        "illegal join: people.playerid = batting.playerid"
+      ]
+    },
+    {
+      "source": "llm_sql_repair",
+      "label": "llm_sql_repair",
+      "score": 69.0,
+      "executed": true,
+      "row_count": 40,
+      "fatal": false,
+      "fatal_reasons": []
+    }
+  ],
+  "candidate_reasons": {
+    "llm_primary": [
+      "no SQL produced (invalid IR / unresolved plan / generation failure)"
+    ],
+    "llm_sql_direct": [
+      "illegal join/correlation people.playerid = batting.playerid (not a declared FK; e.g. key = measure)"
+    ],
+    "llm_sql_direct_grain": [
+      "illegal join/correlation people.playerid = batting.playerid (not a declared FK; e.g. key = measure)"
+    ],
+    "llm_sql_direct_variant": [
+      "illegal join/correlation people.playerid = batting.playerid (not a declared FK; e.g. key = measure)"
+    ],
+    "llm_sql_repair": [
+      "undefined alias referenced: b",
+      "generic fallback SQL (no_aggregation) ignores the requested aggregation/join/filter the question needs"
+    ]
+  },
+  "rejected_candidates": [
+    {
+      "source": "llm_primary",
+      "label": "llm_primary",
+      "sql": null,
+      "score": 5.0,
+      "executed": false,
+      "row_count": null,
+      "reasons": [
+        "no SQL produced (invalid IR / unresolved plan / generation failure)"
+      ]
+    },
+    {
+      "source": "llm_sql_direct",
+      "label": "llm_sql_direct",
+      "sql": "SELECT p.nameFirst, p.nameLast, b.yearID, b.teamID, b.HR\nFROM People p\nJOIN Batting b ON p.playerID = b.playerID\nWHERE b.HR > 50",
+      "score": 69.0,
+      "executed": true,
+      "row_count": 40,
+      "reasons": [
+        "illegal join/correlation people.playerid = batting.playerid (not a declared FK; e.g. key = measure)"
+      ]
+    },
+    {
+      "source": "llm_sql_direct_grain",
+      "label": "llm_sql_direct_grain",
+      "sql": "SELECT p.nameFirst, p.nameLast, b.yearID, b.teamID, b.HR\nFROM People p\nJOIN Batting b ON p.playerID = b.playerID\nWHERE b.HR > 50",
+      "score": 69.0,
+      "executed": true,
+      "row_count": 40,
+      "reasons": [
+        "illegal join/correlation people.playerid = batting.playerid (not a declared FK; e.g. key = measure)"
+      ]
+    },
+    {
+      "source": "llm_sql_direct_variant",
+      "label": "llm_sql_direct_variant",
+      "sql": "SELECT p.nameFirst, p.nameLast, b.yearID, b.teamID, b.HR\nFROM People p\nJOIN Batting b ON p.playerID = b.playerID\nWHERE b.HR > 50",
+      "score": 69.0,
+      "executed": true,
+      "row_count": 40,
+      "reasons": [
+        "illegal join/correlation people.playerid = batting.playerid (not a declared FK; e.g. key = measure)"
+      ]
+    }
+  ],
+  "warnings": [],
+  "low_confidence": false,
+  "selected_candidate_score": 69.0,
+  "selected_candidate_validation": {
+    "executed": true,
+    "illegal_joins": [],
+    "unknown_columns": [],
+    "missing_tables": [],
+    "missing_concepts": [],
+    "required_shapes": {},
+    "duplicate_aliases": [],
+    "undefined_aliases": [
+      "b"
+    ],
+    "guard_valid": null,
+    "bare_cte": null,
+    "checklist": {
+      "delta": 30.0,
+      "missing_columns": [],
+      "missing_tables": [
+...<truncated>...
+
+================================================================================
+QUERY 08
+
+NATURAL LANGUAGE:
+Join Teams and Batting using yearID, teamID, and lgID. For year 2001, show team name, playerID, and HR for batting rows with HR greater than 40.
+
+SUCCESS: True
+HTTP STATUS: 200
+ROW COUNT: 12
+ELAPSED SECONDS: 15.70
+
+SQL:
+SELECT T.name, B.playerID, B.HR
+FROM batting AS B
+JOIN Teams AS T
+  ON B.yearID = T.yearID
+ AND B.teamID = T.teamID
+ AND B.lgID = T.lgID
+WHERE B.yearID = 2001
+  AND B.HR > 40
+
+RESPONSE PREVIEW:
+{
+  "success": true,
+  "database_id": 49,
+  "question": "Join Teams and Batting using yearID, teamID, and lgID. For year 2001, show team name, playerID, and HR for batting rows with HR greater than 40.",
+  "extraction": null,
+  "ir": null,
+  "validation": null,
+  "tables_considered": null,
+  "large_mode_table_fallback": false,
+  "fallback_table": null,
+  "removed_redundant_partition_date_filter": false,
+  "partition_date": null,
+  "extraction_source": "llm",
+  "query_family": "normal_join_filter_group",
+  "query_family_confidence": 0.3,
+  "query_family_reason": "no distinctive relational pattern; use base pipeline",
+  "family_guard_valid": null,
+  "family_guard_reasons": null,
+  "candidate_count": 6,
+  "selected_candidate_source": "llm_sql_direct_variant",
+  "selected_candidate_label": "llm_sql_direct_variant",
+  "selection_reason": "consensus_group",
+  "consensus_group_size": 3,
+  "consensus_sources": [
+    "llm_sql_direct",
+    "llm_sql_direct_grain",
+    "llm_sql_direct_variant"
+  ],
+  "candidate_scores": [
+    {
+      "source": "llm_primary",
+      "label": "llm_primary",
+      "score": 5.0,
+      "executed": false,
+      "row_count": null,
+      "fatal": false,
+      "fatal_reasons": []
+    },
+    {
+      "source": "llm_variant",
+      "label": "llm_variant_1",
+      "score": 5.0,
+      "executed": false,
+      "row_count": null,
+      "fatal": false,
+      "fatal_reasons": []
+    },
+    {
+      "source": "llm_variant",
+      "label": "llm_variant_2",
+      "score": 5.0,
+      "executed": false,
+      "row_count": null,
+      "fatal": false,
+      "fatal_reasons": []
+    },
+    {
+      "source": "llm_sql_direct",
+      "label": "llm_sql_direct",
+      "score": 99.0,
+      "executed": true,
+      "row_count": 12,
+      "fatal": false,
+      "fatal_reasons": []
+    },
+    {
+      "source": "llm_sql_direct_grain",
+      "label": "llm_sql_direct_grain",
+      "score": 99.0,
+      "executed": true,
+      "row_count": 12,
+      "fatal": false,
+      "fatal_reasons": []
+    },
+    {
+      "source": "llm_sql_direct_variant",
+      "label": "llm_sql_direct_variant",
+      "score": 99.0,
+      "executed": true,
+      "row_count": 12,
+      "fatal": false,
+      "fatal_reasons": []
+    }
+  ],
+  "candidate_reasons": {
+    "llm_primary": [
+      "no SQL produced (invalid IR / unresolved plan / generation failure)"
+    ],
+    "llm_variant_1": [
+      "no SQL produced (invalid IR / unresolved plan / generation failure)"
+    ],
+    "llm_variant_2": [
+      "no SQL produced (invalid IR / unresolved plan / generation failure)"
+    ],
+    "llm_sql_direct": [
+      "SQL uses unmentioned table 'teams' while the question names specific tables ['batting']"
+    ],
+    "llm_sql_direct_grain": [
+      "SQL uses unmentioned table 'teams' while the question names specific tables ['batting']"
+    ],
+    "llm_sql_direct_variant": [
+      "SQL uses unmentioned table 'teams' while the question names specific tables ['batting']"
+    ]
+  },
+  "rejected_candidates": [
+    {
+      "source": "llm_primary",
+      "label": "llm_primary",
+      "sql": null,
+      "score": 5.0,
+      "executed": false,
+      "row_count": null,
+      "reasons": [
+        "no SQL produced (invalid IR / unresolved plan / generation failure)"
+      ]
+    },
+    {
+      "source": "llm_variant",
+      "label": "llm_variant_1",
+      "sql": null,
+      "score": 5.0,
+      "executed": false,
+      "row_count": null,
+      "reasons": [
+        "no SQL produced (invalid IR / unresolved plan / generation failure)"
+      ]
+    },
+    {
+      "source": "llm_variant",
+      "label": "llm_variant_2",
+      "sql": null,
+      "score": 5.0,
+      "executed": false,
+      "row_count": null,
+      "reasons": [
+        "no SQL produced (invalid IR / unresolved plan / generation failure)"
+      ]
+    },
+    {
+      "source": "llm_sql_direct",
+      "label": "llm_sql_direct",
+      "sql": "SELECT t.name, b.playerID, b.HR\nFROM batting b\nJOIN teams t\n  ON b.yearID = t.yearID\n  AND b.teamID = t.teamID\n  AND b.lgID = t.lgID\nWHERE b.yearID = 2001\n  AND b.HR > 40",
+      "score": 99.0,
+      "executed": true,
+      "row_count": 12,
+      "reasons": [
+        "SQL uses unmentioned table 'teams' while the question names specific tables ['batting']"
+      ]
+    },
+    {
+      "source": "llm_sql_direct_grain",
+      "label": "llm_sql_direct_grain",
+      "sql": "SELECT t.name, b.playerID, b.HR\nFROM Batting b\nJOIN Teams t ON b.yearID = t.yearID AND b.teamID = t.teamID AND b.lgid = t.lgid\nWHERE b.yearID = 2001 AND b.HR > 40",
+      "score": 99.0,
+      "executed": true,
+      "row_count": 12,
+      "reasons": [
+        "SQL uses unmentioned table 'teams' while the question names specific tables ['batting']"
+      ]
+    }
+  ],
+  "warnings": [],
+  "low_confidence": false,
+  "selected_candidate_score": 99.0,
+  "selected_candidate_validation": {
+    "executed": true,
+    "illegal_joins": [],
+    "unknown_columns": [],
+    "missing_tables": [],
+    "missing_concepts": [],
+    "required_s
+...<truncated>...
+
+================================================================================
+QUERY 09
+
+NATURAL LANGUAGE:
+Join People and Pitching using playerID. Show player names, yearID, teamID, wins, losses, and strikeouts for pitching rows where strikeouts are greater than 250.
+
+SUCCESS: True
+HTTP STATUS: 200
+ROW COUNT: 180
+ELAPSED SECONDS: 18.03
+
+SQL:
+SELECT p.nameFirst, p.nameLast, pit.yearID, pit.teamID, pit.W, pit.L, pit.SO
+FROM People p, Pitching pit
+WHERE p.playerID = pit.playerID
+AND pit.SO > 250
+
+RESPONSE PREVIEW:
+{
+  "success": true,
+  "database_id": 49,
+  "question": "Join People and Pitching using playerID. Show player names, yearID, teamID, wins, losses, and strikeouts for pitching rows where strikeouts are greater than 250.",
+  "extraction": null,
+  "ir": null,
+  "validation": null,
+  "tables_considered": null,
+  "large_mode_table_fallback": false,
+  "fallback_table": null,
+  "removed_redundant_partition_date_filter": false,
+  "partition_date": null,
+  "extraction_source": "llm",
+  "query_family": "normal_join_filter_group",
+  "query_family_confidence": 0.3,
+  "query_family_reason": "no distinctive relational pattern; use base pipeline",
+  "family_guard_valid": null,
+  "family_guard_reasons": null,
+  "candidate_count": 5,
+  "selected_candidate_source": "llm_sql_repair",
+  "selected_candidate_label": "llm_sql_repair",
+  "selection_reason": "best_scored_executed",
+  "consensus_group_size": 1,
+  "consensus_sources": [
+    "llm_sql_repair"
+  ],
+  "candidate_scores": [
+    {
+      "source": "llm_primary",
+      "label": "llm_primary",
+      "score": 5.0,
+      "executed": false,
+      "row_count": null,
+      "fatal": false,
+      "fatal_reasons": []
+    },
+    {
+      "source": "llm_sql_direct",
+      "label": "llm_sql_direct",
+      "score": 69.0,
+      "executed": true,
+      "row_count": 180,
+      "fatal": true,
+      "fatal_reasons": [
+        "illegal join: people.playerid = pitching.playerid"
+      ]
+    },
+    {
+      "source": "llm_sql_direct_grain",
+      "label": "llm_sql_direct_grain",
+      "score": 69.0,
+      "executed": true,
+      "row_count": 180,
+      "fatal": true,
+      "fatal_reasons": [
+        "illegal join: people.playerid = pitching.playerid"
+      ]
+    },
+    {
+      "source": "llm_sql_direct_variant",
+      "label": "llm_sql_direct_variant",
+      "score": 69.0,
+      "executed": true,
+      "row_count": 180,
+      "fatal": true,
+      "fatal_reasons": [
+        "illegal join: people.playerid = pitching.playerid"
+      ]
+    },
+    {
+      "source": "llm_sql_repair",
+      "label": "llm_sql_repair",
+      "score": 69.0,
+      "executed": true,
+      "row_count": 180,
+      "fatal": false,
+      "fatal_reasons": []
+    }
+  ],
+  "candidate_reasons": {
+    "llm_primary": [
+      "no SQL produced (invalid IR / unresolved plan / generation failure)"
+    ],
+    "llm_sql_direct": [
+      "illegal join/correlation people.playerid = pitching.playerid (not a declared FK; e.g. key = measure)"
+    ],
+    "llm_sql_direct_grain": [
+      "illegal join/correlation people.playerid = pitching.playerid (not a declared FK; e.g. key = measure)"
+    ],
+    "llm_sql_direct_variant": [
+      "illegal join/correlation people.playerid = pitching.playerid (not a declared FK; e.g. key = measure)"
+    ],
+    "llm_sql_repair": [
+      "undefined alias referenced: pit",
+      "generic fallback SQL (no_aggregation) ignores the requested aggregation/join/filter the question needs"
+    ]
+  },
+  "rejected_candidates": [
+    {
+      "source": "llm_primary",
+      "label": "llm_primary",
+      "sql": null,
+      "score": 5.0,
+      "executed": false,
+      "row_count": null,
+      "reasons": [
+        "no SQL produced (invalid IR / unresolved plan / generation failure)"
+      ]
+    },
+    {
+      "source": "llm_sql_direct",
+      "label": "llm_sql_direct",
+      "sql": "SELECT p.nameFirst, p.nameLast, pi.yearID, pi.teamID, pi.W, pi.L, pi.SO\nFROM People p\nJOIN Pitching pi ON p.playerID = pi.playerID\nWHERE pi.SO > 250",
+      "score": 69.0,
+      "executed": true,
+      "row_count": 180,
+      "reasons": [
+        "illegal join/correlation people.playerid = pitching.playerid (not a declared FK; e.g. key = measure)"
+      ]
+    },
+    {
+      "source": "llm_sql_direct_grain",
+      "label": "llm_sql_direct_grain",
+      "sql": "SELECT p.nameFirst, p.nameLast, pi.yearID, pi.teamID, pi.W, pi.L, pi.SO\nFROM People p\nJOIN Pitching pi ON p.playerID = pi.playerID\nWHERE pi.SO > 250",
+      "score": 69.0,
+      "executed": true,
+      "row_count": 180,
+      "reasons": [
+        "illegal join/correlation people.playerid = pitching.playerid (not a declared FK; e.g. key = measure)"
+      ]
+    },
+    {
+      "source": "llm_sql_direct_variant",
+      "label": "llm_sql_direct_variant",
+      "sql": "SELECT p.nameFirst, p.nameLast, pit.yearID, pit.teamID, pit.W, pit.L, pit.SO\nFROM People p\nJOIN Pitching pit ON p.playerID = pit.playerID\nWHERE pit.SO > 250",
+      "score": 69.0,
+      "executed": true,
+      "row_count": 180,
+      "reasons": [
+        "illegal join/correlation people.playerid = pitching.playerid (not a declared FK; e.g. key = measure)"
+      ]
+    }
+  ],
+  "warnings": [],
+  "low_confidence": false,
+  "selected_candidate_score": 69.0,
+  "selected_candidate_validation": {
+    "executed": true,
+    "illegal_joins": [],
+    "unknown_columns": [],
+    "missing_tables": [],
+    "missing_concepts": [],
+    "required_shapes": {},
+    "duplicate_aliases": [],
+    "undefined_aliases": [
+      "pit"
+    ],
+    "guard_valid":
+...<truncated>...
+
+================================================================================
+QUERY 10
+
+NATURAL LANGUAGE:
+Join Schools and CollegePlaying using schoolID. Show school name, playerID, and yearID for the first 20 college playing rows.
+
+SUCCESS: True
+HTTP STATUS: 200
+ROW COUNT: 20
+ELAPSED SECONDS: 13.67
+
+SQL:
+SELECT s.name_full, cp.playerID, cp.yearID
+FROM CollegePlaying cp
+JOIN Schools s ON cp.schoolID = s.schoolID
+ORDER BY cp.playerID, cp.yearID
+LIMIT 20
+
+RESPONSE PREVIEW:
+{
+  "success": true,
+  "database_id": 49,
+  "question": "Join Schools and CollegePlaying using schoolID. Show school name, playerID, and yearID for the first 20 college playing rows.",
+  "extraction": null,
+  "ir": null,
+  "validation": null,
+  "tables_considered": null,
+  "large_mode_table_fallback": false,
+  "fallback_table": null,
+  "removed_redundant_partition_date_filter": false,
+  "partition_date": null,
+  "extraction_source": "llm",
+  "query_family": "latest_earliest_per_entity",
+  "query_family_confidence": 0.72,
+  "query_family_reason": "latest/earliest per entity (implicit)",
+  "family_guard_valid": null,
+  "family_guard_reasons": null,
+  "candidate_count": 5,
+  "selected_candidate_source": "llm_sql_repair",
+  "selected_candidate_label": "llm_sql_repair",
+  "selection_reason": "consensus_group",
+  "consensus_group_size": 4,
+  "consensus_sources": [
+    "llm_sql_direct",
+    "llm_sql_direct_grain",
+    "llm_sql_direct_variant",
+    "llm_sql_repair"
+  ],
+  "candidate_scores": [
+    {
+      "source": "llm_primary",
+      "label": "llm_primary",
+      "score": 5.0,
+      "executed": false,
+      "row_count": null,
+      "fatal": false,
+      "fatal_reasons": []
+    },
+    {
+      "source": "llm_sql_direct",
+      "label": "llm_sql_direct",
+      "score": 56.0,
+      "executed": true,
+      "row_count": 20,
+      "fatal": true,
+      "fatal_reasons": [
+        "illegal join: collegeplaying.schoolid = schools.schoolid"
+      ]
+    },
+    {
+      "source": "llm_sql_direct_grain",
+      "label": "llm_sql_direct_grain",
+      "score": 65.0,
+      "executed": true,
+      "row_count": 20,
+      "fatal": true,
+      "fatal_reasons": [
+        "illegal join: collegeplaying.schoolid = schools.schoolid"
+      ]
+    },
+    {
+      "source": "llm_sql_direct_variant",
+      "label": "llm_sql_direct_variant",
+      "score": 56.0,
+      "executed": true,
+      "row_count": 20,
+      "fatal": true,
+      "fatal_reasons": [
+        "illegal join: collegeplaying.schoolid = schools.schoolid"
+      ]
+    },
+    {
+      "source": "llm_sql_repair",
+      "label": "llm_sql_repair",
+      "score": 65.0,
+      "executed": true,
+      "row_count": 20,
+      "fatal": true,
+      "fatal_reasons": [
+        "illegal join: collegeplaying.schoolid = schools.schoolid"
+      ]
+    }
+  ],
+  "candidate_reasons": {
+    "llm_primary": [
+      "no SQL produced (invalid IR / unresolved plan / generation failure)"
+    ],
+    "llm_sql_direct": [
+      "illegal join/correlation collegeplaying.schoolid = schools.schoolid (not a declared FK; e.g. key = measure)",
+      "checklist requires shape 'order_by_limit' but the SQL lacks it"
+    ],
+    "llm_sql_direct_grain": [
+      "illegal join/correlation collegeplaying.schoolid = schools.schoolid (not a declared FK; e.g. key = measure)"
+    ],
+    "llm_sql_direct_variant": [
+      "illegal join/correlation collegeplaying.schoolid = schools.schoolid (not a declared FK; e.g. key = measure)",
+      "checklist requires shape 'order_by_limit' but the SQL lacks it"
+    ],
+    "llm_sql_repair": [
+      "illegal join/correlation collegeplaying.schoolid = schools.schoolid (not a declared FK; e.g. key = measure)"
+    ]
+  },
+  "rejected_candidates": [
+    {
+      "source": "llm_primary",
+      "label": "llm_primary",
+      "sql": null,
+      "score": 5.0,
+      "executed": false,
+      "row_count": null,
+      "reasons": [
+        "no SQL produced (invalid IR / unresolved plan / generation failure)"
+      ]
+    },
+    {
+      "source": "llm_sql_direct",
+      "label": "llm_sql_direct",
+      "sql": "SELECT s.name_full, cp.playerID, cp.yearID\nFROM CollegePlaying cp\nJOIN Schools s ON cp.schoolID = s.schoolID\nLIMIT 20",
+      "score": 56.0,
+      "executed": true,
+      "row_count": 20,
+      "reasons": [
+        "illegal join/correlation collegeplaying.schoolid = schools.schoolid (not a declared FK; e.g. key = measure)",
+        "checklist requires shape 'order_by_limit' but the SQL lacks it"
+      ]
+    },
+    {
+      "source": "llm_sql_direct_grain",
+      "label": "llm_sql_direct_grain",
+      "sql": "SELECT s.name_full, cp.playerID, cp.yearID\nFROM CollegePlaying cp\nJOIN Schools s ON cp.schoolID = s.schoolID\nORDER BY cp.playerID, cp.yearID, cp.schoolID\nLIMIT 20",
+      "score": 65.0,
+      "executed": true,
+      "row_count": 20,
+      "reasons": [
+        "illegal join/correlation collegeplaying.schoolid = schools.schoolid (not a declared FK; e.g. key = measure)"
+      ]
+    },
+    {
+      "source": "llm_sql_direct_variant",
+      "label": "llm_sql_direct_variant",
+      "sql": "SELECT s.name_full, cp.playerID, cp.yearID\nFROM CollegePlaying cp\nJOIN Schools s ON cp.schoolID = s.schoolID\nLIMIT 20",
+      "score": 56.0,
+      "executed": true,
+      "row_count": 20,
+      "reasons": [
+        "illegal join/correlation collegeplaying.schoolid = schools.schoolid (not a declared FK; e.g. key = measure)",
+        "checklist requires shape 'order_by_limit' but the SQL lacks it"
+      ]
+    }
+  ],
+  "warnin
+...<truncated>...

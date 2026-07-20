@@ -1,5 +1,10 @@
-import { API_BASE } from "./api";
-import { useState, useEffect } from "react";
+import {
+  API_BASE,
+  finalizeRelationships,
+  saveRelationships,
+  getRelationships,
+} from "./api";
+import { useState, useEffect, useCallback } from "react";
 import Sidebar from "./components/Sidebar";
 import Dashboard from "./components/Dashboard";
 import AccountSettings from "./components/AccountSettings";
@@ -53,7 +58,7 @@ function App() {
   // Gating: the query input stays hidden until relationships are finalized for
   // the active database. Finalization is frontend-only for this chat session.
   const [relationshipsFinalized, setRelationshipsFinalized] = useState(false);
-  const [finalizedRelationships, setFinalizedRelationships] = useState(null);
+  const [, setFinalizedRelationships] = useState(null);
 
   const [user, setUser] = useState(() => {
     const user_id = localStorage.getItem("user_id");
@@ -66,65 +71,38 @@ function App() {
     return null;
   });
 
-  const formatBackendOutput = (data) => {
-    if (data.type === "clarification") {
-      return `❓ Clarification Needed\n\n${data.question}`;
+  // Query readiness is ALWAYS derived from backend metadata, never from chat
+  // state or localStorage. The backend enforces ownership (the database must
+  // belong to this user AND this conversation), so another chat/database
+  // instance cannot supply a finalized status. Querying is enabled only when
+  // the backend reports relationship_status === "finalized".
+  const syncGateFromBackend = async (databaseId, conversationId) => {
+    if (!databaseId) {
+      setRelationshipsFinalized(false);
+      setFinalizedRelationships(null);
+      return;
     }
-
-    if (data.type === "schema_mismatch") {
-      return `⚠️ Schema Mismatch\n\n${data.question}`;
+    try {
+      const res = await getRelationships(databaseId, {
+        user_id: user?.user_id,
+        username: user?.username,
+        conversation_id: conversationId,
+      });
+      if (!res || res.success === false) {
+        setRelationshipsFinalized(false);
+        setFinalizedRelationships(null);
+        return;
+      }
+      const finalized = res.relationship_status === "finalized";
+      setRelationshipsFinalized(finalized);
+      setFinalizedRelationships(finalized ? res.relationships || [] : null);
+    } catch {
+      setRelationshipsFinalized(false);
+      setFinalizedRelationships(null);
     }
-
-    if (data.type === "missing_dataset") {
-      return `📂 No Dataset Found\n\n${data.question}`;
-    }
-
-    if (data.type === "generated_schema") {
-      return `✅ Schema Generated\n\n${data.schema}\n\n${data.message}`;
-    }
-
-    if (data.type === "schema_saved") {
-      return `✅ Schema Saved\n\n${data.schema}\n\n${data.message}`;
-    }
-
-    if (data.type === "dataset_required") {
-      return `📂 Dataset Required\n\n${data.message}`;
-    }
-
-    if (data.type === "schema_error") {
-      return `❌ Schema Error\n\n${data.message}`;
-    }
-
-    if (data.type === "blocked") {
-      return `🚫 Blocked\n\n${data.error}\n\nSQL attempted:\n${data.sql}`;
-    }
-
-    if (data.type === "design_query") {
-      return `🔬 Design Query\n\n${data.message}`;
-    }
-
-    if (data.type === "success") {
-      return (
-        `SQL\n${"─".repeat(40)}\n${data.sql}\n\n` +
-        `Clean Query\n${"─".repeat(40)}\n${data.clean_query}\n\n` +
-        `Results\n${"─".repeat(40)}\n${JSON.stringify(
-          data.results || [],
-          null,
-          2
-        )}`
-      );
-    }
-
-    if (data.error) {
-      return `❌ Error\n\n${data.error}\n\nSQL:\n${
-        data.sql || "No SQL generated"
-      }`;
-    }
-
-    return JSON.stringify(data, null, 2);
   };
 
-  const loadConversations = async () => {
+  const loadConversations = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -140,13 +118,13 @@ function App() {
     } catch (err) {
       console.error("Failed to load conversations:", err);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     if (user) {
       loadConversations();
     }
-  }, [user]);
+  }, [user, loadConversations]);
 
   const newConversion = async () => {
     if (!user) return;
@@ -197,10 +175,10 @@ function App() {
 
       data.messages.forEach((msg) => {
         // New chat-format messages store the assistant text as {"output": "..."}.
-        let parsed = null;
+        let parsed;
         try {
           parsed = msg.results ? JSON.parse(msg.results) : null;
-        } catch (e) {
+        } catch {
           parsed = null;
         }
 
@@ -246,8 +224,11 @@ function App() {
         setActiveDatabaseSummary(
           saved.activeDatabaseSummary || { database_id: saved.activeDatabaseId }
         );
-        setRelationshipsFinalized(Boolean(saved.relationshipsFinalized));
-        setFinalizedRelationships(saved.finalizedRelationships || null);
+        // Query readiness is NOT restored from chat state; the backend is the
+        // source of truth. Default to disabled, then sync from metadata.
+        setRelationshipsFinalized(false);
+        setFinalizedRelationships(null);
+        syncGateFromBackend(saved.activeDatabaseId, conversationId);
 
         // Rebuild the one-time setup message if relationships were finalized and
         // it isn't already present (it is frontend-only, never saved to backend).
@@ -305,6 +286,41 @@ function App() {
         data_availability: data.data_availability,
       };
       setActiveDatabaseSummary(summary);
+
+      // Local benchmarks (and any loader that sets skip_relationship_review):
+      // activate directly, keep only DECLARED relationships, and SKIP the
+      // relationship-review step so the query input is available immediately.
+      if (data.skip_relationship_review) {
+        const rels = (data.relationships || []).map((r) => ({
+          from_table: r.from_table,
+          from_column: r.from_column,
+          to_table: r.to_table,
+          to_column: r.to_column,
+        }));
+        setFinalizedRelationships(rels);
+        setRelationshipsFinalized(true);
+        setMessages((prev) => [
+          ...prev,
+          {
+            type: "system",
+            setup: {
+              database_id: data.database_id,
+              name: summary.name,
+              tables: summary.tables,
+              data_availability: summary.data_availability,
+              relationships: rels,
+            },
+          },
+        ]);
+        saveChatDbState(currentConversationId, {
+          activeDatabaseId: data.database_id,
+          activeDatabaseSummary: summary,
+          relationshipsFinalized: true,
+          finalizedRelationships: rels,
+        });
+        return;
+      }
+
       // A freshly created database has not had its relationships finalized yet.
       setRelationshipsFinalized(false);
       setFinalizedRelationships(null);
@@ -315,6 +331,14 @@ function App() {
         relationshipsFinalized: false,
         finalizedRelationships: null,
       });
+    } else if (data && data.success === false && data.error) {
+      // Backend rejected setup (e.g. a large database with no declared PK/FK
+      // relationships). Surface the message; no active DB is created for this
+      // chat, so the query interface stays closed.
+      setMessages((prev) => [
+        ...prev,
+        { type: "system", text: data.message || "Database setup failed." },
+      ]);
     }
   };
 
@@ -335,14 +359,42 @@ function App() {
       relationshipsFinalized: false,
       finalizedRelationships: null,
     });
+    // Derive query readiness from backend metadata for the switched-in database.
+    syncGateFromBackend(id, currentConversationId);
     console.log("ACTIVE DATABASE ->", id);
   };
 
   // Frontend-only finalize: store the confirmed relationship list for this chat
   // session, unlock the query input, and drop a one-time setup summary message
   // into the chat. No backend persistence (no endpoint).
-  const handleFinalizeRelationships = (rels) => {
-    if (relationshipsFinalized) return; // add the setup message only once
+  const handleFinalizeRelationships = async (rels) => {
+    // Re-finalization is allowed (edit anytime -> save -> re-finalize); the
+    // one-time setup summary message is only appended on first finalize.
+    const alreadyFinalized = relationshipsFinalized;
+    // Persist finalization to backend metadata (this is what opens the query
+    // gate). Only update client state after the backend confirms.
+    const ctx = {
+      user_id: user?.user_id,
+      username: user?.username,
+      conversation_id: currentConversationId,
+    };
+    try {
+      // Persist the reviewed set, then finalize (opens the query gate).
+      const saved = await saveRelationships(
+        currentDatabaseId, rels || [], ctx);
+      if (!saved || saved.success === false) {
+        console.error("Save relationships failed:", saved && saved.message);
+        return;
+      }
+      const res = await finalizeRelationships(currentDatabaseId, ctx);
+      if (!res || res.success === false) {
+        console.error("Finalize failed:", res && res.message);
+        return;
+      }
+    } catch (e) {
+      console.error("Finalize request failed:", e);
+      return;
+    }
     const list = rels || [];
     setFinalizedRelationships(list);
     setRelationshipsFinalized(true);
@@ -358,7 +410,9 @@ function App() {
         to_column: r.to_column,
       })),
     };
-    setMessages((prev) => [...prev, { type: "system", setup }]);
+    if (!alreadyFinalized) {
+      setMessages((prev) => [...prev, { type: "system", setup }]);
+    }
     // Persist finalize state so the chat restores its input + setup message.
     saveChatDbState(currentConversationId, {
       activeDatabaseId: currentDatabaseId,
@@ -374,7 +428,7 @@ function App() {
     const lines = (text || "").split("\n");
     const items = [];
     let cur = null;
-    const numRe = /^\s*\d+\s*[).\-]\s+(.*\S)\s*$/;
+    const numRe = /^\s*\d+\s*[).-]\s+(.*\S)\s*$/;
     for (const line of lines) {
       const m = line.match(numRe);
       if (m) {
@@ -432,35 +486,6 @@ function App() {
   };
 
   // Render a database query result (SQL + executed rows) as chat text.
-  const formatDatabaseQueryOutput = (data) => {
-    if (!data.success) {
-      const reason =
-        (data.execution && (data.execution.error || data.execution.reason)) ||
-        (data.validation && data.validation.reason) ||
-        (data.plan && data.plan.reason) ||
-        "Could not generate SQL for this question.";
-      const sql = data.generated_sql && data.generated_sql.sql;
-      return `Could not run the query.\n${reason}${sql ? `\n\nSQL:\n${sql}` : ""}`;
-    }
-    const sql = (data.generated_sql && data.generated_sql.sql) || "";
-    const cols = (data.execution && data.execution.columns) || [];
-    const rows = (data.execution && data.execution.rows) || [];
-    const count =
-      (data.execution && data.execution.row_count) != null
-        ? data.execution.row_count
-        : rows.length;
-    if (rows.length === 0) {
-      const note = activeDatabaseSchemaOnly
-        ? "This database contains schema only, so SQL was generated but no rows were executed."
-        : "No rows returned.";
-      return `SQL:\n${sql}\n\n${note}`;
-    }
-    const header = cols.join(" | ");
-    const sep = cols.map(() => "---").join(" | ");
-    const body = rows.map((r) => r.join(" | ")).join("\n");
-    return `SQL:\n${sql}\n\nResult (${count} rows):\n${header}\n${sep}\n${body}`;
-  };
-
   // Structured result for QueryResultCard (SQL + relational algebra + table).
   const buildQueryResult = (data, label) => {
     const sql = (data.generated_sql && data.generated_sql.sql) || "";
@@ -572,6 +597,9 @@ function App() {
               body: JSON.stringify({
                 question: q,
                 database_id: currentDatabaseId,
+                user_id: user ? Number(user.user_id) : undefined,
+                username: user ? user.username : undefined,
+                conversation_id: conversationId,
               }),
             }
           );

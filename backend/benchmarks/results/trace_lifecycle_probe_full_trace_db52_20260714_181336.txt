@@ -1,0 +1,78 @@
+====================================================================================================
+TEST ID: probe
+CATEGORY: debug
+DIFFICULTY: easy
+DATABASE ID: 52
+QUESTION: Trace lifecycle probe
+REQUEST START: 2026-07-14T18:13:36
+REQUEST END: 2026-07-14T18:13:36
+TOTAL LATENCY: 0.0s
+====================================================================================================
+
+LAYER 1 — REQUEST AND SCHEMA CONTEXT
+active_database: 52
+database_dialect: sqlite
+available_tables (0): []
+available_columns:
+{}
+declared_or_inferred_relationships (0):
+[]
+
+LAYER 2 — NATURAL-LANGUAGE ANALYSIS
+raw_checklist_model_response:
+"(not captured)"
+normalized_checklist_fields:
+{
+  "extracted_entities": null,
+  "requested_output_columns": null,
+  "filters_and_literals": null,
+  "aggregations": [],
+  "group_by": null,
+  "required_group_keys": null,
+  "comparison_logic": null,
+  "distinct_requirement": [],
+  "set_operation_requirement": null,
+  "subquery_requirement": null,
+  "requested_grain": null,
+  "derived_metric_formula": [],
+  "temporal_requirements": null,
+  "grain_normalization_log": null
+}
+raw_ir_model_responses:
+{}
+
+LAYER 3 — TABLE AND RELATIONSHIP SELECTION
+initially_matched_tables (tables_considered): None
+table_scores:
+"(small-mode database: full graph, no retrieval scoring)"
+graph_force (locked/named/final subgraph):
+"(not captured)"
+considered_relationship_edges: see LAYER 1 relationship list (the in-memory graph the validators/scorer consult)
+per-candidate selected/rejected join usage: see each candidate's detected_join_conditions + relationship_validation (illegal_joins = rejected edges)
+
+LAYER 4 — SEMANTIC CHECKLIST / CONTRACT
+semantic_checklist (complete):
+null
+semantic_contract (complete):
+null
+
+LAYERS 5-8 — CANDIDATES (generation, validation, execution, scoring)
+candidate_count: 0
+
+LAYER 9 — FINAL DECISION
+selected_candidate_number: None
+selected_candidate_label: None
+selected_sql:
+<NO SQL RETURNED>
+exact_selection_reason: None
+rejected_candidate_reasons:
+{}
+repair_meta: {}
+final_enforcement_result: kept
+final_fatal_reasons:
+null
+controlled_failure: False
+endpoint_success: True
+endpoint_error: None
+no_sql_stage: no_candidate_generated
+

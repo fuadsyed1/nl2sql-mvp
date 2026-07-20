@@ -67,18 +67,23 @@ def test_high_confidence_hopf_link_is_not_penalized():
     assert not checks.get("unsupported_joins")
 
 
-def test_weak_hopf_link_does_not_approve_bad_join():
+def test_present_edge_supports_join_regardless_of_confidence():
+    # Relationship lifecycle (point 3): legality is MEMBERSHIP in the finalized
+    # stored graph, not per-edge confidence. Queries run only on a finalized
+    # (approved) set, so an edge that is present supports the join even if it was
+    # a low-confidence inference before finalization. The gate against weak
+    # unapproved edges is finalization, not this verifier.
     idx = _idx(relationships=[{
         "from_table": "zip_codes", "from_column": "zip_code",
         "to_table": "census_tracts", "to_column": "tract_ce",
-        "source": "hopf_inferred", "confidence": 0.55}])
+        "source": "inferred", "confidence": 0.55}])
     sql = ("SELECT z.city FROM zip_codes z "
            "JOIN census_tracts t ON z.zip_code = t.tract_ce")
     edges = [("zip_codes", "zip_code", "census_tracts", "tract_ce")]
     delta, _, checks = verify_semantic_relationships(
         "by area", None, sql, idx, sql_edges=edges)
-    assert delta <= BAD_JOIN_PENALTY
-    assert checks.get("unsupported_joins")
+    assert delta == 0.0
+    assert not checks.get("unsupported_joins")
 
 
 def test_wrong_same_shaped_table_choice_gets_warning():

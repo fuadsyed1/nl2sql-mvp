@@ -84,6 +84,7 @@ def extract_foreign_keys(db_path):
                     "value_overlap": None,
                     "confidence": 1.0,
                     "confirmed": True,
+                    "source": "pk_fk",
                 })
     finally:
         conn.close()

@@ -1,0 +1,1364 @@
+====================================================================================================
+TEST ID: 257
+CATEGORY: join
+DIFFICULTY: easy
+DATABASE ID: 52
+QUESTION: Show each sales order number with the assigned sales representative.
+REQUEST START: 2026-07-14T23:56:17
+REQUEST END: 2026-07-14T23:56:29
+TOTAL LATENCY: 11.48s
+====================================================================================================
+
+LAYER 1 — REQUEST AND SCHEMA CONTEXT
+active_database: 52
+database_dialect: sqlite
+available_tables (12): ['addresses', 'customers', 'departments', 'employees', 'inventory', 'payments', 'products', 'sales_order_items', 'sales_orders', 'shipments', 'suppliers', 'warehouses']
+available_columns:
+{
+  "addresses": [
+    "address_id",
+    "customer_id",
+    "address_type",
+    "recipient_name",
+    "line1",
+    "line2",
+    "city",
+    "state_code",
+    "postal_code",
+    "country_code",
+    "latitude",
+    "longitude",
+    "is_primary",
+    "delivery_instructions",
+    "residential_flag",
+    "validated_flag",
+    "validation_source",
+    "timezone",
+    "phone",
+    "created_at",
+    "updated_at",
+    "active_flag"
+  ],
+  "customers": [
+    "customer_id",
+    "customer_number",
+    "first_name",
+    "last_name",
+    "full_name",
+    "email",
+    "phone",
+    "date_of_birth",
+    "gender",
+    "customer_segment",
+    "loyalty_tier",
+    "loyalty_points",
+    "account_status",
+    "signup_date",
+    "preferred_contact_method",
+    "preferred_language",
+    "marketing_opt_in",
+    "tax_exempt",
+    "credit_limit",
+    "current_balance",
+    "risk_score",
+    "last_order_date",
+    "created_at",
+    "updated_at",
+    "notes"
+  ],
+  "departments": [
+    "department_id",
+    "department_code",
+    "department_name",
+    "description",
+    "cost_center",
+    "division_name",
+    "parent_department_id",
+    "location_city",
+    "location_state",
+    "annual_budget",
+    "headcount_budget",
+    "headcount_current",
+    "phone_extension",
+    "email_alias",
+    "operating_status",
+    "founded_date",
+    "review_cycle",
+    "compliance_level",
+    "created_at",
+    "updated_at"
+  ],
+  "employees": [
+    "employee_id",
+    "employee_number",
+    "department_id",
+    "manager_id",
+    "first_name",
+    "last_name",
+    "full_name",
+    "work_email",
+    "personal_email",
+    "phone",
+    "job_title",
+    "employment_type",
+    "employment_status",
+    "hire_date",
+    "termination_date",
+    "salary",
+    "bonus_target_pct",
+    "commission_rate",
+    "work_city",
+    "work_state",
+    "remote_flag",
+    "performance_rating",
+    "last_review_date",
+    "created_at",
+    "updated_at"
+  ],
+  "inventory": [
+    "inventory_id",
+    "warehouse_id",
+    "product_id",
+    "bin_location",
+    "lot_number",
+    "serial_tracking_flag",
+    "quantity_on_hand",
+    "quantity_reserved",
+    "quantity_available",
+    "quantity_damaged",
+    "quantity_in_transit",
+    "reorder_point",
+    "reorder_quantity",
+    "average_unit_cost",
+    "last_purchase_cost",
+    "inventory_value",
+    "last_count_date",
+    "last_receipt_date",
+    "last_issue_date",
+    "stock_status",
+    "created_at",
+    "updated_at"
+  ],
+  "payments": [
+    "payment_id",
+    "order_id",
+    "customer_id",
+    "payment_number",
+    "payment_date",
+    "payment_method",
+    "payment_provider",
+    "transaction_reference",
+    "currency_code",
+    "amount",
+    "fee_amount",
+    "net_amount",
+    "payment_status",
+    "authorization_code",
+    "card_brand",
+    "card_last4",
+    "billing_postal_code",
+    "fraud_score",
+    "refunded_amount",
+    "settlement_date",
+    "created_at",
+    "updated_at"
+  ],
+  "products": [
+    "product_id",
+    "sku",
+    "upc",
+    "product_name",
+    "department_id",
+    "supplier_id",
+    "category",
+    "subcategory",
+    "brand",
+    "description",
+    "unit_of_measure",
+    "pack_size",
+    "standard_cost",
+    "list_price",
+    "sale_price",
+    "taxable_flag",
+    "weight_kg",
+    "length_cm",
+    "width_cm",
+    "height_cm",
+    "reorder_point",
+    "discontinued_flag",
+    "launch_date",
+    "created_at",
+    "updated_at"
+  ],
+  "sales_order_items": [
+    "order_item_id",
+    "order_id",
+    "product_id",
+    "line_number",
+    "sku_snapshot",
+    "product_name_snapshot",
+    "quantity_ordered",
+    "quantity_shipped",
+    "quantity_backordered",
+    "unit_price",
+    "unit_cost",
+    "discount_pct",
+    "discount_amount",
+    "tax_rate",
+    "tax_amount",
+    "line_subtotal",
+    "line_total",
+    "fulfillment_status",
+    "warehouse_id",
+    "requested_ship_date",
+    "actual_ship_date",
+    "created_at",
+    "updated_at"
+  ],
+  "sales_orders": [
+    "order_id",
+    "order_number",
+    "customer_id",
+    "billing_address_id",
+    "shipping_address_id",
+    "sales_rep_id",
+    "order_date",
+    "required_date",
+    "shipped_date",
+    "order_status",
+    "sales_channel",
+    "currency_code",
+    "subtotal",
+    "discount_amount",
+    "tax_amount",
+    "shipping_amount",
+    "grand_total",
+    "payment_status",
+    "fulfillment_status",
+    "priority",
+    "customer_po_number",
+    "gift_flag",
+    "created_at",
+    "updated_at",
+    "notes"
+  ],
+  "shipments": [
+    "shipment_id",
+    "order_id",
+    "warehouse_id",
+    "shipping_address_id",
+    "shipment_number",
+    "carrier",
+    "service_level",
+    "tracking_number",
+    "shipment_status",
+    "ship_date",
+    "estimated_delivery_date",
+    "actual_delivery_date",
+    "package_count",
+    "total_weight_kg",
+    "shipping_cost",
+    "insurance_amount",
+    "signature_required",
+    "temperature_controlled",
+    "hazmat_flag",
+    "recipient_name",
+    "delivery_exception",
+    "created_at",
+    "updated_at",
+    "notes"
+  ],
+  "suppliers": [
+    "supplier_id",
+    "supplier_code",
+    "supplier_name",
+    "legal_name",
+    "supplier_type",
+    "contact_first_name",
+    "contact_last_name",
+    "contact_email",
+    "contact_phone",
+    "address_line1",
+    "address_line2",
+    "city",
+    "state_code",
+    "postal_code",
+    "country_code",
+    "rating",
+    "risk_level",
+    "payment_terms_days",
+    "currency_code",
+    "active_flag",
+    "onboard_date",
+    "created_at",
+    "updated_at"
+  ],
+  "warehouses": [
+    "warehouse_id",
+    "warehouse_code",
+    "warehouse_name",
+    "region",
+    "address_line1",
+    "address_line2",
+    "city",
+    "state_code",
+    "postal_code",
+    "country_code",
+    "latitude",
+    "longitude",
+    "timezone",
+    "capacity_units",
+    "current_utilization_pct",
+    "manager_employee_id",
+    "temperature_controlled",
+    "hazmat_certified",
+    "operating_status",
+    "opened_date",
+    "created_at",
+    "updated_at"
+  ]
+}
+declared_or_inferred_relationships (38):
+[
+  "addresses.customer_id -> customers.customer_id (type=foreign_key, confidence=1.0, confirmed=True)",
+  "employees.department_id -> departments.department_id (type=foreign_key, confidence=1.0, confirmed=True)",
+  "inventory.warehouse_id -> warehouses.warehouse_id (type=foreign_key, confidence=1.0, confirmed=True)",
+  "inventory.product_id -> products.product_id (type=foreign_key, confidence=1.0, confirmed=True)",
+  "payments.customer_id -> customers.customer_id (type=foreign_key, confidence=1.0, confirmed=True)",
+  "payments.order_id -> sales_orders.order_id (type=foreign_key, confidence=1.0, confirmed=True)",
+  "products.department_id -> departments.department_id (type=foreign_key, confidence=1.0, confirmed=True)",
+  "products.supplier_id -> suppliers.supplier_id (type=foreign_key, confidence=1.0, confirmed=True)",
+  "sales_order_items.order_id -> payments.order_id (type=foreign_key, confidence=1.0, confirmed=True)",
+  "sales_order_items.product_id -> products.product_id (type=foreign_key, confidence=1.0, confirmed=True)",
+  "sales_order_items.warehouse_id -> warehouses.warehouse_id (type=foreign_key, confidence=1.0, confirmed=True)",
+  "sales_orders.customer_id -> customers.customer_id (type=foreign_key, confidence=1.0, confirmed=True)",
+  "shipments.warehouse_id -> warehouses.warehouse_id (type=foreign_key, confidence=1.0, confirmed=True)",
+  "shipments.order_id -> payments.order_id (type=foreign_key, confidence=1.0, confirmed=True)",
+  "departments.parent_department_id -> departments.department_id (type=foreign_key, confidence=0.97, confirmed=True)",
+  "employees.manager_id -> employees.employee_id (type=foreign_key, confidence=0.97, confirmed=True)",
+  "warehouses.manager_employee_id -> employees.employee_id (type=foreign_key, confidence=0.878, confirmed=True)",
+  "sales_orders.billing_address_id -> addresses.address_id (type=foreign_key, confidence=0.873, confirmed=True)",
+  "sales_orders.shipping_address_id -> addresses.address_id (type=foreign_key, confidence=0.866, confirmed=True)",
+  "shipments.shipping_address_id -> addresses.address_id (type=foreign_key, confidence=0.866, confirmed=True)",
+  "suppliers.payment_terms_days -> payments.payment_id (type=foreign_key, confidence=0.854, confirmed=True)",
+  "sales_orders.sales_rep_id -> sales_order_items.order_item_id (type=foreign_key, confidence=0.853, confirmed=True)",
+  "inventory.reorder_point -> payments.order_id (type=foreign_key, confidence=0.852, confirmed=True)",
+  "products.reorder_point -> payments.order_id (type=foreign_key, confidence=0.852, confirmed=True)",
+  "sales_order_items.quantity_ordered -> payments.order_id (type=foreign_key, confidence=0.831, confirmed=False)",
+  "sales_order_items.line_number -> inventory.inventory_id (type=foreign_key, confidence=0.826, confirmed=False)",
+  "shipments.package_count -> payments.payment_id (type=foreign_key, confidence=0.826, confirmed=False)",
+  "inventory.quantity_on_hand -> payments.payment_id (type=foreign_key, confidence=0.803, confirmed=False)",
+  "departments.headcount_budget -> shipments.shipment_id (type=foreign_key, confidence=0.796, confirmed=False)",
+  "suppliers.rating -> payments.payment_id (type=foreign_key, confidence=0.796, confirmed=False)",
+  "inventory.quantity_reserved -> addresses.address_id (type=foreign_key, confidence=0.793, confirmed=False)",
+  "departments.headcount_current -> payments.payment_id (type=foreign_key, confidence=0.783, confirmed=False)",
+  "addresses.active_flag -> customers.customer_id (type=foreign_key, confidence=0.78, confirmed=False)",
+  "inventory.quantity_available -> payments.payment_id (type=foreign_key, confidence=0.772, confirmed=False)",
+  "inventory.quantity_in_transit -> payments.payment_id (type=foreign_key, confidence=0.768, confirmed=False)",
+  "sales_order_items.quantity_shipped -> shipments.shipment_id (type=foreign_key, confidence=0.737, confirmed=False)",
+  "inventory.quantity_damaged -> payments.payment_id (type=foreign_key, confidence=0.736, confirmed=False)",
+  "sales_order_items.quantity_backordered -> payments.order_id (type=foreign_key, confidence=0.733, confirmed=False)"
+]
+
+LAYER 2 — NATURAL-LANGUAGE ANALYSIS
+raw_checklist_model_response:
+"{\n  \"target_entity\": \"sales_orders\",\n  \"output_columns\": [\n    \"sales_orders.order_number\",\n    \"employees.full_name\"\n  ],\n  \"must_use_tables\": [\n    \"sales_orders\",\n    \"employees\"\n  ],\n  \"must_use_columns\": [\n    \"sales_orders.order_number\",\n    \"sales_orders.sales_rep_id\",\n    \"employees.full_name\"\n  ],\n  \"measure_column\": null,\n  \"group_by_entity\": null,\n  \"comparison_logic\": null,\n  \"required_sql_shape\": \"plain_select\",\n  \"literals\": [],\n  \"row_grain\": \"one row per sales order\",\n  \"universe\": null,\n  \"required_group_keys\": [],\n  \"forbidden_hardcoded_universe\": false,\n  \"grain_requirements\": [],\n  \"temporal_requirements\": [],\n  \"required_literal_groups\": []\n}"
+normalized_checklist_fields:
+{
+  "extracted_entities": "sales_orders",
+  "requested_output_columns": [
+    "sales_orders.order_number",
+    "employees.full_name"
+  ],
+  "filters_and_literals": [],
+  "aggregations": [],
+  "group_by": null,
+  "required_group_keys": [],
+  "comparison_logic": null,
+  "distinct_requirement": [],
+  "set_operation_requirement": null,
+  "subquery_requirement": "plain_select",
+  "requested_grain": "one row per sales order",
+  "derived_metric_formula": [],
+  "temporal_requirements": [],
+  "grain_normalization_log": []
+}
+raw_ir_model_responses:
+{
+  "ir_raw_responses": [
+    "{\n  \"tables\": [\n    \"sales_orders\"\n  ],\n  \"select\": [\n    {\n      \"table\": \"sales_orders\",\n      \"column\": \"order_number\"\n    },\n    {\n      \"table\": \"sales_orders\",\n      \"column\": \"sales_rep_id\"\n    }\n  ],\n  \"filters\": [],\n  \"aggregations\": [],\n  \"group_by\": [],\n  \"having\": [],\n  \"order_by\": [],\n  \"limit\": null,\n  \"distinct\": false\n}",
+    "{\n  \"tables\": [\n    \"sales_orders\"\n  ],\n  \"select\": [\n    {\n      \"table\": \"sales_orders\",\n      \"column\": \"order_number\"\n    },\n    {\n      \"table\": \"sales_orders\",\n      \"column\": \"sales_rep_id\"\n    }\n  ],\n  \"filters\": [],\n  \"aggregations\": [],\n  \"group_by\": [],\n  \"having\": [],\n  \"order_by\": [],\n  \"limit\": null,\n  \"distinct\": false\n}",
+    "{\n  \"tables\": [\n    \"sales_orders\",\n    \"employees\"\n  ],\n  \"select\": [\n    {\n      \"table\": \"sales_orders\",\n      \"column\": \"order_number\"\n    },\n    {\n      \"table\": \"employees\",\n      \"column\": \"full_name\"\n    }\n  ],\n  \"filters\": [],\n  \"aggregations\": [],\n  \"group_by\": [],\n  \"having\": [],\n  \"order_by\": [],\n  \"limit\": null,\n  \"distinct\": false\n}"
+  ]
+}
+
+LAYER 3 — TABLE AND RELATIONSHIP SELECTION
+initially_matched_tables (tables_considered): None
+table_scores:
+"(small-mode database: full graph, no retrieval scoring)"
+graph_force (locked/named/final subgraph):
+{
+  "database_id": 52,
+  "all_db_tables": [
+    "addresses",
+    "customers",
+    "departments",
+    "employees",
+    "inventory",
+    "payments",
+    "products",
+    "sales_order_items",
+    "sales_orders",
+    "shipments",
+    "suppliers",
+    "warehouses",
+    "purchases",
+    "foods",
+    "owners",
+    "pets"
+  ],
+  "explicit_names": [],
+  "found_named": [],
+  "missing_named": [],
+  "metadata_missing": [],
+  "final_subgraph_tables": [
+    "addresses",
+    "customers",
+    "departments",
+    "employees",
+    "inventory",
+    "payments",
+    "products",
+    "sales_order_items",
+    "sales_orders",
+    "shipments",
+    "suppliers",
+    "warehouses"
+  ]
+}
+considered_relationship_edges: see LAYER 1 relationship list (the in-memory graph the validators/scorer consult)
+per-candidate selected/rejected join usage: see each candidate's detected_join_conditions + relationship_validation (illegal_joins = rejected edges)
+
+LAYER 4 — SEMANTIC CHECKLIST / CONTRACT
+semantic_checklist (complete):
+{
+  "target_entity": "sales_orders",
+  "output_columns": [
+    "sales_orders.order_number",
+    "employees.full_name"
+  ],
+  "must_use_tables": [
+    "employees",
+    "sales_orders"
+  ],
+  "must_use_columns": [
+    "sales_orders.order_number",
+    "sales_orders.sales_rep_id",
+    "employees.full_name"
+  ],
+  "measure_column": null,
+  "group_by_entity": null,
+  "comparison_logic": null,
+  "required_sql_shape": "plain_select",
+  "literals": [],
+  "row_grain": "one row per sales order",
+  "universe": null,
+  "required_group_keys": [],
+  "forbidden_hardcoded_universe": false,
+  "measure_aggregation": null,
+  "measure_entity_key": null,
+  "comparison_right_kind": null,
+  "grain_confidence": null,
+  "grain_requirements": [],
+  "required_literal_groups": [],
+  "grain_normalization": [],
+  "temporal_requirements": []
+}
+semantic_contract (complete):
+null
+
+LAYERS 5-8 — CANDIDATES (generation, validation, execution, scoring)
+candidate_count: 5
+
+CANDIDATE 1
+generation_source: llm_primary (label: llm_primary)
+raw_model_response: (not captured for this source)
+extracted_sql:
+SELECT "sales_orders"."order_number", "sales_orders"."sales_rep_id" FROM "sales_orders"
+normalized_sql:
+SELECT "sales_orders"."order_number", "sales_orders"."sales_rep_id" FROM "sales_orders"
+-- validation ------------------------------------------
+{
+  "parse_success": true,
+  "parser_error": null,
+  "referenced_tables": [
+    "sales_orders"
+  ],
+  "referenced_columns": [
+    "sales_orders.order_number",
+    "sales_orders.sales_rep_id"
+  ],
+  "detected_join_conditions": [],
+  "detected_output_columns": [
+    "\"sales_orders\".\"order_number\"",
+    "\"sales_orders\".\"sales_rep_id\""
+  ],
+  "detected_aggregation": [],
+  "detected_group_by": [],
+  "detected_having": false,
+  "detected_order_by": false,
+  "detected_limit": null,
+  "detected_distinct": false,
+  "detected_subquery_or_cte": false,
+  "detected_set_operation": false,
+  "grain_validation": {
+    "fatal": [],
+    "warnings": [],
+    "skipped": "no typed contract"
+  },
+  "temporal_validation": {
+    "fatal": [],
+    "warnings": [],
+    "skipped": "no typed contract"
+  },
+  "fanout_validation": {
+    "fatal": [],
+    "warnings": [],
+    "fatal_count": 0
+  },
+  "semantic_validation": {
+    "semantic_guards": [],
+    "literal_groups": [],
+    "shape": {
+      "fatal": [],
+      "penalties": [],
+      "report_only": []
+    },
+    "checklist": {
+      "delta": -5.0,
+      "missing_columns": [
+        "employees.full_name"
+      ],
+      "missing_tables": [
+        "employees"
+      ],
+      "shape_ok": null
+    }
+  },
+  "relationship_validation": {
+    "illegal_joins": [],
+    "semantic_rel": {
+      "generic_fallback": "no_aggregation",
+      "delta": -15.0
+    },
+    "semantic_join": {
+      "delta": 0.0
+    },
+    "outside_tables": []
+  },
+  "value_grounding_validation": [],
+  "candidate_fatal_reasons": [],
+  "candidate_warnings": [
+    "question names table 'sales_order_items' but the candidate never uses it",
+    "checklist table 'employees' is never used",
+    "checklist column 'employees.full_name' is never used",
+    "generic fallback SQL (no_aggregation) ignores the requested aggregation/join/filter the question needs"
+  ]
+}
+-- execution -------------------------------------------
+{
+  "execution_attempted": true,
+  "skipped_reason": null,
+  "execution_success": true,
+  "execution_error": null,
+  "returned_columns": [
+    "order_number",
+    "sales_rep_id"
+  ],
+  "row_count": 800,
+  "first_10_rows": [
+    [
+      "SO-2024-000001",
+      16
+    ],
+    [
+      "SO-2025-000002",
+      38
+    ],
+    [
+      "SO-2024-000003",
+      112
+    ],
+    [
+      "SO-2025-000004",
+      2
+    ],
+    [
+      "SO-2026-000005",
+      52
+    ],
+    [
+      "SO-2024-000006",
+      74
+    ],
+    [
+      "SO-2024-000007",
+      112
+    ],
+    [
+      "SO-2025-000008",
+      62
+    ],
+    [
+      "SO-2024-000009",
+      4
+    ],
+    [
+      "SO-2026-000010",
+      4
+    ]
+  ]
+}
+-- scoring ---------------------------------------------
+{
+  "execution": 25,
+  "illegal_joins": 0,
+  "unknown_columns": 0,
+  "missing_tables": -12,
+  "missing_concepts": 0,
+  "intent_shapes": 0.0,
+  "aliases": 0,
+  "family_guard": 0,
+  "checklist_alignment": -5.0,
+  "grain_alignment": 0.0,
+  "outside_tables": 0,
+  "value_grounding": 0,
+  "semantic_guards": 0,
+  "literal_groups": 0,
+  "fanout_contract": 0,
+  "grain_contract": 0,
+  "temporal_contract": 0,
+  "base_score": 50.0,
+  "advisory_and_other_residual": -15.0,
+  "total_recorded_score": 43.0
+}
+
+CANDIDATE 2
+generation_source: llm_variant (label: llm_variant_2)
+raw_model_response: (not captured for this source)
+extracted_sql:
+SELECT "sales_orders"."order_number", "employees"."full_name" FROM "sales_orders" INNER JOIN "sales_order_items" ON "sales_orders"."sales_rep_id" = "sales_order_items"."order_item_id" INNER JOIN "warehouses" ON "sales_order_items"."warehouse_id" = "warehouses"."warehouse_id" INNER JOIN "employees" ON "warehouses"."manager_employee_id" = "employees"."employee_id"
+normalized_sql:
+SELECT "sales_orders"."order_number", "employees"."full_name" FROM "sales_orders" INNER JOIN "sales_order_items" ON "sales_orders"."sales_rep_id" = "sales_order_items"."order_item_id" INNER JOIN "warehouses" ON "sales_order_items"."warehouse_id" = "warehouses"."warehouse_id" INNER JOIN "employees" ON "warehouses"."manager_employee_id" = "employees"."employee_id"
+-- validation ------------------------------------------
+{
+  "parse_success": true,
+  "parser_error": null,
+  "referenced_tables": [
+    "employees",
+    "sales_order_items",
+    "sales_orders",
+    "warehouses"
+  ],
+  "referenced_columns": [
+    "employees.employee_id",
+    "employees.full_name",
+    "sales_order_items.order_item_id",
+    "sales_order_items.warehouse_id",
+    "sales_orders.order_number",
+    "sales_orders.sales_rep_id",
+    "warehouses.manager_employee_id",
+    "warehouses.warehouse_id"
+  ],
+  "detected_join_conditions": [
+    "\"sales_orders\".\"sales_rep_id\" = \"sales_order_items\".\"order_item_id\"",
+    "\"sales_order_items\".\"warehouse_id\" = \"warehouses\".\"warehouse_id\"",
+    "\"warehouses\".\"manager_employee_id\" = \"employees\".\"employee_id\""
+  ],
+  "detected_output_columns": [
+    "\"sales_orders\".\"order_number\"",
+    "\"employees\".\"full_name\""
+  ],
+  "detected_aggregation": [],
+  "detected_group_by": [],
+  "detected_having": false,
+  "detected_order_by": false,
+  "detected_limit": null,
+  "detected_distinct": false,
+  "detected_subquery_or_cte": false,
+  "detected_set_operation": false,
+  "grain_validation": {
+    "fatal": [],
+    "warnings": [],
+    "skipped": "no typed contract"
+  },
+  "temporal_validation": {
+    "fatal": [],
+    "warnings": [],
+    "skipped": "no typed contract"
+  },
+  "fanout_validation": {
+    "fatal": [],
+    "warnings": [],
+    "fatal_count": 0
+  },
+  "semantic_validation": {
+    "semantic_guards": [],
+    "literal_groups": [],
+    "shape": {
+      "fatal": [],
+      "penalties": [],
+      "report_only": []
+    },
+    "checklist": {
+      "delta": 21.0,
+      "missing_columns": [],
+      "missing_tables": [],
+      "shape_ok": null
+    }
+  },
+  "relationship_validation": {
+    "illegal_joins": [],
+    "semantic_rel": {
+      "delta": 0.0
+    },
+    "semantic_join": {
+      "delta": 0.0
+    },
+    "outside_tables": []
+  },
+  "value_grounding_validation": [],
+  "candidate_fatal_reasons": [],
+  "candidate_warnings": []
+}
+-- execution -------------------------------------------
+{
+  "execution_attempted": true,
+  "skipped_reason": null,
+  "execution_success": true,
+  "execution_error": null,
+  "returned_columns": [
+    "order_number",
+    "full_name"
+  ],
+  "row_count": 800,
+  "first_10_rows": [
+    [
+      "SO-2024-000001",
+      "Benjamin Bell"
+    ],
+    [
+      "SO-2025-000002",
+      "Elena Jackson"
+    ],
+    [
+      "SO-2024-000003",
+      "Jonah Sanchez"
+    ],
+    [
+      "SO-2025-000004",
+      "Elena Jackson"
+    ],
+    [
+      "SO-2026-000005",
+      "Sebastian Morris"
+    ],
+    [
+      "SO-2024-000006",
+      "Sebastian Morris"
+    ],
+    [
+      "SO-2024-000007",
+      "Jonah Sanchez"
+    ],
+    [
+      "SO-2025-000008",
+      "Jonah Sanchez"
+    ],
+    [
+      "SO-2024-000009",
+      "Elena Jackson"
+    ],
+    [
+      "SO-2026-000010",
+      "Elena Jackson"
+    ]
+  ]
+}
+-- scoring ---------------------------------------------
+{
+  "execution": 25,
+  "illegal_joins": 0,
+  "unknown_columns": 0,
+  "missing_tables": 0,
+  "missing_concepts": 0,
+  "intent_shapes": 0.0,
+  "aliases": 0,
+  "family_guard": 0,
+  "checklist_alignment": 21.0,
+  "grain_alignment": 0.0,
+  "outside_tables": 0,
+  "value_grounding": 0,
+  "semantic_guards": 0,
+  "literal_groups": 0,
+  "fanout_contract": 0,
+  "grain_contract": 0,
+  "temporal_contract": 0,
+  "base_score": 50.0,
+  "advisory_and_other_residual": 0.0,
+  "total_recorded_score": 96.0
+}
+
+CANDIDATE 3
+generation_source: llm_sql_direct (label: llm_sql_direct)
+raw_model_response: SELECT so.order_number, e.full_name
+FROM sales_orders so
+JOIN employees e ON so.sales_rep_id = e.employee_id
+extracted_sql:
+SELECT so.order_number, e.full_name
+FROM sales_orders so
+JOIN employees e ON so.sales_rep_id = e.employee_id
+normalized_sql:
+SELECT so.order_number, e.full_name
+FROM sales_orders so
+JOIN employees e ON so.sales_rep_id = e.employee_id
+-- validation ------------------------------------------
+{
+  "parse_success": true,
+  "parser_error": null,
+  "referenced_tables": [
+    "employees",
+    "sales_orders"
+  ],
+  "referenced_columns": [
+    "e.employee_id",
+    "e.full_name",
+    "so.order_number",
+    "so.sales_rep_id"
+  ],
+  "detected_join_conditions": [
+    "so.sales_rep_id = e.employee_id"
+  ],
+  "detected_output_columns": [
+    "so.order_number",
+    "e.full_name"
+  ],
+  "detected_aggregation": [],
+  "detected_group_by": [],
+  "detected_having": false,
+  "detected_order_by": false,
+  "detected_limit": null,
+  "detected_distinct": false,
+  "detected_subquery_or_cte": false,
+  "detected_set_operation": false,
+  "grain_validation": {
+    "fatal": [],
+    "warnings": [],
+    "skipped": "no typed contract"
+  },
+  "temporal_validation": {
+    "fatal": [],
+    "warnings": [],
+    "skipped": "no typed contract"
+  },
+  "fanout_validation": {
+    "fatal": [],
+    "warnings": [],
+    "fatal_count": 0
+  },
+  "semantic_validation": {
+    "semantic_guards": [],
+    "literal_groups": [],
+    "shape": {
+      "fatal": [],
+      "penalties": [],
+      "report_only": []
+    },
+    "checklist": {
+      "delta": 21.0,
+      "missing_columns": [],
+      "missing_tables": [],
+      "shape_ok": null
+    }
+  },
+  "relationship_validation": {
+    "illegal_joins": [
+      "sales_orders.sales_rep_id = employees.employee_id"
+    ],
+    "semantic_rel": {
+      "unsupported_joins": [
+        "sales_orders.sales_rep_id = employees.employee_id"
+      ],
+      "delta": -5.0
+    },
+    "semantic_join": {
+      "delta": 0.0
+    },
+    "outside_tables": []
+  },
+  "value_grounding_validation": [],
+  "candidate_fatal_reasons": [
+    "illegal join: sales_orders.sales_rep_id = employees.employee_id"
+  ],
+  "candidate_warnings": [
+    "illegal join/correlation sales_orders.sales_rep_id = employees.employee_id (not a declared FK; e.g. key = measure)",
+    "question names table 'sales_order_items' but the candidate never uses it",
+    "join sales_orders.sales_rep_id = employees.employee_id is not supported by a declared FK, a confirmed relationship, or a high-confidence inferred link"
+  ]
+}
+-- execution -------------------------------------------
+{
+  "execution_attempted": true,
+  "skipped_reason": null,
+  "execution_success": true,
+  "execution_error": null,
+  "returned_columns": [
+    "order_number",
+    "full_name"
+  ],
+  "row_count": 800,
+  "first_10_rows": [
+    [
+      "SO-2024-000001",
+      "Aria Garcia"
+    ],
+    [
+      "SO-2025-000002",
+      "Camila Wright"
+    ],
+    [
+      "SO-2024-000003",
+      "Mason Parker"
+    ],
+    [
+      "SO-2025-000004",
+      "Isabella Mitchell"
+    ],
+    [
+      "SO-2026-000005",
+      "Adam Walker"
+    ],
+    [
+      "SO-2024-000006",
+      "Leo Bell"
+    ],
+    [
+      "SO-2024-000007",
+      "Mason Parker"
+    ],
+    [
+      "SO-2025-000008",
+      "Sophia Young"
+    ],
+    [
+      "SO-2024-000009",
+      "Sofia Walker"
+    ],
+    [
+      "SO-2026-000010",
+      "Sofia Walker"
+    ]
+  ]
+}
+-- scoring ---------------------------------------------
+{
+  "execution": 25,
+  "illegal_joins": -40,
+  "unknown_columns": 0,
+  "missing_tables": -12,
+  "missing_concepts": 0,
+  "intent_shapes": 0.0,
+  "aliases": 0,
+  "family_guard": 0,
+  "checklist_alignment": 21.0,
+  "grain_alignment": 0.0,
+  "outside_tables": 0,
+  "value_grounding": 0,
+  "semantic_guards": 0,
+  "literal_groups": 0,
+  "fanout_contract": 0,
+  "grain_contract": 0,
+  "temporal_contract": 0,
+  "base_score": 50.0,
+  "advisory_and_other_residual": -5.0,
+  "total_recorded_score": 39.0
+}
+
+CANDIDATE 4
+generation_source: llm_sql_direct_grain (label: llm_sql_direct_grain)
+raw_model_response: SELECT so.order_number, e.full_name
+FROM sales_orders so
+JOIN employees e ON so.sales_rep_id = e.employee_id
+extracted_sql:
+SELECT so.order_number, e.full_name
+FROM sales_orders so
+JOIN employees e ON so.sales_rep_id = e.employee_id
+normalized_sql:
+SELECT so.order_number, e.full_name
+FROM sales_orders so
+JOIN employees e ON so.sales_rep_id = e.employee_id
+-- validation ------------------------------------------
+{
+  "parse_success": true,
+  "parser_error": null,
+  "referenced_tables": [
+    "employees",
+    "sales_orders"
+  ],
+  "referenced_columns": [
+    "e.employee_id",
+    "e.full_name",
+    "so.order_number",
+    "so.sales_rep_id"
+  ],
+  "detected_join_conditions": [
+    "so.sales_rep_id = e.employee_id"
+  ],
+  "detected_output_columns": [
+    "so.order_number",
+    "e.full_name"
+  ],
+  "detected_aggregation": [],
+  "detected_group_by": [],
+  "detected_having": false,
+  "detected_order_by": false,
+  "detected_limit": null,
+  "detected_distinct": false,
+  "detected_subquery_or_cte": false,
+  "detected_set_operation": false,
+  "grain_validation": {
+    "fatal": [],
+    "warnings": [],
+    "skipped": "no typed contract"
+  },
+  "temporal_validation": {
+    "fatal": [],
+    "warnings": [],
+    "skipped": "no typed contract"
+  },
+  "fanout_validation": {
+    "fatal": [],
+    "warnings": [],
+    "fatal_count": 0
+  },
+  "semantic_validation": {
+    "semantic_guards": [],
+    "literal_groups": [],
+    "shape": {
+      "fatal": [],
+      "penalties": [],
+      "report_only": []
+    },
+    "checklist": {
+      "delta": 21.0,
+      "missing_columns": [],
+      "missing_tables": [],
+      "shape_ok": null
+    }
+  },
+  "relationship_validation": {
+    "illegal_joins": [
+      "sales_orders.sales_rep_id = employees.employee_id"
+    ],
+    "semantic_rel": {
+      "unsupported_joins": [
+        "sales_orders.sales_rep_id = employees.employee_id"
+      ],
+      "delta": -5.0
+    },
+    "semantic_join": {
+      "delta": 0.0
+    },
+    "outside_tables": []
+  },
+  "value_grounding_validation": [],
+  "candidate_fatal_reasons": [
+    "illegal join: sales_orders.sales_rep_id = employees.employee_id"
+  ],
+  "candidate_warnings": [
+    "illegal join/correlation sales_orders.sales_rep_id = employees.employee_id (not a declared FK; e.g. key = measure)",
+    "question names table 'sales_order_items' but the candidate never uses it",
+    "join sales_orders.sales_rep_id = employees.employee_id is not supported by a declared FK, a confirmed relationship, or a high-confidence inferred link"
+  ]
+}
+-- execution -------------------------------------------
+{
+  "execution_attempted": true,
+  "skipped_reason": null,
+  "execution_success": true,
+  "execution_error": null,
+  "returned_columns": [
+    "order_number",
+    "full_name"
+  ],
+  "row_count": 800,
+  "first_10_rows": [
+    [
+      "SO-2024-000001",
+      "Aria Garcia"
+    ],
+    [
+      "SO-2025-000002",
+      "Camila Wright"
+    ],
+    [
+      "SO-2024-000003",
+      "Mason Parker"
+    ],
+    [
+      "SO-2025-000004",
+      "Isabella Mitchell"
+    ],
+    [
+      "SO-2026-000005",
+      "Adam Walker"
+    ],
+    [
+      "SO-2024-000006",
+      "Leo Bell"
+    ],
+    [
+      "SO-2024-000007",
+      "Mason Parker"
+    ],
+    [
+      "SO-2025-000008",
+      "Sophia Young"
+    ],
+    [
+      "SO-2024-000009",
+      "Sofia Walker"
+    ],
+    [
+      "SO-2026-000010",
+      "Sofia Walker"
+    ]
+  ]
+}
+-- scoring ---------------------------------------------
+{
+  "execution": 25,
+  "illegal_joins": -40,
+  "unknown_columns": 0,
+  "missing_tables": -12,
+  "missing_concepts": 0,
+  "intent_shapes": 0.0,
+  "aliases": 0,
+  "family_guard": 0,
+  "checklist_alignment": 21.0,
+  "grain_alignment": 0.0,
+  "outside_tables": 0,
+  "value_grounding": 0,
+  "semantic_guards": 0,
+  "literal_groups": 0,
+  "fanout_contract": 0,
+  "grain_contract": 0,
+  "temporal_contract": 0,
+  "base_score": 50.0,
+  "advisory_and_other_residual": -5.0,
+  "total_recorded_score": 39.0
+}
+
+CANDIDATE 5
+generation_source: llm_sql_direct_variant (label: llm_sql_direct_variant)
+raw_model_response: SELECT so.order_number, e.full_name
+FROM sales_orders so
+JOIN employees e ON so.sales_rep_id = e.employee_id
+extracted_sql:
+SELECT so.order_number, e.full_name
+FROM sales_orders so
+JOIN employees e ON so.sales_rep_id = e.employee_id
+normalized_sql:
+SELECT so.order_number, e.full_name
+FROM sales_orders so
+JOIN employees e ON so.sales_rep_id = e.employee_id
+-- validation ------------------------------------------
+{
+  "parse_success": true,
+  "parser_error": null,
+  "referenced_tables": [
+    "employees",
+    "sales_orders"
+  ],
+  "referenced_columns": [
+    "e.employee_id",
+    "e.full_name",
+    "so.order_number",
+    "so.sales_rep_id"
+  ],
+  "detected_join_conditions": [
+    "so.sales_rep_id = e.employee_id"
+  ],
+  "detected_output_columns": [
+    "so.order_number",
+    "e.full_name"
+  ],
+  "detected_aggregation": [],
+  "detected_group_by": [],
+  "detected_having": false,
+  "detected_order_by": false,
+  "detected_limit": null,
+  "detected_distinct": false,
+  "detected_subquery_or_cte": false,
+  "detected_set_operation": false,
+  "grain_validation": {
+    "fatal": [],
+    "warnings": [],
+    "skipped": "no typed contract"
+  },
+  "temporal_validation": {
+    "fatal": [],
+    "warnings": [],
+    "skipped": "no typed contract"
+  },
+  "fanout_validation": {
+    "fatal": [],
+    "warnings": [],
+    "fatal_count": 0
+  },
+  "semantic_validation": {
+    "semantic_guards": [],
+    "literal_groups": [],
+    "shape": {
+      "fatal": [],
+      "penalties": [],
+      "report_only": []
+    },
+    "checklist": {
+      "delta": 21.0,
+      "missing_columns": [],
+      "missing_tables": [],
+      "shape_ok": null
+    }
+  },
+  "relationship_validation": {
+    "illegal_joins": [
+      "sales_orders.sales_rep_id = employees.employee_id"
+    ],
+    "semantic_rel": {
+      "unsupported_joins": [
+        "sales_orders.sales_rep_id = employees.employee_id"
+      ],
+      "delta": -5.0
+    },
+    "semantic_join": {
+      "delta": 0.0
+    },
+    "outside_tables": []
+  },
+  "value_grounding_validation": [],
+  "candidate_fatal_reasons": [
+    "illegal join: sales_orders.sales_rep_id = employees.employee_id"
+  ],
+  "candidate_warnings": [
+    "illegal join/correlation sales_orders.sales_rep_id = employees.employee_id (not a declared FK; e.g. key = measure)",
+    "question names table 'sales_order_items' but the candidate never uses it",
+    "join sales_orders.sales_rep_id = employees.employee_id is not supported by a declared FK, a confirmed relationship, or a high-confidence inferred link"
+  ]
+}
+-- execution -------------------------------------------
+{
+  "execution_attempted": true,
+  "skipped_reason": null,
+  "execution_success": true,
+  "execution_error": null,
+  "returned_columns": [
+    "order_number",
+    "full_name"
+  ],
+  "row_count": 800,
+  "first_10_rows": [
+    [
+      "SO-2024-000001",
+      "Aria Garcia"
+    ],
+    [
+      "SO-2025-000002",
+      "Camila Wright"
+    ],
+    [
+      "SO-2024-000003",
+      "Mason Parker"
+    ],
+    [
+      "SO-2025-000004",
+      "Isabella Mitchell"
+    ],
+    [
+      "SO-2026-000005",
+      "Adam Walker"
+    ],
+    [
+      "SO-2024-000006",
+      "Leo Bell"
+    ],
+    [
+      "SO-2024-000007",
+      "Mason Parker"
+    ],
+    [
+      "SO-2025-000008",
+      "Sophia Young"
+    ],
+    [
+      "SO-2024-000009",
+      "Sofia Walker"
+    ],
+    [
+      "SO-2026-000010",
+      "Sofia Walker"
+    ]
+  ]
+}
+-- scoring ---------------------------------------------
+{
+  "execution": 25,
+  "illegal_joins": -40,
+  "unknown_columns": 0,
+  "missing_tables": -12,
+  "missing_concepts": 0,
+  "intent_shapes": 0.0,
+  "aliases": 0,
+  "family_guard": 0,
+  "checklist_alignment": 21.0,
+  "grain_alignment": 0.0,
+  "outside_tables": 0,
+  "value_grounding": 0,
+  "semantic_guards": 0,
+  "literal_groups": 0,
+  "fanout_contract": 0,
+  "grain_contract": 0,
+  "temporal_contract": 0,
+  "base_score": 50.0,
+  "advisory_and_other_residual": -5.0,
+  "total_recorded_score": 39.0
+}
+
+LAYER 9 — FINAL DECISION
+selected_candidate_number: 2
+selected_candidate_label: llm_variant_2
+selected_sql:
+SELECT "sales_orders"."order_number", "employees"."full_name" FROM "sales_orders" INNER JOIN "sales_order_items" ON "sales_orders"."sales_rep_id" = "sales_order_items"."order_item_id" INNER JOIN "warehouses" ON "sales_order_items"."warehouse_id" = "warehouses"."warehouse_id" INNER JOIN "employees" ON "warehouses"."manager_employee_id" = "employees"."employee_id"
+exact_selection_reason: best_scored_executed
+rejected_candidate_reasons:
+{
+  "llm_primary": [],
+  "llm_variant_2": [],
+  "llm_sql_direct": [
+    "illegal join: sales_orders.sales_rep_id = employees.employee_id"
+  ],
+  "llm_sql_direct_grain": [
+    "illegal join: sales_orders.sales_rep_id = employees.employee_id"
+  ],
+  "llm_sql_direct_variant": [
+    "illegal join: sales_orders.sales_rep_id = employees.employee_id"
+  ]
+}
+repair_meta: {"repair_attempted": false, "repair_triggers": [], "repair_executed": false, "repair_score": null, "repair_selected": false, "selected_source_before_repair": "llm_variant"}
+final_enforcement_result: kept
+final_fatal_reasons:
+[]
+controlled_failure: False
+endpoint_success: True
+endpoint_error: None
+

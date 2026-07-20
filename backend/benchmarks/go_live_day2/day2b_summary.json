@@ -1,0 +1,44 @@
+{
+  "day": "2B",
+  "generated_at": "2026-07-20T11:36:30",
+  "status": "OFFLINE_ANALYSIS_AND_SAFETY_GATED_IMPLEMENTATION_DONE_LIVE_RERUN_PENDING",
+  "remaining_incorrect_analyzed": 21,
+  "classification": {
+    "correct_candidate_generated_but_not_selected": 2,
+    "correct_candidate_generated_but_rejected": 1,
+    "no_correct_candidate_generated": 18
+  },
+  "selection_loss_cases": [
+    "DB56 t51 (computes bed_capacity-current_occupancy, score 88, lost to operand-only 80)",
+    "DB54 t452 (moved row-level predicate out of HAVING)"
+  ],
+  "selection_loss_fix": {
+    "attempted": "generic pool-relative derived-expression operand-only penalty",
+    "result": "REJECTED on static safety replay \u2014 38 protected-correct winner changes vs 10 incorrect flips; did not recover the trace-verified loss cases (lost to consensus/RC grouping, not score).",
+    "shipped": false,
+    "artifact": "day2b_selection_fix_safety_replay.json"
+  },
+  "validator_fixes": {
+    "rejected_correct_cases": 1,
+    "action": "not changed \u2014 a single-case validator edit could not be shown generic without risking a test-specific fix; deferred to live-verified review."
+  },
+  "generation_fixes": {
+    "no_correct_cases": 18,
+    "action": "covered by the Day 2 generic prompt/contract reminders already in place; further gains require live regeneration to verify (pending)."
+  },
+  "production_changes_this_turn": [
+    "sql_candidates/day2_semantic_rules.py: broaden derived-verb detection (add/adding); robust _parse (strip normalized_sql echo); retained-but-UNWIRED derived penalty fn"
+  ],
+  "offline_gates": {
+    "focused_day2_tests": "20 passed",
+    "full_backend_suite": "858 passed, 0 failed",
+    "fatal_rule_protected_regressions": 0,
+    "selection_change_shipped": false
+  },
+  "live": {
+    "additional_recoveries": "pending local run",
+    "protected_regressions": "pending local run",
+    "recovered_query_regressions": "pending local run",
+    "note": "No production selection behavior changed, so protected/recovered regressions are 0 by construction offline; live rerun still required to measure any additional recoveries."
+  }
+}

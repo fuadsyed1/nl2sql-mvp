@@ -53,7 +53,7 @@ function InputBar({
 
   // --- workspace overlay --------------------------------------------------
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
-  const [workspaceDbId, setWorkspaceDbId] = useState(null);
+  const [, setWorkspaceDbId] = useState(null);
 
   // --- containment-check mode (INLINE in the input bar; no modal) ----------
   // ONE textarea; each non-empty line is treated as a separate NL query.
@@ -202,40 +202,6 @@ function InputBar({
   };
 
   // --- existing single-CSV upload (unchanged, still feeds /query) ---------
-  const handleFileUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    if (!userId) {
-      alert("Please sign in first.");
-      return;
-    }
-
-    if (!currentConversationId) {
-      alert("Please start a new chat before uploading a dataset.");
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("user_id", userId);
-    formData.append("conversation_id", currentConversationId);
-
-    const response = await fetch(`${API_BASE}/upload-csv`, {
-      method: "POST",
-      body: formData,
-    });
-
-    const data = await response.json();
-
-    if (!data.success) {
-      alert(data.message || "File upload failed");
-      return;
-    }
-
-    alert(`Uploaded: ${data.filename}`);
-  };
-
   // --- multi-file flow ----------------------------------------------------
   const baseName = (filename) =>
     filename.replace(/\.[Cc][Ss][Vv]$/, "").replace(/^.*[\\/]/, "");

@@ -53,25 +53,26 @@ function DatabaseSummaryCard({ summary, onReviewRelationships = () => {} }) {
   useEffect(() => {
     if (!isLarge || database_id == null) return;
     let cancelled = false;
-    setListLoading(true);
-    setListError("");
-    fetch(
-      `${API_BASE}/database/${database_id}/tables?q=${encodeURIComponent(
-        query
-      )}&limit=${LIMIT}&offset=${offset}`
-    )
-      .then((r) => r.json())
-      .then((d) => {
+    (async () => {
+      setListLoading(true);
+      setListError("");
+      try {
+        const d = await (
+          await fetch(
+            `${API_BASE}/database/${database_id}/tables?q=${encodeURIComponent(
+              query
+            )}&limit=${LIMIT}&offset=${offset}`
+          )
+        ).json();
         if (cancelled) return;
         if (d.success) setPageData(d);
         else setListError(d.message || "Could not load tables.");
-      })
-      .catch((e) => {
+      } catch (e) {
         if (!cancelled) setListError(`Could not load tables: ${e.message}`);
-      })
-      .finally(() => {
+      } finally {
         if (!cancelled) setListLoading(false);
-      });
+      }
+    })();
     return () => {
       cancelled = true;
     };

@@ -24,14 +24,42 @@ from generation.sql_executor import execute_sql
 from generation.execution_result import to_dict as execution_to_dict
 
 from sql_candidates.candidate_types import SqlCandidate
+from sql_candidates.name_normalizer import normalize_schema_prefixes
 
 __all__ = ["build_candidate", "build_direct_sql_candidate"]
+
+import sqlite3 as _sqlite3
+
+
+def _physical_table_names(db_path):
+    """Real table names in the SQLite file (read-only, empty on any problem)."""
+    if not db_path:
+        return []
+    try:
+        conn = _sqlite3.connect(f"file:{db_path}?mode=ro", uri=True, timeout=3.0)
+    except _sqlite3.Error:
+        return []
+    try:
+        return [r[0] for r in conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' "
+            "AND name NOT LIKE 'sqlite_%'")]
+    except _sqlite3.Error:
+        return []
+    finally:
+        conn.close()
 
 
 def build_direct_sql_candidate(*, label, sql, db_path, source="llm_sql_direct"):
     """Package a direct LLM-written SQL string as a candidate: execute it
     (read-only) and record the outcome. No IR, no plan — the scorer judges it
-    purely on the SQL text, execution, and checklist alignment. Never raises."""
+    purely on the SQL text, execution, and checklist alignment. Never raises.
+
+    Before execution, hallucinated SQL-Server schema prefixes
+    (`Purchasing.PurchaseOrderHeader`) are normalized to the flat physical name
+    (`PurchaseOrderHeader`) when — and only when — the physical schema confirms
+    the mapping, so a semantically-correct candidate is not lost to a bare
+    qualification error."""
+    sql = normalize_schema_prefixes(sql, _physical_table_names(db_path))
     cand = SqlCandidate(source=source, label=label,
                         sql=(sql or "").strip() or None)
     if not cand.sql:

@@ -1,0 +1,97 @@
+{
+  "problems": [],
+  "categories": {
+    "simple_filter_chain": {
+      "groups": 20,
+      "sizes": {
+        "3": 12,
+        "4": 4,
+        "5": 4
+      }
+    },
+    "conjunction_disjunction": {
+      "groups": 20,
+      "sizes": {
+        "3": 8,
+        "4": 6,
+        "2": 6
+      }
+    },
+    "numeric_range_boundary": {
+      "groups": 20,
+      "sizes": {
+        "3": 12,
+        "4": 8
+      }
+    },
+    "join_refinement": {
+      "groups": 20,
+      "sizes": {
+        "2": 7,
+        "3": 10,
+        "4": 3
+      }
+    },
+    "multi_table_refinement": {
+      "groups": 20,
+      "sizes": {
+        "3": 9,
+        "4": 4,
+        "2": 7
+      }
+    },
+    "aggregate_having": {
+      "groups": 20,
+      "sizes": {
+        "2": 10,
+        "3": 10
+      }
+    },
+    "distinct_projection_key": {
+      "groups": 20,
+      "sizes": {
+        "2": 16,
+        "3": 4
+      }
+    },
+    "equivalence": {
+      "groups": 20,
+      "sizes": {
+        "2": 10,
+        "3": 10
+      }
+    },
+    "incomparable": {
+      "groups": 20,
+      "sizes": {
+        "2": 16,
+        "3": 2,
+        "4": 2
+      }
+    },
+    "temporal": {
+      "groups": 20,
+      "sizes": {
+        "3": 14,
+        "2": 6
+      }
+    },
+    "derived_metric": {
+      "groups": 20,
+      "sizes": {
+        "2": 15,
+        "3": 5
+      }
+    },
+    "mixed_hierarchy_edge_cases": {
+      "groups": 20,
+      "sizes": {
+        "3": 13,
+        "5": 3,
+        "2": 3,
+        "4": 1
+      }
+    }
+  },
+  "total_groups": 240
+}

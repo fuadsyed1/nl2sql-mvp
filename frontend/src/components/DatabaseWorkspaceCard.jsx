@@ -12,6 +12,7 @@ const TABS = [
   { id: "upload", label: "Upload Database / Tables" },
   { id: "schema", label: "Create Database from Schema" },
   { id: "browse", label: "Browse Existing Databases" },
+  { id: "benchmarks", label: "Local Benchmarks" },
   { id: "spider", label: "Sample Databases" },
 ];
 
@@ -44,6 +45,12 @@ function DatabaseWorkspaceCard({
   const [browseError, setBrowseError] = useState("");
   const [loadingId, setLoadingId] = useState(null);
 
+  // Local Benchmarks tab state.
+  const [benchmarks, setBenchmarks] = useState([]);
+  const [benchmarksLoading, setBenchmarksLoading] = useState(false);
+  const [benchmarksError, setBenchmarksError] = useState("");
+  const [benchmarkLoadingId, setBenchmarkLoadingId] = useState(null);
+
   // Load-from-Spider-2.0 tab state.
   const [spiderStatus, setSpiderStatus] = useState(null);
   const [spiderStatusLoading, setSpiderStatusLoading] = useState(false);
@@ -58,24 +65,32 @@ function DatabaseWorkspaceCard({
   // Fetch the user's previously created databases when the Browse tab opens.
   useEffect(() => {
     if (activeTab !== "browse") return;
-    if (!userId) {
-      setBrowseError("Please sign in first.");
-      return;
-    }
-    setBrowseLoading(true);
-    setBrowseError("");
-    fetch(`${API_BASE}/databases/${userId}`)
-      .then((r) => r.json())
-      .then((d) => {
+    let cancelled = false;
+    (async () => {
+      if (!userId) {
+        setBrowseError("Please sign in first.");
+        return;
+      }
+      setBrowseLoading(true);
+      setBrowseError("");
+      try {
+        const d = await (await fetch(`${API_BASE}/databases/${userId}`)).json();
+        if (cancelled) return;
         if (d.success === false) {
           setBrowseError(d.message || "Could not load databases.");
           setBrowseList([]);
         } else {
           setBrowseList(d.databases || []);
         }
-      })
-      .catch((e) => setBrowseError(`Could not load databases: ${e.message}`))
-      .finally(() => setBrowseLoading(false));
+      } catch (e) {
+        if (!cancelled) setBrowseError(`Could not load databases: ${e.message}`);
+      } finally {
+        if (!cancelled) setBrowseLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [activeTab, userId]);
 
   // Load an existing database into this chat. Reuses onDatabaseCreated so the
@@ -98,27 +113,95 @@ function DatabaseWorkspaceCard({
     });
   };
 
+  // Fetch the local benchmark databases when the tab opens.
+  useEffect(() => {
+    if (activeTab !== "benchmarks") return;
+    let cancelled = false;
+    (async () => {
+      setBenchmarksLoading(true);
+      setBenchmarksError("");
+      try {
+        const d = await (
+          await fetch(`${API_BASE}/local_benchmarks/databases`)
+        ).json();
+        if (cancelled) return;
+        if (d.success === false) {
+          setBenchmarksError(d.message || "Could not load benchmarks.");
+          setBenchmarks([]);
+        } else {
+          setBenchmarks(d.databases || []);
+        }
+      } catch (e) {
+        if (!cancelled) setBenchmarksError(`Could not load benchmarks: ${e.message}`);
+      } finally {
+        if (!cancelled) setBenchmarksLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab]);
+
+  // Load a local benchmark DB into this chat. Reuses onDatabaseCreated so the
+  // summary -> relationship review -> finalize flow is identical to uploads.
+  const handleLoadBenchmark = async (b) => {
+    if (benchmarkLoadingId != null) return; // ignore rapid double-clicks
+    if (!b.available) return; // file missing
+    if (!userId) {
+      setBenchmarksError("Please sign in first.");
+      return;
+    }
+    setBenchmarkLoadingId(b.id);
+    setBenchmarksError("");
+    try {
+      const res = await fetch(
+        `${API_BASE}/local_benchmarks/databases/${b.id}/load`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_id: Number(userId),
+            conversation_id: conversationId,
+          }),
+        }
+      );
+      const data = await res.json();
+      if (!data.success) {
+        setBenchmarksError(data.message || "Load failed.");
+        return;
+      }
+      onDatabaseCreated(data);
+    } catch (e) {
+      setBenchmarksError(`Could not reach the server: ${e.message}`);
+    } finally {
+      setBenchmarkLoadingId(null);
+    }
+  };
+
   // Check whether a real Spider 2.0 source is configured when the tab opens.
   useEffect(() => {
     if (activeTab !== "spider") return;
     let cancelled = false;
-    setSpiderStatusLoading(true);
-    // Cache-bust so a restarted backend's fresh status is never read from cache.
-    fetch(`${API_BASE}/spider2/status?t=${Date.now()}`, { cache: "no-store" })
-      .then((r) => r.json())
-      .then((s) => {
+    (async () => {
+      setSpiderStatusLoading(true);
+      try {
+        // Cache-bust so a restarted backend's fresh status is never cached.
+        const s = await (
+          await fetch(`${API_BASE}/spider2/status?t=${Date.now()}`, {
+            cache: "no-store",
+          })
+        ).json();
         if (!cancelled) setSpiderStatus(s);
-      })
-      .catch((e) => {
+      } catch (e) {
         if (!cancelled)
           setSpiderStatus({
             configured: false,
             message: `Could not load Spider 2.0 status: ${e.message}`,
           });
-      })
-      .finally(() => {
+      } finally {
         if (!cancelled) setSpiderStatusLoading(false);
-      });
+      }
+    })();
     return () => {
       cancelled = true;
     };
@@ -127,19 +210,19 @@ function DatabaseWorkspaceCard({
   // Fetch the real catalog only when a source is configured (and on search).
   useEffect(() => {
     if (activeTab !== "spider") return;
-    if (!spiderStatus || !spiderStatus.configured) {
-      setSpiderList([]);
-      return;
-    }
     let cancelled = false;
-    setSpiderLoading(true);
-    setSpiderError("");
-    const url = `${API_BASE}/spider2/catalog?user_id=${
-      userId || ""
-    }&q=${encodeURIComponent(spiderQuery)}`;
-    fetch(url)
-      .then((r) => r.json())
-      .then((d) => {
+    (async () => {
+      if (!spiderStatus || !spiderStatus.configured) {
+        setSpiderList([]);
+        return;
+      }
+      setSpiderLoading(true);
+      setSpiderError("");
+      const url = `${API_BASE}/spider2/catalog?user_id=${
+        userId || ""
+      }&q=${encodeURIComponent(spiderQuery)}`;
+      try {
+        const d = await (await fetch(url)).json();
         if (cancelled) return;
         if (d.success === false) {
           setSpiderError(d.message || "Could not load catalog.");
@@ -149,13 +232,12 @@ function DatabaseWorkspaceCard({
           setSpiderList(d.items || []);
           setSpiderCounts(d.signal_counts || null);
         }
-      })
-      .catch((e) => {
+      } catch (e) {
         if (!cancelled) setSpiderError(`Could not load catalog: ${e.message}`);
-      })
-      .finally(() => {
+      } finally {
         if (!cancelled) setSpiderLoading(false);
-      });
+      }
+    })();
     return () => {
       cancelled = true;
     };
@@ -350,7 +432,8 @@ function DatabaseWorkspaceCard({
     processing ||
     schemaProcessing ||
     spiderImportingId != null ||
-    loadingId != null;
+    loadingId != null ||
+    benchmarkLoadingId != null;
 
   return (
     <div className="h-full flex items-center justify-center">
@@ -616,6 +699,91 @@ function DatabaseWorkspaceCard({
                     );
                   })}
                 </ul>
+              )}
+            </div>
+          )}
+
+          {activeTab === "benchmarks" && (
+            <div className="flex flex-col gap-4">
+              <p className="text-sm text-gray-500">
+                Load one of the accepted local relational benchmark databases
+                into this chat.
+              </p>
+
+              {benchmarksLoading && (
+                <p className="text-sm text-gray-500">Loading…</p>
+              )}
+              {benchmarksError && (
+                <p className="text-sm text-amber-600">{benchmarksError}</p>
+              )}
+
+              {!benchmarksLoading && benchmarks.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {benchmarks.map((b) => (
+                    <div
+                      key={b.id}
+                      className="border border-gray-200 rounded-xl p-4 flex flex-col gap-2"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-sm font-semibold text-gray-800">
+                          {b.display_name}
+                        </p>
+                        <span
+                          className={`text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded ${
+                            b.quality_label === "STRONG"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-gray-200 text-gray-600"
+                          }`}
+                        >
+                          {b.quality_label}
+                        </span>
+                      </div>
+                      {b.domain && (
+                        <p className="text-xs text-gray-500">{b.domain}</p>
+                      )}
+                      <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-gray-600">
+                        <span>{b.table_count} tables</span>
+                        <span>{b.column_count} columns</span>
+                        <span>{(b.row_count || 0).toLocaleString()} rows</span>
+                        <span>
+                          {b.pk_count} PK · {b.fk_count} FK
+                        </span>
+                      </div>
+                      {b.description && (
+                        <p className="text-xs text-gray-500">{b.description}</p>
+                      )}
+                      <div className="flex items-center justify-between gap-2 mt-1">
+                        <span
+                          className={`text-xs ${
+                            b.available ? "text-green-600" : "text-red-500"
+                          }`}
+                        >
+                          {b.available ? "Available" : "Local file missing"}
+                        </span>
+                        <button
+                          onClick={() => handleLoadBenchmark(b)}
+                          disabled={!b.available || benchmarkLoadingId != null}
+                          title={
+                            b.available
+                              ? "Load this benchmark database"
+                              : "The local SQLite file for this benchmark is missing."
+                          }
+                          className={`shrink-0 text-sm px-4 py-2 rounded-xl disabled:opacity-60 ${
+                            b.available
+                              ? "bg-blue-500 text-white hover:bg-blue-600"
+                              : "bg-gray-200 text-gray-500 cursor-not-allowed"
+                          }`}
+                        >
+                          {benchmarkLoadingId === b.id
+                            ? "Loading…"
+                            : b.available
+                            ? "Load Database"
+                            : "Unavailable"}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           )}

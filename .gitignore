@@ -7,3 +7,14 @@ backend/app_data.db
 *.env
 .env.*
 !.env.example
+
+# Local benchmark databases + profiler outputs: never commit data/outputs,
+# but keep the folder structure via .gitkeep files.
+backend/local_benchmarks/relational_sample_dbs/raw/*
+backend/local_benchmarks/relational_sample_dbs/sqlite/*
+backend/local_benchmarks/relational_sample_dbs/metadata/*
+backend/local_benchmarks/relational_sample_dbs/reports/*
+!backend/local_benchmarks/relational_sample_dbs/raw/.gitkeep
+!backend/local_benchmarks/relational_sample_dbs/sqlite/.gitkeep
+!backend/local_benchmarks/relational_sample_dbs/metadata/.gitkeep
+!backend/local_benchmarks/relational_sample_dbs/reports/.gitkeep

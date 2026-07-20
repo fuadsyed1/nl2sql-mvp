@@ -76,16 +76,40 @@ def test_consensus_group_wins():
 
 
 def test_validation_score_override_beats_consensus():
-    # two candidates agree but both look structurally poor; a much better
-    # scored outlier must win (agreement on a wrong answer happens).
+    # RC4: a much-higher-scored outlier overrides the consensus group ONLY when
+    # it semantically dominates it. Here the agreeing pair omits the requested
+    # COUNT(DISTINCT); the stronger candidate supplies it, so it dominates and
+    # the score override fires.
+    ck = {"required_sql_shape": "count_distinct"}
+    agree1 = _cand("llm_primary", "llm_primary", 50, _exec([["ash"]]),
+                   sql="SELECT COUNT(customer_id) FROM t")
+    agree2 = _cand("llm_variant_1", "llm_variant", 48, _exec([["ash"]]),
+                   sql="SELECT COUNT(customer_id) FROM t")
+    strong = _cand("query_family", "query_family", 85, _exec([["rex"]]),
+                   sql="SELECT COUNT(DISTINCT customer_id) FROM t")
+
+    selected, meta = select_best([agree1, agree2, strong], checklist=ck)
+
+    assert selected is strong
+    assert meta["selection_reason"] == "validation_score_override"
+
+
+def test_score_override_blocked_without_dominance():
+    # RC4: with no semantic advantage, a higher score alone does NOT override
+    # the consensus group — the override is blocked and consensus is kept.
     agree1 = _cand("llm_primary", "llm_primary", 50, _exec([["ash"]]))
     agree2 = _cand("llm_variant_1", "llm_variant", 48, _exec([["ash"]]))
     strong = _cand("query_family", "query_family", 85, _exec([["rex"]]))
 
     selected, meta = select_best([agree1, agree2, strong])
 
-    assert selected is strong
-    assert meta["selection_reason"] == "validation_score_override"
+    # Consensus fix: primary + variant_1 are ONE generator family, so this is
+    # NOT an independent consensus (it falls back to the deterministic path).
+    # RC4 still blocks the higher-scored outlier from overriding.
+    assert selected is agree1
+    assert meta["selection_reason"] == "best_scored_executed"
+    assert meta.get("override_blocked") is True
+    assert meta.get("consensus_rejection_reason") == "single_generator_family"
 
 
 def test_small_score_gap_does_not_override_consensus():
@@ -95,8 +119,10 @@ def test_small_score_gap_does_not_override_consensus():
 
     selected, meta = select_best([agree1, agree2, slightly_better])
 
+    # Consensus fix: a single-generator-family pair is not independent
+    # consensus; the small-gap outlier still does not override the pick.
     assert selected is agree1
-    assert meta["selection_reason"] == "consensus_group"
+    assert meta["selection_reason"] == "best_scored_executed"
 
 
 def test_no_execution_returns_least_bad_with_warning():

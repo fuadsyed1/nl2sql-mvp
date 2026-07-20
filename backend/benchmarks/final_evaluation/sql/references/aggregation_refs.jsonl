@@ -1,0 +1,200 @@
+{"case_id": "aggregation_0001", "columns": ["COUNT(*)"], "rows": [[70]], "ok": true}
+{"case_id": "aggregation_0002", "columns": ["COUNT(*)"], "rows": [[70]], "ok": true}
+{"case_id": "aggregation_0003", "columns": ["COUNT(*)"], "rows": [[70]], "ok": true}
+{"case_id": "aggregation_0004", "columns": ["COUNT(*)"], "rows": [[70]], "ok": true}
+{"case_id": "aggregation_0005", "columns": ["AVG(total_amount)"], "rows": [[300.76785714285717]], "ok": true}
+{"case_id": "aggregation_0006", "columns": ["AVG(total_amount)"], "rows": [[300.76785714285717]], "ok": true}
+{"case_id": "aggregation_0007", "columns": ["AVG(total_amount)"], "rows": [[300.76785714285717]], "ok": true}
+{"case_id": "aggregation_0008", "columns": ["AVG(total_amount)"], "rows": [[300.76785714285717]], "ok": true}
+{"case_id": "aggregation_0009", "columns": ["MAX(unit_price)"], "rows": [[1493.63]], "ok": true}
+{"case_id": "aggregation_0010", "columns": ["MAX(unit_price)"], "rows": [[1493.63]], "ok": true}
+{"case_id": "aggregation_0011", "columns": ["MAX(unit_price)"], "rows": [[1493.63]], "ok": true}
+{"case_id": "aggregation_0012", "columns": ["MAX(unit_price)"], "rows": [[1493.63]], "ok": true}
+{"case_id": "aggregation_0013", "columns": ["MIN(appointment_date)"], "rows": [["2025-01-07"]], "ok": true}
+{"case_id": "aggregation_0014", "columns": ["MIN(appointment_date)"], "rows": [["2025-01-07"]], "ok": true}
+{"case_id": "aggregation_0015", "columns": ["MIN(appointment_date)"], "rows": [["2025-01-07"]], "ok": true}
+{"case_id": "aggregation_0016", "columns": ["MIN(appointment_date)"], "rows": [["2025-01-07"]], "ok": true}
+{"case_id": "aggregation_0017", "columns": ["SUM(stock_quantity)"], "rows": [[35883]], "ok": true}
+{"case_id": "aggregation_0018", "columns": ["SUM(stock_quantity)"], "rows": [[35883]], "ok": true}
+{"case_id": "aggregation_0019", "columns": ["SUM(stock_quantity)"], "rows": [[35883]], "ok": true}
+{"case_id": "aggregation_0020", "columns": ["SUM(stock_quantity)"], "rows": [[35883]], "ok": true}
+{"case_id": "aggregation_0021", "columns": ["COUNT(*)"], "rows": [[35]], "ok": true}
+{"case_id": "aggregation_0022", "columns": ["COUNT(*)"], "rows": [[35]], "ok": true}
+{"case_id": "aggregation_0023", "columns": ["COUNT(*)"], "rows": [[35]], "ok": true}
+{"case_id": "aggregation_0024", "columns": ["COUNT(*)"], "rows": [[35]], "ok": true}
+{"case_id": "aggregation_0025", "columns": ["SUM(i.total_amount)"], "rows": [[10259.5]], "ok": true}
+{"case_id": "aggregation_0026", "columns": ["SUM(i.total_amount)"], "rows": [[10259.5]], "ok": true}
+{"case_id": "aggregation_0027", "columns": ["SUM(i.total_amount)"], "rows": [[10259.5]], "ok": true}
+{"case_id": "aggregation_0028", "columns": ["SUM(i.total_amount)"], "rows": [[10259.5]], "ok": true}
+{"case_id": "aggregation_0029", "columns": ["AVG(d.years_experience)"], "rows": [[5.166666666666667]], "ok": true}
+{"case_id": "aggregation_0030", "columns": ["AVG(d.years_experience)"], "rows": [[5.166666666666667]], "ok": true}
+{"case_id": "aggregation_0031", "columns": ["AVG(d.years_experience)"], "rows": [[5.166666666666667]], "ok": true}
+{"case_id": "aggregation_0032", "columns": ["AVG(d.years_experience)"], "rows": [[5.166666666666667]], "ok": true}
+{"case_id": "aggregation_0033", "columns": ["COUNT(*)"], "rows": [[46]], "ok": true}
+{"case_id": "aggregation_0034", "columns": ["COUNT(*)"], "rows": [[46]], "ok": true}
+{"case_id": "aggregation_0035", "columns": ["COUNT(*)"], "rows": [[46]], "ok": true}
+{"case_id": "aggregation_0036", "columns": ["COUNT(*)"], "rows": [[46]], "ok": true}
+{"case_id": "aggregation_0037", "columns": ["AVG(l.test_value)"], "rows": [[93.50333333333333]], "ok": true}
+{"case_id": "aggregation_0038", "columns": ["AVG(l.test_value)"], "rows": [[93.50333333333333]], "ok": true}
+{"case_id": "aggregation_0039", "columns": ["AVG(l.test_value)"], "rows": [[93.50333333333333]], "ok": true}
+{"case_id": "aggregation_0040", "columns": ["AVG(l.test_value)"], "rows": [[93.50333333333333]], "ok": true}
+{"case_id": "aggregation_0041", "columns": ["SUM(oi.quantity)"], "rows": [[368]], "ok": true}
+{"case_id": "aggregation_0042", "columns": ["SUM(oi.quantity)"], "rows": [[368]], "ok": true}
+{"case_id": "aggregation_0043", "columns": ["SUM(oi.quantity)"], "rows": [[368]], "ok": true}
+{"case_id": "aggregation_0044", "columns": ["SUM(oi.quantity)"], "rows": [[368]], "ok": true}
+{"case_id": "aggregation_0045", "columns": ["MAX(i.total_amount)"], "rows": [[509.0]], "ok": true}
+{"case_id": "aggregation_0046", "columns": ["MAX(i.total_amount)"], "rows": [[509.0]], "ok": true}
+{"case_id": "aggregation_0047", "columns": ["MAX(i.total_amount)"], "rows": [[509.0]], "ok": true}
+{"case_id": "aggregation_0048", "columns": ["MAX(i.total_amount)"], "rows": [[509.0]], "ok": true}
+{"case_id": "aggregation_0049", "columns": ["AVG(a.base_fee)"], "rows": [[150.0]], "ok": true}
+{"case_id": "aggregation_0050", "columns": ["AVG(a.base_fee)"], "rows": [[150.0]], "ok": true}
+{"case_id": "aggregation_0051", "columns": ["AVG(a.base_fee)"], "rows": [[150.0]], "ok": true}
+{"case_id": "aggregation_0052", "columns": ["AVG(a.base_fee)"], "rows": [[150.0]], "ok": true}
+{"case_id": "aggregation_0053", "columns": ["COUNT(*)"], "rows": [[16]], "ok": true}
+{"case_id": "aggregation_0054", "columns": ["COUNT(*)"], "rows": [[16]], "ok": true}
+{"case_id": "aggregation_0055", "columns": ["COUNT(*)"], "rows": [[16]], "ok": true}
+{"case_id": "aggregation_0056", "columns": ["COUNT(*)"], "rows": [[16]], "ok": true}
+{"case_id": "aggregation_0057", "columns": ["SUM(total_amount - insurance_paid)"], "rows": [[39307.5]], "ok": true}
+{"case_id": "aggregation_0058", "columns": ["SUM(total_amount - insurance_paid)"], "rows": [[39307.5]], "ok": true}
+{"case_id": "aggregation_0059", "columns": ["SUM(total_amount - insurance_paid)"], "rows": [[39307.5]], "ok": true}
+{"case_id": "aggregation_0060", "columns": ["SUM(total_amount - insurance_paid)"], "rows": [[39307.5]], "ok": true}
+{"case_id": "aggregation_0061", "columns": ["SUM(oi.quantity * pr.unit_price)"], "rows": [[1000372.17]], "ok": true}
+{"case_id": "aggregation_0062", "columns": ["SUM(oi.quantity * pr.unit_price)"], "rows": [[1000372.17]], "ok": true}
+{"case_id": "aggregation_0063", "columns": ["SUM(oi.quantity * pr.unit_price)"], "rows": [[1000372.17]], "ok": true}
+{"case_id": "aggregation_0064", "columns": ["SUM(oi.quantity * pr.unit_price)"], "rows": [[1000372.17]], "ok": true}
+{"case_id": "aggregation_0065", "columns": ["AVG(total_amount - insurance_paid)"], "rows": [[279.17021276595744]], "ok": true}
+{"case_id": "aggregation_0066", "columns": ["AVG(total_amount - insurance_paid)"], "rows": [[279.17021276595744]], "ok": true}
+{"case_id": "aggregation_0067", "columns": ["AVG(total_amount - insurance_paid)"], "rows": [[279.17021276595744]], "ok": true}
+{"case_id": "aggregation_0068", "columns": ["AVG(total_amount - insurance_paid)"], "rows": [[279.17021276595744]], "ok": true}
+{"case_id": "aggregation_0069", "columns": ["SUM(oi.quantity * pr.unit_price * oi.discount_percent / 100.0)"], "rows": [[92554.9495]], "ok": true}
+{"case_id": "aggregation_0070", "columns": ["SUM(oi.quantity * pr.unit_price * oi.discount_percent / 100.0)"], "rows": [[92554.9495]], "ok": true}
+{"case_id": "aggregation_0071", "columns": ["SUM(oi.quantity * pr.unit_price * oi.discount_percent / 100.0)"], "rows": [[92554.9495]], "ok": true}
+{"case_id": "aggregation_0072", "columns": ["SUM(oi.quantity * pr.unit_price * oi.discount_percent / 100.0)"], "rows": [[92554.9495]], "ok": true}
+{"case_id": "aggregation_0073", "columns": ["COUNT(*) * 1.0 / (SELECT COUNT(*) FROM appointments)"], "rows": [[0.5]], "ok": true}
+{"case_id": "aggregation_0074", "columns": ["COUNT(*) * 1.0 / (SELECT COUNT(*) FROM appointments)"], "rows": [[0.5]], "ok": true}
+{"case_id": "aggregation_0075", "columns": ["COUNT(*) * 1.0 / (SELECT COUNT(*) FROM appointments)"], "rows": [[0.5]], "ok": true}
+{"case_id": "aggregation_0076", "columns": ["COUNT(*) * 1.0 / (SELECT COUNT(*) FROM appointments)"], "rows": [[0.5]], "ok": true}
+{"case_id": "aggregation_0077", "columns": ["SUM(p2.days_supply * m.unit_cost)"], "rows": [[43607.2]], "ok": true}
+{"case_id": "aggregation_0078", "columns": ["SUM(p2.days_supply * m.unit_cost)"], "rows": [[43607.2]], "ok": true}
+{"case_id": "aggregation_0079", "columns": ["SUM(p2.days_supply * m.unit_cost)"], "rows": [[43607.2]], "ok": true}
+{"case_id": "aggregation_0080", "columns": ["SUM(p2.days_supply * m.unit_cost)"], "rows": [[43607.2]], "ok": true}
+{"case_id": "aggregation_0081", "columns": ["COUNT(*)"], "rows": [[859]], "ok": true}
+{"case_id": "aggregation_0082", "columns": ["COUNT(*)"], "rows": [[859]], "ok": true}
+{"case_id": "aggregation_0083", "columns": ["COUNT(*)"], "rows": [[859]], "ok": true}
+{"case_id": "aggregation_0084", "columns": ["COUNT(*)"], "rows": [[859]], "ok": true}
+{"case_id": "aggregation_0085", "columns": ["MAX(salary)"], "rows": [[33000000.0]], "ok": true}
+{"case_id": "aggregation_0086", "columns": ["MAX(salary)"], "rows": [[33000000.0]], "ok": true}
+{"case_id": "aggregation_0087", "columns": ["MAX(salary)"], "rows": [[33000000.0]], "ok": true}
+{"case_id": "aggregation_0088", "columns": ["MAX(salary)"], "rows": [[33000000.0]], "ok": true}
+{"case_id": "aggregation_0089", "columns": ["SUM(HR)"], "rows": [[6776]], "ok": true}
+{"case_id": "aggregation_0090", "columns": ["SUM(HR)"], "rows": [[6776]], "ok": true}
+{"case_id": "aggregation_0091", "columns": ["SUM(HR)"], "rows": [[6776]], "ok": true}
+{"case_id": "aggregation_0092", "columns": ["SUM(HR)"], "rows": [[6776]], "ok": true}
+{"case_id": "aggregation_0093", "columns": ["AVG(attendance)"], "rows": [[2457311.0]], "ok": true}
+{"case_id": "aggregation_0094", "columns": ["AVG(attendance)"], "rows": [[2457311.0]], "ok": true}
+{"case_id": "aggregation_0095", "columns": ["AVG(attendance)"], "rows": [[2457311.0]], "ok": true}
+{"case_id": "aggregation_0096", "columns": ["AVG(attendance)"], "rows": [[2457311.0]], "ok": true}
+{"case_id": "aggregation_0097", "columns": ["AVG(salary)"], "rows": [[7689579.0344827585]], "ok": true}
+{"case_id": "aggregation_0098", "columns": ["AVG(salary)"], "rows": [[7689579.0344827585]], "ok": true}
+{"case_id": "aggregation_0099", "columns": ["AVG(salary)"], "rows": [[7689579.0344827585]], "ok": true}
+{"case_id": "aggregation_0100", "columns": ["AVG(salary)"], "rows": [[7689579.0344827585]], "ok": true}
+{"case_id": "aggregation_0101", "columns": ["SUM(salary)"], "rows": [[1815864669.0]], "ok": true}
+{"case_id": "aggregation_0102", "columns": ["SUM(salary)"], "rows": [[1815864669.0]], "ok": true}
+{"case_id": "aggregation_0103", "columns": ["SUM(salary)"], "rows": [[1815864669.0]], "ok": true}
+{"case_id": "aggregation_0104", "columns": ["SUM(salary)"], "rows": [[1815864669.0]], "ok": true}
+{"case_id": "aggregation_0105", "columns": ["COUNT(*)"], "rows": [[56]], "ok": true}
+{"case_id": "aggregation_0106", "columns": ["COUNT(*)"], "rows": [[56]], "ok": true}
+{"case_id": "aggregation_0107", "columns": ["COUNT(*)"], "rows": [[56]], "ok": true}
+{"case_id": "aggregation_0108", "columns": ["COUNT(*)"], "rows": [[56]], "ok": true}
+{"case_id": "aggregation_0109", "columns": ["MAX(W)"], "rows": [[116]], "ok": true}
+{"case_id": "aggregation_0110", "columns": ["MAX(W)"], "rows": [[116]], "ok": true}
+{"case_id": "aggregation_0111", "columns": ["MAX(W)"], "rows": [[116]], "ok": true}
+{"case_id": "aggregation_0112", "columns": ["MAX(W)"], "rows": [[116]], "ok": true}
+{"case_id": "aggregation_0113", "columns": ["AVG(HR)"], "rows": [[23.672619047619047]], "ok": true}
+{"case_id": "aggregation_0114", "columns": ["AVG(HR)"], "rows": [[23.672619047619047]], "ok": true}
+{"case_id": "aggregation_0115", "columns": ["AVG(HR)"], "rows": [[23.672619047619047]], "ok": true}
+{"case_id": "aggregation_0116", "columns": ["AVG(HR)"], "rows": [[23.672619047619047]], "ok": true}
+{"case_id": "aggregation_0117", "columns": ["COUNT(*)"], "rows": [[270]], "ok": true}
+{"case_id": "aggregation_0118", "columns": ["COUNT(*)"], "rows": [[270]], "ok": true}
+{"case_id": "aggregation_0119", "columns": ["COUNT(*)"], "rows": [[270]], "ok": true}
+{"case_id": "aggregation_0120", "columns": ["COUNT(*)"], "rows": [[270]], "ok": true}
+{"case_id": "aggregation_0121", "columns": ["SUM(H) * 1.0 / SUM(AB)"], "rows": [[0.25225771222494914]], "ok": true}
+{"case_id": "aggregation_0122", "columns": ["SUM(H) * 1.0 / SUM(AB)"], "rows": [[0.25225771222494914]], "ok": true}
+{"case_id": "aggregation_0123", "columns": ["SUM(H) * 1.0 / SUM(AB)"], "rows": [[0.25225771222494914]], "ok": true}
+{"case_id": "aggregation_0124", "columns": ["SUM(H) * 1.0 / SUM(AB)"], "rows": [[0.25225771222494914]], "ok": true}
+{"case_id": "aggregation_0125", "columns": ["SUM(W) * 1.0 / SUM(G)"], "rows": [[0.5]], "ok": true}
+{"case_id": "aggregation_0126", "columns": ["SUM(W) * 1.0 / SUM(G)"], "rows": [[0.5]], "ok": true}
+{"case_id": "aggregation_0127", "columns": ["SUM(W) * 1.0 / SUM(G)"], "rows": [[0.5]], "ok": true}
+{"case_id": "aggregation_0128", "columns": ["SUM(W) * 1.0 / SUM(G)"], "rows": [[0.5]], "ok": true}
+{"case_id": "aggregation_0129", "columns": ["AVG(weight * 1.0 / height)"], "rows": [[2.845028575478436]], "ok": true}
+{"case_id": "aggregation_0130", "columns": ["AVG(weight * 1.0 / height)"], "rows": [[2.845028575478436]], "ok": true}
+{"case_id": "aggregation_0131", "columns": ["AVG(weight * 1.0 / height)"], "rows": [[2.845028575478436]], "ok": true}
+{"case_id": "aggregation_0132", "columns": ["AVG(weight * 1.0 / height)"], "rows": [[2.845028575478436]], "ok": true}
+{"case_id": "aggregation_0133", "columns": ["MAX(salary) - MIN(salary)"], "rows": [[32492500.0]], "ok": true}
+{"case_id": "aggregation_0134", "columns": ["MAX(salary) - MIN(salary)"], "rows": [[32492500.0]], "ok": true}
+{"case_id": "aggregation_0135", "columns": ["MAX(salary) - MIN(salary)"], "rows": [[32492500.0]], "ok": true}
+{"case_id": "aggregation_0136", "columns": ["MAX(salary) - MIN(salary)"], "rows": [[32492500.0]], "ok": true}
+{"case_id": "aggregation_0137", "columns": ["COUNT(*) * 1.0 / COUNT(DISTINCT teamID)"], "rows": [[49.53333333333333]], "ok": true}
+{"case_id": "aggregation_0138", "columns": ["COUNT(*) * 1.0 / COUNT(DISTINCT teamID)"], "rows": [[49.53333333333333]], "ok": true}
+{"case_id": "aggregation_0139", "columns": ["COUNT(*) * 1.0 / COUNT(DISTINCT teamID)"], "rows": [[49.53333333333333]], "ok": true}
+{"case_id": "aggregation_0140", "columns": ["COUNT(*) * 1.0 / COUNT(DISTINCT teamID)"], "rows": [[49.53333333333333]], "ok": true}
+{"case_id": "aggregation_0141", "columns": ["COUNT(*)"], "rows": [[504]], "ok": true}
+{"case_id": "aggregation_0142", "columns": ["COUNT(*)"], "rows": [[504]], "ok": true}
+{"case_id": "aggregation_0143", "columns": ["COUNT(*)"], "rows": [[504]], "ok": true}
+{"case_id": "aggregation_0144", "columns": ["COUNT(*)"], "rows": [[504]], "ok": true}
+{"case_id": "aggregation_0145", "columns": ["AVG(TotalDue)"], "rows": [[3915.9951093564277]], "ok": true}
+{"case_id": "aggregation_0146", "columns": ["AVG(TotalDue)"], "rows": [[3915.9951093564277]], "ok": true}
+{"case_id": "aggregation_0147", "columns": ["AVG(TotalDue)"], "rows": [[3915.9951093564277]], "ok": true}
+{"case_id": "aggregation_0148", "columns": ["AVG(TotalDue)"], "rows": [[3915.9951093564277]], "ok": true}
+{"case_id": "aggregation_0149", "columns": ["MAX(ListPrice)"], "rows": [[3578.27]], "ok": true}
+{"case_id": "aggregation_0150", "columns": ["MAX(ListPrice)"], "rows": [[3578.27]], "ok": true}
+{"case_id": "aggregation_0151", "columns": ["MAX(ListPrice)"], "rows": [[3578.27]], "ok": true}
+{"case_id": "aggregation_0152", "columns": ["MAX(ListPrice)"], "rows": [[3578.27]], "ok": true}
+{"case_id": "aggregation_0153", "columns": ["COUNT(*)"], "rows": [[84]], "ok": true}
+{"case_id": "aggregation_0154", "columns": ["COUNT(*)"], "rows": [[84]], "ok": true}
+{"case_id": "aggregation_0155", "columns": ["COUNT(*)"], "rows": [[84]], "ok": true}
+{"case_id": "aggregation_0156", "columns": ["COUNT(*)"], "rows": [[84]], "ok": true}
+{"case_id": "aggregation_0157", "columns": ["SUM(Quantity)"], "rows": [[335974]], "ok": true}
+{"case_id": "aggregation_0158", "columns": ["SUM(Quantity)"], "rows": [[335974]], "ok": true}
+{"case_id": "aggregation_0159", "columns": ["SUM(Quantity)"], "rows": [[335974]], "ok": true}
+{"case_id": "aggregation_0160", "columns": ["SUM(Quantity)"], "rows": [[335974]], "ok": true}
+{"case_id": "aggregation_0161", "columns": ["SUM(h.TotalDue)"], "rows": [[18398929.188]], "ok": true}
+{"case_id": "aggregation_0162", "columns": ["SUM(h.TotalDue)"], "rows": [[18398929.188]], "ok": true}
+{"case_id": "aggregation_0163", "columns": ["SUM(h.TotalDue)"], "rows": [[18398929.188]], "ok": true}
+{"case_id": "aggregation_0164", "columns": ["SUM(h.TotalDue)"], "rows": [[18398929.188]], "ok": true}
+{"case_id": "aggregation_0165", "columns": ["AVG(p.ListPrice)"], "rows": [[1683.365]], "ok": true}
+{"case_id": "aggregation_0166", "columns": ["AVG(p.ListPrice)"], "rows": [[1683.365]], "ok": true}
+{"case_id": "aggregation_0167", "columns": ["AVG(p.ListPrice)"], "rows": [[1683.365]], "ok": true}
+{"case_id": "aggregation_0168", "columns": ["AVG(p.ListPrice)"], "rows": [[1683.365]], "ok": true}
+{"case_id": "aggregation_0169", "columns": ["COUNT(*)"], "rows": [[14234]], "ok": true}
+{"case_id": "aggregation_0170", "columns": ["COUNT(*)"], "rows": [[14234]], "ok": true}
+{"case_id": "aggregation_0171", "columns": ["COUNT(*)"], "rows": [[14234]], "ok": true}
+{"case_id": "aggregation_0172", "columns": ["COUNT(*)"], "rows": [[14234]], "ok": true}
+{"case_id": "aggregation_0173", "columns": ["SUM(d.LineTotal)"], "rows": [[21623269.540854]], "ok": true}
+{"case_id": "aggregation_0174", "columns": ["SUM(d.LineTotal)"], "rows": [[21623269.540854]], "ok": true}
+{"case_id": "aggregation_0175", "columns": ["SUM(d.LineTotal)"], "rows": [[21623269.540854]], "ok": true}
+{"case_id": "aggregation_0176", "columns": ["SUM(d.LineTotal)"], "rows": [[21623269.540854]], "ok": true}
+{"case_id": "aggregation_0177", "columns": ["AVG(e.VacationHours)"], "rows": [[52.05882352941177]], "ok": true}
+{"case_id": "aggregation_0178", "columns": ["AVG(e.VacationHours)"], "rows": [[52.05882352941177]], "ok": true}
+{"case_id": "aggregation_0179", "columns": ["AVG(e.VacationHours)"], "rows": [[52.05882352941177]], "ok": true}
+{"case_id": "aggregation_0180", "columns": ["AVG(e.VacationHours)"], "rows": [[52.05882352941177]], "ok": true}
+{"case_id": "aggregation_0181", "columns": ["MAX(h.TotalDue)"], "rows": [[168602.3089]], "ok": true}
+{"case_id": "aggregation_0182", "columns": ["MAX(h.TotalDue)"], "rows": [[168602.3089]], "ok": true}
+{"case_id": "aggregation_0183", "columns": ["MAX(h.TotalDue)"], "rows": [[168602.3089]], "ok": true}
+{"case_id": "aggregation_0184", "columns": ["MAX(h.TotalDue)"], "rows": [[168602.3089]], "ok": true}
+{"case_id": "aggregation_0185", "columns": ["SUM(ListPrice - StandardCost)"], "rows": [[90751.8975]], "ok": true}
+{"case_id": "aggregation_0186", "columns": ["SUM(ListPrice - StandardCost)"], "rows": [[90751.8975]], "ok": true}
+{"case_id": "aggregation_0187", "columns": ["SUM(ListPrice - StandardCost)"], "rows": [[90751.8975]], "ok": true}
+{"case_id": "aggregation_0188", "columns": ["SUM(ListPrice - StandardCost)"], "rows": [[90751.8975]], "ok": true}
+{"case_id": "aggregation_0189", "columns": ["SUM(SubTotal + TaxAmt + Freight)"], "rows": [[35536390.0748]], "ok": true}
+{"case_id": "aggregation_0190", "columns": ["SUM(SubTotal + TaxAmt + Freight)"], "rows": [[35536390.0748]], "ok": true}
+{"case_id": "aggregation_0191", "columns": ["SUM(SubTotal + TaxAmt + Freight)"], "rows": [[35536390.0748]], "ok": true}
+{"case_id": "aggregation_0192", "columns": ["SUM(SubTotal + TaxAmt + Freight)"], "rows": [[35536390.0748]], "ok": true}
+{"case_id": "aggregation_0193", "columns": ["SUM(OrderQty * UnitPrice * (1 - UnitPriceDiscount))"], "rows": [[109846381.399888]], "ok": true}
+{"case_id": "aggregation_0194", "columns": ["SUM(OrderQty * UnitPrice * (1 - UnitPriceDiscount))"], "rows": [[109846381.399888]], "ok": true}
+{"case_id": "aggregation_0195", "columns": ["SUM(OrderQty * UnitPrice * (1 - UnitPriceDiscount))"], "rows": [[109846381.399888]], "ok": true}
+{"case_id": "aggregation_0196", "columns": ["SUM(OrderQty * UnitPrice * (1 - UnitPriceDiscount))"], "rows": [[109846381.399888]], "ok": true}
+{"case_id": "aggregation_0197", "columns": ["AVG(ScrappedQty * 1.0 / OrderQty)"], "rows": [[0.00023557565010097616]], "ok": true}
+{"case_id": "aggregation_0198", "columns": ["AVG(ScrappedQty * 1.0 / OrderQty)"], "rows": [[0.00023557565010097616]], "ok": true}
+{"case_id": "aggregation_0199", "columns": ["AVG(ScrappedQty * 1.0 / OrderQty)"], "rows": [[0.00023557565010097616]], "ok": true}
+{"case_id": "aggregation_0200", "columns": ["AVG(ScrappedQty * 1.0 / OrderQty)"], "rows": [[0.00023557565010097616]], "ok": true}

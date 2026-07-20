@@ -411,6 +411,11 @@ def _call_ir_model(prompt, num_predict, temperature=0):
 
         raw_text = (result.text or "").strip()
         print("RAW MULTITABLE IR EXTRACTOR:", raw_text, flush=True)
+        try:                                   # diagnostics only (full trace)
+            from diagnostics import full_trace
+            full_trace.note_list("layer2", "ir_raw_responses", raw_text)
+        except Exception:
+            pass
         if not raw_text:
             return None
         return extract_json(raw_text)

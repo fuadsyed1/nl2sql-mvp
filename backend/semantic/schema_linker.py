@@ -35,6 +35,7 @@ Never raises: on any problem it returns the checklist unchanged.
 import re
 
 from query_families.slot_extractor import index_schema
+from schema.table_mention import explicit_table_mentions
 from sql_candidates.explicit_table_lock import _toks, _family_tokens
 from sql_candidates.semantic_join_discovery import (
     _GEO, _BRIDGEABLE, _is_bridge_table, _ctoks, _concepts_of,
@@ -49,29 +50,87 @@ def _name_tokens(s):
     return [t for t in _WORD_SPLIT.split(str(s or "").lower()) if t]
 
 
+def _is_id_like(name):
+    """True for key/id-like column names (playerID, teamID, id). These are
+    SHARED KEYS and must never drive table expansion — many tables carry them."""
+    n = re.sub(r"[^a-z0-9]", "", str(name or "").lower())
+    return n == "id" or n.endswith("id")
+
+
+def _col_ref(item):
+    """Parse a column reference into (table_or_None, column). Accepts
+    'table.col', 'col', or a dict with 'column'/'table'."""
+    if isinstance(item, dict):
+        col = item.get("column")
+        tbl = item.get("table")
+        if isinstance(col, str) and col.strip():
+            return ((str(tbl).strip().lower() or None) if tbl else None,
+                    col.strip().lower())
+        return None
+    s = str(item or "").strip().lower()
+    if not s:
+        return None
+    if "." in s:
+        t, c = s.split(".", 1)
+        return (t.strip() or None, c.strip())
+    return (None, s)
+
+
+def _required_column_refs(checklist):
+    """Every column the query actually needs (output / filter / group / measure),
+    as (table_or_None, column) pairs. Empty when the checklist has no columns."""
+    refs = []
+    cl = checklist or {}
+    for key in ("must_use_columns", "output_columns", "required_group_keys",
+                "filter_columns", "group_by_columns"):
+        v = cl.get(key)
+        if isinstance(v, list):
+            for item in v:
+                r = _col_ref(item)
+                if r:
+                    refs.append(r)
+    mc = cl.get("measure_column")
+    if mc:
+        r = _col_ref(mc)
+        if r:
+            refs.append(r)
+    return refs
+
+
+def _col_in_tables(tables, col, idx):
+    col = str(col or "").lower()
+    for t in tables:
+        for c in idx["tables"].get(t, []):
+            if str(c.get("name") or "").lower() == col:
+                return True
+    return False
+
+
+def _covers(tables, refs, idx):
+    """True when `tables` already contain every required column: a qualified
+    ref's table must be in `tables`; a bare column must exist in one of them.
+    Returns False on empty refs (can't confirm self-sufficiency -> don't focus)."""
+    if not refs:
+        return False
+    for (t, c) in refs:
+        if c == "*":
+            continue
+        if t:
+            if t not in tables:
+                return False
+        elif not _col_in_tables(tables, c, idx):
+            return False
+    return True
+
+
 def _exact_named_tables(question, names):
-    """Schema table names that appear in the question, matched
-    SEPARATOR-INSENSITIVELY: a table's token sequence must appear as a
-    contiguous whole-word phrase in the question, regardless of whether the
-    question used underscores, spaces, or hyphens. Only 'distinctive' names
-    (multi-token, digit-bearing, or long) can lock, so a plain common word can
-    not accidentally lock a table."""
-    qn = " " + " ".join(_name_tokens(question)) + " "
-    found = set()
-    for t in names:
-        toks = _name_tokens(t)
-        if not toks:
-            continue
-        distinctive = (len(toks) >= 2
-                       or any(ch.isdigit() for ch in str(t))
-                       or len(str(t)) >= 8)
-        if not distinctive:
-            continue
-        pat = (r"(?<![a-z0-9])" + r"\s+".join(re.escape(tk) for tk in toks)
-               + r"(?![a-z0-9])")
-        if re.search(pat, qn):
-            found.add(str(t).lower())
-    return found
+    """Schema table names the question EXPLICITLY references (separator-
+    insensitive). A distinctive name (multi-token / digit / underscore / very
+    long token) locks on a bare mention; a plain single-word name (customer,
+    employee, department) locks only with an explicit table cue ('customer
+    table', 'from customer', 'customer.id'). Delegates to the shared detector so
+    the linker, graph-forcing, and enforcement all agree on 'explicit'."""
+    return {n.lower() for n in explicit_table_mentions(question, names)}
 
 
 def correct_checklist_tables(question, checklist, graph):
@@ -93,10 +152,27 @@ def correct_checklist_tables(question, checklist, graph):
 
     must = {str(t).lower() for t in (checklist or {}).get("must_use_tables") or []
             if str(t).lower() in names}
+    orig_must = set(must)   # the checklist's own target tables (pre-correction)
 
     # (1) exact table-name locking (separator-insensitive) ------------------
     locked = _exact_named_tables(question, names)
     must |= locked
+
+    # Focused-schema guard: if the checklist already names the target table(s)
+    # and EVERY required output/filter/group/measure column lives inside those
+    # tables, keep ONLY those tables (plus any table the question names
+    # verbatim). This stops shared keys (playerID, teamID, ...) from expanding
+    # must_use_tables to the whole related-table neighborhood on big / local
+    # benchmark schemas. Extra tables are added ONLY when a needed column is not
+    # covered by the stated tables (handled by the normal steps below).
+    refs = _required_column_refs(checklist)
+    if orig_must and _covers(orig_must, refs, idx):
+        focused = sorted(orig_must | (locked & names))
+        print(f"FINAL must_use_tables (focused, no expansion): {focused}",
+              flush=True)
+        out = dict(checklist or {})
+        out["must_use_tables"] = focused
+        return out
 
     # (2) sibling disambiguation -------------------------------------------
     family = _family_tokens(names)
@@ -144,18 +220,22 @@ def correct_checklist_tables(question, checklist, graph):
     #     already kept/locked) may be added here.
     metric_required = set()
     metric_toks = {t for t in qtoks
-                   if len(t) >= 5 and t not in geo_all and t not in family}
+                   if len(t) >= 5 and t not in geo_all and t not in family
+                   and not _is_id_like(t)}
     mc = (checklist or {}).get("measure_column")
     if mc:
         metric_toks |= {t for t in _ctoks(mc)
-                        if len(t) >= 5 and t not in geo_all and t not in family}
+                        if len(t) >= 5 and t not in geo_all and t not in family
+                        and not _is_id_like(t)}
     if metric_toks:
         for t in names:
             if t in family_members and t not in (must | locked):
                 continue                       # do not add an ambiguous sibling
             coltoks = set()
             for c in idx["tables"].get(t, []):
-                if c.get("is_key"):
+                # Skip declared keys AND id-like shared keys (playerID, teamID):
+                # a shared key column must never make a table look "required".
+                if c.get("is_key") or _is_id_like(c.get("name")):
                     continue
                 ct = _ctoks(c.get("name"))
                 if ct & geo_all:

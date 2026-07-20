@@ -1,0 +1,4 @@
+key,total,correct,wrong,controlled_failure,error,timeout,strict_accuracy,avg_latency_s
+46,800,380,355,44,18,1,0.475,13.9
+49,600,230,323,33,2,3,0.383,21.0
+50,600,127,285,12,172,4,0.212,13.3

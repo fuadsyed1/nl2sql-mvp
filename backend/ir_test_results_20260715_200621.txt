@@ -1,0 +1,253 @@
+IR QUERY TEST RESULTS
+================================================================================
+
+TEST 1
+--------------------------------------------------------------------------------
+QUESTION:
+Which extension has the most files?
+
+REQUEST FAILED:
+HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /query (Caused by NewConnectionError("HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))
+
+================================================================================
+
+TEST 2
+--------------------------------------------------------------------------------
+QUESTION:
+Which extension has the least files?
+
+REQUEST FAILED:
+HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /query (Caused by NewConnectionError("HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))
+
+================================================================================
+
+TEST 3
+--------------------------------------------------------------------------------
+QUESTION:
+Top 5 extensions by size
+
+REQUEST FAILED:
+HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /query (Caused by NewConnectionError("HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))
+
+================================================================================
+
+TEST 4
+--------------------------------------------------------------------------------
+QUESTION:
+Top 10 extensions by allocated
+
+REQUEST FAILED:
+HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /query (Caused by NewConnectionError("HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))
+
+================================================================================
+
+TEST 5
+--------------------------------------------------------------------------------
+QUESTION:
+Average size by extension
+
+REQUEST FAILED:
+HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /query (Caused by NewConnectionError("HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))
+
+================================================================================
+
+TEST 6
+--------------------------------------------------------------------------------
+QUESTION:
+Average allocated space by extension
+
+REQUEST FAILED:
+HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /query (Caused by NewConnectionError("HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))
+
+================================================================================
+
+TEST 7
+--------------------------------------------------------------------------------
+QUESTION:
+Highest allocated space
+
+REQUEST FAILED:
+HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /query (Caused by NewConnectionError("HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))
+
+================================================================================
+
+TEST 8
+--------------------------------------------------------------------------------
+QUESTION:
+Lowest allocated space
+
+REQUEST FAILED:
+HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /query (Caused by NewConnectionError("HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))
+
+================================================================================
+
+TEST 9
+--------------------------------------------------------------------------------
+QUESTION:
+Highest size
+
+REQUEST FAILED:
+HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /query (Caused by NewConnectionError("HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))
+
+================================================================================
+
+TEST 10
+--------------------------------------------------------------------------------
+QUESTION:
+Lowest size
+
+REQUEST FAILED:
+HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /query (Caused by NewConnectionError("HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))
+
+================================================================================
+
+TEST 11
+--------------------------------------------------------------------------------
+QUESTION:
+Top 5 file types by size
+
+REQUEST FAILED:
+HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /query (Caused by NewConnectionError("HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))
+
+================================================================================
+
+TEST 12
+--------------------------------------------------------------------------------
+QUESTION:
+Top 5 file types by files
+
+REQUEST FAILED:
+HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /query (Caused by NewConnectionError("HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))
+
+================================================================================
+
+TEST 13
+--------------------------------------------------------------------------------
+QUESTION:
+Average size by file_type
+
+REQUEST FAILED:
+HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /query (Caused by NewConnectionError("HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))
+
+================================================================================
+
+TEST 14
+--------------------------------------------------------------------------------
+QUESTION:
+Average allocated by file_type
+
+REQUEST FAILED:
+HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /query (Caused by NewConnectionError("HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))
+
+================================================================================
+
+TEST 15
+--------------------------------------------------------------------------------
+QUESTION:
+Which file_type has the most files?
+
+REQUEST FAILED:
+HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /query (Caused by NewConnectionError("HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))
+
+================================================================================
+
+TEST 16
+--------------------------------------------------------------------------------
+QUESTION:
+Which file_type has the least files?
+
+REQUEST FAILED:
+HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /query (Caused by NewConnectionError("HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))
+
+================================================================================
+
+TEST 17
+--------------------------------------------------------------------------------
+QUESTION:
+Show files where size > 1000000
+
+REQUEST FAILED:
+HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /query (Caused by NewConnectionError("HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))
+
+================================================================================
+
+TEST 18
+--------------------------------------------------------------------------------
+QUESTION:
+Show files where allocated > 1000000
+
+REQUEST FAILED:
+HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /query (Caused by NewConnectionError("HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))
+
+================================================================================
+
+TEST 19
+--------------------------------------------------------------------------------
+QUESTION:
+Show files where files > 1000
+
+REQUEST FAILED:
+HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /query (Caused by NewConnectionError("HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))
+
+================================================================================
+
+TEST 20
+--------------------------------------------------------------------------------
+QUESTION:
+Show files where percent > 1
+
+REQUEST FAILED:
+HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /query (Caused by NewConnectionError("HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))
+
+================================================================================
+
+TEST 21
+--------------------------------------------------------------------------------
+QUESTION:
+Top 3 extensions by percent
+
+REQUEST FAILED:
+HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /query (Caused by NewConnectionError("HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))
+
+================================================================================
+
+TEST 22
+--------------------------------------------------------------------------------
+QUESTION:
+Top 3 file types by percent
+
+REQUEST FAILED:
+HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /query (Caused by NewConnectionError("HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))
+
+================================================================================
+
+TEST 23
+--------------------------------------------------------------------------------
+QUESTION:
+Average percent by extension
+
+REQUEST FAILED:
+HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /query (Caused by NewConnectionError("HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))
+
+================================================================================
+
+TEST 24
+--------------------------------------------------------------------------------
+QUESTION:
+Which extension has the highest allocated space?
+
+REQUEST FAILED:
+HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /query (Caused by NewConnectionError("HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))
+
+================================================================================
+
+TEST 25
+--------------------------------------------------------------------------------
+QUESTION:
+Which extension has the lowest allocated space?
+
+REQUEST FAILED:
+HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /query (Caused by NewConnectionError("HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))
+
+================================================================================
+

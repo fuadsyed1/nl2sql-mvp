@@ -86,17 +86,23 @@ def create_metadata(database_id, db_path, name, table_specs, relationships,
             "success": True,
         })
 
-    # Relationships. Prefer REAL declared foreign keys read straight from the
-    # database (cheap PRAGMA, confidence 1.0, confirmed). Only when the database
-    # declares none do we fall back to the caller's inferred relationships
-    # (value-overlap / name-based / catalog) exactly as before.
-    real_fks = extract_foreign_keys(db_path)
-    if real_fks:
-        rels = real_fks
-    else:
-        rels = relationships(database_id) if callable(relationships) else (relationships or [])
-    clear_relationships(database_id)
-    add_relationships(database_id, rels)
+    # Relationships. Delegated to the single authority resolver, which applies
+    # declared/user-first precedence (declared FKs / user edits / trusted
+    # benchmark are authoritative and never supplemented by inference; inference
+    # runs only when nothing authoritative exists) and sets the per-database
+    # finality flag. The caller's `relationships` provider is retained for
+    # signature compatibility but the resolver computes inference itself
+    # (mode-aware), so large databases now infer-and-store at load too.
+    from services.relationship_resolver import resolve_and_store_relationships
+    _res = resolve_and_store_relationships(database_id, db_path)
+    if _res.get("rejected"):
+        # Large database with no declared PK/FK and no user-supplied set: signal
+        # rejection so the caller rolls back the instance. Nothing was stored.
+        return {"success": False, "rejected": True,
+                "reason": _res.get("reason") or "relationships_required",
+                "database_id": database_id, "db_path": db_path,
+                "tables": registered}
+    rels = _res.get("edges", [])
 
     table_count = len(table_specs)
     mode = update_database_mode(
@@ -107,6 +113,7 @@ def create_metadata(database_id, db_path, name, table_specs, relationships,
         "success": True,
         "database_id": database_id,
         "name": name,
+        "relationship_status": "review",
         "mode": mode,
         "table_count": table_count,
         "db_path": db_path,
