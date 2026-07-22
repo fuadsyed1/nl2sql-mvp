@@ -1,0 +1,270 @@
+{
+ "note": "Day 2C corrected replay after BLOCKER 1 (final-output lineage), BLOCKER 2 (operand grounding), BLOCKER 3 (branch-level union provenance). Implemented variant = A (RC5 obligation-dominance only; candidate_scorer.py reverted, identical to HEAD).",
+ "method": "static offline replay of captured candidate pools through select_best; baseline (obligation disabled) vs patched (RC5-only). The live per-query checklist/contract is NOT reconstructed offline, so some reconstructed baselines diverge from the live trace (proxy mismatch). Any patched candidate that is semantically WRONG in a protected-correct case is counted as a regression regardless of proxy mismatch.",
+ "protected_gate": {
+  "pools": "500-run full-trace candidate pools db54-57 (2000 queries)",
+  "protected_correct_cases": 1606,
+  "incorrect_cases": 394,
+  "obligation_bearing_evaluated": 229,
+  "parse_failures": 0,
+  "protected_changes": 1,
+  "protected_correct_to_wrong_regressions": 0,
+  "gate_zero_protected_regressions_met": true
+ },
+ "protected_changed_cases": [
+  {
+   "db": "57",
+   "test": 100,
+   "question": "For each player, calculate average training load divided by average recovery score.",
+   "live_num": "7",
+   "live_sql": "SELECT p.player_id, p.full_name, AVG(pts.training_load) / AVG(pts.recovery_score) AS avg_training_load_div_recovery\nFROM players p\nJOIN player_training_stats pts ON p.player_id = pts.player_id\nGROUP BY p.player_id, p.full_name\nHAVING AVG(pts.recovery_score) > 0",
+   "base_num": 6,
+   "base_sql": "SELECT p.player_id, p.full_name\nFROM players p\nJOIN player_training_stats pts ON p.player_id = pts.player_id\nGROUP BY p.player_id\nHAVING AVG(pts.training_load) / AVG(pts.recovery_score) IS NOT NULL",
+   "patched_num": 7,
+   "patched_sql": "SELECT p.player_id, p.full_name, AVG(pts.training_load) / AVG(pts.recovery_score) AS avg_training_load_div_recovery\nFROM players p\nJOIN player_training_stats pts ON p.player_id = pts.player_id\nGROUP BY p.player_id, p.full_name\nHAVING AVG(pts.recovery_score) > 0",
+   "baseline_matches_live": false,
+   "patched_matches_live": true,
+   "reason": "semantic_best_candidate",
+   "classification": "proxy_wrong_to_correct",
+   "manual_verdict_patched_sql": "patched #7 projects AVG(training_load)/AVG(recovery_score) = the requested ratio and equals the live-correct selection; the reconstructed baseline (#6, ratio only in HAVING) diverged from live because the live checklist is not reproduced offline. Not a regression.",
+   "is_protected_regression": false
+  }
+ ],
+ "incorrect_changed_cases": {
+  "count": 6,
+  "by_class": {
+   "wrong_to_correct": 6,
+   "wrong_to_partial": 0,
+   "wrong_to_different_wrong": 0
+  },
+  "cases": [
+   {
+    "db": "55",
+    "test": 52,
+    "question": "Show each department with its annual budget per enrolled department student.",
+    "live_num": "3",
+    "live_sql": "SELECT \"departments\".\"department_id\", \"departments\".\"department_name\", \"departments\".\"annual_budget\", SUM(\"programs\".\"current_enrollment\") AS \"total_enrolled_students\" FROM \"departments\" INNER JOIN \"programs\" ON \"departments\".\"department_id\" = \"programs\".\"department_id\" GROUP BY \"departments\".\"department_id\", \"departments\".\"department_name\", \"departments\".\"annual_budget\"",
+    "patched_num": 4,
+    "patched_sql": "SELECT department_name, annual_budget, student_count, annual_budget * 1.0 / student_count AS budget_per_student\nFROM departments\nWHERE student_count > 0",
+    "classification": "wrong_to_correct",
+    "manual_verdict_patched_sql": "projects annual_budget/student_count (budget per enrolled department student)"
+   },
+   {
+    "db": "55",
+    "test": 56,
+    "question": "Show each instructor with their salary per year of service since the hire date.",
+    "live_num": "2",
+    "live_sql": "SELECT first_name, last_name, salary, hire_date\nFROM instructors",
+    "patched_num": 3,
+    "patched_sql": "SELECT first_name, last_name, salary, hire_date, CAST(salary AS REAL) / (strftime('%Y', 'now') - strftime('%Y', hire_date)) AS salary_per_year_of_service\nFROM instructors\nWHERE strftime('%Y', 'now') - strftime('%Y', hire_date) > 0",
+    "classification": "wrong_to_correct",
+    "manual_verdict_patched_sql": "projects salary / years-of-service-since-hire (salary per year of service)"
+   },
+   {
+    "db": "56",
+    "test": 52,
+    "question": "Show each department with annual budget per doctor.",
+    "live_num": "6",
+    "live_sql": "SELECT \n    d.department_name, \n    d.annual_budget, \n    d.doctor_count\nFROM departments d\nGROUP BY d.department_id\nHAVING d.doctor_count > 0",
+    "patched_num": 5,
+    "patched_sql": "SELECT department_name, annual_budget, doctor_count, annual_budget * 1.0 / doctor_count AS annual_budget_per_doctor\nFROM departments\nWHERE doctor_count > 0",
+    "classification": "wrong_to_correct",
+    "manual_verdict_patched_sql": "projects annual_budget/doctor_count (budget per doctor)"
+   },
+   {
+    "db": "56",
+    "test": 406,
+    "question": "List policy identifiers that appear either in patient records or billing claims.",
+    "live_num": "1",
+    "live_sql": "SELECT DISTINCT \"insurance_policies\".\"policy_id\" FROM \"billing_claims\" INNER JOIN \"insurance_policies\" ON \"billing_claims\".\"policy_id\" = \"insurance_policies\".\"policy_id\" INNER JOIN \"patients\" ON \"billing_claims\".\"patient_id\" = \"patients\".\"patient_id\"",
+    "patched_num": 3,
+    "patched_sql": "SELECT DISTINCT policy_id\nFROM insurance_policies\nWHERE policy_id IN (SELECT policy_id FROM patients)\n   OR policy_id IN (SELECT policy_id FROM billing_claims)",
+    "classification": "wrong_to_correct",
+    "manual_verdict_patched_sql": "IN(patients) OR IN(billing_claims): true either/union membership"
+   },
+   {
+    "db": "56",
+    "test": 407,
+    "question": "List department identifiers that appear either in doctors or appointments.",
+    "live_num": "1",
+    "live_sql": "SELECT DISTINCT \"doctors\".\"department_id\", \"appointments\".\"department_id\" FROM \"doctors\" INNER JOIN \"appointments\" ON \"doctors\".\"doctor_id\" = \"appointments\".\"doctor_id\"",
+    "patched_num": 2,
+    "patched_sql": "SELECT DISTINCT department_id FROM doctors\nUNION\nSELECT DISTINCT department_id FROM appointments",
+    "classification": "wrong_to_correct",
+    "manual_verdict_patched_sql": "UNION of doctors and appointments department_id: true union"
+   },
+   {
+    "db": "57",
+    "test": 406,
+    "question": "List team identifiers that appear either in contracts or transfers.",
+    "live_num": "3",
+    "live_sql": "SELECT DISTINCT t.team_id\nFROM teams t\nJOIN contracts c ON t.team_id = c.team_id\nJOIN transfers tr ON t.team_id = tr.to_team_id OR t.team_id = tr.from_team_id",
+    "patched_num": 5,
+    "patched_sql": "SELECT DISTINCT t.team_id\nFROM teams t\nJOIN contracts c ON t.team_id = c.team_id\nUNION\nSELECT DISTINCT t.team_id\nFROM teams t\nJOIN transfers tr ON t.team_id = tr.from_team_id\nUNION\nSELECT DISTINCT t.team_id\nFROM teams t\nJOIN transfers tr ON t.team_id = tr.to_team_id",
+    "classification": "wrong_to_correct",
+    "manual_verdict_patched_sql": "teams JOIN contracts UNION teams JOIN transfers: entity-join union over both sources"
+   }
+  ]
+ },
+ "class_a_9_cases": {
+  "pools": "day2_targeted candidate pools",
+  "counts": {
+   "baseline_already_correct_proxy_mismatch": 1,
+   "unchanged_wrong": 3,
+   "excluded_by_scope": 2,
+   "changed_wrong_to_correct_by_patch": 3
+  },
+  "categories": {
+   "baseline_already_correct_proxy_mismatch": [
+    "DB54 t211"
+   ],
+   "unchanged_wrong": [
+    "DB54 t434",
+    "DB55 t52",
+    "DB56 t51"
+   ],
+   "excluded_by_scope": [
+    "DB54 t452",
+    "DB55 t142"
+   ],
+   "changed_wrong_to_correct_by_patch": [
+    "DB55 t51",
+    "DB56 t403",
+    "DB56 t55"
+   ]
+  },
+  "detail": [
+   {
+    "case": "DB54 t211",
+    "category": "baseline_already_correct_proxy_mismatch",
+    "why": "offline baseline already picks a correct candidate; live selected a wrong one (proxy)",
+    "correct_candidate_set": [
+     4,
+     5,
+     6
+    ],
+    "baseline_pick": 6,
+    "variantA_pick": 6,
+    "selects_correct": true,
+    "changed_by_patch": false
+   },
+   {
+    "case": "DB54 t434",
+    "category": "unchanged_wrong",
+    "why": "EXCEPT/set-difference grain \u2014 out of derived/either scope",
+    "correct_candidate_set": [
+     6
+    ],
+    "baseline_pick": 4,
+    "variantA_pick": 4,
+    "selects_correct": false,
+    "changed_by_patch": false
+   },
+   {
+    "case": "DB54 t452",
+    "category": "excluded_by_scope",
+    "why": "grain false-positive \u2014 excluded",
+    "correct_candidate_set": [
+     4,
+     5,
+     6,
+     7
+    ],
+    "baseline_pick": 7,
+    "variantA_pick": 7,
+    "selects_correct": true,
+    "changed_by_patch": false
+   },
+   {
+    "case": "DB55 t142",
+    "category": "excluded_by_scope",
+    "why": "spurious extra join \u2014 excluded",
+    "correct_candidate_set": [
+     6
+    ],
+    "baseline_pick": 5,
+    "variantA_pick": 5,
+    "selects_correct": false,
+    "changed_by_patch": false
+   },
+   {
+    "case": "DB55 t51",
+    "category": "changed_wrong_to_correct_by_patch",
+    "why": "addition faculty_count+staff_count projected & operand-grounded",
+    "correct_candidate_set": [
+     4,
+     5,
+     6
+    ],
+    "baseline_pick": 1,
+    "variantA_pick": 4,
+    "selects_correct": true,
+    "changed_by_patch": true
+   },
+   {
+    "case": "DB55 t52",
+    "category": "unchanged_wrong",
+    "why": "in the day2_targeted pool the correct candidates carry a bare-GROUP-BY demoted by a separate eligibility gate (note: in the 500-run pool this test recovers)",
+    "correct_candidate_set": [
+     4,
+     5,
+     6
+    ],
+    "baseline_pick": 7,
+    "variantA_pick": 7,
+    "selects_correct": false,
+    "changed_by_patch": false
+   },
+   {
+    "case": "DB56 t403",
+    "category": "changed_wrong_to_correct_by_patch",
+    "why": "either->UNION over both sources (branch-level provenance)",
+    "correct_candidate_set": [
+     2,
+     4
+    ],
+    "baseline_pick": 1,
+    "variantA_pick": 4,
+    "selects_correct": true,
+    "changed_by_patch": true
+   },
+   {
+    "case": "DB56 t51",
+    "category": "unchanged_wrong",
+    "why": "correct candidates demoted by a separate bare-GROUP-BY eligibility gate",
+    "correct_candidate_set": [
+     4,
+     5,
+     6
+    ],
+    "baseline_pick": 3,
+    "variantA_pick": 3,
+    "selects_correct": false,
+    "changed_by_patch": false
+   },
+   {
+    "case": "DB56 t55",
+    "category": "changed_wrong_to_correct_by_patch",
+    "why": "years-remaining date difference projected",
+    "correct_candidate_set": [
+     3,
+     4
+    ],
+    "baseline_pick": 6,
+    "variantA_pick": 3,
+    "selects_correct": true,
+    "changed_by_patch": true
+   }
+  ],
+  "selects_correct_variantA": 5,
+  "flipped_wrong_to_correct_by_patch": 3
+ },
+ "ablation_A_B_C": {
+  "note": "A=RC5-only (implemented), B=RC5+reward-only, C=RC5+reward+penalty. Identical on all 9 class-A and on protected/incorrect pools (scorer reverted -> B/C collapse to A). RC5-only chosen: smallest, no scorer penalty.",
+  "class_a_flips": {
+   "A": 3,
+   "B": 3,
+   "C": 3
+  }
+ }
+}

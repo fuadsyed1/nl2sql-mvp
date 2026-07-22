@@ -38,7 +38,10 @@ from collections import defaultdict
 
 from sqlglot import exp
 from sql_candidates.semantic_obligations import (
-    _parse, _select_scopes, _output_expressions, _has_aggregate)
+    _parse, _select_scopes, _output_expressions, _has_aggregate,
+    question_either_union_obligation, derived_output_satisfied,
+    either_union_satisfied, either_required_sources,
+    question_multi_source_either)
 
 __all__ = ["rc5_obligations", "rc5_dominates", "rc5_rank_tuple", "RC5_ORDER"]
 
@@ -48,6 +51,11 @@ RC5_ORDER = (
     "relationship_specificity",
     "compound_set_complete",
     "entity_grain_unique",
+    # derived-output / set-either obligations (appended = lowest tie-break
+    # priority; they only ever discriminate when the higher obligations are
+    # equal, and each applies only when the question imposes it).
+    "derived_output_projected",
+    "set_union_either",
 )
 
 _COUNT_INTENT = _re.compile(
@@ -284,12 +292,36 @@ def rc5_obligations(sql, checklist, contract, idx, question, base_profile):
     comp_ap, comp_ok = _compound_set(checklist, tree)
     grain_ap, grain_detail = _entity_grain_unique(checklist, tree, tcols)
 
+    # Derived-output & set-either obligations. Applicability is decided from the
+    # QUESTION (a derived add/subtract/ratio/percentage/date value, or an
+    # either-A-or-B membership); satisfaction is decided structurally on the AST.
+    # Both are trivially satisfied when not applicable, so a query with no such
+    # request is never affected.
+    derived_ap, derived_ok = derived_output_satisfied(
+        tree, question, idx, checklist, contract)
+    union_ap = question_either_union_obligation(question)
+    if union_ap:
+        _req_src = either_required_sources(
+            question, list((idx or {}).get("tables") or {}))
+        # A clear MULTI-SOURCE 'either in A or B' request whose two sources cannot
+        # both be grounded is NON-APPLICABLE (neutral): a one-source candidate must
+        # not dominate merely because source grounding failed.
+        if question_multi_source_either(question) and len(_req_src) < 2:
+            union_ap = False
+            union_ok = True
+        else:
+            union_ok = either_union_satisfied(tree, _req_src)
+    else:
+        union_ok = True
+
     o = {
         "scalar_count_output": _returns_scalar_aggregate(selects) if scalar_ap else True,
         "comparison_predicate": _has_column_comparison(tree, pair) if pair_ap else True,
         "relationship_specificity": spec_ok,
         "compound_set_complete": comp_ok,
         "entity_grain_unique": grain_detail["entity_uniqueness_guaranteed"],
+        "derived_output_projected": derived_ok,
+        "set_union_either": union_ok,
         # RC5.1 advisory profile fields (trace only; not compared directly):
         "requested_entity_key": grain_detail["requested_entity_key"],
         "entity_uniqueness_guaranteed": grain_detail["entity_uniqueness_guaranteed"],
@@ -306,6 +338,8 @@ def rc5_obligations(sql, checklist, contract, idx, question, base_profile):
         "relationship_specificity": spec_ap,
         "compound_set_complete": comp_ap,
         "entity_grain_unique": grain_ap,
+        "derived_output_projected": derived_ap,
+        "set_union_either": union_ap,
     }
     return o, applies
 

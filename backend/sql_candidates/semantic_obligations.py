@@ -123,6 +123,714 @@ def _set_operation(tree):
 
 
 # ---------------------------------------------------------------------------
+# Derived-output & set-either obligations (generic, question + AST driven).
+#
+# These recover a class of selection losses where a candidate that COMPUTES and
+# PROJECTS a requested derived value (an add/subtract/ratio/percentage/date
+# expression) or realises an "either A or B" request with union-compatible set
+# semantics is not distinguished from one that omits it. Detection of WHICH
+# obligation the QUESTION imposes is linguistic (a detection cue, never a
+# correctness verdict); WHETHER a candidate SATISFIES it is decided structurally
+# on the parsed AST. Nothing here is schema/table/column/test specific, and both
+# checks return neutral (no obligation) unless the cue is present, so a query
+# with no derived/either request is never affected.
+# ---------------------------------------------------------------------------
+import re as _re
+
+_DERIVED_ARITH_KINDS = ("add", "subtract", "ratio", "multiply")
+
+
+def _qnorm(question):
+    return " " + _re.sub(r"\s+", " ", (question or "").strip().lower()) + " "
+
+
+# A value-measure noun near "per" marks the true division sense ("cost per
+# appointment", "budget per student") and distinguishes it from the grouping
+# sense ("highest price per brand", "orders per customer"). Superlative / top-
+# per-group cues are excluded so a ranking question is never mistaken for a ratio.
+_MEASURE_NOUNS = ("budget", "cost", "costs", "revenue", "salary", "salaries",
+                  "payroll", "amount", "spend", "spending", "expense", "expenses",
+                  "income", "profit", "balance", "fee", "fees", "capita",
+                  "value")
+_SUPERLATIVE = ("highest", "lowest", "most", "least", "top ", "maximum",
+                "minimum", "latest", "earliest", "cheapest", "best", "largest",
+                "smallest", "greatest", "biggest")
+
+
+def question_derived_obligation(question):
+    """Set of derived-output kinds the QUESTION asks to be computed and shown.
+    High precision: a single-column total/average/count is NOT a derived formula
+    (no cue), so 'total balance' / 'average gpa' return empty. Empty => no
+    obligation (callers make no scoring change)."""
+    q = _qnorm(question)
+
+    def has(*subs):
+        return any(s in q for s in subs)
+
+    superlative = has(*_SUPERLATIVE)
+    kinds = set()
+    # addition of >= 2 named components / paraphrased sum
+    if has(" adding ", " plus ", " combined ", " sum of the ") or \
+            _re.search(r"\bformed by adding\b", q):
+        kinds.add("add")
+    # subtraction / difference / remaining amount (NOT a date-remaining phrase)
+    if has(" minus ", " difference ", " unused ", " still needed",
+           " subtract", " reduced by ", " net of "):
+        kinds.add("subtract")
+    if _re.search(r"\bremaining\b", q) and not _re.search(
+            r"\b(year|day|month|week|time)s?\s+remaining\b", q):
+        kinds.add("subtract")
+    # ratio: an explicit percentage/markup/share/ratio cue, OR a "<measure> per
+    # <entity>" division that is NOT a superlative ranking.
+    if has(" percentage ", " percent ", "percentage of", " markup ",
+           " share of ", " ratio ", " rate of ", " divided by "):
+        kinds.add("ratio")
+    if _re.search(r"(?<![a-z])per(?![a-z])", q) and not superlative \
+            and has(*_MEASURE_NOUNS):
+        kinds.add("ratio")
+    # multiplication
+    if has(" multiplied ", " product of "):
+        kinds.add("multiply")
+    # date-derived difference (years/days/months remaining/until/left, expiry)
+    if _re.search(r"\b(year|day|month|week)s?\s+(remaining|until|left)\b", q) or \
+            has(" years until ", " days until ", " time remaining",
+                " time until ", " elapsed since ") or \
+            (" until " in q and "expir" in q):
+        kinds.add("date")
+    return kinds
+
+
+def question_either_union_obligation(question):
+    """True when the question requests membership in EITHER of two sources
+    ("appear either in A or B", "either X or Y"). Detection cue only."""
+    q = _qnorm(question)
+    if " either " in q and " or " in q:
+        return True
+    if " appear " in q and " or " in q and (" in " in q or " as " in q):
+        return True
+    return False
+
+
+# Each requested arithmetic kind demands its OWN AST operator; an unrelated
+# operator never satisfies it (an addition request is NOT met by a subtraction,
+# a ratio is NOT met by a multiplication, etc.). A percentage is a ratio: it may
+# additionally multiply by 100, but the DIVISION must be present.
+_OP_FOR_KIND = {"add": exp.Add, "subtract": exp.Sub, "ratio": exp.Div,
+                "multiply": exp.Mul}
+
+
+def _op_over_column(node, op_cls):
+    """True when `node` contains an `op_cls` (Add/Sub/Mul/Div) arithmetic node
+    that references at least one column (a genuine derived operand, not a pure
+    constant expression). CAST / NULLIF / aliases / aggregates / parentheses /
+    nested CTE and subquery expressions are all transparently traversed by
+    find_all, so every formulation of the operator is recognised."""
+    if node is None:
+        return False
+    for n in ([node] + list(node.find_all(op_cls))):
+        if isinstance(n, op_cls) and next(iter(n.find_all(exp.Column)), None) is not None:
+            return True
+    return False
+
+
+def _has_date_function(node):
+    if node is None:
+        return False
+    for fn in node.find_all(exp.Func):
+        name = (getattr(fn, "sql_name", lambda: "")() or "").lower() \
+            if hasattr(fn, "sql_name") else ""
+        if name in ("julianday", "strftime", "date", "datetime", "julian",
+                    "date_diff", "datediff"):
+            return True
+    txt = ""
+    try:
+        txt = node.sql(dialect="sqlite").lower()
+    except Exception:
+        txt = str(node).lower()
+    return any(k in txt for k in ("julianday", "strftime", "date(", "datetime(",
+                                  "date_diff", "datediff"))
+
+
+def _projection_has_date_diff(node):
+    """A date-DIFFERENCE structure: a date function AND a subtraction of two
+    date terms (julianday(a)-julianday(b)) or an explicit date_diff/datediff.
+    Ordinary numeric subtraction of two plain columns (no date function) does
+    NOT count as a date calculation."""
+    if node is None or not _has_date_function(node):
+        return False
+    if next(iter(node.find_all(exp.Sub)), None) is not None:
+        return True
+    for fn in node.find_all(exp.Func):
+        nm = (getattr(fn, "sql_name", lambda: "")() or "").lower() \
+            if hasattr(fn, "sql_name") else ""
+        if nm in ("date_diff", "datediff"):
+            return True
+    return False
+
+
+# -------- final-output lineage (BLOCKER 1) --------------------------------
+# A derived expression counts ONLY when it reaches the query's FINAL output:
+# directly in the outer projection, or projected as a CTE / subquery alias whose
+# defining expression is derived, or in a UNION branch's projection. An
+# expression that lives only in WHERE / HAVING / ORDER BY / JOIN, or in a CTE
+# column the outer query never selects, does NOT satisfy the obligation.
+def _query_output_selects(node):
+    """The SELECT node(s) whose projections form the FINAL output of `node`
+    (UNION branches are flattened; a subquery/paren unwraps to its inner)."""
+    if node is None:
+        return []
+    if isinstance(node, exp.Union):
+        return _query_output_selects(node.this) + _query_output_selects(node.expression)
+    if isinstance(node, (exp.Subquery, exp.Paren)):
+        return _query_output_selects(node.this)
+    if isinstance(node, exp.Select):
+        return [node]
+    return []
+
+
+def _output_name(e):
+    if isinstance(e, exp.Alias):
+        return (e.alias or "").lower()
+    if isinstance(e, exp.Column):
+        return (e.name or "").lower()
+    return None
+
+
+def _sfrom(select):
+    """FROM clause, robust to sqlglot arg-key naming ('from' vs 'from_')."""
+    return select.args.get("from") or select.args.get("from_")
+
+
+def _select_sources(select):
+    """alias/name -> defining query node for this select's CTEs and FROM/JOIN
+    subqueries (the places an outer alias reference can resolve to)."""
+    sources = {}
+    for cte in (getattr(select, "ctes", None) or []):
+        nm = (cte.alias or "").lower()
+        if nm:
+            sources[nm] = cte.this
+    anon = 0
+    for nd in ([_sfrom(select)] + (select.args.get("joins") or [])):
+        if nd is None:
+            continue
+        for sub in nd.find_all(exp.Subquery):
+            nm = (sub.alias or "").lower()
+            if not nm:                       # unaliased FROM subquery
+                nm = "__sub%d" % anon
+                anon += 1
+            sources[nm] = sub.this
+    return sources
+
+
+def _derived_node_operands(n):
+    left = {(c.name or "").lower()
+            for c in (n.this.find_all(exp.Column) if n.this is not None else [])}
+    right = {(c.name or "").lower()
+             for c in (n.expression.find_all(exp.Column) if n.expression is not None else [])}
+    return {"operands": left | right, "left": left, "right": right, "date": False}
+
+
+def _expr_final_derived(inner, kind, select, sources, seen):
+    """Derived expressions of `kind` produced by projecting `inner` (resolving
+    a CTE/subquery alias reference or a star to its source projection)."""
+    res = []
+    op = _OP_FOR_KIND.get(kind)
+    if op is not None:
+        for n in ([inner] + list(inner.find_all(op))):
+            if isinstance(n, op) and next(iter(n.find_all(exp.Column)), None) is not None:
+                res.append(_derived_node_operands(n))
+    elif kind == "date" and _projection_has_date_diff(inner):
+        cols = {(c.name or "").lower() for c in inner.find_all(exp.Column)}
+        res.append({"operands": cols, "left": cols, "right": cols, "date": True})
+    if isinstance(inner, exp.Column):
+        res += _resolve_column_final_derived(inner, kind, select, sources, seen)
+    elif isinstance(inner, exp.Star):
+        for s in sources.values():
+            res += _final_derived_exprs(s, kind, seen)
+    return res
+
+
+def _resolve_column_final_derived(col, kind, select, sources, seen):
+    res = []
+    tbl = (col.table or "").lower()
+    name = (col.name or "").lower()
+    if tbl and tbl in sources:
+        targets = [sources[tbl]]
+    elif not tbl:
+        targets = list(sources.values())
+    else:
+        targets = []
+    for tgt in targets:
+        for tsel in _query_output_selects(tgt):
+            if id(tsel) in seen:
+                continue
+            tsrc = _select_sources(tsel)
+            for e in _output_expressions(tsel):
+                inner = e.this if isinstance(e, exp.Alias) else e
+                if _output_name(e) == name:
+                    res += _expr_final_derived(inner, kind, tsel, tsrc,
+                                               seen | {id(tsel)})
+                elif isinstance(inner, exp.Star):
+                    res += _final_derived_exprs(tgt, kind, seen)
+    return res
+
+
+def _final_derived_exprs(tree, kind, seen=None):
+    """Every derived expression of `kind` that reaches the FINAL output of the
+    query, each described by its operand columns (with left/right split for the
+    ordered operators)."""
+    seen = seen or set()
+    out = []
+    for sel in _query_output_selects(tree):
+        if id(sel) in seen:
+            continue
+        src = _select_sources(sel)
+        for e in _output_expressions(sel):
+            inner = e.this if isinstance(e, exp.Alias) else e
+            out += _expr_final_derived(inner, kind, sel, src, seen | {id(sel)})
+    return out
+
+
+def _final_output_projects(tree, kind):
+    return len(_final_derived_exprs(tree, kind)) > 0
+
+
+def _projects_derived_expression(tree, kinds):
+    """Operator-specific AND final-output-lineage aware: EVERY requested derived
+    kind must reach the final output. (No operand grounding here; that is applied
+    by derived_output_satisfied.)"""
+    ks = [k for k in kinds if k in _OP_FOR_KIND or k == "date"]
+    if not ks:
+        return False
+    return all(_final_output_projects(tree, k) for k in ks)
+
+
+def _projects_any_derived_expression(tree):
+    """Kind-agnostic capability (advisory profile field): any final-output
+    arithmetic-over-column or date-difference expression."""
+    return any(_final_output_projects(tree, k)
+               for k in ("add", "subtract", "ratio", "multiply", "date"))
+
+
+# -------- requested operand grounding (BLOCKER 2) ------------------------
+# A candidate satisfies a derived obligation only when its final-output derived
+# expression uses the REQUESTED operands, grounded generically from the semantic
+# contract's measure components, the checklist columns, or (schema-linked)
+# question mentions. If the operands cannot be grounded, the obligation is
+# NEUTRAL (it does not drive dominance) rather than satisfied by operator alone.
+_OPT_SUFFIX = {"count", "date", "id", "flag", "status", "amount", "number",
+               "total", "pct", "percentage", "rate", "num", "code", "key",
+               "value", "score"}
+
+
+def _schema_columns(idx):
+    cols, keys = set(), set()
+    for _t, cl in ((idx or {}).get("tables") or {}).items():
+        for c in cl:
+            nm = (c.get("name") or "").lower()
+            if not nm:
+                continue
+            cols.add(nm)
+            if c.get("is_key") or nm.endswith("_id") or nm == "id":
+                keys.add(nm)
+    return cols, keys
+
+
+def _match_columns(phrase, cols):
+    """Schema columns whose significant words all appear (singular/plural- and
+    suffix-insensitively) in `phrase`. Suffix words (count/date/id/...) are
+    optional so 'faculty count'->faculty_count and 'student'->student_count."""
+    toks = set(_re.findall(r"[a-z]+", (phrase or "").lower()))
+    forms = set(toks)
+    for t in toks:
+        forms.add(t[:-1] if t.endswith("s") else t + "s")
+    out = set()
+    for c in cols:
+        words = [w for w in c.split("_") if len(w) > 2]
+        if not words:
+            continue
+        req = [w for w in words if w not in _OPT_SUFFIX] or words
+
+        def _hit(w):
+            return w in forms or (w[:-1] if w.endswith("s") else w + "s") in forms
+        if all(_hit(w) for w in req):
+            out.add(c)
+    return out
+
+
+def _contract_operand_cols(contract):
+    cols = set()
+    for r in (getattr(contract, "requirements", ()) or ()):
+        for tc in (getattr(r, "measure_components", ()) or ()):
+            try:
+                cols.add(str(tc[1]).lower())
+            except Exception:
+                pass
+    return cols
+
+
+def derived_operand_grounding(question, kind, cols, keys, checklist=None,
+                              contract=None):
+    """Grounded operand requirement for one derived kind, or None if the operands
+    cannot be determined (=> neutral)."""
+    q = _qnorm(question)
+    nonkey = cols - keys
+    mu = set()
+    for c in ((checklist or {}).get("must_use_columns") or []):
+        mu.add(str(c).split(".")[-1].strip('"').lower())
+    contract_cols = _contract_operand_cols(contract)
+
+    def cin(phrase):
+        found = _match_columns(phrase, nonkey)
+        # prefer contract / must-use grounding when it overlaps the phrase match
+        pref = found & (contract_cols | mu)
+        return pref or found
+
+    if kind == "add":
+        m = _re.search(r"(?:adding|plus|sum of|formed by adding)\s+(.+?)(?:[.,;]|$)", q)
+        if not m:
+            return None
+        ops = cin(m.group(1))
+        return {"kind": "set", "ops": ops} if len(ops) >= 2 else None
+    if kind == "multiply":
+        m = _re.search(r"(.+?)\s+(?:multiplied by|times)\s+(.+?)(?:[.,;]|$)", q)
+        ops = (cin(m.group(1)) | cin(m.group(2))) if m else set()
+        if not m:
+            m2 = _re.search(r"product of\s+(.+?)(?:[.,;]|$)", q)
+            ops = cin(m2.group(1)) if m2 else set()
+        return {"kind": "set", "ops": ops} if len(ops) >= 2 else None
+    if kind == "subtract":
+        m = (_re.search(r"([\w ]+?)\s+minus\s+([\w ]+?)(?:[.,;]|$)", q)
+             or _re.search(r"difference between\s+([\w ]+?)\s+and\s+([\w ]+?)(?:[.,;]|$)", q)
+             or _re.search(r"([\w ]+?)\s+reduced by\s+([\w ]+?)(?:[.,;]|$)", q))
+        if not m:
+            return None
+        L, R = cin(m.group(1)), cin(m.group(2))
+        return {"kind": "ordered", "left": L, "right": R} if (L and R) else None
+    if kind == "ratio":
+        m = (_re.search(r"([\w ]+?)\s+per\s+([\w ]+?)(?:[.,;]|$)", q)
+             or _re.search(r"([\w ]+?)\s+divided by\s+([\w ]+?)(?:[.,;]|$)", q))
+        if not m:
+            return None
+        N, D = cin(m.group(1)), cin(m.group(2))
+        return {"kind": "ratio", "num": N, "den": D} if (N and D) else None
+    if kind == "date":
+        dcols = {c for c in cols
+                 if c.endswith("_date") or "date" in c.split("_") or "expiration" in c}
+        ment = _match_columns(q, dcols)
+        return {"kind": "date", "cols": ment} if ment else None
+    return None
+
+
+def _final_output_projects_grounded(tree, kind, g):
+    for e in _final_derived_exprs(tree, kind):
+        if g["kind"] == "set" and g["ops"] <= e["operands"]:
+            return True
+        if g["kind"] == "ordered" and (g["left"] & e["left"]) and (g["right"] & e["right"]):
+            return True
+        if g["kind"] == "ratio" and (g["num"] & e["left"]) and (g["den"] & e["right"]):
+            return True
+        if g["kind"] == "date" and (g["cols"] & e["operands"]):
+            return True
+    return False
+
+
+def derived_output_satisfied(tree, question, idx, checklist=None, contract=None):
+    """(applies, satisfied) for the derived-output obligation. Applies only when
+    at least one requested kind's operands can be grounded; satisfied only when
+    every grounded kind's requested formula reaches the final output with the
+    requested operands (operator-specific, lineage- and grounding-checked)."""
+    kinds = question_derived_obligation(question)
+    if not kinds or tree is None:
+        return (False, True)
+    cols, keys = _schema_columns(idx)
+    grounded = {}
+    for k in kinds:
+        g = derived_operand_grounding(question, k, cols, keys, checklist, contract)
+        if g is not None:
+            grounded[k] = g
+    if not grounded:
+        return (False, True)
+    ok = all(_final_output_projects_grounded(tree, k, g)
+             for k, g in grounded.items())
+    return (True, ok)
+
+
+def _outer_base_tables(tree):
+    """Distinct real tables referenced in the OUTER-most query's FROM + JOINs
+    (subquery/CTE tables excluded)."""
+    selects = _select_scopes(tree)
+    if not selects:
+        return set()
+    outer = selects[0]
+    tabs = set()
+    frm = _sfrom(outer)
+    if frm is not None:
+        for t in frm.find_all(exp.Table):
+            tabs.add((t.name or "").lower())
+    for j in (outer.args.get("joins") or []):
+        for t in j.find_all(exp.Table):
+            tabs.add((t.name or "").lower())
+    return {t for t in tabs if t}
+
+
+def _has_top_level_or(tree):
+    """A top-level OR / IN(list) disjunction in a WHERE — the single-source way
+    to express 'either A or B' membership."""
+    for sel in _select_scopes(tree):
+        where = sel.args.get("where")
+        if where is None:
+            continue
+        for c in _split_and(where.this):
+            if isinstance(c, exp.Or):
+                return True
+            if isinstance(c, exp.In) and (c.expressions or c.args.get("query")):
+                return True
+    return False
+
+
+def _all_referenced_tables(tree):
+    """Every real table referenced anywhere in the query (all scopes / union
+    branches / subqueries)."""
+    if tree is None:
+        return set()
+    return {(t.name or "").lower() for t in tree.find_all(exp.Table) if t.name}
+
+
+def _either_source_phrases(question):
+    """The two source phrases inside an 'either A or B' / 'appear in A or B'
+    request, or None."""
+    q = _qnorm(question)
+    m = _re.search(r"\beither\b\s*(?:in\s+|as\s+|from\s+|within\s+)?"
+                   r"(.+?)\s+\bor\b\s+(.+?)(?:[.,;]|\bfor\b|\bwith\b|$)", q)
+    if not m:
+        m = _re.search(r"\bappear(?:s|ing)?\b[^.]*?\bin\s+(.+?)\s+\bor\b\s+"
+                       r"(.+?)(?:[.,;]|$)", q)
+    return (m.group(1), m.group(2)) if m else None
+
+
+def _phrase_tables(phrase, schema):
+    toks = set(_re.findall(r"[a-z]+", phrase))
+    out = set()
+    for t in schema:
+        words = [w for w in t.split("_") if len(w) > 2]
+        if not words:
+            continue
+
+        def _hit(w):
+            forms = {w, w[:-1] if w.endswith("s") else w + "s"}
+            return bool(forms & toks) or w in toks
+        if all(_hit(w) for w in words):
+            out.add(t)
+    return out
+
+
+def either_required_sources(question, schema_tables):
+    """The membership SOURCES named inside an 'either A or B' request, matched to
+    schema tables — generically, with no hardcoded names. Only tables inside the
+    'either ... or ...' disjunction are returned (the projected entity mentioned
+    BEFORE 'either' is never a required source). A table matches a phrase when
+    every significant word of its name appears (singular/plural-insensitively):
+    'billing claims' -> billing_claims, but 'a pending order' does not cover
+    sales_orders (missing 'sales')."""
+    ph = _either_source_phrases(question)
+    if not ph:
+        return set()
+    schema = [t.lower() for t in (schema_tables or [])]
+    req = set()
+    for phrase in ph:
+        req |= _phrase_tables(phrase, schema)
+    return req
+
+
+def question_multi_source_either(question):
+    """True when the 'either ... or ...' is phrased as membership in two SOURCES
+    rather than single-source alternative predicates ('either smoke or have a
+    condition'). A membership preposition (in / from / as / within) adjacent to
+    'either' in EITHER order marks the source-membership reading:
+      'either in A or B'   /  'appear either in A or B'
+      'in either A or B'   /  'found in either A or B'  /  'from either A or B'."""
+    q = _qnorm(question)
+    if _re.search(r"\beither\s+(?:in|as|from|within)\b", q):
+        return True
+    if _re.search(r"\b(?:in|as|from|within)\s+either\b", q):
+        return True
+    return False
+
+
+# -------- branch-level union provenance (BLOCKER 3) ----------------------
+def _scope_tables(select):
+    """alias/name -> base table for the tables directly in this select's FROM /
+    JOIN (nested subqueries excluded)."""
+    amap = {}
+    items = []
+    frm = _sfrom(select)
+    if frm is not None:
+        items.append(frm.this if hasattr(frm, "this") else frm)
+    for j in (select.args.get("joins") or []):
+        items.append(j.this if hasattr(j, "this") else j)
+    for it in items:
+        if isinstance(it, exp.Table):
+            nm = (it.name or "").lower()
+            if nm:
+                amap[nm] = nm
+                al = it.args.get("alias")
+                an = getattr(al, "name", None) if al is not None else None
+                if an:
+                    amap[str(an).lower()] = nm
+    return amap
+
+
+def _projected_population_tables(select):
+    """The base table(s) the PROJECTED output columns are rooted in — i.e. the
+    tables that actually supply this select's result population (a table joined
+    only as a filter, or referenced only in a subquery, is NOT counted)."""
+    amap = _scope_tables(select)
+    fromtabs = set(amap.values())
+    cols = []
+    for e in _output_expressions(select):
+        inner = e.this if isinstance(e, exp.Alias) else e
+        cols += list(inner.find_all(exp.Column))
+    if not cols:
+        return fromtabs
+    tabs = set()
+    for c in cols:
+        t = (c.table or "").lower()
+        if t and t in amap:
+            tabs.add(amap[t])
+        elif not t and len(fromtabs) == 1:
+            tabs |= fromtabs
+    return tabs or fromtabs
+
+
+def _split_or(node):
+    if node is None:
+        return []
+    if isinstance(node, exp.Or):
+        return _split_or(node.this) + _split_or(node.expression)
+    if isinstance(node, exp.Paren):
+        return _split_or(node.this)
+    return [node]
+
+
+def _or_membership_sources(select, required):
+    """Required sources reached through a TOP-LEVEL OR of EXISTS / IN membership
+    predicates ('entity WHERE EXISTS(A) OR EXISTS(B)'). An AND (intersection)
+    has no top-level OR, so it returns nothing."""
+    where = select.args.get("where")
+    if where is None:
+        return set()
+    disj = _split_or(where.this)
+    if len(disj) < 2:
+        return set()
+    srcs = set()
+    for d in disj:
+        for sub in d.find_all(exp.Exists):
+            for t in sub.find_all(exp.Table):
+                srcs.add((t.name or "").lower())
+        for inn in d.find_all(exp.In):
+            for t in inn.find_all(exp.Table):
+                srcs.add((t.name or "").lower())
+    return srcs & required
+
+
+def _branch_main_tables(select):
+    """Base tables in this branch's own FROM / JOIN (nested subquery / EXISTS
+    tables are excluded)."""
+    return set(_scope_tables(select).values())
+
+
+def _disjunct_sources(node):
+    """Tables reached through EXISTS / IN subqueries inside one OR disjunct."""
+    srcs = set()
+    for sub in node.find_all(exp.Exists):
+        for t in sub.find_all(exp.Table):
+            srcs.add((t.name or "").lower())
+    for inn in node.find_all(exp.In):
+        for t in inn.find_all(exp.Table):
+            srcs.add((t.name or "").lower())
+    return srcs
+
+
+def _sdr_separable(required, unit_sources):
+    """System of distinct representatives: each required source S must have a
+    DISTINCT unit (UNION branch or OR disjunct) whose required-source contribution
+    is EXACTLY {S}. This is what makes 'either A or B' true — one alternative for
+    A alone and a different alternative for B alone — so that A and B appearing
+    TOGETHER in one intersection unit never satisfies the obligation."""
+    req = list(required)
+    cand = {S: [i for i, u in enumerate(unit_sources) if u == {S}] for S in req}
+    match = {}                                   # unit_index -> source
+
+    def _assign(S, seen):
+        for i in cand[S]:
+            if i in seen:
+                continue
+            seen.add(i)
+            if i not in match or _assign(match[i], seen):
+                match[i] = S
+                return True
+        return False
+
+    for S in req:
+        if not _assign(S, set()):
+            return False
+    return True
+
+
+def _multi_source_union_ok(tree, required):
+    """Multi-source 'either A or B' is satisfied only when the required sources
+    are SEPARABLE across distinct alternatives: a UNION whose branches each
+    contribute exactly one required source (common entity tables ignored), or a
+    top-level OR whose disjuncts each carry exactly one required source's
+    EXISTS/IN membership. A and B together in one branch/disjunct never counts."""
+    branches = _query_output_selects(tree)
+    if len(branches) >= 2:                        # UNION
+        units = [_branch_main_tables(b) & required for b in branches]
+        return _sdr_separable(required, units)
+    sel = branches[0] if branches else None       # single query: top-level OR
+    if sel is None:
+        return False
+    where = sel.args.get("where")
+    if where is None:
+        return False
+    disj = _split_or(where.this)
+    if len(disj) < 2:
+        return False
+    units = [_disjunct_sources(d) & required for d in disj]
+    return _sdr_separable(required, units)
+
+
+def either_union_satisfied(tree, required_sources=None):
+    """AST verdict for the either-union obligation.
+
+    MULTI-SOURCE membership (>= 2 required sources, e.g. 'appear either in A or
+    B'): the required sources must be SEPARABLE across distinct alternatives —
+    one UNION branch / OR disjunct contributing A (without B) and a different one
+    contributing B (without A). An inner-join intersection, an AND of EXISTS, a
+    repeated single source, A and B sharing one branch/disjunct, a source only in
+    an unrelated subquery / filter join, and a missing source all FAIL.
+
+    SINGLE-SOURCE alternative predicates (< 2 required sources, e.g. 'either
+    smoke or have a chronic condition'): OR / IN within one source is valid and
+    UNION is not required; only an inner-join intersection of >= 2 distinct base
+    tables with no set operator and no disjunction fails."""
+    if tree is None:
+        return True
+    required = {s.lower() for s in (required_sources or set())}
+    if len(required) >= 2:
+        return _multi_source_union_ok(tree, required)
+    # single-source / unknown -> lenient
+    if _set_operation(tree) is not None:
+        return True
+    if len(_outer_base_tables(tree)) <= 1:
+        return True
+    if _has_top_level_or(tree):
+        return True
+    return False
+
+
+# ---------------------------------------------------------------------------
 # canonical signature (semantic duplicate detection)
 # ---------------------------------------------------------------------------
 def canonical_signature(sql):
@@ -349,6 +1057,17 @@ def compute_profile(sql, validation, checklist, contract, idx=None):
     prof["fanout_risk"] = prof["unrequested_restrictions"]
     prof["required_temporal_conditions_satisfied"] = not (
         (v.get("temporal") or {}).get("fatal"))
+
+    # Derived-output & set-either structural capabilities. These are
+    # question-INDEPENDENT AST facts (does the projection carry a derived
+    # arithmetic/date expression; is the query union-compatible rather than an
+    # intersection). The APPLICABLE obligation is decided with the question in
+    # rc5_ranking; recording the facts here lets the profile/scorer reward a
+    # candidate that projects a requested derived value or realises 'either' as
+    # a union, and flags a repair that dropped a requested derived expression
+    # (derived_output_projected becomes False).
+    prof["derived_output_projected"] = _projects_any_derived_expression(tree)
+    prof["either_union_satisfied"] = either_union_satisfied(tree)
 
     applies_set = _applies(checklist, contract)
     if prof.get("_out_agg_applies"):
