@@ -1,6 +1,20 @@
 """
 classify_day2b_failures.py  (Day 2B — offline, trace-verified classification)
 
+LIMITATION / SUPERSEDED FOR THE LIVE RERUN:
+  main() below classifies against the FROZEN Day 1 traces (dc.load_config()'s
+  ia["sql_trace_files"]). Those pools do NOT contain the candidates the Day 2
+  targeted live rerun actually generated, so its A/B/C verdicts diverge from the
+  live evidence. The authoritative, Day-2-live-trace-verified classification is
+  produced by build_day2b_live_classification.py (writes day2b_live_*), which
+  reads benchmarks/results/day2_targeted_full_trace_db54..57.txt directly and
+  applies manual per-candidate semantic judgement. The helper
+  obligation_signals() added here is the classifier-only utility for recognising
+  the derived-metric / set / output obligations that the live redo relies on
+  (bare "per" ratios, "based on" formulas, totals implied by several named
+  components, and paraphrased add/subtract/multiply/divide). It is pure and has
+  no side effects; it does not change main()'s behaviour.
+
 For each of the 21 remaining incorrect failure reruns, classify using the frozen
 Day 1 full traces (captured candidate pools):
   * correct_candidate_generated_but_not_selected  (a clean, executed candidate
@@ -83,6 +97,45 @@ def is_fix_candidate(pattern, sel_sql, cand_sql, question):
         return bool(extra) or moved
     # fallback: repairs a day2 violation present in the selected SQL
     return bool(_fired(sel_sql, question) - _fired(cand_sql, question))
+
+
+def obligation_signals(question):
+    """Classifier-only, schema-independent recognition of the derived-obligation
+    and set/output patterns the earlier keyword logic under-detected. Returns a
+    dict of booleans. Judgement of whether a *candidate* satisfies an obligation
+    still requires per-candidate semantic review (see build_day2b_live_*): this
+    only flags what the QUESTION obliges, so a reviewer/scorer knows to look.
+
+    No test-id or DB-specific logic; pattern vocabulary only."""
+    q = " " + re.sub(r"\s+", " ", (question or "").strip().lower()) + " "
+    def has(*toks):
+        return any(t in q for t in toks)
+    # bare "per X" ratio, e.g. "cost per completed appointment", "budget per student"
+    per_ratio = bool(re.search(r"\bper\b(?!cent| cent)", q)) and not has("percentage", "percent")
+    # explicit percentage / share
+    percentage = has("percentage", "percent", " share of ", "as a percentage")
+    # "based on <a>, <b>, and <c>" / total implied by several named components
+    based_on_formula = has(" based on ") or bool(
+        re.search(r"\b(total|number|sum|combined)\b.*\b(and)\b", q) and
+        re.search(r",\s*[a-z].+,\s*and\b", q))
+    # paraphrased arithmetic
+    addition = has(" adding ", " sum of ", " plus ", " combined ", " total of ")
+    subtraction = has(" minus ", " difference ", " remaining ", " still needed",
+                      " unused ", " left ", " reduce", " subtract")
+    multiplication = has(" times ", " multiplied ", " product of ")
+    division = per_ratio or percentage or has(" ratio", " average number of ",
+                                              " divided by ", " per ")
+    # set "either/both/never/but-not" intent
+    set_either = has(" either ", " appear in ", " or ") and has(" appear", " records", " identifiers")
+    set_anti = has(" never ", " not in ", " but not ", " without ", " have no ", " excluding ")
+    return {
+        "derived_expression": bool(addition or subtraction or multiplication
+                                   or division or based_on_formula or percentage),
+        "per_ratio": per_ratio, "percentage": percentage,
+        "based_on_formula": based_on_formula, "addition": addition,
+        "subtraction": subtraction, "multiplication": multiplication,
+        "division": division, "set_either": set_either, "set_anti": set_anti,
+    }
 
 
 def main():
