@@ -45,7 +45,11 @@ def main():
         if not r["question"]:
             continue
         resp = post(args.base_url, DB_BY_NAME[r["database_id"]], r["question"], r, args.timeout)
-        r["after_sql"] = (resp.get("sql") or "").replace("\n", " ")
+        r["after_sql"] = (
+            (resp.get("generated_sql") or {}).get("sql")
+            or resp.get("sql")
+            or ""
+        ).replace("\n", " ")
         r["after_verdict"] = "PENDING_HUMAN_SEMANTIC_REVIEW"
         r["rerun_status"] = "executed" if resp.get("success") else "exec_failed_or_controlled"
         r["recovered"] = ""      # set by the human reviewer
