@@ -1,0 +1,130 @@
+{
+ "note": "Day-3 offline reproduction of role-to-column grounding (t401) and categorical complement value grounding (t96) against restored DB56. Deterministic; no live LLM. Schema-generic (no DB/test hardcoding).",
+ "db56_t401": {
+  "question": "List doctor identifiers that appear either as primary doctors or appointment doctors.",
+  "extracted_alternatives": [
+   {
+    "phrase": "primary doctors",
+    "modifier": "primary",
+    "entity": "doctor",
+    "table": "patients",
+    "column": "primary_doctor_id",
+    "provenance": "role_qualified_column"
+   },
+   {
+    "phrase": "appointment doctors",
+    "modifier": "appointment",
+    "entity": "doctor",
+    "table": "appointments",
+    "column": "doctor_id",
+    "provenance": "role_named_table"
+   }
+  ],
+  "candidate_branch_provenance": {
+   "all_doctors_union": {
+    "sql": "SELECT DISTINCT doctor_id FROM doctors UNION SELECT DISTINCT doctor_id FROM appointments",
+    "role_satisfied": false,
+    "row_count": 80
+   },
+   "role_grounded_exists": {
+    "sql": "SELECT DISTINCT d.doctor_id FROM doctors d WHERE EXISTS (SELECT 1 FROM patients p WHERE p.primary_doctor_id=d.doctor_id) OR EXISTS (SELECT 1 FROM appointments a WHERE a.doctor_id=d.doctor_id)",
+    "role_satisfied": true,
+    "row_count": 72
+   }
+  },
+  "old_selected": "all_doctors UNION (80 rows) \u2014 'primary doctors' read the whole doctors table",
+  "new_selected": "role_grounded (72 rows)",
+  "selection_reason": "semantic_best_candidate",
+  "rc5_semantic_winner": "role_grounded",
+  "execution": {
+   "all_doctors": {
+    "executed": true,
+    "row_count": 80,
+    "sample": [
+     [
+      1
+     ],
+     [
+      2
+     ],
+     [
+      3
+     ]
+    ]
+   },
+   "role_grounded": {
+    "executed": true,
+    "row_count": 72,
+    "sample": [
+     [
+      2
+     ],
+     [
+      3
+     ],
+     [
+      4
+     ]
+    ]
+   }
+  },
+  "verdict": "correct"
+ },
+ "db56_t96": {
+  "question": "For each patient, calculate abnormal lab tests as a percentage of completed lab tests.",
+  "profiled_known_values": [
+   "critical",
+   "high",
+   "low",
+   "normal"
+  ],
+  "identified_base_state": "normal",
+  "grounded_complement": [
+   "critical",
+   "high",
+   "low"
+  ],
+  "denominator_status_value": "completed",
+  "rejected_unseen_literal": {
+   "literal": "'1'",
+   "would_satisfy": false
+  },
+  "generated_sql": "SELECT patient_id, SUM(CASE WHEN abnormal_flag IN ('critical','high','low') THEN 1 ELSE 0 END) AS abnormal_count, COUNT(*) AS total_count, 100.0*SUM(CASE WHEN abnormal_flag IN ('critical','high','low') THEN 1 ELSE 0 END)/NULLIF(COUNT(*),0) AS abnormal_percentage FROM lab_tests WHERE test_status='completed' GROUP BY patient_id",
+  "complement_value_satisfied": true,
+  "execution": {
+   "executed": true,
+   "row_count": 16,
+   "sample": [
+    [
+     3,
+     0,
+     1,
+     0.0
+    ],
+    [
+     16,
+     0,
+     1,
+     0.0
+    ],
+    [
+     19,
+     1,
+     1,
+     100.0
+    ]
+   ]
+  },
+  "percentage_formula_verdict": "100 * SUM(CASE complement) / NULLIF(COUNT completed,0)",
+  "verdict": "correct"
+ },
+ "gate": {
+  "t401_role_grounded_72_rows": true,
+  "t401_all_doctors_rejected": true,
+  "t96_full_complement_low_high_critical": true,
+  "t96_excludes_normal": true,
+  "t96_denominator_completed": true,
+  "t96_executes": true,
+  "t96_rejects_boolean_1": true
+ }
+}

@@ -1,0 +1,150 @@
+{
+ "note": "Day-3 offline reproduction of direct role-FK grounding (t142) and bounded-subset ratio population alignment (t96). Deterministic; no live LLM. Schema-generic (no DB/test hardcoding).",
+ "db55_t142": {
+  "question": "How many distinct programs have students advised by instructors from the same department as the program?",
+  "grounded_role_relationship": {
+   "source_table": "students",
+   "role_column": "advisor_instructor_id",
+   "role": "advisor",
+   "target_table": "instructors",
+   "target_key": "instructor_id",
+   "fk_backed": true
+  },
+  "candidate_branch_provenance": {
+   "direct_advisor": {
+    "sql": "SELECT COUNT(DISTINCT p.program_id) FROM programs p JOIN students s ON p.program_id=s.program_id JOIN instructors i ON s.advisor_instructor_id=i.instructor_id WHERE p.department_id=i.department_id",
+    "row_count": 1,
+    "role_join_present": true
+   },
+   "event_table": {
+    "sql": "SELECT COUNT(DISTINCT p.program_id) FROM programs p JOIN students s ON p.program_id=s.program_id JOIN academic_advising aa ON s.student_id=aa.student_id JOIN instructors i ON aa.instructor_id=i.instructor_id WHERE p.department_id=i.department_id",
+    "row_count": 1,
+    "role_join_present": false
+   }
+  },
+  "old_selected": "academic_advising event table (result = 1)",
+  "new_selected": "direct_advisor (result = 2)",
+  "direct_advisor_result": 2,
+  "event_table_result": 1,
+  "selection_reason": "semantic_best_candidate",
+  "rc5_semantic_winner": "direct_advisor",
+  "execution": {
+   "direct_advisor": {
+    "executed": true,
+    "row_count": 1,
+    "sample": [
+     [
+      2
+     ]
+    ]
+   },
+   "event_table": {
+    "executed": true,
+    "row_count": 1,
+    "sample": [
+     [
+      1
+     ]
+    ]
+   }
+  },
+  "verdict": "correct"
+ },
+ "db56_t96": {
+  "question": "For each patient, calculate abnormal lab tests as a percentage of completed lab tests.",
+  "bounded_subset_ratio": true,
+  "profiled_known_values": [
+   "critical",
+   "high",
+   "low",
+   "normal"
+  ],
+  "identified_base_state": "normal",
+  "grounded_complement": [
+   "critical",
+   "high",
+   "low"
+  ],
+  "denominator_status_value": "completed",
+  "incorrect_live_sql": "SELECT p.patient_id, CAST(SUM(CASE WHEN lt.abnormal_flag IN ('critical','high','low') THEN 1 ELSE 0 END) AS REAL)*100.0/NULLIF(COUNT(CASE WHEN lt.test_status='completed' THEN 1 END),0) AS abnormal_percentage FROM patients p JOIN lab_tests lt ON p.patient_id=lt.patient_id GROUP BY p.patient_id",
+  "incorrect_aligned": false,
+  "incorrect_fatal": [
+   "bounded-subset percentage: the denominator population filter does not also constrain the numerator, so the ratio can exceed 100%"
+  ],
+  "incorrect_percentage_bounds": {
+   "min": 100.0,
+   "max": 100.0
+  },
+  "corrected_sql": "SELECT patient_id, 100.0*SUM(CASE WHEN abnormal_flag IN ('critical','high','low') THEN 1 ELSE 0 END)/NULLIF(COUNT(*),0) AS abnormal_percentage FROM lab_tests WHERE test_status='completed' GROUP BY patient_id",
+  "corrected_aligned": true,
+  "corrected_fatal": [],
+  "corrected_percentage_bounds": {
+   "min": 0.0,
+   "max": 100.0
+  },
+  "execution": {
+   "incorrect": {
+    "executed": true,
+    "row_count": 47,
+    "sample": [
+     [
+      1,
+      null
+     ],
+     [
+      3,
+      100.0
+     ],
+     [
+      4,
+      null
+     ],
+     [
+      9,
+      null
+     ],
+     [
+      15,
+      null
+     ]
+    ]
+   },
+   "corrected": {
+    "executed": true,
+    "row_count": 16,
+    "sample": [
+     [
+      3,
+      0.0
+     ],
+     [
+      16,
+      0.0
+     ],
+     [
+      19,
+      100.0
+     ],
+     [
+      27,
+      100.0
+     ],
+     [
+      30,
+      100.0
+     ]
+    ]
+   }
+  },
+  "verdict": "correct"
+ },
+ "gate": {
+  "t142_selects_direct_advisor": true,
+  "t142_direct_result_2": true,
+  "t142_event_not_forced": true,
+  "t96_incorrect_is_fatal": true,
+  "t96_corrected_aligned": true,
+  "t96_corrected_bounds_0_100": true,
+  "t96_corrected_executes": true
+ }
+}

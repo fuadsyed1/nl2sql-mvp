@@ -1,0 +1,40 @@
+{
+ "note": "Day-3 offline reproduction of the final selector-ordering fix: a population/output tie-break never overrides a stronger semantic obligation, and an intersection never beats a valid UNION for either/or. Deterministic; no live LLM; schema-generic.",
+ "db56_t401": {
+  "question": "List doctor identifiers that appear either as primary doctors or appointment doctors.",
+  "all_doctors": {
+   "rows": 80,
+   "score": 75.0
+  },
+  "role_grounded": {
+   "rows": 72,
+   "score": 75.0
+  },
+  "selected": "role_grounded",
+  "selection_reason": "best_scored_executed",
+  "population_tie_break_skipped": null,
+  "selected_result_rows": 72,
+  "verdict": "correct"
+ },
+ "db56_t403": {
+  "question": "List patient identifiers that appear either in appointments or billing claims.",
+  "intersection": {
+   "rows": 42,
+   "score": 72.0,
+   "projects_unrequested": "first_name"
+  },
+  "union": {
+   "rows": 62,
+   "score": 67.0
+  },
+  "selected": "union",
+  "selection_reason": "best_scored_executed",
+  "selected_result_rows": 62,
+  "verdict": "correct"
+ },
+ "gate": {
+  "t401_selects_role_grounded_72": true,
+  "t401_all_doctors_excluded_by_semantic_guard": true,
+  "t403_selects_union_62": true
+ }
+}

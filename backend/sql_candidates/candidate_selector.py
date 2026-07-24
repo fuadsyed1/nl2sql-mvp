@@ -31,7 +31,10 @@ from sql_candidates.candidate_types import to_public_dict
 from sql_candidates.result_equivalence import group_candidates
 from sql_candidates.semantic_obligations import (
     compute_profile, canonical_signature, lineage_family, is_eligible,
-    override_dominates)
+    override_dominates, unrequested_restricting_joins,
+    question_either_union_obligation, question_multi_source_either,
+    ground_either_roles, role_either_satisfied, either_union_satisfied,
+    either_required_sources, _parse as _so_parse)
 from sql_candidates.rc5_ranking import (
     rc5_obligations, rc5_dominates, rc5_rank_tuple)
 from sql_candidates.consensus_ranking import consensus_select
@@ -51,6 +54,46 @@ _DIRECT_SOURCES = ("llm_sql_direct", "llm_sql_direct_grain",
 
 def _rank_key(c):
     return (c.score, _SOURCE_PRIORITY.get(c.source, 0), c.label)
+
+
+def _set_obligation_satisfiers(pool, checklist, idx, question):
+    """For a HIGH-CONFIDENCE multi-source either/or request, return the sublist
+    of `pool` candidates that SATISFY the set-provenance obligation (a separable
+    UNION / OR / EXISTS covering the grounded alternatives). Returns None when
+    the obligation does not apply (not a multi-source either/or, or fewer than
+    two sources can be grounded) — in which case the pool is left untouched."""
+    if not question or not question_either_union_obligation(question):
+        return None
+    grounded = None
+    try:
+        grounded = ground_either_roles(question, checklist, idx)
+    except Exception:
+        grounded = None
+    req_src = set()
+    role_mode = bool(grounded and len(grounded) >= 2)
+    if not role_mode:
+        try:
+            req_src = {s.lower() for s in either_required_sources(
+                question, list((idx or {}).get("tables") or {}))}
+        except Exception:
+            req_src = set()
+        # Only a clear MULTI-SOURCE either/or with >= 2 grounded sources is a
+        # high-confidence obligation; anything less stays neutral.
+        if len(req_src) < 2:
+            return None
+    if not question_multi_source_either(question) and not role_mode:
+        return None
+    sat = []
+    for c in pool:
+        try:
+            tree = _so_parse(c.sql)
+            ok = role_either_satisfied(tree, grounded) if role_mode \
+                else either_union_satisfied(tree, req_src)
+            if ok:
+                sat.append(c)
+        except Exception:
+            continue
+    return sat
 
 
 def _fatal(c):
@@ -154,11 +197,98 @@ def select_best(candidates, checklist=None, contract=None, idx=None,
             c._signature = ("raw", (c.sql or ""))
             c._lineage = lineage_family(c.source)
     eligible = [c for c in viable if is_eligible(c._profile)]
+
+    # SET-OBLIGATION FILTER (high-confidence multi-source either/or): when the
+    # set_union_either obligation APPLIES and at least one otherwise-eligible
+    # candidate SATISFIES it (a separable UNION / OR / EXISTS provenance),
+    # restrict the ENTIRE selection universe (viable + eligible, and therefore
+    # every later pool: consensus, RC5 rank_pool, the population tie-break and
+    # all overrides) to satisfying candidates. An intersection (or any
+    # non-separable candidate) can then never win through any stage. When NO
+    # candidate satisfies, nothing is filtered — the failure is NOT made globally
+    # fatal (the deterministic set fallback / normal path handles coverage).
+    _set_sat = _set_obligation_satisfiers(viable, checklist, idx, question)
+    if _set_sat is not None and 0 < len(_set_sat) < len(viable):
+        _sat_ids = {id(c) for c in _set_sat}
+        meta["set_obligation_filter"] = {
+            "applicable": True,
+            "satisfying_labels": [c.label for c in _set_sat],
+            "rejected_labels": [c.label for c in viable if id(c) not in _sat_ids],
+            "pool_before": [c.label for c in viable],
+            "pool_after": [c.label for c in _set_sat],
+        }
+        viable = [c for c in viable if id(c) in _sat_ids]
+        eligible = [c for c in eligible if id(c) in _sat_ids]
+    elif _set_sat is not None:
+        meta["set_obligation_filter"] = {
+            "applicable": True, "filtered": False,
+            "satisfying_labels": [c.label for c in _set_sat],
+            "note": ("all candidates satisfy" if len(_set_sat) == len(viable)
+                     else "no candidate satisfies; universe unchanged for "
+                          "fallback / normal path"),
+        }
+
     meta["semantic_eligible_count"] = len(eligible)
     meta["semantic_incomplete"] = [
         {"label": c.label, "missing": c._profile.get("_missing")}
         for c in viable if not is_eligible(c._profile)]
     pool = eligible or viable or executed
+
+    # RC3 demotes semantically-incomplete candidates so a complete candidate wins
+    # even when an incomplete one scores higher — this correctly rejects a grouped
+    # answer that HIDES a requested aggregate. It must NOT, however, discard a
+    # non-fatal executed candidate that already PROJECTS the requested per-entity
+    # derived value (a ratio / difference) but was demoted ONLY by the
+    # "missing output aggregate" gate — a false positive, since a projected derived
+    # metric IS the requested output.
+    #
+    # A candidate is PROMOTABLE only when ALL hold: (1) executed, (2) no fatal
+    # reason, (3) currently RC3-incomplete, (4) profile.derived_output_projected,
+    # (5) its GATING failures are exactly {required_output_aggregate_satisfied},
+    # (6) its score strictly exceeds the best eligible candidate's, and (7) it has
+    # NO other missing obligation (formula / set / group / output / grain /
+    # population / relationship). When any promotable candidate exists, the override
+    # pool is exactly `eligible + promotable` (deduped, order-preserving) — never
+    # the full viable set — so an unrelated incomplete candidate can never re-enter
+    # and win via score, consensus, RC4, RC5 or a later override. Genuine RC3
+    # demotion (hidden count, missing formula/set/grain/population) is preserved.
+    if eligible and viable:
+        best_eligible = max(eligible, key=_rank_key)
+        best_eligible_score = best_eligible.score or 0
+
+        def _promotable(c):
+            p = getattr(c, "_profile", None) or {}
+            return (bool(getattr(c, "executed_ok", False))                    # (1)
+                    and not _fatal(c)                                         # (2)
+                    and not is_eligible(p)                                     # (3)
+                    and bool(p.get("derived_output_projected"))               # (4)
+                    and set(p.get("_gating_missing") or ())                   # (5)
+                    == {"required_output_aggregate_satisfied"}
+                    and set(p.get("_missing") or ())                          # (7)
+                    <= {"required_output_aggregate_satisfied"}
+                    and (c.score or 0) > best_eligible_score)                 # (6)
+
+        promotable = [c for c in viable if _promotable(c)]
+        if promotable:
+            # override pool = eligible UNION promotable ONLY (identity-dedup,
+            # deterministic order: eligible first, then promotable in viable order).
+            override_pool = list(eligible)
+            seen = {id(c) for c in override_pool}
+            for c in promotable:
+                if id(c) not in seen:
+                    override_pool.append(c)
+                    seen.add(id(c))
+            pool = override_pool
+            meta["incomplete_high_score_override"] = {
+                "promoted": [c.label for c in
+                             sorted(promotable, key=_rank_key, reverse=True)],
+                "best_eligible": best_eligible.label,
+                "best_eligible_score": best_eligible.score,
+                "override_pool_size": len(pool),
+                "override_pool_labels": [c.label for c in pool],
+                "reason": "projects the requested derived value; demoted only by a "
+                          "false-positive missing-output-aggregate gate",
+            }
 
     if pool:
         # Precompute RC5 obligation profiles ONCE (independent-consensus
@@ -347,6 +477,100 @@ def select_best(candidates, checklist=None, contract=None, idx=None,
                     "numeric_score_consulted": True,
                     "tie_break_reason": "semantic_incomparable_controlled_fallback",
                 }
+
+        # POPULATION TIE-BREAK (equal score, equal semantic completeness): at a
+        # true score tie among eligible candidates, prefer the one that answers
+        # the request with the FEWEST unrequested population-restricting joins. A
+        # correlated variant that bolts on a redundant restricting join (a table
+        # used only in its own JOIN ON — no output/filter/bridge role) must not
+        # win a label tie over the clean candidate. Only strictly-fewer wins;
+        # a join that does real work is never counted, so a required join is
+        # never penalized. Never overrides a score or semantic-dominance decision.
+        #
+        # CRITICAL: the tie-break may ONLY compare candidates that are
+        # SEMANTICALLY EQUIVALENT under the high-confidence RC5 obligations (role
+        # provenance, either/or source coverage, formula, derived output, ...).
+        # A candidate that satisfies a stronger obligation the others miss (e.g.
+        # a role-grounded either/or vs an entire-base-table read) must never be
+        # replaced by a "cleaner" but semantically-incomplete candidate — that is
+        # a correctness regression, not a tie. Candidates differing on any
+        # applicable obligation are excluded and the skip is recorded.
+        def _rc5_equivalent(a, b):
+            oa = getattr(a, "_rc5_ob", None)
+            ob = getattr(b, "_rc5_ob", None)
+            ap = getattr(a, "_rc5_ap", None) or getattr(b, "_rc5_ap", None)
+            if oa is None or ob is None or ap is None:
+                return True                      # unknown -> preserve prior behavior
+            _d1, _w1, det1 = rc5_dominates(oa, ob, ap)
+            _d2, _w2, det2 = rc5_dominates(ob, oa, ap)
+            return not (det1.get("obligations_gained") or det1.get("obligations_lost")
+                        or det2.get("obligations_gained") or det2.get("obligations_lost"))
+
+        _equal_score = [c for c in (eligible or []) if not _fatal(c)
+                        and abs((c.score or 0) - (pick.score or 0)) < 1e-9]
+        tie_pool = [c for c in _equal_score if c is pick or _rc5_equivalent(pick, c)]
+        _skipped = [c.label for c in _equal_score if c not in tie_pool]
+        if _skipped:
+            meta["population_tie_break_skipped"] = {
+                "kept": pick.label,
+                "semantically_different_candidates": _skipped,
+                "reason": "population tie-break not applied across candidates that "
+                          "differ on a high-confidence semantic obligation "
+                          "(role provenance / either-or / formula / output)",
+            }
+        if len(tie_pool) > 1 and pick in tie_pool:
+            req_outputs = {str(o).split(".")[-1].strip().strip('"').lower()
+                           for o in ((checklist or {}).get("output_columns") or [])}
+
+            def _urj(c):
+                try:
+                    return unrequested_restricting_joins(
+                        __import__("sqlglot").parse_one(c.sql, read="sqlite"))
+                except Exception:
+                    return 0
+
+            def _extra_outputs(c):
+                # count projected output columns NOT among the requested outputs
+                # (an unrequested attribute like first_name). 0 when no requested
+                # set is known, so this never penalizes on an empty checklist.
+                if not req_outputs:
+                    return 0
+                try:
+                    tree = __import__("sqlglot").parse_one(c.sql, read="sqlite")
+                    from sqlglot import exp as _e
+                    sel = tree.find(_e.Select)
+                    names = set()
+                    for e in (sel.expressions if sel else []):
+                        if isinstance(e, _e.Alias):
+                            names.add((e.alias or "").lower())
+                        elif isinstance(e, _e.Column):
+                            names.add((e.name or "").lower())
+                    return len([n for n in names if n and n not in req_outputs])
+                except Exception:
+                    return 0
+
+            def _badness(c):
+                return (_urj(c), _extra_outputs(c),
+                        -_SOURCE_PRIORITY.get(c.source, 0), c.label)
+
+            pick_bad = _badness(pick)
+            cleaner = min(tie_pool, key=_badness)
+            # Only switch on a strictly-cleaner population/output footprint
+            # (fewer restricting joins or fewer unrequested output columns).
+            if cleaner is not pick and _badness(cleaner)[:2] < pick_bad[:2]:
+                meta["population_tie_break"] = {
+                    "from_label": pick.label,
+                    "from_restricting_joins": _urj(pick),
+                    "from_unrequested_outputs": _extra_outputs(pick),
+                    "to_label": cleaner.label,
+                    "to_restricting_joins": _urj(cleaner),
+                    "to_unrequested_outputs": _extra_outputs(cleaner),
+                    "reason": "equal score; fewer unrequested population-"
+                              "restricting joins / unrequested output columns",
+                }
+                pick = cleaner
+                meta["selection_reason"] = "population_preserving_tie_break"
+                best_group = [cleaner]
 
         meta["consensus_group_size"] = len(best_group)
         meta["consensus_sources"] = sorted({c.source for c in best_group})

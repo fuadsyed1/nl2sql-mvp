@@ -15,7 +15,7 @@ in by the caller). Its only import is semantic_ir.
 """
 
 from semantic.semantic_ir import MultiTableSemanticIR
-from semantic.ir_normalizer import normalize_ir
+from semantic.ir_normalizer import normalize_ir, sanitize_derived_output_columns
 from semantic.ir_semantics import apply_question_semantics
 
 
@@ -497,6 +497,12 @@ def build_from_extraction(database_id, extraction, graph=None, question=None):
     # when graph is None.
     select, filters, group_by = normalize_ir(
         select, filters, group_by, graph, ir_tables=pre_tables)
+    # Derived output aliases (aggregate/percentage/formula names) that the
+    # extractor mislabeled as physical columns are dropped from the SELECT so
+    # the renderer never emits a nonexistent `table.<alias>`; the aggregation
+    # carrying the alias still projects the value. A bad synthetic column can no
+    # longer make the whole candidate fail with a no-such-column error.
+    select = sanitize_derived_output_columns(select, aggregations, graph)
 
     tables = _union_tables(
         provided,

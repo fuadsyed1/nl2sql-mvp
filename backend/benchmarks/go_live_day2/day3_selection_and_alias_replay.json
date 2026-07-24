@@ -1,0 +1,266 @@
+{
+ "note": "Day-3 offline reproduction of final-selection consistency, semantic tie-breaking, and derived-alias sanitation. Deterministic; no live LLM. Fixes are schema-generic (no DB/test hardcoding).",
+ "cases": {
+  "db56_t51": {
+   "question": "Show each department with the number of unused beds based on bed capacity minus current occupancy.",
+   "candidates": [
+    {
+     "label": "llm_variant_2",
+     "score": 73,
+     "lineage": "extraction",
+     "eligible": false,
+     "projects_formula": false
+    },
+    {
+     "label": "llm_sql_direct",
+     "score": 88,
+     "lineage": "direct",
+     "eligible": true,
+     "projects_formula": true
+    }
+   ],
+   "old_selected": "llm_variant_2 (score 73, omits unused_beds) via best_scored_executed",
+   "new_selected": "llm_sql_direct (score 88)",
+   "new_selection_reason": "best_scored_executed",
+   "old_selected_sql": "SELECT \"departments\".\"department_name\",\"departments\".\"bed_capacity\",\"departments\".\"current_occupancy\" FROM \"departments\"",
+   "new_selected_sql": "SELECT department_name, bed_capacity, current_occupancy, (bed_capacity - current_occupancy) AS unused_beds FROM departments",
+   "output_columns_new": [
+    "department_name",
+    "bed_capacity",
+    "current_occupancy",
+    "unused_beds"
+   ],
+   "execution": {
+    "wrong": {
+     "executed": true,
+     "row_count": 50,
+     "sample": [
+      [
+       "Cardiology Unit 1",
+       21,
+       77
+      ],
+      [
+       "Oncology Unit 2",
+       100,
+       73
+      ],
+      [
+       "Dermatology Unit 3",
+       95,
+       88
+      ]
+     ]
+    },
+    "right": {
+     "executed": true,
+     "row_count": 50,
+     "sample": [
+      [
+       "Cardiology Unit 1",
+       21,
+       77,
+       -56
+      ],
+      [
+       "Oncology Unit 2",
+       100,
+       73,
+       27
+      ],
+      [
+       "Dermatology Unit 3",
+       95,
+       88,
+       7
+      ]
+     ]
+    }
+   },
+   "verdict": "correct"
+  },
+  "db55_t142": {
+   "question": "How many distinct programs have students advised by instructors from the same department as the program?",
+   "candidates": [
+    {
+     "label": "llm_sql_direct",
+     "score": 100,
+     "lineage": "direct",
+     "restricting_joins": 1
+    },
+    {
+     "label": "llm_sql_direct_variant",
+     "score": 100,
+     "lineage": "direct",
+     "restricting_joins": 2
+    }
+   ],
+   "old_selected": "llm_sql_direct_variant (adds redundant academic_advising join) via label tie",
+   "new_selected": "llm_sql_direct (score 100)",
+   "new_selection_reason": "population_preserving_tie_break",
+   "population_tie_break": {
+    "from_label": "llm_sql_direct_variant",
+    "from_restricting_joins": 2,
+    "from_unrequested_outputs": 0,
+    "to_label": "llm_sql_direct",
+    "to_restricting_joins": 1,
+    "to_unrequested_outputs": 0,
+    "reason": "equal score; fewer unrequested population-restricting joins / unrequested output columns"
+   },
+   "old_selected_sql": "SELECT COUNT(DISTINCT p.program_id) FROM programs p JOIN students s ON p.program_id=s.program_id JOIN instructors i ON s.advisor_instructor_id=i.instructor_id JOIN departments d ON i.department_id=d.department_id JOIN academic_advising aa ON s.student_id=aa.student_id WHERE p.department_id=i.department_id",
+   "new_selected_sql": "SELECT COUNT(DISTINCT p.program_id) FROM programs p JOIN students s ON p.program_id=s.program_id JOIN instructors i ON s.advisor_instructor_id=i.instructor_id JOIN departments d ON i.department_id=d.department_id WHERE p.department_id=i.department_id",
+   "execution": {
+    "clean": {
+     "executed": true,
+     "row_count": 1,
+     "sample": [
+      [
+       2
+      ]
+     ]
+    },
+    "restricting": {
+     "executed": true,
+     "row_count": 1,
+     "sample": [
+      [
+       1
+      ]
+     ]
+    }
+   },
+   "verdict": "correct"
+  },
+  "db56_t401": {
+   "question": "List doctor identifiers that appear either as primary doctors or appointment doctors.",
+   "old_selected_sql": "SELECT DISTINCT doctor_id FROM doctors UNION SELECT DISTINCT doctor_id FROM appointments",
+   "expected_sql": "SELECT DISTINCT d.doctor_id FROM doctors d WHERE EXISTS (SELECT 1 FROM patients p WHERE p.primary_doctor_id=d.doctor_id) OR EXISTS (SELECT 1 FROM appointments a WHERE a.doctor_id=d.doctor_id)",
+   "execution": {
+    "wrong_all_doctors": {
+     "executed": true,
+     "row_count": 80,
+     "sample": [
+      [
+       1
+      ],
+      [
+       2
+      ],
+      [
+       3
+      ]
+     ]
+    },
+    "role_grounded": {
+     "executed": true,
+     "row_count": 72,
+     "sample": [
+      [
+       2
+      ],
+      [
+       3
+      ],
+      [
+       4
+      ]
+     ]
+    }
+   },
+   "verdict": "FIXED",
+   "note": "Role-to-column grounding now maps 'primary doctors' -> patients.primary_doctor_id and 'appointment doctors' -> appointments.doctor_id; the all-doctors branch fails role provenance and the role-grounded candidate (72 rows) is selected. See day3_role_and_value_replay.json for full provenance detail."
+  },
+  "db56_t403": {
+   "question": "List patient identifiers that appear either in appointments or billing claims",
+   "alias_scope": {
+    "cross_branch_alias_reuse_sql": "SELECT p.patient_id FROM appointments p UNION SELECT p.patient_id FROM billing_claims p",
+    "duplicate_aliases_flagged": [],
+    "verdict": "legal"
+   },
+   "required_table_relaxation": {
+    "required_tables": [
+     "appointments",
+     "billing_claims"
+    ],
+    "patients_forced": false,
+    "verdict": "relaxed"
+   },
+   "old_selected_sql": "INNER JOIN appointments/billing_claims (intersection) + unrequested first_name",
+   "new_selected_sql": "SELECT p.patient_id FROM appointments p UNION SELECT p.patient_id FROM billing_claims p",
+   "execution": {
+    "union": {
+     "executed": true,
+     "row_count": 62,
+     "sample": [
+      [
+       1
+      ],
+      [
+       2
+      ],
+      [
+       3
+      ]
+     ]
+    }
+   },
+   "verdict": "correct"
+  },
+  "db56_t96": {
+   "question": "For each patient, calculate abnormal lab tests as a percentage of completed lab tests.",
+   "ir_select_before": [
+    "lab_tests.patient_id",
+    "lab_tests.abnormal_count",
+    "lab_tests.total_count",
+    "lab_tests.abnormal_percentage"
+   ],
+   "ir_select_after_sanitation": [
+    "lab_tests.patient_id"
+   ],
+   "dropped_synthetic_columns": [
+    "lab_tests.abnormal_count",
+    "lab_tests.total_count",
+    "lab_tests.abnormal_percentage"
+   ],
+   "aggregate_aliases_preserved": [
+    "total_count",
+    "abnormal_count",
+    "abnormal_percentage"
+   ],
+   "executable_sql": "SELECT patient_id, SUM(CASE WHEN abnormal_flag IN ('critical','high','low') THEN 1 ELSE 0 END) AS abnormal_count, COUNT(*) AS total_count, 100.0 * SUM(CASE WHEN abnormal_flag IN ('critical','high','low') THEN 1 ELSE 0 END) / NULLIF(COUNT(*),0) AS abnormal_percentage FROM lab_tests WHERE test_status='completed' GROUP BY patient_id",
+   "execution": {
+    "executed": true,
+    "row_count": 16,
+    "sample": [
+     [
+      3,
+      0,
+      1,
+      0.0
+     ],
+     [
+      16,
+      0,
+      1,
+      0.0
+     ],
+     [
+      19,
+      1,
+      1,
+      100.0
+     ]
+    ]
+   },
+   "value_grounding_note": "abnormal set grounded to critical/high/low, normal excluded; denominator = completed tests; safe NULLIF division. (Live value-grounding of the abnormal_flag literal to critical/high/low is a separate extractor/value-profile concern; the alias-sanitation fix removes the no-such-column failure that previously killed every candidate.)",
+   "verdict": "executable_no_invented_columns"
+  }
+ },
+ "gate": {
+  "t51_subtraction_wins": true,
+  "t142_no_redundant_join_wins": true,
+  "t401_role_grounded": true,
+  "t403_union_and_alias_ok": true,
+  "t96_executable_no_invented_columns": true
+ }
+}

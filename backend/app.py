@@ -130,6 +130,7 @@ from sql_candidates import (
     annotate_with_probes,
 )
 from sql_candidates.candidate_selector import enforce_selection_safety
+from sql_candidates.set_fallback import synthesize_set_union
 from diagnostics import full_trace
 print(
     "[FULL TRACE STARTUP]",
@@ -149,10 +150,14 @@ from semantic.llm_sql_direct import (
     generate_direct_sql_variant,
 )
 from semantic.llm_sql_repair import should_repair, generate_repair_sql
+from sql_candidates.repair_normalize import (
+    outer_having_invalid, safe_having_to_where,
+)
 from sql_candidates.semantic_join_path_candidate import (
     build_semantic_join_path_sql,
 )
-from schema.value_profiler import grounding_profile, format_value_hints
+from schema.value_profiler import (grounding_profile, format_value_hints,
+                                   categorical_complement)
 
 # Confidence gate for the deterministic query-family router. At or above this,
 # and only when the builder yields a VALID extraction, the family path is used;
@@ -1510,6 +1515,21 @@ def run_nl_sql_pipeline(database_id: int, question: str) -> dict:
         value_profile, value_grounded_from_eval = grounding_profile(
             database_id, db_path)
         value_hints = format_value_hints(value_profile)
+        # Categorical COMPLEMENT grounding: when the question names a category by
+        # negation ("abnormal" = not "normal", "inactive" = not "active"), append
+        # the grounded complement set so the model enumerates the known non-base
+        # categories instead of guessing a boolean 0/1 literal.
+        try:
+            _compl = categorical_complement(body.question, value_profile)
+            if _compl and _compl.get("mode") == "complement":
+                _vals = ", ".join(f"'{v}'" for v in _compl["grounded_values"])
+                value_hints = (value_hints + "\n" if value_hints else "") + (
+                    f"Categorical complement: the question's negation category "
+                    f"maps to {_compl['table']}.{_compl['column']} IN ({_vals}) "
+                    f"(all values except the base '{_compl['base']}'); use these "
+                    f"exact values — never a boolean 0/1.")
+        except Exception:
+            pass
     except Exception as exc:
         print(f"VALUE PROFILER ERROR: {exc}", flush=True)
         value_profile, value_grounded_from_eval, value_hints = {}, False, ""
@@ -1761,6 +1781,32 @@ def run_nl_sql_pipeline(database_id: int, question: str) -> dict:
                 label="llm_sql_direct_variant", sql=direct_sql_variant,
                 db_path=db_path, source="llm_sql_direct_variant"))
 
+    # -- Deterministic SET-UNION fallback: for a high-confidence "identifiers
+    #    appearing either in source A or source B" membership list whose sources
+    #    are unambiguously grounded and whose output is just the shared id, if
+    #    NO generated candidate expresses a separable UNION/OR (e.g. the model
+    #    emitted only INNER-JOIN intersections), synthesize the obvious UNION so
+    #    the pool always contains a valid set candidate. It enters the SAME
+    #    scoring / probe / enforcement / selection path below — it never bypasses
+    #    the selector. Fully generic; skipped whenever any eligibility condition
+    #    fails (aggregate/attribute/filter/intersection/ambiguous/already-covered).
+    try:
+        _union_sql, _union_meta = synthesize_set_union(
+            body.question, checklist, se_index_schema(graph),
+            [c.sql for c in candidates if c.sql])
+        if _union_sql:
+            _uc = build_direct_sql_candidate(
+                label="deterministic_set_union", sql=_union_sql,
+                db_path=db_path, source="llm_sql_direct")
+            _uc.diagnostics = dict(getattr(_uc, "diagnostics", None) or {})
+            _uc.diagnostics["deterministic_set_union"] = _union_meta
+            candidates.append(_uc)
+            print("[SET FALLBACK] synthesized deterministic_set_union over "
+                  f"{[a['table'] for a in _union_meta['alternatives']]}",
+                  flush=True)
+    except Exception as _sf_exc:
+        print(f"[SET FALLBACK] skipped: {_sf_exc}", flush=True)
+
     _log_layer(5, "CHECKING & SCORING - grade candidates, reject bad ones, pick winner")
     # -- Score + select.
     for cand in candidates:
@@ -1838,6 +1884,25 @@ def run_nl_sql_pipeline(database_id: int, question: str) -> dict:
             body.question, graph, value_hints, checklist, selected, candidates,
             contract=grain_contract)
         repair_sql = _norm_sql(repair_sql)
+        # Generic repair-validity normalization: a non-aggregate outer SELECT that
+        # filters a PRECOMPUTED CTE/subquery column with HAVING (no GROUP BY, no
+        # outer aggregate) is invalid in SQLite. When it is provably safe, move
+        # the predicate to WHERE (AND-combined); otherwise leave the SQL untouched
+        # so it is rejected at execution (never a blind rewrite). No LLM call.
+        if repair_sql and outer_having_invalid(repair_sql):
+            repair_meta["invalid_outer_having_detected"] = True
+            _fixed_sql, _norm_action = safe_having_to_where(repair_sql)
+            repair_meta["having_normalization_action"] = _norm_action
+            if _fixed_sql:
+                repair_sql = _fixed_sql
+                repair_meta["having_normalized_to_where"] = True
+                print(f"[REPAIR NORMALIZE] moved invalid outer HAVING to WHERE "
+                      f"({_norm_action})", flush=True)
+            else:
+                repair_meta["having_normalized_to_where"] = False
+                print(f"[REPAIR NORMALIZE] invalid outer HAVING NOT safely "
+                      f"normalizable ({_norm_action}); leaving to execution "
+                      "rejection", flush=True)
         if repair_sql and direct_sql_violations(
                 repair_sql, body.question, checklist, graph):
             print("REJECTED repair candidate: "
@@ -1858,6 +1923,14 @@ def run_nl_sql_pipeline(database_id: int, question: str) -> dict:
                 repair_cand.reasons = [f"scorer error: {exc}"]
             candidates.append(repair_cand)
             annotate_with_probes(repair_cand, db_path)
+            if repair_meta.get("invalid_outer_having_detected"):
+                repair_cand.validation = dict(repair_cand.validation or {})
+                repair_cand.validation["repair_having_normalization"] = {
+                    "invalid_outer_having_detected": True,
+                    "normalized_to_where": repair_meta.get("having_normalized_to_where"),
+                    "action": repair_meta.get("having_normalization_action"),
+                    "executed_after_normalization": repair_cand.executed_ok,
+                }
             repair_meta["repair_executed"] = repair_cand.executed_ok
             repair_meta["repair_score"] = repair_cand.score
             selected, selection_meta = select_best(
@@ -1903,8 +1976,37 @@ def run_nl_sql_pipeline(database_id: int, question: str) -> dict:
 
     _rejected_debug_sql = (selected.sql if selected is not None
                            and _cand_fatal(selected) else None)
+    _pre_enforce_label = selected.label if selected is not None else None
     selected, _controlled_failure, _fatal_reasons = enforce_selection_safety(
         selected, candidates)
+
+    # FINAL SELECTION CONSISTENCY: whatever object is `selected` after every
+    # reselection stage (repair-add reselection, final table-lock enforcement,
+    # and this hard safety gate) is the single object whose SQL, score and label
+    # are returned. If any late stage swapped the candidate, re-sync the
+    # selection metadata so selected_candidate_label / _source / score and the
+    # response generated_sql can never disagree. Also record the final decision
+    # explicitly (label, score, reason) for audit.
+    if selected is not None:
+        if selected.label != _pre_enforce_label:
+            selection_meta["selected_candidate_label"] = selected.label
+            selection_meta["selected_candidate_source"] = selected.source
+            selection_meta["selection_reason"] = "enforced_clean_executed_candidate"
+            selection_meta.setdefault("reselection_trace", []).append({
+                "stage": "enforce_selection_safety",
+                "from_label": _pre_enforce_label,
+                "to_label": selected.label,
+                "reason": "prior pick was fatal; replaced with the best "
+                          "non-fatal executed candidate",
+            })
+        selection_meta["final_selection"] = {
+            "label": selected.label,
+            "source": selected.source,
+            "score": selected.score,
+            "reason": selection_meta.get("selection_reason"),
+            "sql_first_line": ((selected.sql or "").strip().splitlines()
+                               or ["(no sql)"])[0],
+        }
     if _controlled_failure:
         print("[SEMANTIC FAILURE] selected candidate is fatal and no clean "
               "executed candidate exists; returning controlled "

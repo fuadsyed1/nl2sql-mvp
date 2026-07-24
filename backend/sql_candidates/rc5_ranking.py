@@ -41,13 +41,15 @@ from sql_candidates.semantic_obligations import (
     _parse, _select_scopes, _output_expressions, _has_aggregate,
     question_either_union_obligation, derived_output_satisfied,
     either_union_satisfied, either_required_sources,
-    question_multi_source_either)
+    question_multi_source_either, ground_either_roles, role_either_satisfied,
+    ground_direct_role, direct_role_join_present, role_event_semantics_requested)
 
 __all__ = ["rc5_obligations", "rc5_dominates", "rc5_rank_tuple", "RC5_ORDER"]
 
 RC5_ORDER = (
     "scalar_count_output",
     "comparison_predicate",
+    "direct_role_relationship",
     "relationship_specificity",
     "compound_set_complete",
     "entity_grain_unique",
@@ -288,6 +290,13 @@ def rc5_obligations(sql, checklist, contract, idx, question, base_profile):
     scalar_ap = _scalar_count_applies(question)
     pair = _comparison_pair(checklist)
     pair_ap = bool(pair) and shape == "comparison_subquery"
+    # Direct persistent-role relationship: a role-qualified FK on the source
+    # entity must be used rather than an event/junction table (unless event
+    # semantics are requested). Applies only when grounding is unambiguous and
+    # the question does not ask for event/history records.
+    _role_g = ground_direct_role(question, idx) if question else None
+    role_rel_ap = bool(_role_g) and not role_event_semantics_requested(question or "")
+    role_rel_ok = direct_role_join_present(tree, _role_g) if role_rel_ap else True
     spec_ap, spec_ok = _relationship_specificity(tree, tcols, pkmap, amap)
     comp_ap, comp_ok = _compound_set(checklist, tree)
     grain_ap, grain_detail = _entity_grain_unique(checklist, tree, tcols)
@@ -300,28 +309,44 @@ def rc5_obligations(sql, checklist, contract, idx, question, base_profile):
     derived_ap, derived_ok = derived_output_satisfied(
         tree, question, idx, checklist, contract)
     union_ap = question_either_union_obligation(question)
+    role_grounded = None
     if union_ap:
-        _req_src = either_required_sources(
-            question, list((idx or {}).get("tables") or {}))
-        # A clear MULTI-SOURCE 'either in A or B' request whose two sources cannot
-        # both be grounded is NON-APPLICABLE (neutral): a one-source candidate must
-        # not dominate merely because source grounding failed.
-        if question_multi_source_either(question) and len(_req_src) < 2:
-            union_ap = False
-            union_ok = True
+        # ROLE-to-COLUMN grounding first: when each either/or alternative names a
+        # ROLE that grounds to a schema COLUMN (a role-qualified key, or the
+        # entity id inside a role-named source table), provenance is checked at
+        # the COLUMN level — so a branch reading the entity BASE TABLE for a
+        # role-qualified alternative does NOT satisfy it. Falls back to the
+        # table-level source grounding when roles do not ground unambiguously.
+        role_grounded = ground_either_roles(question, checklist, idx)
+        if role_grounded and len(role_grounded) >= 2:
+            union_ap = True
+            union_ok = role_either_satisfied(tree, role_grounded)
         else:
-            union_ok = either_union_satisfied(tree, _req_src)
+            _req_src = either_required_sources(
+                question, list((idx or {}).get("tables") or {}))
+            # A clear MULTI-SOURCE 'either in A or B' request whose two sources
+            # cannot both be grounded is NON-APPLICABLE (neutral): a one-source
+            # candidate must not dominate merely because grounding failed.
+            if question_multi_source_either(question) and len(_req_src) < 2:
+                union_ap = False
+                union_ok = True
+            else:
+                union_ok = either_union_satisfied(tree, _req_src)
     else:
         union_ok = True
 
     o = {
         "scalar_count_output": _returns_scalar_aggregate(selects) if scalar_ap else True,
         "comparison_predicate": _has_column_comparison(tree, pair) if pair_ap else True,
+        "direct_role_relationship": role_rel_ok,
         "relationship_specificity": spec_ok,
         "compound_set_complete": comp_ok,
         "entity_grain_unique": grain_detail["entity_uniqueness_guaranteed"],
         "derived_output_projected": derived_ok,
         "set_union_either": union_ok,
+        # either/or provenance trace (not compared directly):
+        "_role_grounded_alternatives": role_grounded,
+        "_role_provenance_checked": bool(role_grounded and len(role_grounded) >= 2),
         # RC5.1 advisory profile fields (trace only; not compared directly):
         "requested_entity_key": grain_detail["requested_entity_key"],
         "entity_uniqueness_guaranteed": grain_detail["entity_uniqueness_guaranteed"],
@@ -335,6 +360,7 @@ def rc5_obligations(sql, checklist, contract, idx, question, base_profile):
     applies = {
         "scalar_count_output": scalar_ap,
         "comparison_predicate": pair_ap,
+        "direct_role_relationship": role_rel_ap,
         "relationship_specificity": spec_ap,
         "compound_set_complete": comp_ap,
         "entity_grain_unique": grain_ap,

@@ -243,6 +243,23 @@ _DAY2_REPAIR_REMINDERS = (
     "  required filter, change a ratio denominator, add unrelated filters,\n"
     "  collapse independent EXISTS clauses, or replace UNION semantics with an\n"
     "  inner join.\n"
+    "- HAVING filters GROUPED / aggregate results; WHERE filters rows or columns\n"
+    "  already computed by joined CTEs/subqueries. A non-aggregate outer SELECT\n"
+    "  (no GROUP BY, no aggregate in its own SELECT) must NOT use HAVING to filter\n"
+    "  a precomputed CTE/subquery column — use WHERE.\n"
+    "- For a ratio whose numerator and denominator come from DIFFERENT row\n"
+    "  populations, pre-aggregate the numerator and the denominator INDEPENDENTLY\n"
+    "  (each in its own CTE at its own grain) and then join; do NOT compute the\n"
+    "  denominator from rows already filtered by the numerator's fact table, and\n"
+    "  count the qualifying population with COUNT(DISTINCT key) so unmatched\n"
+    "  population rows are still counted.\n"
+    "- When a fact/event table carries its own entity foreign key, attribute the\n"
+    "  fact by THAT key rather than deriving the entity from a mutable parent.\n"
+    "- Categorical concepts MUST use the column's known stored values. A concept\n"
+    "  named by negation/complement (e.g. 'abnormal' = not 'normal', 'inactive'\n"
+    "  = not 'active') enumerates ALL known non-base categories with IN (...);\n"
+    "  never assume a boolean 0/1 for a TEXT status column, and keep the\n"
+    "  numerator and denominator populations grounded independently.\n"
 )
 
 

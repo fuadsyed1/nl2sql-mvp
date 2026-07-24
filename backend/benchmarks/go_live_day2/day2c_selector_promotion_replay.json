@@ -1,0 +1,39 @@
+{
+ "method": "2000-pool offline replay; promotion rule isolated by comparing select_best WITH the fix against the eligible-only pre-fix selection. Live checklist/contract not reconstructed offline (proxy); a protected regression = a protected-correct pool whose NEW pick differs from the live-correct result.",
+ "protected_correct_pools": 1606,
+ "incorrect_pools": 394,
+ "controlled_failure_pools": 15,
+ "promotion_activations": 5,
+ "candidates_changed": 1,
+ "protected_candidates_changed": 0,
+ "protected_regressions": 0,
+ "correct_to_wrong": 0,
+ "wrong_to_correct": 0,
+ "controlled_failure_changes": 0,
+ "changes": [
+  {
+   "database_id": "56",
+   "test_id": 51,
+   "kind": "incorrect",
+   "question": "Show each department with the number of unused beds based on bed capacity minus current occupancy.",
+   "old_selected": "llm_variant#2",
+   "new_selected": "llm_sql_direct_grain#5",
+   "old_num": 2,
+   "new_num": 5,
+   "old_sql": "SELECT \"departments\".\"department_name\", \"departments\".\"bed_capacity\", \"departments\".\"current_occupancy\", SUM(\"departments\".\"bed_capacity\") AS \"unused_beds\" FROM \"departments\" GROUP BY \"departments\".\"department_name\"",
+   "new_sql": "SELECT department_name, bed_capacity, current_occupancy, (bed_capacity - current_occupancy) AS unused_beds\nFROM departments\nGROUP BY department_id",
+   "old_score": 80.0,
+   "new_score": 88.0,
+   "new_eligibility": "incomplete",
+   "new_gating_failures": [
+    "required_output_aggregate_satisfied"
+   ],
+   "new_derived_output_projected": true,
+   "new_matches_live_correct": false,
+   "old_matches_live_correct": true,
+   "manual_semantic_verdict": "wrong_to_correct: OLD sums bed_capacity (wrong); NEW projects (bed_capacity - current_occupancy) AS unused_beds (correct). Live selection for this incorrect pool was itself wrong, so automated matches_live is not a correctness signal here."
+  }
+ ],
+ "wrong_to_correct_manual_verdict": 1,
+ "note_wrong_to_correct": "Automated wrong_to_correct keys on matching the LIVE pick, which is wrong for incorrect pools; the single change was manually verified correct (see manual_semantic_verdict)."
+}

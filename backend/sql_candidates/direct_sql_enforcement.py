@@ -50,7 +50,64 @@ def required_tables_for(question, checklist, idx):
         return set()
     must = {str(t).lower() for t in (checklist or {}).get("must_use_tables") or []
             if str(t).lower() in names}
-    return must | locked
+    required = must | locked
+    # Relaxation: for an "either in A or B" multi-source MEMBERSHIP question, the
+    # TARGET-ENTITY table (whose identifier is the requested output) is NOT
+    # mandatory when its identifier column exists in the named source tables and
+    # no entity attribute or entity filter is requested — selecting that id
+    # directly from the sources (UNION) is a valid answer. Only a target-entity
+    # table that was NOT named verbatim is relaxed; explicitly-named tables and
+    # the named source tables are never dropped, so enforcement is not weakened
+    # in general.
+    return required - _relaxable_target_entity(question, checklist, idx, locked)
+
+
+def _relaxable_target_entity(question, checklist, idx, locked):
+    """{target_table} when the requested output identifier of an 'either A or B'
+    membership question is available directly from BOTH named sources and no
+    attribute/filter of the target entity is requested; else empty. Generic:
+    no hardcoded table/column names."""
+    try:
+        from sql_candidates.semantic_obligations import (
+            question_multi_source_either, either_required_sources)
+    except Exception:
+        return set()
+    cl = checklist or {}
+    if not question_multi_source_either(question):
+        return set()
+    names = set(idx.get("tables") or {})
+    target = str(cl.get("target_entity") or "").strip().lower()
+    if not target or target not in names or target in locked:
+        return set()
+    sources = {s.lower() for s in either_required_sources(question, names)}
+    sources.discard(target)
+    if len(sources) < 2:
+        return set()
+
+    def cols_of(t):
+        return {str(c.get("name")).lower() for c in idx["tables"].get(t, [])}
+
+    src_cols = [cols_of(s) for s in sources]
+    if any(not sc for sc in src_cols):
+        return set()
+    outs = [str(c).split(".")[-1].strip().strip('"').lower()
+            for c in (cl.get("output_columns") or [])]
+    if not outs:
+        return set()
+    # every requested output column must be an identifier available in EVERY
+    # named source (so the id can be read directly from each branch)
+    for o in outs:
+        if not all(o in sc for sc in src_cols):
+            return set()
+    # no NON-output attribute of the target entity may be required (that would
+    # need the entity table); a must_use_column on the target that is not one of
+    # the requested id outputs signals an entity attribute/filter is needed.
+    for mc in (cl.get("must_use_columns") or []):
+        parts = str(mc).split(".")
+        if len(parts) == 2 and parts[0].strip().lower() == target:
+            if parts[1].strip().lower() not in outs:
+                return set()
+    return {target}
 
 
 def _required_bridges(idx, required):

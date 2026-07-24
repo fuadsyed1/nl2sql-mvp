@@ -96,6 +96,13 @@ def _checklist_block(checklist):
         val = checklist.get(key)
         if val:
             lines.append(f"- {key}: {val}")
+    gr = checklist.get("grounded_role_relationship")
+    if gr and gr.get("source_column") and gr.get("target_key"):
+        lines.append(
+            f"- persistent role relationship: JOIN on {gr['source_column']} = "
+            f"{gr['target_key']} (use this direct role foreign key; do NOT reach "
+            f"the target through an event/history table such as "
+            f"{gr.get('removed_event_tables')})")
     return "\n".join(lines) + "\n\n"
 
 
@@ -117,6 +124,15 @@ _DAY2_SEMANTIC_REMINDERS = (
     "  row unless the question says the same record must satisfy both.\n"
     "- Output EVERY explicitly requested value (identifier, name, attribute,\n"
     "  aggregate, derived metric, ranking metric).\n"
+    "- For a PERSISTENT role/ownership relationship ('advised by', \"'s advisor\",\n"
+    "  'assigned manager'), join through the role-qualified foreign key on the\n"
+    "  source entity (e.g. source.<role>_<target>_id = target.<target>_id). Do\n"
+    "  NOT substitute an event/history/junction table (advising sessions,\n"
+    "  appointment log) unless the question asks about those events.\n"
+    "- For 'X as a percentage of Y' where X is a SUBSET of Y, restrict BOTH the\n"
+    "  numerator and the denominator to the SAME population: put the denominator\n"
+    "  filter in a global WHERE (or include it inside the numerator CASE) so the\n"
+    "  result stays between 0 and 100.\n"
 )
 
 

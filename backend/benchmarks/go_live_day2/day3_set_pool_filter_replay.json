@@ -1,0 +1,64 @@
+{
+ "note": "DB56 t403 set-obligation pool-filter offline reproduction: the EXACT five live candidates together. The UNION wins; all intersections are filtered before consensus/RC5/tie-break/overrides. Deterministic; no live LLM; schema-generic (no DB/test hardcoding).",
+ "question": "List patient identifiers that appear either in appointments or billing claims.",
+ "candidates": [
+  {
+   "label": "llm_primary",
+   "rows": 42,
+   "score": 72.0
+  },
+  {
+   "label": "llm_variant_2",
+   "rows": 42,
+   "score": 67.0
+  },
+  {
+   "label": "llm_sql_direct",
+   "rows": 42,
+   "score": 72.0
+  },
+  {
+   "label": "llm_sql_direct_grain",
+   "rows": 42,
+   "score": 72.0
+  },
+  {
+   "label": "llm_sql_direct_variant",
+   "rows": 62,
+   "score": 72.0
+  }
+ ],
+ "set_obligation_filter": {
+  "applicable": true,
+  "satisfying_labels": [
+   "llm_sql_direct_variant"
+  ],
+  "rejected_labels": [
+   "llm_primary",
+   "llm_variant_2",
+   "llm_sql_direct",
+   "llm_sql_direct_grain"
+  ],
+  "pool_before": [
+   "llm_primary",
+   "llm_variant_2",
+   "llm_sql_direct",
+   "llm_sql_direct_grain",
+   "llm_sql_direct_variant"
+  ],
+  "pool_after": [
+   "llm_sql_direct_variant"
+  ]
+ },
+ "selected": "llm_sql_direct_variant",
+ "selected_rows": 62,
+ "selected_score": 72.0,
+ "selection_reason": "best_scored_executed",
+ "selected_label_matches_meta": true,
+ "verdict": "correct",
+ "gate": {
+  "selects_union_62": true,
+  "no_intersection_returned": true,
+  "intersections_filtered": true
+ }
+}

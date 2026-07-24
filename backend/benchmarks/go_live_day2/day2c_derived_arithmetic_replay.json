@@ -1,0 +1,264 @@
+{
+ "note": "Day 2C derived-arithmetic focused replay over the 2000-pool. Division and row-level addition obligations + no_aggregation suppression. Live checklist/contract not reconstructed offline (proxy).",
+ "protected_pools": 1606,
+ "incorrect_pools": 394,
+ "protected_changes": 1,
+ "protected_regressions": 0,
+ "incorrect_changes": 7,
+ "case_db56_t52_division": {
+  "database_id": "56",
+  "test_id": 52,
+  "question": "Show each department with annual budget per doctor.",
+  "pool_status": "incorrect",
+  "formula_obligation": {
+   "derived_kinds": [
+    "ratio"
+   ],
+   "either_union": false
+  },
+  "old_selected_sql": "SELECT \n    d.department_name, \n    d.annual_budget, \n    d.doctor_count\nFROM departments d\nGROUP BY d.department_id\nHAVING d.doctor_count > 0",
+  "new_selected_sql": "SELECT department_name, annual_budget, doctor_count, annual_budget * 1.0 / doctor_count AS annual_budget_per_doctor\nFROM departments\nWHERE doctor_count > 0",
+  "old_selected_num": "6",
+  "new_selected_num": 5,
+  "new_score": null,
+  "old_formula_status": {
+   "applies": true,
+   "formula_complete": false
+  },
+  "new_formula_status": {
+   "applies": true,
+   "formula_complete": true
+  },
+  "semantic_verdict": "wrong_to_correct (CASE 1): projects annual_budget/doctor_count (division)"
+ },
+ "case_db57_t62_addition": {
+  "database_id": "57",
+  "test_id": 62,
+  "question": "Show each match with total points scored by both teams.",
+  "pool_status": "incorrect",
+  "formula_obligation": {
+   "derived_kinds": [
+    "add"
+   ],
+   "either_union": false
+  },
+  "old_selected_sql": "SELECT \"matches\".\"match_id\", \"matches\".\"home_score\", \"matches\".\"away_score\", SUM(\"matches\".\"home_score\") AS \"home_total\", SUM(\"matches\".\"away_score\") AS \"away_total\" FROM \"matches\" GROUP BY \"matches\".\"match_id\"",
+  "new_selected_sql": "SELECT match_id, home_score, away_score, (home_score + away_score) AS total_points FROM matches",
+  "old_selected_num": "1",
+  "new_selected_num": 4,
+  "new_score": null,
+  "old_formula_status": {
+   "applies": true,
+   "formula_complete": false
+  },
+  "new_formula_status": {
+   "applies": true,
+   "formula_complete": true
+  },
+  "semantic_verdict": "wrong_to_correct (CASE 2): projects home_score + away_score (row-level addition)"
+ },
+ "changes": [
+  {
+   "database_id": "55",
+   "test_id": 52,
+   "question": "Show each department with its annual budget per enrolled department student.",
+   "pool_status": "incorrect",
+   "formula_obligation": {
+    "derived_kinds": [
+     "ratio"
+    ],
+    "either_union": false
+   },
+   "old_selected_sql": "SELECT \"departments\".\"department_id\", \"departments\".\"department_name\", \"departments\".\"annual_budget\", SUM(\"programs\".\"current_enrollment\") AS \"total_enrolled_students\" FROM \"departments\" INNER JOIN \"programs\" ON \"departments\".\"department_id\" = \"programs\".\"department_id\" GROUP BY \"departments\".\"department_id\", \"departments\".\"department_name\", \"departments\".\"annual_budget\"",
+   "new_selected_sql": "SELECT department_name, annual_budget, student_count, annual_budget * 1.0 / student_count AS budget_per_student\nFROM departments\nWHERE student_count > 0",
+   "old_selected_num": "3",
+   "new_selected_num": 4,
+   "new_score": null,
+   "old_formula_status": {
+    "applies": true,
+    "formula_complete": false
+   },
+   "new_formula_status": {
+    "applies": true,
+    "formula_complete": true
+   },
+   "semantic_verdict": "wrong_to_correct: projects annual_budget/student_count (budget per enrolled student)"
+  },
+  {
+   "database_id": "55",
+   "test_id": 56,
+   "question": "Show each instructor with their salary per year of service since the hire date.",
+   "pool_status": "incorrect",
+   "formula_obligation": {
+    "derived_kinds": [
+     "ratio"
+    ],
+    "either_union": false
+   },
+   "old_selected_sql": "SELECT first_name, last_name, salary, hire_date\nFROM instructors",
+   "new_selected_sql": "SELECT first_name, last_name, salary, hire_date, CAST(salary AS REAL) / (strftime('%Y', 'now') - strftime('%Y', hire_date)) AS salary_per_year_of_service\nFROM instructors\nWHERE strftime('%Y', 'now') - strftime('%Y', hire_date) > 0",
+   "old_selected_num": "2",
+   "new_selected_num": 3,
+   "new_score": null,
+   "old_formula_status": {
+    "applies": true,
+    "formula_complete": false
+   },
+   "new_formula_status": {
+    "applies": true,
+    "formula_complete": true
+   },
+   "semantic_verdict": "wrong_to_correct: projects salary / years-of-service (salary per year of service)"
+  },
+  {
+   "database_id": "56",
+   "test_id": 52,
+   "question": "Show each department with annual budget per doctor.",
+   "pool_status": "incorrect",
+   "formula_obligation": {
+    "derived_kinds": [
+     "ratio"
+    ],
+    "either_union": false
+   },
+   "old_selected_sql": "SELECT \n    d.department_name, \n    d.annual_budget, \n    d.doctor_count\nFROM departments d\nGROUP BY d.department_id\nHAVING d.doctor_count > 0",
+   "new_selected_sql": "SELECT department_name, annual_budget, doctor_count, annual_budget * 1.0 / doctor_count AS annual_budget_per_doctor\nFROM departments\nWHERE doctor_count > 0",
+   "old_selected_num": "6",
+   "new_selected_num": 5,
+   "new_score": null,
+   "old_formula_status": {
+    "applies": true,
+    "formula_complete": false
+   },
+   "new_formula_status": {
+    "applies": true,
+    "formula_complete": true
+   },
+   "semantic_verdict": "wrong_to_correct (CASE 1): projects annual_budget/doctor_count (division)"
+  },
+  {
+   "database_id": "56",
+   "test_id": 406,
+   "question": "List policy identifiers that appear either in patient records or billing claims.",
+   "pool_status": "incorrect",
+   "formula_obligation": {
+    "derived_kinds": [],
+    "either_union": true
+   },
+   "old_selected_sql": "SELECT DISTINCT \"insurance_policies\".\"policy_id\" FROM \"billing_claims\" INNER JOIN \"insurance_policies\" ON \"billing_claims\".\"policy_id\" = \"insurance_policies\".\"policy_id\" INNER JOIN \"patients\" ON \"billing_claims\".\"patient_id\" = \"patients\".\"patient_id\"",
+   "new_selected_sql": "SELECT DISTINCT policy_id\nFROM insurance_policies\nWHERE policy_id IN (SELECT policy_id FROM patients)\n   OR policy_id IN (SELECT policy_id FROM billing_claims)",
+   "old_selected_num": "1",
+   "new_selected_num": 3,
+   "new_score": null,
+   "old_formula_status": {
+    "applies": false,
+    "formula_complete": true
+   },
+   "new_formula_status": {
+    "applies": false,
+    "formula_complete": true
+   },
+   "semantic_verdict": "wrong_to_correct: IN(patients) OR IN(billing_claims) union"
+  },
+  {
+   "database_id": "56",
+   "test_id": 407,
+   "question": "List department identifiers that appear either in doctors or appointments.",
+   "pool_status": "incorrect",
+   "formula_obligation": {
+    "derived_kinds": [],
+    "either_union": true
+   },
+   "old_selected_sql": "SELECT DISTINCT \"doctors\".\"department_id\", \"appointments\".\"department_id\" FROM \"doctors\" INNER JOIN \"appointments\" ON \"doctors\".\"doctor_id\" = \"appointments\".\"doctor_id\"",
+   "new_selected_sql": "SELECT DISTINCT department_id FROM doctors\nUNION\nSELECT DISTINCT department_id FROM appointments",
+   "old_selected_num": "1",
+   "new_selected_num": 2,
+   "new_score": null,
+   "old_formula_status": {
+    "applies": false,
+    "formula_complete": true
+   },
+   "new_formula_status": {
+    "applies": false,
+    "formula_complete": true
+   },
+   "semantic_verdict": "wrong_to_correct: UNION of doctors and appointments"
+  },
+  {
+   "database_id": "57",
+   "test_id": 100,
+   "question": "For each player, calculate average training load divided by average recovery score.",
+   "pool_status": "protected",
+   "formula_obligation": {
+    "derived_kinds": [
+     "ratio"
+    ],
+    "either_union": false
+   },
+   "old_selected_sql": "SELECT p.player_id, p.full_name, AVG(pts.training_load) / AVG(pts.recovery_score) AS avg_training_load_div_recovery\nFROM players p\nJOIN player_training_stats pts ON p.player_id = pts.player_id\nGROUP BY p.player_id, p.full_name\nHAVING AVG(pts.recovery_score) > 0",
+   "new_selected_sql": "SELECT p.player_id, p.full_name, AVG(pts.training_load) / AVG(pts.recovery_score) AS avg_training_load_div_recovery\nFROM players p\nJOIN player_training_stats pts ON p.player_id = pts.player_id\nGROUP BY p.player_id, p.full_name\nHAVING AVG(pts.recovery_score) > 0",
+   "old_selected_num": "7",
+   "new_selected_num": 7,
+   "new_score": null,
+   "old_formula_status": {
+    "applies": true,
+    "formula_complete": true
+   },
+   "new_formula_status": {
+    "applies": true,
+    "formula_complete": true
+   },
+   "semantic_verdict": "proxy_wrong_to_correct: projects AVG(training_load)/AVG(recovery_score); equals live-correct"
+  },
+  {
+   "database_id": "57",
+   "test_id": 62,
+   "question": "Show each match with total points scored by both teams.",
+   "pool_status": "incorrect",
+   "formula_obligation": {
+    "derived_kinds": [
+     "add"
+    ],
+    "either_union": false
+   },
+   "old_selected_sql": "SELECT \"matches\".\"match_id\", \"matches\".\"home_score\", \"matches\".\"away_score\", SUM(\"matches\".\"home_score\") AS \"home_total\", SUM(\"matches\".\"away_score\") AS \"away_total\" FROM \"matches\" GROUP BY \"matches\".\"match_id\"",
+   "new_selected_sql": "SELECT match_id, home_score, away_score, (home_score + away_score) AS total_points FROM matches",
+   "old_selected_num": "1",
+   "new_selected_num": 4,
+   "new_score": null,
+   "old_formula_status": {
+    "applies": true,
+    "formula_complete": false
+   },
+   "new_formula_status": {
+    "applies": true,
+    "formula_complete": true
+   },
+   "semantic_verdict": "wrong_to_correct (CASE 2): projects home_score + away_score (row-level addition)"
+  },
+  {
+   "database_id": "57",
+   "test_id": 406,
+   "question": "List team identifiers that appear either in contracts or transfers.",
+   "pool_status": "incorrect",
+   "formula_obligation": {
+    "derived_kinds": [],
+    "either_union": true
+   },
+   "old_selected_sql": "SELECT DISTINCT t.team_id\nFROM teams t\nJOIN contracts c ON t.team_id = c.team_id\nJOIN transfers tr ON t.team_id = tr.to_team_id OR t.team_id = tr.from_team_id",
+   "new_selected_sql": "SELECT DISTINCT t.team_id\nFROM teams t\nJOIN contracts c ON t.team_id = c.team_id\nUNION\nSELECT DISTINCT t.team_id\nFROM teams t\nJOIN transfers tr ON t.team_id = tr.from_team_id\nUNION\nSELECT DISTINCT t.team_id\nFROM teams t\nJOIN transfers tr ON t.team_id = tr.to_team_id",
+   "old_selected_num": "3",
+   "new_selected_num": 5,
+   "new_score": null,
+   "old_formula_status": {
+    "applies": false,
+    "formula_complete": true
+   },
+   "new_formula_status": {
+    "applies": false,
+    "formula_complete": true
+   },
+   "semantic_verdict": "wrong_to_correct: teams JOIN contracts UNION teams JOIN transfers"
+  }
+ ]
+}

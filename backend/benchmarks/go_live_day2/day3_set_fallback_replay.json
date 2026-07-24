@@ -1,0 +1,68 @@
+{
+ "note": "DB56 t403 deterministic SET-UNION fallback offline reproduction. All LLM candidates were INNER-JOIN intersections; the synthesized UNION enters the normal pool and wins. Deterministic; no live LLM; schema-generic (no DB/test hardcoding).",
+ "question": "List patient identifiers that appear either in appointments or billing claims.",
+ "generated_candidates": [
+  {
+   "label": "llm_primary",
+   "rows": 42,
+   "score": 72.0,
+   "is_synth": false
+  },
+  {
+   "label": "llm_variant_1",
+   "rows": 42,
+   "score": 72.0,
+   "is_synth": false
+  },
+  {
+   "label": "llm_sql_direct",
+   "rows": 42,
+   "score": 72.0,
+   "is_synth": false
+  },
+  {
+   "label": "llm_sql_direct_grain",
+   "rows": 42,
+   "score": 72.0,
+   "is_synth": false
+  },
+  {
+   "label": "llm_sql_direct_variant",
+   "rows": 42,
+   "score": 72.0,
+   "is_synth": false
+  },
+  {
+   "label": "deterministic_set_union",
+   "rows": 62,
+   "score": 67.0,
+   "is_synth": true
+  }
+ ],
+ "synthesized_sql": "SELECT DISTINCT patient_id AS patient_id FROM appointments WHERE patient_id IS NOT NULL\nUNION\nSELECT DISTINCT patient_id AS patient_id FROM billing_claims WHERE patient_id IS NOT NULL",
+ "synthesis_metadata": {
+  "identifier": "patient_id",
+  "alternatives": [
+   {
+    "table": "appointments",
+    "column": "patient_id",
+    "provenance": "role_named_table"
+   },
+   {
+    "table": "billing_claims",
+    "column": "patient_id",
+    "provenance": "role_named_table"
+   }
+  ],
+  "reason": "no existing candidate satisfied the either/or set provenance; synthesized a separable UNION over the grounded source alternatives"
+ },
+ "selected": "deterministic_set_union",
+ "selected_rows": 62,
+ "selection_reason": "best_scored_executed",
+ "verdict": "correct",
+ "gate": {
+  "union_synthesized": true,
+  "union_executes_62_rows": true,
+  "selector_chooses_union_over_intersections": true
+ }
+}

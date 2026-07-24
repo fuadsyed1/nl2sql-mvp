@@ -305,6 +305,73 @@ def _normalize_temporal_entry(entry, question):
     return entry, reasons
 
 
+_HAVING_THRESHOLD_CUES = (
+    "at least", "at most", "more than", "fewer than", "greater than",
+    "less than", "no more than", "no fewer than", "groups with", "group with",
+    "having a", "having more", "having fewer", "having at", "whose count",
+    "whose total", "whose number", " exceeds", "minimum of", "maximum of")
+
+
+def _pk_of(idx, table):
+    for c in (idx.get("tables") or {}).get(table, []):
+        n = str(c.get("name")).lower()
+        if c.get("is_key") or n.endswith("_id") or n == "id":
+            return n
+    return None
+
+
+def _explicitly_named(table, question):
+    from semantic.schema_linker import _exact_named_tables
+    return table in _exact_named_tables(question, {table})
+
+
+def _sanitize_role_event_tables(out, question, idx):
+    """When a persistent role relationship grounds to a direct role-qualified FK
+    (students.advisor_instructor_id -> instructors.instructor_id) and the
+    question does NOT request event/history semantics, drop an event/junction
+    table that BRIDGES the source and target entities from must_use_tables /
+    must_use_columns — it was inferred only from the generic role word — and add
+    the grounded direct relationship instead. An explicitly-named table, or any
+    question that asks for advising sessions/appointments/dates, is never
+    touched. Mutates `out` in place; records a normalization note."""
+    from sql_candidates.semantic_obligations import (
+        ground_direct_role, role_event_semantics_requested)
+    g = ground_direct_role(question, idx)
+    if not g or role_event_semantics_requested(question):
+        return
+    s, tgt = g["source_table"], g["target_table"]
+    s_pk, t_pk = _pk_of(idx, s), _pk_of(idx, tgt)
+    if not (s_pk and t_pk):
+        return
+    entity_tables = {s, tgt, out.get("target_entity")}
+    removed = []
+    for b in list(out.get("must_use_tables") or []):
+        if b in entity_tables or _explicitly_named(b, question):
+            continue
+        bcols = {str(c.get("name")).lower()
+                 for c in (idx.get("tables") or {}).get(b, [])}
+        # a table carrying BOTH the source and target identifiers bridges them:
+        # an event/junction table standing in for the direct persistent role.
+        if s_pk in bcols and t_pk in bcols:
+            out["must_use_tables"].remove(b)
+            out["must_use_columns"] = [
+                c for c in (out.get("must_use_columns") or [])
+                if str(c).split(".")[0].lower() != b]
+            removed.append(b)
+    if removed:
+        role_fk = f"{s}.{g['role_column']}"
+        tgt_key = f"{tgt}.{g['target_key']}" if g.get("target_key") else None
+        for col in (role_fk, tgt_key):
+            if col and col not in (out.get("must_use_columns") or []):
+                out.setdefault("must_use_columns", []).append(col)
+        out["grounded_role_relationship"] = {
+            "source_column": role_fk, "target_key": tgt_key,
+            "role": g.get("role"), "removed_event_tables": removed}
+        out.setdefault("grain_normalization", []).append(
+            f"role grounding: direct FK {role_fk} -> {tgt_key}; dropped "
+            f"event/junction table(s) {removed} (no event semantics requested)")
+
+
 def _clean_checklist(data, idx, question=None):
     """Validate raw model JSON against the schema; drop anything unknown.
     When `question` is provided, grain_requirements entries additionally get
@@ -353,6 +420,19 @@ def _clean_checklist(data, idx, question=None):
         out["comparison_logic"] = cl.strip()[:200]
     shape = str(data.get("required_sql_shape") or "").strip().lower()
     out["required_sql_shape"] = shape if shape in REQUIRED_SHAPES else None
+    # Shape normalization: 'for each <entity>' is per-entity aggregation (GROUP
+    # BY), NOT a group-level HAVING threshold. Downgrade group_by_having ->
+    # plain_select unless the question actually states a group-level
+    # qualification (at least N, more than N, groups with, having ... above),
+    # so a correct WHERE-filtered per-entity candidate is not required to carry a
+    # spurious HAVING.
+    if out["required_sql_shape"] == "group_by_having" and question:
+        ql = " " + str(question).lower() + " "
+        if not any(cue in ql for cue in _HAVING_THRESHOLD_CUES):
+            out["required_sql_shape"] = "plain_select"
+            out.setdefault("grain_normalization", []).append(
+                "shape group_by_having->plain_select (per-entity aggregation; "
+                "no group-level threshold stated)")
     for lit in (data.get("literals") or [])[:6]:
         if isinstance(lit, (str, int, float)) and str(lit).strip():
             out["literals"].append(lit)
@@ -440,6 +520,8 @@ def _clean_checklist(data, idx, question=None):
             cleaned, norm_reasons = _normalize_grain_entry(cleaned, question)
             out["grain_normalization"].extend(norm_reasons)
         out["grain_requirements"].append(cleaned)
+    if question is not None:
+        _sanitize_role_event_tables(out, question, idx)
     # temporal requirements (final temporal patch): latest/earliest-event
     # qualification. Schema-checked like everything else; the deterministic
     # timing normalization runs only when the question is available.

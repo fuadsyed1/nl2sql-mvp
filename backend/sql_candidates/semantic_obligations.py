@@ -29,6 +29,10 @@ from sqlglot import exp, parse_one
 __all__ = [
     "compute_profile", "canonical_signature", "lineage_family",
     "is_eligible", "dominates", "override_dominates", "MANDATORY", "GATING",
+    "unrequested_restricting_joins", "ground_either_roles", "role_either_satisfied",
+    "ground_direct_role", "direct_role_join_present", "role_event_semantics_requested",
+    "question_bounded_subset_ratio", "ratio_population_aligned",
+    "_percent_values_out_of_bounds",
 ]
 
 # The mandatory obligations that gate eligibility. A candidate that APPLIES a
@@ -169,9 +173,12 @@ def question_derived_obligation(question):
 
     superlative = has(*_SUPERLATIVE)
     kinds = set()
-    # addition of >= 2 named components / paraphrased sum
-    if has(" adding ", " plus ", " combined ", " sum of the ") or \
-            _re.search(r"\bformed by adding\b", q):
+    # addition of >= 2 named components / paraphrased sum, OR a row-level
+    # "total <measure> ... both <roles>" combination (grounding stays strict, so a
+    # bare 'both' that grounds no operand pair is neutral).
+    if has(" adding ", " plus ", " combined ", " sum of the ", " total of ") or \
+            _re.search(r"\bformed by adding\b", q) or \
+            (" both " in q and (" total " in q or " combined " in q)):
         kinds.add("add")
     # subtraction / difference / remaining amount (NOT a date-remaining phrase)
     if has(" minus ", " difference ", " unused ", " still needed",
@@ -469,8 +476,81 @@ def _contract_operand_cols(contract):
     return cols
 
 
+# Generic sibling-role concept pairs (no schema/table/column names). Two columns
+# that differ only by one of these role tokens are "sibling roles" whose row-level
+# sum is a valid derived total ("total points scored by BOTH teams" ->
+# home_score + away_score). Detection stays neutral unless the shared base concept
+# is mentioned in the question and exactly one such pair matches.
+_SIBLING_ROLES = [("home", "away"), ("source", "destination"), ("source", "dest"),
+                  ("src", "dst"), ("from", "to"), ("debit", "credit"),
+                  ("planned", "actual"), ("first", "second"),
+                  ("origin", "destination"), ("start", "end"),
+                  ("inbound", "outbound"), ("left", "right")]
+
+
+def _sibling_pairs(cols):
+    pairs = set()
+    for a, b in _SIBLING_ROLES:
+        for c in cols:
+            toks = c.split("_")
+            if a in toks:
+                sib = "_".join(b if t == a else t for t in toks)
+                if sib in cols and sib != c:
+                    base = "_".join(t for t in toks if t != a)
+                    pairs.add((base, frozenset({c, sib})))
+    return pairs
+
+
+def _base_mentioned(base, qtoks):
+    for w in base.split("_"):
+        if len(w) < 3:
+            continue
+        for t in qtoks:
+            if t == w or (len(w) >= 4 and (t.startswith(w) or w.startswith(t))):
+                return True
+    return False
+
+
+def _sibling_role_pair(question, cols):
+    """The single sibling-role column pair whose shared base concept is mentioned
+    in the question, or None (neutral) when zero or >1 pairs match."""
+    qtoks = set(_re.findall(r"[a-z]+", _qnorm(question)))
+    matched = [p for base, p in _sibling_pairs(cols) if _base_mentioned(base, qtoks)]
+    return set(matched[0]) if len(matched) == 1 else None
+
+
+def _entity_count_denominator(phrase, idx):
+    """When a ratio denominator names an ENTITY rather than a count column
+    ('budget per doctor', no doctor_count column), return that entity's OWN key
+    column: the denominator is then a COUNT(entity_key). Generic — matches the
+    phrase against table names and prefers the table's identifying key (not its
+    foreign keys), no hardcoding."""
+    toks = set(_re.findall(r"[a-z]+", phrase))
+    forms = set(toks) | {w[:-1] if w.endswith("s") else w + "s" for w in toks}
+
+    def _hit(w):
+        return w in forms or (w[:-1] if w.endswith("s") else w + "s") in forms
+
+    out = set()
+    for t, colobjs in ((idx or {}).get("tables") or {}).items():
+        twords = [w for w in t.split("_") if len(w) > 2]
+        if not twords or not all(_hit(w) for w in twords):
+            continue
+        tsing = {(w[:-1] if w.endswith("s") else w) for w in twords}
+        keys = [(c.get("name") or "").lower() for c in colobjs
+                if c.get("is_key") or (c.get("name") or "").lower().endswith("_id")
+                or (c.get("name") or "").lower() == "id"]
+        # the entity's OWN key relates to the table name (member_id -> members);
+        # its foreign keys (g_id) do not.
+        own = [k for k in keys
+               if any((p[:-1] if p.endswith("s") else p) in tsing
+                      for p in k.replace("_id", "").split("_") if p)]
+        out |= set(own or keys)
+    return out
+
+
 def derived_operand_grounding(question, kind, cols, keys, checklist=None,
-                              contract=None):
+                              contract=None, idx=None):
     """Grounded operand requirement for one derived kind, or None if the operands
     cannot be determined (=> neutral)."""
     q = _qnorm(question)
@@ -487,11 +567,18 @@ def derived_operand_grounding(question, kind, cols, keys, checklist=None,
         return pref or found
 
     if kind == "add":
-        m = _re.search(r"(?:adding|plus|sum of|formed by adding)\s+(.+?)(?:[.,;]|$)", q)
-        if not m:
-            return None
-        ops = cin(m.group(1))
-        return {"kind": "set", "ops": ops} if len(ops) >= 2 else None
+        m = _re.search(r"(?:adding|plus|sum of the|sum of|combined|total of|"
+                       r"formed by adding)\s+(.+?)(?:[.,;]|$)", q)
+        if m:
+            ops = cin(m.group(1))
+            if len(ops) >= 2:
+                return {"kind": "set", "ops": ops}
+        # row-level sibling-role addition ("total <measure> ... both <roles>")
+        if " both " in q:
+            pair = _sibling_role_pair(question, nonkey)
+            if pair:
+                return {"kind": "set", "ops": pair}
+        return None
     if kind == "multiply":
         m = _re.search(r"(.+?)\s+(?:multiplied by|times)\s+(.+?)(?:[.,;]|$)", q)
         ops = (cin(m.group(1)) | cin(m.group(2))) if m else set()
@@ -509,10 +596,15 @@ def derived_operand_grounding(question, kind, cols, keys, checklist=None,
         return {"kind": "ordered", "left": L, "right": R} if (L and R) else None
     if kind == "ratio":
         m = (_re.search(r"([\w ]+?)\s+per\s+([\w ]+?)(?:[.,;]|$)", q)
-             or _re.search(r"([\w ]+?)\s+divided by\s+([\w ]+?)(?:[.,;]|$)", q))
+             or _re.search(r"([\w ]+?)\s+divided by\s+([\w ]+?)(?:[.,;]|$)", q)
+             or _re.search(r"ratio of\s+([\w ]+?)\s+to\s+([\w ]+?)(?:[.,;]|$)", q))
         if not m:
             return None
         N, D = cin(m.group(1)), cin(m.group(2))
+        # a count-based denominator may be an ENTITY counted via COUNT(entity_key)
+        # when no matching *_count column exists.
+        if not D:
+            D = _entity_count_denominator(m.group(2), idx)
         return {"kind": "ratio", "num": N, "den": D} if (N and D) else None
     if kind == "date":
         dcols = {c for c in cols
@@ -546,7 +638,7 @@ def derived_output_satisfied(tree, question, idx, checklist=None, contract=None)
     cols, keys = _schema_columns(idx)
     grounded = {}
     for k in kinds:
-        g = derived_operand_grounding(question, k, cols, keys, checklist, contract)
+        g = derived_operand_grounding(question, k, cols, keys, checklist, contract, idx)
         if g is not None:
             grounded[k] = g
     if not grounded:
@@ -831,6 +923,417 @@ def either_union_satisfied(tree, required_sources=None):
 
 
 # ---------------------------------------------------------------------------
+# role-to-column grounding for either/or source semantics
+#
+# An either/or alternative may name a ROLE ("primary doctors", "appointment
+# doctors", "home teams", "source accounts") rather than a base table. A role
+# grounds to a schema COLUMN — a role-qualified key/FK (`<role>_<entity>_id`) or
+# the entity id inside a role-named source table — NOT to the entity's own base
+# table. So "primary doctors" is the population of patients.primary_doctor_id,
+# never the whole doctors table. Grounding is attempted only with strong,
+# unambiguous evidence; otherwise the obligation stays neutral (no guess).
+# ---------------------------------------------------------------------------
+def _sing(w):
+    return w[:-1] if len(w) > 3 and w.endswith("s") else w
+
+
+def _tok(s):
+    return [t for t in _re.findall(r"[a-z]+", (s or "").lower()) if len(t) > 1]
+
+
+def _entity_id_from_checklist(checklist):
+    """(entity_token, id_column_name) requested as the either/or identifier —
+    the single id-like output column, e.g. doctors.doctor_id -> ('doctor',
+    'doctor_id'). Returns (None, None) when not a single clear id output."""
+    outs = [str(c).split(".")[-1].strip().strip('"').lower()
+            for c in ((checklist or {}).get("output_columns") or [])]
+    ids = [o for o in outs if o.endswith("_id") or o == "id" or o.endswith("_key")]
+    if len(ids) != 1:
+        # fall back to target_entity when there is exactly one output that is the
+        # entity key; otherwise neutral.
+        te = str((checklist or {}).get("target_entity") or "").strip().lower()
+        if te and outs:
+            return _sing(te), (outs[0] if len(outs) == 1 else None)
+        return None, None
+    idc = ids[0]
+    ent = _sing(idc[:-3]) if idc.endswith("_id") else _sing(idc)
+    return ent, idc
+
+
+def _key_like(colmeta, name):
+    return bool(colmeta.get("is_key")) or name.endswith("_id") or name == "id" \
+        or name.endswith("_key")
+
+
+def _table_colnames(idx):
+    out = {}
+    for t, cols in ((idx or {}).get("tables") or {}).items():
+        out[t.lower()] = {str(c.get("name")).lower(): c for c in (cols or [])}
+    return out
+
+
+def ground_either_roles(question, checklist, idx):
+    """Ground each either/or alternative to a (table, column) SOURCE.
+
+    Returns a list of dicts (one per alternative):
+        {phrase, modifier, entity, table, column, provenance}
+    where provenance is 'role_qualified_column' | 'role_named_table'.
+    Returns None (NEUTRAL) unless BOTH alternatives ground unambiguously — a role
+    phrase with no clear column, or an ambiguous multi-column match, yields
+    None so a role-blind candidate is never wrongly rewarded or penalized.
+    Fully schema-generic: nothing about doctors/patients/DB56 is hardcoded."""
+    phrases = _either_source_phrases(question)
+    if not phrases:
+        return None
+    ent, idcol = _entity_id_from_checklist(checklist)
+    if not ent:
+        return None
+    tcols = _table_colnames(idx)
+    if not tcols:
+        return None
+    ent_forms = {ent, ent + "s", _sing(ent)}
+
+    def ground_one(phrase):
+        toks = _tok(phrase)
+        modifier = [t for t in toks if _sing(t) not in ent_forms and t not in ent_forms]
+        # strategy 1: a role-qualified KEY column carrying modifier + entity
+        matches = []
+        for t, cols in tcols.items():
+            for cn, meta in cols.items():
+                if not _key_like(meta, cn):
+                    continue
+                ctoks = [x for x in cn.split("_") if x != "id"]
+                has_ent = any(_sing(x) in ent_forms or x in ent_forms for x in ctoks)
+                has_mod = any(m in ctoks or _sing(m) in ctoks for m in modifier)
+                if has_ent and has_mod and modifier:
+                    matches.append((t, cn, "role_qualified_column"))
+        uniq = {(t, c) for (t, c, _p) in matches}
+        if len(uniq) == 1:
+            t, c, p = matches[0]
+            return {"phrase": phrase, "modifier": " ".join(modifier),
+                    "entity": ent, "table": t, "column": c, "provenance": p}
+        if len(uniq) > 1:
+            return None                      # ambiguous -> neutral
+        # strategy 2: a role-named SOURCE table that carries the entity id column
+        if idcol:
+            cand_tables = _phrase_tables(phrase, list(tcols)) or set()
+            grounded = [(t, idcol) for t in cand_tables
+                        if idcol in tcols.get(t, {})]
+            # exclude the entity's OWN base table (id in its home table is not a
+            # role membership; a role must be a DIFFERENT source)
+            grounded = [(t, c) for (t, c) in grounded if _sing(t) not in ent_forms]
+            uniqg = set(grounded)
+            if len(uniqg) == 1:
+                t, c = grounded[0]
+                return {"phrase": phrase, "modifier": " ".join(modifier),
+                        "entity": ent, "table": t, "column": c,
+                        "provenance": "role_named_table"}
+        return None
+
+    grounded = [ground_one(p) for p in phrases]
+    if any(g is None for g in grounded):
+        return None
+    return grounded
+
+
+def _unit_tables_cols(node):
+    tables = {(t.name or "").lower() for t in node.find_all(exp.Table)}
+    cols = {(c.name or "").lower() for c in node.find_all(exp.Column)}
+    return tables, cols
+
+
+def role_either_satisfied(tree, grounded):
+    """True when EACH grounded role alternative (table, column) is separably
+    represented by a DISTINCT unit — a UNION branch or a top-level OR/EXISTS-IN
+    disjunct — whose grounded-source set is exactly that one alternative. A
+    branch reading the entity base table (not the role column) represents no
+    alternative; an intersection (one AND unit carrying both) is not separable.
+    """
+    if tree is None or not grounded:
+        return False
+    required = {(g["table"], g["column"]) for g in grounded}
+
+    def represented(node):
+        tabs, cols = _unit_tables_cols(node)
+        return {(t, c) for (t, c) in required if t in tabs and c in cols}
+
+    branches = _query_output_selects(tree)
+    if len(branches) >= 2:
+        units = [represented(b) for b in branches]
+    else:
+        sel = branches[0] if branches else None
+        where = sel.args.get("where") if sel is not None else None
+        if where is None:
+            return False
+        disj = _split_or(where.this)
+        if len(disj) < 2:
+            return False
+        units = [represented(d) for d in disj]
+    return _sdr_separable(required, units)
+
+
+# ---------------------------------------------------------------------------
+# direct role-relationship grounding (persistent role FK vs event/history table)
+#
+# A NON-set question may describe a persistent role/ownership relationship
+# ("students advised BY instructors", "a patient's primary doctor", "the
+# approving manager"). When the SOURCE entity carries a role-qualified foreign
+# key to the TARGET entity, that direct FK is the intended relationship — an
+# event/history/junction table (advising sessions, appointment log) must NOT be
+# substituted unless the question explicitly asks for event semantics. Grounding
+# requires strong, unambiguous evidence (a key-like column naming the role AND
+# the target entity, with FK/relationship backing); otherwise it stays neutral.
+# ---------------------------------------------------------------------------
+_ROLE_REL_CUES = (
+    " advised by ", " advised by", " supervised by ", " managed by ",
+    " approved by ", " assigned to ", " handled by ", " overseen by ",
+    " mentored by ", " directed by ", " sponsored by ", " reviewed by ",
+    " advisor", " supervisor", " manager of ", " mentor of ",
+)
+_EVENT_SEMANTIC_WORDS = (
+    " appointment", " session", " meeting", " visit", " visits", " event",
+    " log ", " history", " topic", " topics", " discussed", " attended",
+    " scheduled", " occurred", " most recent", " advising record",
+    " advising session", " advising appointment", " number of advising",
+    " completed advising", " session date", " appointment date",
+)
+
+
+def role_event_semantics_requested(question):
+    """True when the question explicitly asks about event/history records rather
+    than the persistent role (an appointment/session/meeting, its date/topics,
+    a count of visits, the most-recent event, ...)."""
+    q = _qnorm(question)
+    return any(w in q for w in _EVENT_SEMANTIC_WORDS)
+
+
+def _rel_target_key(rels, s, c, target, target_cols):
+    for r in rels or []:
+        if (str(r.get("from_table") or "").lower() == s
+                and str(r.get("from_column") or "").lower() == c):
+            return str(r.get("to_table") or "").lower(), \
+                str(r.get("to_column") or "").lower()
+        if (str(r.get("to_table") or "").lower() == s
+                and str(r.get("to_column") or "").lower() == c):
+            return str(r.get("from_table") or "").lower(), \
+                str(r.get("from_column") or "").lower()
+    guess = _sing(target) + "_id"
+    if guess in target_cols:
+        return target, guess
+    for cn, meta in target_cols.items():
+        if _key_like(meta, cn):
+            return target, cn
+    return target, None
+
+
+def ground_direct_role(question, idx):
+    """Ground a persistent role relationship to a direct role-qualified FK.
+
+    Returns {source_table, role_column, role, target_table, target_key,
+    fk_backed} or None (NEUTRAL). Neutral unless a role cue is present AND
+    exactly one key-like column names both the role and a target-entity table.
+    Schema-generic; no table/column/domain hardcoding."""
+    q = _qnorm(question)
+    if not any(cue in q for cue in _ROLE_REL_CUES):
+        return None
+    tcols = _table_colnames(idx)
+    if not tcols:
+        return None
+    rels = (idx or {}).get("relationships") or []
+    qwords = set(_tok(q))
+    matches = []
+    for s, cols in tcols.items():
+        for cn, meta in cols.items():
+            if not _key_like(meta, cn):
+                continue
+            toks = [x for x in cn.split("_") if x != "id"]
+            # a token that names ANOTHER schema table = the target entity
+            tgt = None
+            for x in toks:
+                for tt in tcols:
+                    if tt == s:
+                        continue
+                    if _sing(tt) == _sing(x) or tt == x or tt == x + "s":
+                        tgt = tt
+                        break
+                if tgt:
+                    break
+            if not tgt:
+                continue
+            # a remaining token whose 4-char stem matches a question ROLE word
+            role = None
+            for x in toks:
+                if _sing(x) == _sing(tgt) or x == tgt:
+                    continue
+                for qw in qwords:
+                    if len(qw) >= 4 and len(x) >= 4 and qw[:4] == x[:4] \
+                            and qw not in tcols:
+                        role = x
+                        break
+                if role:
+                    break
+            if not role:
+                continue
+            _tt, tk = _rel_target_key(rels, s, cn, tgt, tcols.get(tgt, {}))
+            fk_backed = any(
+                str(r.get("from_table") or "").lower() == s
+                and str(r.get("from_column") or "").lower() == cn
+                for r in rels)
+            matches.append({"source_table": s, "role_column": cn, "role": role,
+                            "target_table": tgt, "target_key": tk,
+                            "fk_backed": fk_backed})
+    uniq = {(m["source_table"], m["role_column"]) for m in matches}
+    if len(uniq) != 1:
+        return None
+    return matches[0]
+
+
+def _amap(tree):
+    out = {}
+    for t in (tree.find_all(exp.Table) if tree is not None else []):
+        nm = (t.name or "").lower()
+        if nm:
+            out[nm] = nm
+            al = t.args.get("alias")
+            an = getattr(al, "name", None) if al is not None else None
+            if an:
+                out[str(an).lower()] = nm
+    return out
+
+
+def direct_role_join_present(tree, grounding):
+    """True when the SQL joins source.role_column = target.target_key directly
+    (in either order), i.e. it uses the persistent role FK rather than reaching
+    the target only through an event/junction table."""
+    if tree is None or not grounding:
+        return False
+    s = grounding["source_table"]
+    c = grounding["role_column"]
+    tt = grounding["target_table"]
+    tk = grounding.get("target_key")
+    amap = _amap(tree)
+    for eq in tree.find_all(exp.EQ):
+        l, r = eq.this, eq.expression
+        if not (isinstance(l, exp.Column) and isinstance(r, exp.Column)):
+            continue
+        lt = amap.get((l.table or "").lower(), (l.table or "").lower())
+        rt = amap.get((r.table or "").lower(), (r.table or "").lower())
+        pair = {(lt, (l.name or "").lower()), (rt, (r.name or "").lower())}
+        if (s, c) in pair and any(
+                p[0] == tt and (tk is None or p[1] == tk) for p in pair
+                if p != (s, c)):
+            return True
+    return False
+
+
+# ---------------------------------------------------------------------------
+# bounded-subset ratio population contract
+#
+# "<subset> as a percentage of <population>" (abnormal completed tests out of
+# completed tests, active members out of all members) is a BOUNDED 0-100 ratio:
+# the numerator is a SUBSET of the denominator population, so the denominator's
+# population filter MUST also constrain the numerator. A candidate that counts
+# the numerator over ALL rows while restricting the denominator to a
+# sub-population can exceed 100% and is wrong. Unbounded ratios (growth, change,
+# revenue vs budget, independent measures) are explicitly excluded.
+# ---------------------------------------------------------------------------
+_UNBOUNDED_RATIO_CUES = (
+    " growth", " change", " increase", " decrease", " versus ", " vs ",
+    " baseline", " budget", " target ", " compared to ", " year over year",
+    " yoy", " margin", " markup", " relative to ", " index")
+_BOUNDED_RATIO_SPLIT = _re.compile(
+    r"(.+?)\s+(?:as\s+a\s+percentage\s+of|as\s+a\s+percent\s+of|"
+    r"as\s+a\s+share\s+of|out\s+of|of\s+all)\s+(.+?)"
+    r"(?:[.,;]|\bfor\b|\bper\b|\bgrouped\b|\bby\b|$)")
+
+
+def question_bounded_subset_ratio(question):
+    """{numerator_qualifier, denominator_qualifier, entity} when the question is
+    a BOUNDED subset percentage ('<qualified subset> as a percentage of
+    <population>' sharing the same entity head), else None. Unbounded/independent
+    ratios return None so they are never constrained."""
+    q = _qnorm(question)
+    if any(c in q for c in _UNBOUNDED_RATIO_CUES):
+        return None
+    if not (" percentage " in q or " percent " in q or "percentage of" in q
+            or "percent of" in q or " out of " in q or " share of " in q):
+        return None
+    m = _BOUNDED_RATIO_SPLIT.search(q)
+    if not m:
+        return None
+    num_toks, den_toks = set(_tok(m.group(1))), set(_tok(m.group(2)))
+    shared = num_toks & den_toks
+    num_qual = num_toks - den_toks
+    den_qual = den_toks - num_toks
+    if not shared or not num_qual:
+        return None                       # need a shared entity + a subset qualifier
+    # INDEPENDENT-MEASURE ratio (payroll vs revenue, revenue vs value): the
+    # numerator and denominator each name a DIFFERENT measure/money noun, so the
+    # numerator is NOT a subset of the denominator population and the result is
+    # not bounded to 0-100. Stay neutral.
+    num_meas = {w for w in num_qual if w in _MEASURE_NOUNS}
+    den_meas = {w for w in den_qual if w in _MEASURE_NOUNS}
+    if num_meas and den_meas and num_meas != den_meas:
+        return None
+    return {"numerator_qualifier": sorted(num_qual),
+            "denominator_qualifier": sorted(den_qual), "entity": sorted(shared)}
+
+
+def _literal_predicates(node):
+    """Normalized `column <op> literal` predicates inside `node` (a real value
+    filter, not a column-vs-column join)."""
+    preds = set()
+    if node is None:
+        return preds
+    for cmp in node.find_all((exp.EQ, exp.NEQ, exp.In, exp.GT, exp.GTE,
+                              exp.LT, exp.LTE, exp.Like)):
+        if next(iter(cmp.find_all(exp.Literal)), None) is not None \
+                and next(iter(cmp.find_all(exp.Column)), None) is not None:
+            preds.add(_norm(cmp))
+    return preds
+
+
+def ratio_population_aligned(tree):
+    """True when, for every ratio (Div) in the query, EVERY population filter that
+    constrains the DENOMINATOR also constrains the NUMERATOR — via a global WHERE
+    or by appearing inside the numerator's own CASE. A denominator-only
+    restriction (numerator counts rows the denominator excludes) is misaligned
+    and can exceed 100%. No ratio -> trivially aligned."""
+    if tree is None:
+        return True
+    divs = list(tree.find_all(exp.Div))
+    if not divs:
+        return True
+    outer = (_query_output_selects(tree) or [None])[0]
+    where = outer.args.get("where") if outer is not None else None
+    global_preds = _literal_predicates(where.this) if where is not None else set()
+    for div in divs:
+        num_preds = _literal_predicates(div.this) | global_preds
+        den_preds = _literal_predicates(div.expression) | global_preds
+        if den_preds - num_preds:          # denominator filter missing on numerator
+            return False
+    return True
+
+
+def _percent_values_out_of_bounds(execution, tol=0.5):
+    """Supporting plausibility signal: a projected percentage column with a value
+    < -tol or > 100+tol. Returns the first offending value, or None."""
+    ex = execution or {}
+    cols = [str(c).lower() for c in (ex.get("columns") or [])]
+    rows = ex.get("rows")
+    if not isinstance(rows, list) or not rows or not cols:
+        return None
+    pct_idx = [i for i, c in enumerate(cols)
+               if "percent" in c or c.endswith("_pct") or c == "pct"]
+    for r in rows:
+        for i in pct_idx:
+            if i < len(r) and isinstance(r[i], (int, float)):
+                if r[i] < -tol or r[i] > 100 + tol:
+                    return r[i]
+    return None
+
+
+# ---------------------------------------------------------------------------
 # canonical signature (semantic duplicate detection)
 # ---------------------------------------------------------------------------
 def canonical_signature(sql):
@@ -930,6 +1433,114 @@ def _formula_components(contract):
     return comps
 
 
+def unrequested_restricting_joins(tree):
+    """Count INNER-joined tables that are pure, unrequested POPULATION
+    restrictions: a joined table whose alias is referenced ONLY inside its own
+    join ON-predicate — it contributes no projected column, no filter, no
+    grouping/ordering key, and is not referenced by any OTHER join (so it is not
+    a needed bridge). Such an INNER join can only shrink (or, without DISTINCT,
+    multiply) the answered population; it is never required to compute the
+    result. LEFT / RIGHT / FULL / CROSS joins do not inner-restrict and are
+    excluded, as are subquery joins. Purely structural — no schema, checklist,
+    or question input, so a genuinely required join (its table supplies an
+    output/filter column, or bridges two used tables) is never counted.
+
+    This lets equal-score selection prefer the candidate that answers the
+    request WITHOUT gratuitous restricting joins, without ever penalizing a join
+    that does real work (requirement: 'a required join is not penalized merely
+    for adding a table')."""
+    if tree is None:
+        return 0
+    count = 0
+    for sel in _select_scopes(tree):
+        for j in (sel.args.get("joins") or []):
+            side = (j.args.get("side") or "").upper()
+            kind = (j.args.get("kind") or "").upper()
+            if side in ("LEFT", "RIGHT", "FULL") or kind in (
+                    "LEFT", "RIGHT", "FULL", "OUTER", "CROSS"):
+                continue
+            jtabs = [t for t in j.find_all(exp.Table)]
+            if len(jtabs) != 1:            # subquery / derived-table join
+                continue
+            alias = (jtabs[0].alias or jtabs[0].name or "").lower()
+            if not alias:
+                continue
+            refs_outside_own_on = 0
+            for col in sel.find_all(exp.Column):
+                if (col.table or "").lower() != alias:
+                    continue
+                anc, inside = col, False
+                while anc is not None:
+                    if anc is j:
+                        inside = True
+                        break
+                    anc = anc.parent
+                if not inside:
+                    refs_outside_own_on += 1
+            if refs_outside_own_on == 0:
+                count += 1
+    return count
+
+
+def _final_output_exprs(tree):
+    """Every expression that forms the FINAL output of the query (outer
+    projection + each UNION branch projection; subquery/paren unwrapped)."""
+    out = []
+    for sel in _query_output_selects(tree):
+        out += _output_expressions(sel)
+    return out
+
+
+def _contract_formula_satisfied(tree, contract):
+    """Operator-SPECIFIC formula obligation. When a grain requirement carries a
+    derived measure_operation (subtract / add / ratio / multiply), the candidate
+    must PROJECT that arithmetic expression combining the requested operand
+    columns in the FINAL output — not merely reference the operand columns
+    separately. A candidate that outputs the operands as bare columns without
+    computing the formula does NOT satisfy it (this is the fix for the
+    'shows the inputs but not the derived value' false-positive that let a
+    formula-incomplete candidate look eligible).
+
+    Requirements with NO operator (measure_operation is None / unknown) fall
+    back to the original operand-column-presence check, preserving prior
+    behavior for aggregation-only or unspecified-operation contracts.
+
+    Returns True when there is no formula requirement at all (nothing to gate)."""
+    if tree is None or contract is None:
+        return True
+    reqs = [r for r in (getattr(contract, "requirements", ()) or ())
+            if getattr(r, "measure_components", None)]
+    if not reqs:
+        return True
+    out_exprs = _final_output_exprs(tree)
+    all_out_cols = set()
+    for e in out_exprs:
+        all_out_cols |= _referenced_columns(e)
+    for r in reqs:
+        comps = {(c or "").lower() for (_t, c) in (r.measure_components or ())}
+        comps.discard("")
+        if not comps:
+            continue
+        op = (getattr(r, "measure_operation", None) or "").lower()
+        op_cls = _OP_FOR_KIND.get(op)
+        if op_cls is not None:
+            matched = False
+            for e in out_exprs:
+                inner = e.this if isinstance(e, exp.Alias) else e
+                for n in ([inner] + list(inner.find_all(op_cls))):
+                    if isinstance(n, op_cls) and comps <= _referenced_columns(n):
+                        matched = True
+                        break
+                if matched:
+                    break
+            if not matched:
+                return False
+        else:
+            if not (comps <= all_out_cols):
+                return False
+    return True
+
+
 def compute_profile(sql, validation, checklist, contract, idx=None):
     """Structured obligation profile for one candidate. Reuses the scorer's
     validation signals + parsed-AST checks. Never raises."""
@@ -971,15 +1582,16 @@ def compute_profile(sql, validation, checklist, contract, idx=None):
         has_agg_proj if out_agg_applies else True)
     prof["_out_agg_applies"] = out_agg_applies
 
-    # ---- required formula: all derived-measure components referenced somewhere.
+    # ---- required formula: the requested derived expression must reach the
+    # final output. Operator-SPECIFIC (subtract/add/ratio/multiply must actually
+    # be computed, not merely have its operand columns shown separately); an
+    # operation-less requirement falls back to operand-column presence. This
+    # gates eligibility, so a candidate that projects the inputs but not the
+    # derived value is correctly demoted.
     comps = _formula_components(contract)
     if comps:
-        cols_used = set()
-        for s in selects:
-            for e in _output_expressions(s):
-                cols_used |= _referenced_columns(e)
-        prof["required_formula_satisfied"] = all(
-            col.lower() in cols_used for (_t, col) in comps)
+        prof["required_formula_satisfied"] = _contract_formula_satisfied(
+            tree, contract)
     else:
         prof["required_formula_satisfied"] = True
 

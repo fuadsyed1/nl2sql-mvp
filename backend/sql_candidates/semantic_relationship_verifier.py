@@ -192,6 +192,20 @@ def _generic_fallback(sql):
     return True, "no_aggregation"
 
 
+def _row_level_formula_ok(question, sql, idx):
+    """True when the question requests a row-level derived formula (add / subtract
+    / ratio) and the candidate PROJECTS the grounded formula — so a query with no
+    cross-row aggregation is a correct answer, not a collapsed non-answer.
+    Reuses the generic derived-output obligation; never raises."""
+    try:
+        from sql_candidates.semantic_obligations import (
+            derived_output_satisfied as _dos, _parse as _dp)
+        applies, satisfied = _dos(_dp(sql), question, idx)
+        return bool(applies and satisfied)
+    except Exception:
+        return False
+
+
 def verify_semantic_relationships(question, checklist, sql, idx, sql_edges=None):
     """Return (delta, reasons, checks). Penalty-only, never fatal, never raises."""
     delta, reasons, checks = 0.0, [], {}
@@ -218,6 +232,14 @@ def verify_semantic_relationships(question, checklist, sql, idx, sql_edges=None)
         #    like; it must lose to any real (even risky) SQL.
         if not checks.get("dummy_sql") and _needs_structure(question, checklist, must):
             is_fb, kind = _generic_fallback(sql)
+            # A ROW-LEVEL derived-arithmetic answer (a projected a+b / a-b / a/b
+            # per entity, no aggregation across rows) is NOT a collapsed
+            # non-answer: it computes the requested value. Suppress the
+            # "no_aggregation" fallback penalty when the candidate satisfies the
+            # grounded derived obligation. SELECT-* fallbacks are never suppressed.
+            if is_fb and kind == "no_aggregation" and _row_level_formula_ok(question, sql, idx):
+                is_fb = False
+                checks["no_aggregation_suppressed_row_level_formula"] = True
             if is_fb:
                 delta += GENERIC_FALLBACK_PENALTY
                 reasons.append(

@@ -119,17 +119,38 @@ def _strip_strings(sql: str) -> str:
     return re.sub(r"'(?:[^']|'')*'", "''", sql)
 
 
+_SETOP_WORDS = ("union", "intersect", "except")
+
+
 def _scope_ids(sql: str):
     """Per-character scope id. Each '(' opens a NEW id (sibling subqueries get
-    different ids), ')' returns to the parent."""
+    different ids), ')' returns to the parent. Each branch of a set operation
+    (UNION / UNION ALL / INTERSECT / EXCEPT) is ALSO a separate scope even when
+    the branches are not parenthesized: a set-op keyword rotates the current
+    scope id so the SELECT that follows it is a distinct scope. This makes alias
+    reuse across independent UNION branches legal (reusing `p` in each branch is
+    valid SQL — the branches never share a namespace), while alias reuse inside
+    ONE scope (a real self-join with the same alias twice) is still detected."""
     ids, stack, next_id = [], [0], 1
-    for ch in sql:
+    low = sql.lower()
+    n = len(sql)
+    prev_word_char = False
+    for i, ch in enumerate(sql):
+        if not prev_word_char:
+            for kw in _SETOP_WORDS:
+                if low.startswith(kw, i):
+                    end = i + len(kw)
+                    if end >= n or not (low[end].isalnum() or low[end] == "_"):
+                        stack[-1] = next_id      # rotate current-level scope
+                        next_id += 1
+                        break
         if ch == "(":
             stack.append(next_id)
             next_id += 1
         ids.append(stack[-1])
         if ch == ")" and len(stack) > 1:
             stack.pop()
+        prev_word_char = ch.isalnum() or ch == "_"
     return ids
 
 
@@ -658,6 +679,46 @@ def score_candidate(question, candidate, graph, checklist=None,
         reasons.append(gr)
         fatal.append(gr)
     checks["literal_groups"] = lg_reasons
+
+    # 12b) BOUNDED-SUBSET RATIO population alignment (FATAL). When the question is
+    #      a bounded 0-100 subset percentage ("<subset> as a percentage of
+    #      <population>"), a candidate whose denominator restricts to a
+    #      sub-population that the numerator does NOT share is provably wrong (it
+    #      can exceed 100%). High-confidence + high-precision: fires only when the
+    #      SQL actually contains a ratio and the alignment check fails, so it can
+    #      never touch an unbounded ratio (growth / vs-budget) or a non-ratio.
+    try:
+        from sql_candidates.semantic_obligations import (
+            question_bounded_subset_ratio, ratio_population_aligned,
+            _percent_values_out_of_bounds, _parse as _so_parse)
+        _ratio_viol = None
+        if question_bounded_subset_ratio(question):
+            _rt = _so_parse(sql)
+            # STRUCTURAL misalignment is the fatal signal (high precision: it
+            # only fires when the denominator carries a population filter the
+            # numerator lacks, which no correct subset candidate does).
+            if not ratio_population_aligned(_rt):
+                _ratio_viol = ("bounded-subset percentage: the denominator "
+                               "population filter does not also constrain the "
+                               "numerator, so the ratio can exceed 100%")
+            # Execution plausibility is ADVISORY only (supplements, never
+            # replaces the structural check) — a legitimately-unbounded ratio
+            # mis-detected as bounded could exceed 100% for valid reasons, so an
+            # out-of-range value is recorded as a warning, not a fatal.
+            _oob = _percent_values_out_of_bounds(candidate.execution)
+            if _oob is not None:
+                reasons.append(
+                    f"advisory: bounded percentage produced an out-of-range "
+                    f"value ({_oob}) — check numerator/denominator population "
+                    f"alignment")
+                checks["ratio_percentage_out_of_bounds"] = _oob
+        if _ratio_viol:
+            score += _SEMANTIC_GUARD
+            reasons.append(_ratio_viol)
+            fatal.append(_ratio_viol)
+        checks["ratio_population_aligned"] = _ratio_viol is None
+    except Exception as exc:
+        checks["ratio_population_error"] = f"{type(exc).__name__}: {exc}"
 
     # 12c) Stage 2 — cardinality-aware FANOUT validation (FATAL only on
     #      provable inflation: a measure aggregated in a scope where a

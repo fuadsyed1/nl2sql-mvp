@@ -1,0 +1,83 @@
+{
+ "note": "DB57 test 91 offline reproduction of the generic repaired-SQL validity fix (invalid outer-HAVING detection + safe HAVING->WHERE normalization). Offline, deterministic, no LLM. The fix is schema-generic; nothing here is hardcoded into production for DB57 or test 91.",
+ "database_id": "57",
+ "test_id": 91,
+ "question": "For each team, calculate injury games missed per active player.",
+ "live_failure": {
+  "endpoint_error": "no_semantically_valid_sql",
+  "repair_meta": {
+   "repair_attempted": true,
+   "repair_executed": false,
+   "repair_selected": false
+  },
+  "root_cause": "repaired SQL has a HAVING clause on a NON-aggregate outer SELECT (no GROUP BY, no outer aggregate); it filters the precomputed active_player_count CTE column with HAVING instead of WHERE, which SQLite rejects, so the repair never executed."
+ },
+ "detection": {
+  "invalid_outer_having_detected": true,
+  "normalization_action": "normalized_having_to_where",
+  "normalized_to_where": true
+ },
+ "live_repair_sql": "WITH injury_games AS (\n    SELECT\n        p.team_id,\n        SUM(i.games_missed) AS total_games_missed\n    FROM injuries i\n    JOIN players p ON i.player_id = p.player_id\n    GROUP BY p.team_id\n),\nactive_players AS (\n    SELECT\n        team_id,\n        COUNT(DISTINCT player_id) AS active_player_count\n    FROM players\n    WHERE active_flag = '1'\n    GROUP BY team_id\n)\nSELECT\n    t.team_id,\n    t.team_name,\n    CAST(COALESCE(ig.total_games_missed, 0) AS REAL) / NULLIF(ap.active_player_count, 0) AS injury_games_missed_per_active_player\nFROM teams t\nLEFT JOIN injury_games ig ON t.team_id = ig.team_id\nLEFT JOIN active_players ap ON t.team_id = ap.team_id\nHAVING ap.active_player_count > 0",
+ "normalized_repair_sql": "WITH injury_games AS (SELECT p.team_id, SUM(i.games_missed) AS total_games_missed FROM injuries AS i JOIN players AS p ON i.player_id = p.player_id GROUP BY p.team_id), active_players AS (SELECT team_id, COUNT(DISTINCT player_id) AS active_player_count FROM players WHERE active_flag = '1' GROUP BY team_id) SELECT t.team_id, t.team_name, CAST(COALESCE(ig.total_games_missed, 0) AS REAL) / NULLIF(ap.active_player_count, 0) AS injury_games_missed_per_active_player FROM teams AS t LEFT JOIN injury_games AS ig ON t.team_id = ig.team_id LEFT JOIN active_players AS ap ON t.team_id = ap.team_id WHERE ap.active_player_count > 0",
+ "execution": {
+  "live_repair_on_db57": {
+   "executed": false,
+   "error": "OperationalError: a GROUP BY clause is required before HAVING"
+  },
+  "normalized_repair_on_db57": {
+   "executed": true,
+   "columns": [
+    "team_id",
+    "team_name",
+    "injury_games_missed_per_active_player"
+   ],
+   "row_count": 41,
+   "sample_rows": [
+    [
+     1,
+     "Moscow Wolves 1",
+     60.5
+    ],
+    [
+     4,
+     "Austin Wolves 4",
+     70.0
+    ],
+    [
+     6,
+     "Boston Tigers 6",
+     0.0
+    ],
+    [
+     8,
+     "Miami Titans 8",
+     41.333333333333336
+    ],
+    [
+     9,
+     "San Diego United 9",
+     24.666666666666668
+    ]
+   ]
+  }
+ },
+ "independent_numerator_denominator": {
+  "active_roster_full_population": 64,
+  "active_players_that_are_injured_only": 41,
+  "denominator_is_independent_of_numerator": true,
+  "explanation": "COUNT(DISTINCT player) over the full active roster is larger than the count restricted to injured players, confirming numerator and denominator are computed over independent populations (the denominator is not collapsed onto injured players)."
+ },
+ "fact_time_attribution": {
+  "injuries_has_own_team_id_fk": true,
+  "rows_where_injury_team_differs_from_player_current_team": 0,
+  "explanation": "injuries carries its own team_id, so the fact can be attributed to the team-at-time-of-injury rather than the player's current parent team; the live repair derived team via players.team_id."
+ },
+ "pass_checks": {
+  "invalid_having_detected": true,
+  "live_repair_fails_on_db57": true,
+  "normalized_repair_executes": true,
+  "normalized_returns_per_team_rows": true,
+  "numerator_denominator_independent": true,
+  "fact_has_own_entity_fk": true
+ }
+}

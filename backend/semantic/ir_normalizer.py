@@ -25,7 +25,7 @@ Pure functions: no database access, no model calls, no SQL generation.
 import re
 
 __all__ = ["normalize_ir", "build_column_index", "resolve_column_comparisons",
-           "promote_dict_value_refs"]
+           "promote_dict_value_refs", "sanitize_derived_output_columns"]
 
 
 _KNOWN_OPS = {
@@ -374,6 +374,46 @@ def resolve_column_comparisons(filters, index, ir_tables=None):
 # ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
+def sanitize_derived_output_columns(select, aggregations, graph):
+    """Drop SELECT entries that are DERIVED OUTPUT ALIASES masquerading as
+    physical columns. The extractor sometimes emits an intended output name
+    (e.g. an aggregate/percentage alias) as {table, column: <alias>}, which the
+    renderer turns into `table.<alias>` — a nonexistent physical column that
+    fails at execution. A `{table, column}` SELECT entry is removed when:
+
+      * (table, column) is NOT a physical schema column, AND
+      * the column name matches an AGGREGATION alias, OR it is not a physical
+        column of ANY table in the schema (a purely synthetic output name).
+
+    The value itself is preserved: the matching aggregation (COUNT(...) AS n,
+    SUM(...) AS m, ...) still carries the alias into the projection, so the
+    requested output survives without an invented physical column. Real physical
+    columns (patient_id, first_name, ...) are never dropped. Schema-generic; no
+    table/column/domain/test hardcoding. `graph` None -> input returned as-is."""
+    if not select:
+        return select
+    index = build_column_index(graph)          # (table, col) -> meta
+    if not index:
+        return select
+    schema_cols = {c for (_t, c) in index}
+    tbl_cols = {}
+    for (t, c) in index:
+        tbl_cols.setdefault(t, set()).add(c)
+    agg_aliases = {_lower(a.get("alias")) for a in (aggregations or [])
+                   if a.get("alias")}
+    kept, dropped = [], []
+    for s in select:
+        col = _lower(s.get("column"))
+        tab = _lower(s.get("table"))
+        if col and col not in ("*",) and (not tab or col not in tbl_cols.get(tab, set())):
+            is_physical_somewhere = col in schema_cols
+            if col in agg_aliases or not is_physical_somewhere:
+                dropped.append(s)
+                continue
+        kept.append(s)
+    return kept
+
+
 def normalize_ir(select, filters, group_by, graph, ir_tables=None):
     """Apply all deterministic normalizations. Returns (select, filters, group_by)
     new lists; inputs are not mutated. `graph` may be None (no-op for the
